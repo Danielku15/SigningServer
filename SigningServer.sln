@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Contracts", "SigningServer.Contracts\SigningServer.Contracts.csproj", "{72A0985E-3E37-4CFF-8562-DA47E7C8496B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Server", "SigningServer.Server\SigningServer.Server.csproj", "{50287122-BA69-45AA-8EA5-974725E94949}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SigningServer.Server.PE", "SigningServer.Server.PE\SigningServer.Server.PE.vcxproj", "{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Test", "SigningServer.Test\SigningServer.Test.csproj", "{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Client", "SigningServer.Client\SigningServer.Client.csproj", "{70999530-7B5C-4154-8414-0717D0A9C4D6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Debug|x64.ActiveCfg = Debug|x64
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Debug|x64.Build.0 = Debug|x64
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Debug|x86.ActiveCfg = Debug|x86
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Debug|x86.Build.0 = Debug|x86
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Release|x64.ActiveCfg = Release|Any CPU
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Release|x64.Build.0 = Release|Any CPU
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Release|x86.ActiveCfg = Release|Any CPU
+		{72A0985E-3E37-4CFF-8562-DA47E7C8496B}.Release|x86.Build.0 = Release|Any CPU
+		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x64.ActiveCfg = Debug|x64
+		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x64.Build.0 = Debug|x64
+		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x86.ActiveCfg = Debug|x86
+		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x86.Build.0 = Debug|x86
+		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x64.ActiveCfg = Release|Any CPU
+		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x64.Build.0 = Release|Any CPU
+		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x86.ActiveCfg = Release|Any CPU
+		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x86.Build.0 = Release|Any CPU
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x64.ActiveCfg = Debug|x64
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x64.Build.0 = Debug|x64
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x86.ActiveCfg = Debug|Win32
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x86.Build.0 = Debug|Win32
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x64.ActiveCfg = Release|x64
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x64.Build.0 = Release|x64
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x86.ActiveCfg = Release|Win32
+		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x86.Build.0 = Release|Win32
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x64.ActiveCfg = Debug|x64
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x64.Build.0 = Debug|x64
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x86.ActiveCfg = Debug|x86
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x86.Build.0 = Debug|x86
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x64.Build.0 = Release|Any CPU
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x86.Build.0 = Release|Any CPU
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x64.ActiveCfg = Debug|x64
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x64.Build.0 = Debug|x64
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x86.ActiveCfg = Debug|x86
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x86.Build.0 = Debug|x86
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x64.ActiveCfg = Release|Any CPU
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x64.Build.0 = Release|Any CPU
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x86.ActiveCfg = Release|Any CPU
+		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

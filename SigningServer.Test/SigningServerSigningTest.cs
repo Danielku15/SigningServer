@@ -6,6 +6,8 @@ using Moq;
 using NUnit.Framework;
 using SigningServer.Contracts;
 using SigningServer.Server;
+using SigningServer.Server.Configuration;
+using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Test
 {

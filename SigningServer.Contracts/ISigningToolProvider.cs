@@ -1,6 +1,4 @@
-﻿using SigningServer.Contracts;
-
-namespace SigningServer.Server
+﻿namespace SigningServer.Contracts
 {
     public interface ISigningToolProvider
     {

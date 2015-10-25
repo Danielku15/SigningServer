@@ -2,7 +2,7 @@
 using System.Linq;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server
+namespace SigningServer.Server.SigningTool
 {
     public class EnumerableSigningToolProvider : ISigningToolProvider
     {

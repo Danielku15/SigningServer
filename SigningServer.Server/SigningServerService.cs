@@ -7,6 +7,7 @@ using System.ServiceProcess;
 using Newtonsoft.Json;
 using NLog;
 using SigningServer.Contracts;
+using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server
 {

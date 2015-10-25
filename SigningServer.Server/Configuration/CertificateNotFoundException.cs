@@ -1,13 +1,11 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 
-namespace SigningServer.Server
+namespace SigningServer.Server.Configuration
 {
     [Serializable]
-    public class InvalidConfigurationException : Exception
+    public class CertificateNotFoundException : Exception
     {
-        public const string NoValidCertificatesMessage = "No valid certificates found";
-        public const string CreateWorkingDirectoryFailedMessage = "Could not create working directory";
         //
         // For guidelines regarding the creation of new exception types, see
         //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
@@ -15,19 +13,19 @@ namespace SigningServer.Server
         //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
         //
 
-        public InvalidConfigurationException()
+        public CertificateNotFoundException()
         {
         }
 
-        public InvalidConfigurationException(string message) : base(message)
+        public CertificateNotFoundException(string message) : base(message)
         {
         }
 
-        public InvalidConfigurationException(string message, Exception inner) : base(message, inner)
+        public CertificateNotFoundException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected InvalidConfigurationException(
+        protected CertificateNotFoundException(
             SerializationInfo info,
             StreamingContext context) : base(info, context)
         {

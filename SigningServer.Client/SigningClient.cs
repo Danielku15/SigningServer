@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using Newtonsoft.Json;
 using NLog;
-using NLog.Fluent;
 using SigningServer.Contracts;
 
 namespace SigningServer.Client
@@ -17,7 +15,7 @@ namespace SigningServer.Client
 
         private HashSet<string> _supportedFileFormats;
         private readonly SigningClientConfiguration _configuration;
-        private IChannelFactory<ISigningServer> _clientFactory;
+        private ChannelFactory<ISigningServer> _clientFactory;
         private ISigningServer _client;
 
         public SigningClient(SigningClientConfiguration configuration)
@@ -26,7 +24,7 @@ namespace SigningServer.Client
             Uri signingServer;
             if (string.IsNullOrWhiteSpace(configuration.SigningServer))
             {
-                throw new ArgumentException("Empty SigningServer in configuraiton", "configuration");
+                throw new ArgumentException("Empty SigningServer in configuraiton", nameof(configuration));
             }
 
             var parts = configuration.SigningServer.Split(new[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
@@ -149,11 +147,11 @@ namespace SigningServer.Client
         private void Connect(Uri signingServer)
         {
             Log.Info("Connecting to signing server");
-            var clientFactory = new ChannelFactory<ISigningServer>(new NetTcpBinding
+            _clientFactory = new ChannelFactory<ISigningServer>(new NetTcpBinding
             {
                 TransferMode = TransferMode.Streamed
             }, signingServer.ToString());
-            _client = clientFactory.CreateChannel();
+            _client = _clientFactory.CreateChannel();
 
             _supportedFileFormats = new HashSet<string>(_client.GetSupportedFileExtensions());
             Log.Info("Connected, supported file formats: {0}", string.Join(", ", _supportedFileFormats));

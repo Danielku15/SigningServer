@@ -1,19 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SigningServer.Server
+namespace SigningServer.Server.Configuration
 {
-    public class SigningServerConfiguration
-    {
-        public int Port { get; set; }
-        public string TimestampServer { get; set; }
-        public string WorkingDirectory { get; set; }
-        public CertificateConfiguration[] Certificates { get; set; }
-    }
-
     public class CertificateConfiguration
     {
         public string Username { get; set; }

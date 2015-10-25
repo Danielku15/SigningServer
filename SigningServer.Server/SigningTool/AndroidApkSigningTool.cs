@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server
+namespace SigningServer.Server.SigningTool
 {
     class AndroidApkSigningTool : ISigningTool
     {

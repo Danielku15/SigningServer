@@ -7,6 +7,7 @@ using NUnit.Framework;
 using SigningServer.Client;
 using SigningServer.Contracts;
 using SigningServer.Server;
+using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
 {

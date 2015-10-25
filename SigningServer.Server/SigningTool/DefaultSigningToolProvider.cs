@@ -1,5 +1,6 @@
 ﻿using SigningServer.Contracts;
 using SigningServer.Server.PE;
+using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Server
 {

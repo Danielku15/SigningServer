@@ -1,0 +1,13 @@
+﻿{
+  "Port":  4711,
+  "WorkingDirectory": "D:\\Temp",
+  "TimestampServer": "http://timestamp.verisign.com/scripts/timstamp.dll",
+  "Certificates": [
+    // default
+    {
+      "StoreName": "My",
+      "StoreLocation": "LocalMachine",
+      "Thumbprint": "‎0B1E58612300070683CFAA9CEE9F76437FB64C1A"
+    }
+  ]
+}

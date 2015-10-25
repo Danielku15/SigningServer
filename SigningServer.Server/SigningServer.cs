@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.ServiceModel;
 using NLog;
 using SigningServer.Contracts;
+using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server
 {

@@ -6,6 +6,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Security::Cryptography::X509Certificates;
 using namespace SigningServer::Contracts;
+using namespace NLog;
 
 namespace SigningServer { namespace Server { namespace PE {
 
@@ -25,9 +26,9 @@ namespace SigningServer { namespace Server { namespace PE {
 		virtual void UnsignFile(String^ fileName);
 
 	private:
-
-		static HashSet<String^>^ _supportedExtensions;
-		static bool _canSign;
+		static initonly Logger^ Log;
+		static initonly HashSet<String^>^ SupportedExtensions;
+		static initonly bool CanSign;
 	};
 
 }

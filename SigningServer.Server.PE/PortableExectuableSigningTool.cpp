@@ -17,11 +17,17 @@ SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSign
 
 static SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool()
 {
-	_supportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
+	SupportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
 		".exe", ".dll", ".sys", ".msi", ".cab"
 			// , ".drv", ".scr", ".cpl", ".ocx", ".ax", ".efi"
 	}, System::StringComparer::CurrentCultureIgnoreCase);
-	_canSign = MsSign32::Init() == ERROR_SUCCESS;
+	Log = LogManager::GetCurrentClassLogger();
+	HRESULT mssign = MsSign32::Init();
+	CanSign = mssign == ERROR_SUCCESS;
+	if (!CanSign)
+	{
+		Log->Error("Could not load mssign32.dll: {0}", mssign);
+	}
 }
 
 
@@ -31,12 +37,12 @@ SigningServer::Server::PE::PortableExectuableSigningTool::~PortableExectuableSig
 
 array<String^>^ SigningServer::Server::PE::PortableExectuableSigningTool::GetSupportedFileExtensions()
 {
-	return System::Linq::Enumerable::ToArray(_supportedExtensions);
+	return System::Linq::Enumerable::ToArray(SupportedExtensions);
 }
 
 bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSupported(String^ fileName)
 {
-	return _canSign && _supportedExtensions->Contains(System::IO::Path::GetExtension(fileName));
+	return CanSign && SupportedExtensions->Contains(System::IO::Path::GetExtension(fileName));
 }
 
 bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSigned(String^ inputFileName)
@@ -70,6 +76,7 @@ bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSigned(Stri
 		&actionId,
 		&winTrustData
 		);
+	Log->Trace("WinVerifyTrust returned {0}", result);
 	DWORD dwLastError;
 
 	switch (result)
@@ -132,7 +139,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::UnsignFile(String
 
 void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ inputFileName, X509Certificate2^ certificate, String^ timeStampUrl, SignFileRequest^ signFileRequest, SignFileResponse^ signFileResponse)
 {
-	if (!_canSign)
+	if (!CanSign)
 	{
 		throw gcnew InvalidOperationException("mssign32.dll could not be loaded");
 	}
@@ -143,11 +150,13 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	{
 		if (signFileRequest->OverwriteSignature)
 		{
+			Log->Trace("File {0} is already signed, removing signature", inputFileName);
 			UnsignFile(inputFileName);
 			successResult = SignFileResponseResult::FileResigned;
 		}
 		else
 		{
+			Log->Trace("File {0} is already signed, abort signing", inputFileName);
 			signFileResponse->Result = SignFileResponseResult::FileAlreadySigned;
 			return;
 		}
@@ -157,6 +166,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	pin_ptr<BYTE> rawCertDataPin = &rawCertData[0];
 	BYTE * nativeRawCertCata = rawCertDataPin;
 
+	Log->Trace("Creating certificate context", inputFileName);
 	PCCERT_CONTEXT pCertContext = CertCreateCertificateContext(
 		X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 		nativeRawCertCata,
@@ -215,13 +225,24 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	signerProviderInfo.dwPvkChoice = PVK_TYPE_KEYCONTAINER;
 	signerProviderInfo.pwszKeyContainer = (LPWSTR)pwszKeyContainer;
 
+	Log->Trace("Call signing of  {0}", inputFileName);
 	SIGNER_CONTEXT* pSignerContext = nullptr;
 	HRESULT hr = MsSign32::SignerSign(&signerSubjectInfo, &signerCert, &signerSignatureInfo, &signerProviderInfo, nullptr, nullptr, &pSignerContext);
 
+	HRESULT tshr = S_OK;
 	if (!String::IsNullOrWhiteSpace(timeStampUrl))
 	{
+		Log->Trace("Timestamping with url {0}", timeStampUrl);
 		pin_ptr<const wchar_t> pwszTimestampUrl = PtrToStringChars(timeStampUrl);
-		MsSign32::SignerTimeStamp(&signerSubjectInfo, pwszTimestampUrl, nullptr, nullptr);
+		tshr = MsSign32::SignerTimeStamp(&signerSubjectInfo, pwszTimestampUrl, nullptr, nullptr);
+		if (tshr == S_OK)
+		{
+			Log->Trace("Timestamping succeeded");
+		}
+		else
+		{
+			Log->Trace("Timestamping failed with {0}", tshr);
+		}
 	}
 
 	if (pSignerContext)
@@ -234,7 +255,14 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 		CertFreeCertificateContext(pCertContext);
 	}
 
-	if (hr != S_OK)
+	if (hr == S_OK && tshr == S_OK)
+	{
+		Log->Trace("{0} successfully signed", inputFileName);
+		signFileResponse->Result = successResult;
+		signFileResponse->FileContent = gcnew System::IO::FileStream(inputFileName, System::IO::FileMode::Open, System::IO::FileAccess::Read);
+		signFileResponse->FileSize = signFileResponse->FileContent->Length;
+	}
+	else if(hr != S_OK)
 	{
 		LPTSTR errorText = nullptr;
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -257,11 +285,31 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 		{
 			signFileResponse->ErrorMessage = String::Format("signing file failed (0x{0:x})", hr);
 		}
+		Log->Error("{0} signing failed {1}", inputFileName, signFileResponse->ErrorMessage);
 	}
 	else
 	{
-		signFileResponse->Result = successResult;
-		signFileResponse->FileContent = gcnew System::IO::FileStream(inputFileName, System::IO::FileMode::Open, System::IO::FileAccess::Read);
-		signFileResponse->FileSize = signFileResponse->FileContent->Length;
+		LPTSTR errorText = nullptr;
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+			nullptr,
+			tshr,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPTSTR)&errorText,
+			0,
+			nullptr
+			);
+
+		signFileResponse->Result = SignFileResponseResult::FileNotSignedError;
+		if (errorText != nullptr)
+		{
+			signFileResponse->ErrorMessage = gcnew String(errorText);
+			LocalFree(errorText);
+			errorText = nullptr;
+		}
+		else
+		{
+			signFileResponse->ErrorMessage = String::Format("timestamping failed (0x{0:x})", hr);
+		}
+		Log->Error("{0} timestamping failed {1}", inputFileName, signFileResponse->ErrorMessage);
 	}
 }

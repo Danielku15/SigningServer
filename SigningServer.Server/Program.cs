@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration.Install;
+using System.Reflection;
 
 namespace SigningServer.Server
 {
@@ -14,9 +16,11 @@ namespace SigningServer.Server
                     {
                         case "-install":
                             Console.WriteLine("Installing Windows Service");
+                            ManagedInstallerClass.InstallHelper(new [] { Assembly.GetExecutingAssembly().Location });
                             return;
                         case "-remove":
                             Console.WriteLine("Removing Windows Service");
+                            ManagedInstallerClass.InstallHelper(new [] { "/u", Assembly.GetExecutingAssembly().Location });
                             return;
                     }
                 }

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.ServiceModel;
 using Newtonsoft.Json;
 using NLog;
-using SigningServer.Contracts;
 
 namespace SigningServer.Client
 {

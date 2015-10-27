@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.ServiceModel;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SigningServer.Client;
-using SigningServer.Contracts;
 using SigningServer.Server;
 using SigningServer.Server.Configuration;
 
@@ -25,7 +24,7 @@ namespace SigningServer.Test
             var configuration = new SigningServerConfiguration
             {
                 Port = 4711,
-                TimestampServer = "http://timestamp.verisign.com/scripts/timstamp.dll",
+                TimestampServer = ConfigurationManager.AppSettings["TimestampServer"],
                 Certificates = new[]
                 {
                     new CertificateConfiguration

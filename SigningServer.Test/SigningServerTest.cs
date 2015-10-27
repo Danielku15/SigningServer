@@ -4,7 +4,6 @@ using System.Security.Cryptography.X509Certificates;
 using Moq;
 using NUnit.Framework;
 using SigningServer.Contracts;
-using SigningServer.Server;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test

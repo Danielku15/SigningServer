@@ -9,7 +9,6 @@ using namespace System::Runtime::InteropServices;
 [assembly:AssemblyCompany("CoderLine.net")];
 [assembly:AssemblyProduct("CoderLine SigningServer")];
 [assembly:AssemblyCopyright("Copyright ©  2015 Daniel Kuschny")];
-[assembly:AssemblyCulture("en-us")];
 
 [assembly:ComVisible(false)]
 [assembly:CLSCompliantAttribute(true)];

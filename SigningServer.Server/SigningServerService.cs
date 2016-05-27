@@ -72,7 +72,9 @@ namespace SigningServer.Server
                 };
                 _serviceHost.AddServiceEndpoint(typeof (ISigningServer), new NetTcpBinding
                 {
-                    TransferMode = TransferMode.Streamed
+                    TransferMode = TransferMode.Streamed,
+                    MaxReceivedMessageSize = int.MaxValue,
+                    MaxBufferSize = int.MaxValue
                 }, uri.Uri);
 
                 _serviceHost.Open();

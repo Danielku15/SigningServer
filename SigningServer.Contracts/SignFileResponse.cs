@@ -28,6 +28,11 @@ namespace SigningServer.Contracts
         [MessageBodyMember]
         public Stream FileContent { get; set; }
 
+        public SignFileResponse()
+        {
+            FileContent = new MemoryStream();
+        }
+
         public void Dispose()
         {
             if (FileContent != null)

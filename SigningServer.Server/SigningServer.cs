@@ -31,6 +31,7 @@ namespace SigningServer.Server
 
             Log.Info("Validating configuration");
             Configuration = new SigningServerConfiguration();
+            Configuration.TimestampServer = configuration.TimestampServer ?? "";
             Configuration.WorkingDirectory = configuration.WorkingDirectory ?? "";
 
             var list = new List<CertificateConfiguration>();

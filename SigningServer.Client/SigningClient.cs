@@ -148,7 +148,10 @@ namespace SigningServer.Client
             Log.Info("Connecting to signing server");
             _clientFactory = new ChannelFactory<ISigningServer>(new NetTcpBinding
             {
-                TransferMode = TransferMode.Streamed
+                TransferMode = TransferMode.Streamed,
+                MaxReceivedMessageSize = int.MaxValue,
+                MaxBufferSize = int.MaxValue
+
             }, signingServer.ToString());
             _client = _clientFactory.CreateChannel();
 

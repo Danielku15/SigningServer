@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration.Install;
 using System.Reflection;
+using System.ServiceProcess;
 
 namespace SigningServer.Server
 {
@@ -8,6 +9,7 @@ namespace SigningServer.Server
     {
         public static void Main(string[] args)
         {
+            var server = new SigningServerService();
             if (Environment.UserInteractive)
             {
                 if (args.Length == 1)
@@ -16,18 +18,21 @@ namespace SigningServer.Server
                     {
                         case "-install":
                             Console.WriteLine("Installing Windows Service");
-                            ManagedInstallerClass.InstallHelper(new [] { Assembly.GetExecutingAssembly().Location });
+                            ManagedInstallerClass.InstallHelper(new[] { Assembly.GetExecutingAssembly().Location });
                             return;
                         case "-remove":
                             Console.WriteLine("Removing Windows Service");
-                            ManagedInstallerClass.InstallHelper(new [] { "/u", Assembly.GetExecutingAssembly().Location });
+                            ManagedInstallerClass.InstallHelper(new[] { "/u", Assembly.GetExecutingAssembly().Location });
                             return;
                     }
                 }
 
-                var server = new SigningServerService();
                 server.ConsoleStart();
                 Console.ReadLine();
+            }
+            else
+            {
+                ServiceBase.Run(server);
             }
         }
     }

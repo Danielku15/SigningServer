@@ -207,7 +207,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 
 	SIGNER_SIGNATURE_INFO signerSignatureInfo;
 	signerSignatureInfo.cbSize = sizeof(signerSignatureInfo);
-	signerSignatureInfo.algidHash = CALG_SHA1;
+	signerSignatureInfo.algidHash = CALG_SHA_256;
 	signerSignatureInfo.dwAttrChoice = SIGNER_NO_ATTR;
 	signerSignatureInfo.pAttrAuthcode = nullptr;
 	signerSignatureInfo.psAuthenticated = nullptr;

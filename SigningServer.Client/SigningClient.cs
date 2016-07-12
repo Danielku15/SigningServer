@@ -53,6 +53,9 @@ namespace SigningServer.Client
 
         public void SignFile(string path)
         {
+            // Sometimes via MSBuild there are quotes on the path, here we clean them. 
+            path = path.Trim('"');
+            Log.Info("Signing '{0}'", path);
             var full = Path.GetFullPath(path);
             if (Directory.Exists(full))
             {

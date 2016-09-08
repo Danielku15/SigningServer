@@ -86,6 +86,13 @@ namespace SigningServer.Client
             SignFileResponse response;
 
             Log.Info("Signing file '{0}'", info.FullName);
+
+            if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                Log.Info("File was readonly, cleaned readonly flag");
+                info.Attributes &= ~FileAttributes.ReadOnly;
+            }
+
             using (var request = new SignFileRequest
             {
                 FileName = info.Name,

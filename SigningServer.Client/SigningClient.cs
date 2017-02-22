@@ -16,6 +16,7 @@ namespace SigningServer.Client
         private readonly SigningClientConfiguration _configuration;
         private ChannelFactory<ISigningServer> _clientFactory;
         private ISigningServer _client;
+        private TimeSpan _timeout;
 
         public SigningClient(SigningClientConfiguration configuration)
         {
@@ -32,6 +33,15 @@ namespace SigningServer.Client
                 throw new ArgumentException(
                     $"Invalid SigningServer specified (expected host:port, found {configuration.SigningServer})",
                     "configuration");
+            }
+
+            if (configuration.Timeout > 0)
+            {
+                _timeout = TimeSpan.FromSeconds(configuration.Timeout);
+            }
+            else
+            {
+                _timeout = TimeSpan.FromSeconds(60);
             }
 
             var uriBuilder = new UriBuilder
@@ -160,8 +170,11 @@ namespace SigningServer.Client
             {
                 TransferMode = TransferMode.Streamed,
                 MaxReceivedMessageSize = int.MaxValue,
-                MaxBufferSize = int.MaxValue
-
+                MaxBufferSize = int.MaxValue,
+                OpenTimeout = _timeout,
+                SendTimeout = _timeout,
+                ReceiveTimeout = _timeout,
+                CloseTimeout = _timeout
             }, signingServer.ToString());
             _client = _clientFactory.CreateChannel();
 

@@ -7,7 +7,7 @@ using SigningServer.Server.SigningTool;
 namespace SigningServer.Test
 {
     [TestFixture]
-    class AndroidApkSigningToolTest : UnitTestBase
+    public class AndroidApkSigningToolTest : UnitTestBase
     {
         [Test]
         public void ManifestWriterTestSingleLine()

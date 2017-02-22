@@ -27,6 +27,7 @@ namespace SigningServer.Server.SigningTool
         private const string ManifestName = "META-INF/MANIFEST.MF";
         private const string SignatureName = "META-INF/CERT.SF";
         private const string SignatureBlockName = "META-INF/CERT.";
+        private const string MetaInfFolder = "META-INF";
         private const string MetaInf = "META-INF/";
 
         private static readonly string CreatedBy = typeof(AndroidApkSigningTool).Assembly.GetName().Version +
@@ -59,6 +60,7 @@ namespace SigningServer.Server.SigningTool
                 else
                 {
                     signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
+                    signFileResponse.FileContent = null;
                     return;
                 }
             }
@@ -80,10 +82,20 @@ namespace SigningServer.Server.SigningTool
 
                             CreateSignatureBlockFile(outputJar, certificate, signatureFile, timestampServer);
 
+                            outputJar.CommitUpdate();
+                            outputJar.BeginUpdate();
+
                             foreach (var entry in inputJar.OfType<ZipEntry>())
                             {
-                                Log.Trace($"Cloning file ${entry.Name} into new zip");
-                                outputJar.Add(new ZipEntryDataSource(inputJar, entry), entry.Name);
+                                if (entry.IsDirectory)
+                                {
+                                    outputJar.AddDirectory(entry.Name);
+                                }
+                                else if(outputJar.FindEntry(entry.Name, true) == -1)
+                                {
+                                    Log.Trace($"Cloning file ${entry.Name} into new zip");
+                                    outputJar.Add(new ZipEntryDataSource(inputJar, entry), entry.Name);
+                                }
                             }
 
                             outputJar.CommitUpdate();
@@ -382,6 +394,12 @@ namespace SigningServer.Server.SigningTool
 
                         foreach (var entry in inputJar.OfType<ZipEntry>())
                         {
+                            if (entry.IsDirectory &&
+                                (entry.Name.Equals(MetaInfFolder, StringComparison.InvariantCultureIgnoreCase) || entry.Name.Equals(MetaInf, StringComparison.InvariantCultureIgnoreCase)))
+                            {
+                                continue;
+                            }
+
                             if (IsSignatureRelated(entry) ||
                                 entry.Name.Equals(ManifestName, StringComparison.InvariantCultureIgnoreCase))
                             {
@@ -439,7 +457,7 @@ namespace SigningServer.Server.SigningTool
                 return false;
             }
 
-            return false;
+            return true;
         }
 
         public string[] GetSupportedFileExtensions()
@@ -449,18 +467,21 @@ namespace SigningServer.Server.SigningTool
 
         private class ZipEntryDataSource : IStaticDataSource
         {
-            private readonly ZipFile _zipFile;
-            private readonly ZipEntry _zipEntry;
+            private MemoryStream _source;
 
             public ZipEntryDataSource(ZipFile zipFile, ZipEntry zipEntry)
             {
-                _zipFile = zipFile;
-                _zipEntry = zipEntry;
+                _source = new MemoryStream();
+                var fileData = zipFile.GetInputStream(zipEntry);
+                fileData.CopyTo(_source);
             }
 
             public Stream GetSource()
             {
-                return _zipFile.GetInputStream(_zipEntry);
+                _source.Seek(0, SeekOrigin.Begin);
+                var s = System.Text.Encoding.UTF8.GetString(((MemoryStream)_source).ToArray());
+                Console.WriteLine(s);
+                return _source;
             }
         }
 

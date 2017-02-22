@@ -104,5 +104,6 @@ namespace SigningServer.Client
         public bool OverwriteSignatures { get; set; }
         public bool IgnoreExistingSignatures { get; set; }
         public bool IgnoreUnsupportedFiles { get; set; }
+        public int Timeout { get; set; }
     }
 }

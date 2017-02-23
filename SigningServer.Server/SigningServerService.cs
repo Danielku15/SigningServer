@@ -74,7 +74,11 @@ namespace SigningServer.Server
                 {
                     TransferMode = TransferMode.Streamed,
                     MaxReceivedMessageSize = int.MaxValue,
-                    MaxBufferSize = int.MaxValue
+                    MaxBufferSize = int.MaxValue,
+                    OpenTimeout = TimeSpan.MaxValue,
+                    CloseTimeout = TimeSpan.MaxValue,
+                    SendTimeout = TimeSpan.MaxValue,
+                    ReceiveTimeout = TimeSpan.MaxValue,
                 }, uri.Uri);
 
                 _serviceHost.Open();

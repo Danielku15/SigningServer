@@ -79,6 +79,7 @@ namespace SigningServer.Server
                     CloseTimeout = TimeSpan.MaxValue,
                     SendTimeout = TimeSpan.MaxValue,
                     ReceiveTimeout = TimeSpan.MaxValue,
+                    MaxConnections = int.MaxValue,
                 }, uri.Uri);
 
                 _serviceHost.Open();

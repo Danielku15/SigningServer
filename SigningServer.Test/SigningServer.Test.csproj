@@ -67,6 +67,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
@@ -80,6 +81,7 @@
     <Compile Include="SigningServerTest.cs" />
     <Compile Include="DeploymentItemAttribute.cs" />
     <Compile Include="UnitTestBase.cs" />
+    <Compile Include="WinCrypt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

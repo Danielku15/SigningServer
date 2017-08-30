@@ -35,14 +35,37 @@ namespace SigningServer.Server.SigningTool
 
         private static readonly Random Random = new Random();
 
-        private static readonly HashSet<string> SupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+        private static readonly HashSet<string> ApkSupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
         {
             ".jar",  ".apk"
         };
 
+        internal class HashAlgorithmInfo
+        {
+            public string DigestName { get; }
+            public Func<HashAlgorithm> HashAlgorithmFactory { get; }
+
+            /// <inheritdoc />
+            public HashAlgorithmInfo(string digestName, Func<HashAlgorithm> hashAlgorithmFactory)
+            {
+                DigestName = digestName;
+                HashAlgorithmFactory = hashAlgorithmFactory;
+            }
+        }
+
+        private const string DefaultHashAlgorithm = "SHA256";
+        private static readonly Dictionary<string, HashAlgorithmInfo> ApkSupportedHashAlgorithms = new Dictionary<string, HashAlgorithmInfo>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            ["SHA1"] = new HashAlgorithmInfo("SHA1-Digest", () => new SHA1Managed()),
+            ["MD5"] = new HashAlgorithmInfo("MD5-Digest", () => new MD5CryptoServiceProvider()),
+            ["SHA256"] = new HashAlgorithmInfo("SHA-256-Digest", () => new SHA256Managed()),
+            ["SHA384"] = new HashAlgorithmInfo("SHA-384-Digest", () => new SHA384Managed()),
+            ["SHA512"] = new HashAlgorithmInfo("SHA-512-Digest", () => new SHA512Managed())
+        };
+
         public bool IsFileSupported(string fileName)
         {
-            return SupportedExtension.Contains(Path.GetExtension(fileName));
+            return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
         public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
@@ -68,48 +91,51 @@ namespace SigningServer.Server.SigningTool
             var outputFileName = inputFileName + ".signed";
             try
             {
-                using (var hasher = new SHA256Managed())
+                HashAlgorithmInfo hashAlgorithmInfo;
+                if (!ApkSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm ?? DefaultHashAlgorithm, out hashAlgorithmInfo))
                 {
-                    using (var inputJar = new ZipFile(inputFileName))
-                    {
-                        using (var outputJar = ZipFile.Create(outputFileName))
-                        {
-                            outputJar.BeginUpdate();
-
-                            var manifest = CreateSignedManifest(inputJar, outputJar, hasher);
-
-                            var signatureFile = CreateSignatureFile(outputJar, manifest);
-
-                            CreateSignatureBlockFile(outputJar, certificate, signatureFile, timestampServer);
-
-                            outputJar.CommitUpdate();
-                            outputJar.BeginUpdate();
-
-                            foreach (var entry in inputJar.OfType<ZipEntry>())
-                            {
-                                if (entry.IsDirectory)
-                                {
-                                    outputJar.AddDirectory(entry.Name);
-                                }
-                                else if(outputJar.FindEntry(entry.Name, true) == -1)
-                                {
-                                    Log.Trace($"Cloning file ${entry.Name} into new zip");
-                                    outputJar.Add(new ZipEntryDataSource(inputJar, entry), entry.Name);
-                                }
-                            }
-
-                            outputJar.CommitUpdate();
-                            outputJar.Close();
-                        }
-                    }
-
-                    File.Delete(inputFileName);
-                    File.Move(outputFileName, inputFileName);
-
-                    signFileResponse.Result = successResult;
-                    signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-                    signFileResponse.FileSize = signFileResponse.FileContent.Length;
+                    hashAlgorithmInfo = ApkSupportedHashAlgorithms[DefaultHashAlgorithm];
                 }
+
+                using (var inputJar = new ZipFile(inputFileName))
+                {
+                    using (var outputJar = ZipFile.Create(outputFileName))
+                    {
+                        outputJar.BeginUpdate();
+
+                        var manifest = CreateSignedManifest(inputJar, outputJar, hashAlgorithmInfo);
+
+                        var signatureFile = CreateSignatureFile(outputJar, manifest, hashAlgorithmInfo);
+
+                        CreateSignatureBlockFile(outputJar, certificate, signatureFile, timestampServer);
+
+                        outputJar.CommitUpdate();
+                        outputJar.BeginUpdate();
+
+                        foreach (var entry in inputJar.OfType<ZipEntry>())
+                        {
+                            if (entry.IsDirectory)
+                            {
+                                outputJar.AddDirectory(entry.Name);
+                            }
+                            else if (outputJar.FindEntry(entry.Name, true) == -1)
+                            {
+                                Log.Trace($"Cloning file ${entry.Name} into new zip");
+                                outputJar.Add(new ZipEntryDataSource(inputJar, entry), entry.Name);
+                            }
+                        }
+
+                        outputJar.CommitUpdate();
+                        outputJar.Close();
+                    }
+                }
+
+                File.Delete(inputFileName);
+                File.Move(outputFileName, inputFileName);
+
+                signFileResponse.Result = successResult;
+                signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
+                signFileResponse.FileSize = signFileResponse.FileContent.Length;
             }
             catch
             {
@@ -121,6 +147,7 @@ namespace SigningServer.Server.SigningTool
             }
 
         }
+
 
         private static readonly Oid DataOid = new Oid("1.2.840.113549.1.7.1");
         private static readonly Oid SignatureTimestampTokenOid = new Oid("1.2.840.113549.1.9.16.2.14");
@@ -226,7 +253,7 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        private byte[] CreateSignatureFile(ZipFile outputJar, Manifest manifest)
+        private byte[] CreateSignatureFile(ZipFile outputJar, Manifest manifest, HashAlgorithmInfo hashAlgorithmInfo)
         {
             try
             {
@@ -234,8 +261,8 @@ namespace SigningServer.Server.SigningTool
                 var signatureFile = new Manifest();
                 signatureFile.MainSection.Name = "Signature-Version";
                 signatureFile.MainSection.Value = "1.0";
-                signatureFile.MainSection.Add(new ManifestEntry("SHA-256-Digest-Manifest-Main-Attributes", manifest.MainSection.Sha256Digest));
-                signatureFile.MainSection.Add(new ManifestEntry("SHA-256-Digest-Manifest", manifest.Sha256Digest));
+                signatureFile.MainSection.Add(new ManifestEntry(hashAlgorithmInfo.DigestName + "-Manifest-Main-Attributes", manifest.MainSection.Digest));
+                signatureFile.MainSection.Add(new ManifestEntry(hashAlgorithmInfo.DigestName + "-Manifest", manifest.Digest));
                 signatureFile.MainSection.Add(new ManifestEntry("Created-By", CreatedBy));
 
                 foreach (var additionalSection in manifest.AdditionalSections)
@@ -246,12 +273,12 @@ namespace SigningServer.Server.SigningTool
                         Name = additionalSection.Value.Name,
                         Value = additionalSection.Value.Value
                     };
-                    signatureSection.Add(new ManifestEntry("SHA-256-Digest", additionalSection.Value.Sha256Digest));
+                    signatureSection.Add(new ManifestEntry(hashAlgorithmInfo.DigestName, additionalSection.Value.Digest));
                     signatureFile.AdditionalSections[signatureSection.Value] = signatureSection;
                 }
 
                 var signatureData = new MemoryStream();
-                signatureFile.Write(signatureData);
+                signatureFile.Write(signatureData, hashAlgorithmInfo);
 
                 var signatureDataRaw = signatureData.ToArray();
                 outputJar.Add(new StreamDataSource(new MemoryStream(signatureDataRaw)), SignatureName);
@@ -267,7 +294,7 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        private Manifest CreateSignedManifest(ZipFile inputJar, ZipFile outputJar, HashAlgorithm hasher)
+        private Manifest CreateSignedManifest(ZipFile inputJar, ZipFile outputJar, HashAlgorithmInfo hashAlgorithmInfo)
         {
             Log.Trace("Creating MANIFEST.MF");
             try
@@ -310,15 +337,16 @@ namespace SigningServer.Server.SigningTool
                         else
                         {
                             // remove existing digest
-                            section.RemoveAll(e => e.Key == "SHA-256-Digest");
+                            section.RemoveAll(e => e.Key.EndsWith("-Digest"));
                         }
 
-                        section.Add(new ManifestEntry("SHA-256-Digest", HashEntry(inputJar, entry, hasher)));
+
+                        section.Add(new ManifestEntry(hashAlgorithmInfo.DigestName, HashEntry(inputJar, entry, hashAlgorithmInfo)));
                     }
                 }
 
                 var manifestData = new MemoryStream();
-                newManifest.Write(manifestData);
+                newManifest.Write(manifestData, hashAlgorithmInfo);
                 manifestData.Seek(0, SeekOrigin.Begin);
                 outputJar.Add(new StreamDataSource(manifestData), ManifestName);
 
@@ -333,12 +361,16 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        private string HashEntry(ZipFile inputJar, ZipEntry entry, HashAlgorithm hasher)
+
+        private string HashEntry(ZipFile inputJar, ZipEntry entry, HashAlgorithmInfo hashAlgorithmInfo)
         {
             using (var s = inputJar.GetInputStream(entry))
             {
-                hasher.Initialize();
-                return Convert.ToBase64String(hasher.ComputeHash(s));
+                using (var hasher = hashAlgorithmInfo.HashAlgorithmFactory())
+                {
+                    hasher.Initialize();
+                    return Convert.ToBase64String(hasher.ComputeHash(s));
+                }
             }
         }
 
@@ -460,10 +492,9 @@ namespace SigningServer.Server.SigningTool
             return true;
         }
 
-        public string[] GetSupportedFileExtensions()
-        {
-            return SupportedExtension.ToArray();
-        }
+        /// <inheritdoc />
+        public string[] SupportedFileExtensions => ApkSupportedExtension.ToArray();
+        public string[] SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
 
         private class ZipEntryDataSource : IStaticDataSource
         {

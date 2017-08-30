@@ -41,7 +41,8 @@ namespace SigningServer.Test
             _emptySigningToolProvider = new EnumerableSigningToolProvider(Enumerable.Empty<ISigningTool>());
 
             var simulateSigningTool = new Mock<ISigningTool>();
-            simulateSigningTool.Setup(t => t.GetSupportedFileExtensions()).Returns(new[] { "*" });
+            simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
+            simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(

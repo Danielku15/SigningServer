@@ -17,6 +17,7 @@ namespace SigningServer.Client
         private ChannelFactory<ISigningServer> _clientFactory;
         private ISigningServer _client;
         private TimeSpan _timeout;
+        private HashSet<string> _supportedHashAlgorithms;
 
         public SigningClient(SigningClientConfiguration configuration)
         {
@@ -110,7 +111,8 @@ namespace SigningServer.Client
                 OverwriteSignature = _configuration.OverwriteSignatures,
                 Username = _configuration.Username,
                 Password = _configuration.Password,
-                FileContent = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read)
+                FileContent = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read),
+                HashAlgorithm = _configuration.HashAlgorithm
             })
             {
                 response = _client.SignFile(request);
@@ -179,7 +181,9 @@ namespace SigningServer.Client
             _client = _clientFactory.CreateChannel();
 
             _supportedFileFormats = new HashSet<string>(_client.GetSupportedFileExtensions());
+            _supportedHashAlgorithms = new HashSet<string>(_client.GetSupportedHashAlgorithms());
             Log.Info("Connected, supported file formats: {0}", string.Join(", ", _supportedFileFormats));
+            Log.Info("supported hash algorithms: {0}", string.Join(", ", _supportedHashAlgorithms));
         }
     }
 }

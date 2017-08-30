@@ -18,9 +18,8 @@ namespace SigningServer.Server.SigningTool
             return _signingTools.FirstOrDefault(signingTool => signingTool.IsFileSupported(fileName));
         }
 
-        public string[] GetSupportedFileExtensions()
-        {
-            return _signingTools.SelectMany(c => c.GetSupportedFileExtensions()).ToArray();
-        }
+        /// <inheritdoc />
+        public string[] SupportedHashAlgorithms => _signingTools.SelectMany(c => c.SupportedFileExtensions).ToArray();
+        public string[] SupportedFileExtensions => _signingTools.SelectMany(c => c.SupportedHashAlgorithms).Distinct().ToArray();
     }
 }

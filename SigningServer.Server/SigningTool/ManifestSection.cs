@@ -6,11 +6,11 @@ using System.Security.Cryptography;
 
 namespace SigningServer.Server.SigningTool
 {
-    public class ManifestSection : List<ManifestEntry>
+    internal class ManifestSection : List<ManifestEntry>
     {
         public string Name { get; set; }
         public string Value { get; set; }
-        public string Sha256Digest { get; set; }
+        public string Digest { get; set; }
 
         public void Read(StreamReader reader)
         {
@@ -65,9 +65,9 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        public void Write(Stream target, SHA256Managed manifestHasher)
+        public void Write(Stream target, HashAlgorithm manifestHasher, AndroidApkSigningTool.HashAlgorithmInfo hashAlgorithmInfo)
         {
-            using (var sectionHasher = new SHA256Managed())
+            using (var sectionHasher = hashAlgorithmInfo.HashAlgorithmFactory())
             {
                 sectionHasher.Initialize();
 
@@ -85,7 +85,7 @@ namespace SigningServer.Server.SigningTool
                 target.Write(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
                 manifestHasher.TransformFinalBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
                 sectionHasher.TransformFinalBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
-                Sha256Digest = Convert.ToBase64String(sectionHasher.Hash);
+                Digest = Convert.ToBase64String(sectionHasher.Hash);
             }
         }
     }

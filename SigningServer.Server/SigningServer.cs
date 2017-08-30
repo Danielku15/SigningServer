@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using NLog;
 using SigningServer.Contracts;
 using SigningServer.Server.Configuration;
@@ -91,18 +92,24 @@ namespace SigningServer.Server
 
         public string[] GetSupportedFileExtensions()
         {
-            return SigningToolProvider.GetSupportedFileExtensions();
+            return SigningToolProvider.SupportedFileExtensions;
+        }
+
+        public string[] GetSupportedHashAlgorithms()
+        {
+            return SigningToolProvider.SupportedHashAlgorithms;
         }
 
         public SignFileResponse SignFile(SignFileRequest signFileRequest)
         {
             var signFileResponse = new SignFileResponse();
-
+            var remoteIp = RemoteIp;
+            string inputFileName = null;
             try
             {
                 //
                 // validate input
-                Log.Info("New sign request for file {0} ({1} bytes)", signFileRequest.FileName, signFileRequest.FileSize);
+                Log.Info("New sign request for file {0} by {1} ({2} bytes)", signFileRequest.FileName, remoteIp, signFileRequest.FileSize);
                 if (signFileRequest.FileSize == 0 || signFileRequest.FileContent == null)
                 {
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
@@ -140,8 +147,8 @@ namespace SigningServer.Server
 
                 //
                 // upload file to working directory
-                var inputFileName = signFileRequest.FileName ?? "";
-                inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + Path.GetFileNameWithoutExtension(inputFileName) + "_"  + Guid.NewGuid() + (Path.GetExtension(inputFileName));
+                inputFileName = signFileRequest.FileName ?? "";
+                inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + Path.GetFileNameWithoutExtension(inputFileName) + "_" + Guid.NewGuid() + (Path.GetExtension(inputFileName));
                 inputFileName = Path.Combine(Configuration.WorkingDirectory, inputFileName);
                 using (var targetFile = new FileStream(inputFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
@@ -151,15 +158,47 @@ namespace SigningServer.Server
                 //
                 // sign file
                 signingTool.SignFile(inputFileName, certificate.Certificate, Configuration.TimestampServer, signFileRequest, signFileResponse);
+
+                Log.Info("New sign request for file {0} finished ({1} bytes)", signFileRequest.FileName, signFileRequest.FileSize);
             }
             catch (Exception e)
             {
-                Log.Error(e, "Signing failed: " + e.Message);
+                Log.Error(e, $"Signing of {signFileRequest.FileName} by {remoteIp} failed: {e.Message}");
                 signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
                 signFileResponse.ErrorMessage = e.Message;
+                if (!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName))
+                {
+                    try
+                    {
+                        File.Delete(inputFileName);
+                    }
+                    catch (Exception fileException)
+                    {
+                        Log.Error(fileException, $"Failed to delete file {inputFileName} by {remoteIp}");
+                    }
+                }
             }
 
             return signFileResponse;
+        }
+
+        private string RemoteIp
+        {
+            get
+            {
+                try
+                {
+                    var context = OperationContext.Current;
+                    var properties = context.IncomingMessageProperties;
+                    var endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                    return endpoint?.Address ?? "Unknown";
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Could not load remote IP");
+                    return "Unknown";
+                }
+            }
         }
     }
 }

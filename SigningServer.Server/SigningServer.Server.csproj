@@ -144,6 +144,11 @@ xcopy "$(TargetDir)*.config" "%25DistTarget%25" /F /Y
 xcopy "$(TargetDir)*.json" "%25DistTarget%25" /F /Y
 del "%25DistTarget%25\*vshost*"</PostBuildEvent>
   </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties config_1json__JSONSchema="http://json.schemastore.org/eslintrc" />
+    </VisualStudio>
+  </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

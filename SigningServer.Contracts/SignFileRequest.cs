@@ -37,6 +37,11 @@ namespace SigningServer.Contracts
         /// </summary>
         [MessageBodyMember]
         public Stream FileContent { get; set; }
+        /// <summary>
+        /// The hash algorithm to use for signing
+        /// </summary>
+        [MessageHeader]
+        public string HashAlgorithm { get; set; }
 
         public void Dispose()
         {

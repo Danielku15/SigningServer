@@ -8,6 +8,8 @@ namespace SigningServer.Contracts
         [OperationContract]
         string[] GetSupportedFileExtensions();
         [OperationContract]
+        string[] GetSupportedHashAlgorithms();
+        [OperationContract]
         SignFileResponse SignFile(SignFileRequest signFileRequest);
     }
 }

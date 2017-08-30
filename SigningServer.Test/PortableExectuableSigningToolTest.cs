@@ -124,6 +124,65 @@ namespace SigningServer.Test
 
         #endregion
 
+        #region Signing Works (Sha1)
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Exe_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool())
+            {
+                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.exe", "Certificates/SigningServer.Test.pfx", "SHA1");
+                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.exe", Sha1Oid);
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Dll_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool())
+            {
+                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.dll", "Certificates/SigningServer.Test.pfx", "SHA1");
+                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.dll", Sha1Oid);
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Cab_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool())
+            {
+                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.cab", "Certificates/SigningServer.Test.pfx", "SHA1");
+                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.cab", Sha1Oid);
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Msi_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool())
+            {
+                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.msi", "Certificates/SigningServer.Test.pfx", "SHA1");
+                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.msi", Sha1Oid);
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Sys_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool())
+            {
+                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.sys", "Certificates/SigningServer.Test.pfx", "SHA1");
+                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.sys", Sha1Oid);
+            }
+        }
+
+        #endregion
+
         #region Resign Fails
 
         [Test]

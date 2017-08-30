@@ -6,14 +6,14 @@ using System.Text;
 
 namespace SigningServer.Server.SigningTool
 {
-    public class Manifest
+    internal class Manifest
     {
         public static readonly byte[] NewLineBytes = Encoding.ASCII.GetBytes(Environment.NewLine);
 
         public ManifestSection MainSection { get; }
         public Dictionary<string, ManifestSection> AdditionalSections { get; }
 
-        public string Sha256Digest { get; set; }
+        public string Digest { get; set; }
 
         public Manifest()
         {
@@ -34,22 +34,23 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        public void Write(Stream stream)
+        public void Write(Stream stream, AndroidApkSigningTool.HashAlgorithmInfo hashAlgorithmInfo)
         {
-            using (var manifestHasher = new SHA256Managed())
+            using (var manifestHasher = hashAlgorithmInfo.HashAlgorithmFactory())
             {
                 manifestHasher.Initialize();
 
-                MainSection.Write(stream, manifestHasher);
+                MainSection.Write(stream, manifestHasher, hashAlgorithmInfo);
 
                 foreach (var section in AdditionalSections.Values)
                 {
-                    section.Write(stream, manifestHasher);
+                    section.Write(stream, manifestHasher, hashAlgorithmInfo);
                 }
 
                 //stream.Write(NewLineBytes,0, NewLineBytes.Length);
                 manifestHasher.TransformFinalBlock(new byte[0], 0, 0);
-                Sha256Digest = Convert.ToBase64String(manifestHasher.Hash);
+                Digest = Convert.ToBase64String(manifestHasher.Hash);
+
             }
         }
     }

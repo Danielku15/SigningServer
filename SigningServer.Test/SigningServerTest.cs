@@ -14,7 +14,8 @@ namespace SigningServer.Test
         private ISigningToolProvider CreateEmptySigningToolProvider()
         {
             var mockedSigningToolProvider = new Mock<ISigningToolProvider>();
-            mockedSigningToolProvider.Setup(m => m.GetSupportedFileExtensions()).Returns(new string[0]);
+            mockedSigningToolProvider.Setup(m => m.SupportedFileExtensions).Returns(new string[0]);
+            mockedSigningToolProvider.Setup(m => m.SupportedHashAlgorithms).Returns(new string[0]);
             mockedSigningToolProvider.Setup(m => m.GetSigningTool(It.IsAny<string>())).Returns((ISigningTool)null);
             return mockedSigningToolProvider.Object;
         }

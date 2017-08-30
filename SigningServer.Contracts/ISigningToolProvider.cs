@@ -3,6 +3,7 @@
     public interface ISigningToolProvider
     {
         ISigningTool GetSigningTool(string fileName);
-        string[] GetSupportedFileExtensions();
+        string[] SupportedFileExtensions { get; }
+        string[] SupportedHashAlgorithms { get; }
     }
 }

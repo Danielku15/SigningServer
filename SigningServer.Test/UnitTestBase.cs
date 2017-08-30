@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 using SigningServer.Contracts;
@@ -20,7 +21,7 @@ namespace SigningServer.Test
             }
         }
 
-        protected void CanSign(ISigningTool signingTool, string fileName, string pfx)
+        protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string hashAlgorithm = null)
         {
             var certificate = new X509Certificate2(pfx);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
@@ -29,7 +30,8 @@ namespace SigningServer.Test
             var request = new SignFileRequest
             {
                 FileName = fileName,
-                OverwriteSignature = false
+                OverwriteSignature = false, 
+                HashAlgorithm = hashAlgorithm
             };
             signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
 
@@ -45,6 +47,17 @@ namespace SigningServer.Test
                     Assert.AreEqual(response.FileSize, data.ToArray().Length);
                 }
             }
+        }
+
+
+        public const string Sha1Oid = "1.3.14.3.2.26";
+        public void EnsureSignature(string fileName, string hashAlgorithmOid)
+        {
+            var signerInfo = CertificateHelper.GetDigitalCertificate(fileName);
+            Assert.IsNotNull(signerInfo);
+            Assert.AreEqual(1, signerInfo.SignerInfos.Count);
+
+            Assert.AreEqual(hashAlgorithmOid, signerInfo.SignerInfos[0].DigestAlgorithm.Value);
         }
 
         protected void CanResign(ISigningTool signingTool, string fileName, string pfx)
@@ -90,8 +103,9 @@ namespace SigningServer.Test
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.IsNull(response.FileContent);
-            Assert.IsTrue(response.FileSize == 0);
+            Assert.IsInstanceOf<MemoryStream>(response.FileContent);
+            Assert.AreEqual(response.FileSize, response.FileContent.Length);
+            Assert.AreEqual(0, response.FileSize);
         }
     }
 }

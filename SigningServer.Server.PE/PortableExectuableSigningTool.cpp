@@ -17,10 +17,18 @@ SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSign
 
 static SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool()
 {
-	SupportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
+	PESupportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
 		".exe", ".dll", ".sys", ".msi", ".cab"
 			// , ".drv", ".scr", ".cpl", ".ocx", ".ax", ".efi"
 	}, System::StringComparer::CurrentCultureIgnoreCase);
+
+	PESupportedHashAlgorithms = gcnew Dictionary<String^, unsigned int>(System::StringComparer::CurrentCultureIgnoreCase);
+	PESupportedHashAlgorithms["SHA1"] = CALG_SHA1;
+	PESupportedHashAlgorithms["MD5"] = CALG_MD5;
+	PESupportedHashAlgorithms["SHA256"] = CALG_SHA_256;
+	PESupportedHashAlgorithms["SHA384"] = CALG_SHA_384;
+	PESupportedHashAlgorithms["SHA512"] = CALG_SHA_512;
+
 	Log = LogManager::GetCurrentClassLogger();
 	HRESULT mssign = MsSign32::Init();
 	CanSign = mssign == ERROR_SUCCESS;
@@ -35,14 +43,19 @@ SigningServer::Server::PE::PortableExectuableSigningTool::~PortableExectuableSig
 {
 }
 
-array<String^>^ SigningServer::Server::PE::PortableExectuableSigningTool::GetSupportedFileExtensions()
+array<String^>^ SigningServer::Server::PE::PortableExectuableSigningTool::SupportedFileExtensions::get()
 {
-	return System::Linq::Enumerable::ToArray(SupportedExtensions);
+	return System::Linq::Enumerable::ToArray(PESupportedExtensions);
+}
+
+array<String^>^ SigningServer::Server::PE::PortableExectuableSigningTool::SupportedHashAlgorithms::get()
+{
+	return System::Linq::Enumerable::ToArray(PESupportedHashAlgorithms->Keys);
 }
 
 bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSupported(String^ fileName)
 {
-	return CanSign && SupportedExtensions->Contains(System::IO::Path::GetExtension(fileName));
+	return CanSign && PESupportedExtensions->Contains(System::IO::Path::GetExtension(fileName));
 }
 
 bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSigned(String^ inputFileName)
@@ -205,9 +218,15 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	signerCert.pCertStoreInfo = &signerCertStoreInfo;
 	signerCert.hwnd = nullptr;
 
+	ALG_ID algidHash;
+	if (!PESupportedHashAlgorithms->TryGetValue(signFileRequest->HashAlgorithm == nullptr ? "" : signFileRequest->HashAlgorithm, algidHash))
+	{
+		algidHash = CALG_SHA_256;
+	}
+
 	SIGNER_SIGNATURE_INFO signerSignatureInfo;
 	signerSignatureInfo.cbSize = sizeof(signerSignatureInfo);
-	signerSignatureInfo.algidHash = CALG_SHA_256;
+	signerSignatureInfo.algidHash = algidHash;
 	signerSignatureInfo.dwAttrChoice = SIGNER_NO_ATTR;
 	signerSignatureInfo.pAttrAuthcode = nullptr;
 	signerSignatureInfo.psAuthenticated = nullptr;

@@ -105,5 +105,6 @@ namespace SigningServer.Client
         public bool IgnoreExistingSignatures { get; set; }
         public bool IgnoreUnsupportedFiles { get; set; }
         public int Timeout { get; set; }
+        public string HashAlgorithm { get; set; }
     }
 }

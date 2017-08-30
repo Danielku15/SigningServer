@@ -19,7 +19,7 @@ namespace SigningServer.Server.SigningTool
         }
 
         /// <inheritdoc />
-        public string[] SupportedHashAlgorithms => _signingTools.SelectMany(c => c.SupportedFileExtensions).ToArray();
-        public string[] SupportedFileExtensions => _signingTools.SelectMany(c => c.SupportedHashAlgorithms).Distinct().ToArray();
+        public string[] SupportedFileExtensions => _signingTools.SelectMany(c => c.SupportedFileExtensions).ToArray();
+        public string[] SupportedHashAlgorithms => _signingTools.SelectMany(c => c.SupportedHashAlgorithms).Distinct().ToArray();
     }
 }

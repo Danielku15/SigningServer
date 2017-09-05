@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading;
 using NLog;
 using SigningServer.Contracts;
 
@@ -104,65 +105,88 @@ namespace SigningServer.Client
                 info.Attributes &= ~FileAttributes.ReadOnly;
             }
 
-            using (var request = new SignFileRequest
+            int retry = _configuration.Retry;
+            do
             {
-                FileName = info.Name,
-                FileSize = info.Length,
-                OverwriteSignature = _configuration.OverwriteSignatures,
-                Username = _configuration.Username,
-                Password = _configuration.Password,
-                FileContent = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read),
-                HashAlgorithm = _configuration.HashAlgorithm
-            })
-            {
-                response = _client.SignFile(request);
-            }
-
-            using (response)
-            {
-                switch (response.Result)
+                try
                 {
-                    case SignFileResponseResult.FileSigned:
-                        Log.Info("File signed, start downloading");
-                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    using (var request = new SignFileRequest
+                    {
+                        FileName = info.Name,
+                        FileSize = info.Length,
+                        OverwriteSignature = _configuration.OverwriteSignatures,
+                        Username = _configuration.Username,
+                        Password = _configuration.Password,
+                        FileContent = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read),
+                        HashAlgorithm = _configuration.HashAlgorithm
+                    })
+                    {
+                        response = _client.SignFile(request);
+                    }
+
+                    using (response)
+                    {
+                        switch (response.Result)
                         {
-                            response.FileContent.CopyTo(fs);
+                            case SignFileResponseResult.FileSigned:
+                                Log.Info("File signed, start downloading");
+                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                                {
+                                    response.FileContent.CopyTo(fs);
+                                }
+                                Log.Info("File downloaded");
+                                break;
+                            case SignFileResponseResult.FileResigned:
+                                Log.Info("File signed and old signature was removed, start downloading");
+                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                                {
+                                    response.FileContent.CopyTo(fs);
+                                }
+                                Log.Info("File downloaded");
+                                break;
+                            case SignFileResponseResult.FileAlreadySigned:
+                                Log.Warn("File is already signed and was therefore skipped");
+                                if (!_configuration.IgnoreExistingSignatures)
+                                {
+                                    Log.Info("Signing failed");
+                                    throw new FileAlreadySignedException();
+                                }
+                                break;
+                            case SignFileResponseResult.FileNotSignedUnsupportedFormat:
+                                Log.Warn("File is not supported for signing");
+                                if (!_configuration.IgnoreUnsupportedFiles)
+                                {
+                                    Log.Error("Signing failed");
+                                    throw new UnsupportedFileFormatException();
+                                }
+                                break;
+                            case SignFileResponseResult.FileNotSignedError:
+                                throw new SigningFailedException(response.ErrorMessage);
+                            case SignFileResponseResult.FileNotSignedUnauthorized:
+                                Log.Error("The specified username and password are not recognized on the server");
+                                throw new UnauthorizedAccessException();
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
-                        Log.Info("File downloaded");
-                        break;
-                    case SignFileResponseResult.FileResigned:
-                        Log.Info("File signed and old signature was removed, start downloading");
-                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                        {
-                            response.FileContent.CopyTo(fs);
-                        }
-                        Log.Info("File downloaded");
-                        break;
-                    case SignFileResponseResult.FileAlreadySigned:
-                        Log.Warn("File is already signed and was therefore skipped");
-                        if (!_configuration.IgnoreExistingSignatures)
-                        {
-                            Log.Info("Signing failed");
-                            throw new FileAlreadySignedException();
-                        }
-                        break;
-                    case SignFileResponseResult.FileNotSignedUnsupportedFormat:
-                        Log.Warn("File is not supported for signing");
-                        if (!_configuration.IgnoreUnsupportedFiles)
-                        {
-                            Log.Error("Signing failed");
-                            throw new UnsupportedFileFormatException();
-                        }
-                        break;
-                    case SignFileResponseResult.FileNotSignedError:
-                        throw new SigningFailedException(response.ErrorMessage);
-                    case SignFileResponseResult.FileNotSignedUnauthorized:
-                        Log.Error("The specified username and password are not recognized on the server");
-                        throw new UnauthorizedAccessException();
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    }
                 }
-            }
+                catch (Exception)
+                {
+                    // wait 1sec if we have trials left
+                    if (retry > 0)
+                    {
+                        Log.Error("Waiting 1sec, then retry signing");
+                        Thread.Sleep(1000);
+                    }
+                    else
+                    {
+                        // forward exception if no retrys are left. 
+                        throw;
+                    }
+                }
+                
+            } while (retry-- > 0);
+
         }
 
         private void Connect(Uri signingServer)

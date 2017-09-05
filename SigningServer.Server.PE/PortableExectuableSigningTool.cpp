@@ -253,15 +253,20 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	{
 		Log->Trace("Timestamping with url {0}", timeStampUrl);
 		pin_ptr<const wchar_t> pwszTimestampUrl = PtrToStringChars(timeStampUrl);
-		tshr = MsSign32::SignerTimeStamp(&signerSubjectInfo, pwszTimestampUrl, nullptr, nullptr);
-		if (tshr == S_OK)
+		int timestampRetries = 5;
+		do
 		{
-			Log->Trace("Timestamping succeeded");
-		}
-		else
-		{
-			Log->Trace("Timestamping failed with {0}", tshr);
-		}
+			tshr = MsSign32::SignerTimeStamp(&signerSubjectInfo, pwszTimestampUrl, nullptr, nullptr);
+			if (tshr == S_OK)
+			{
+				Log->Trace("Timestamping succeeded");
+			}
+			else
+			{
+				Log->Trace("Timestamping failed with {0}, retries: {1}", tshr, timestampRetries);
+				System::Threading::Thread::Sleep(1000);
+			}
+		} while (tshr != S_OK && (timestampRetries--) > 0);
 	}
 
 	if (pSignerContext)

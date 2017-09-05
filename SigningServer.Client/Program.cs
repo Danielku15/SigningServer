@@ -31,6 +31,10 @@ namespace SigningServer.Client
             {
                 Log.Info("Loading config");
                 configuration = JsonConvert.DeserializeObject<SigningClientConfiguration>(File.ReadAllText(configFile));
+                if (configuration.Retry == 0)
+                {
+                    configuration.Retry = 3;
+                }
                 Log.Info("Configuration loaded");
             }
             catch (Exception e)
@@ -106,5 +110,6 @@ namespace SigningServer.Client
         public bool IgnoreUnsupportedFiles { get; set; }
         public int Timeout { get; set; }
         public string HashAlgorithm { get; set; }
+        public int Retry { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace SigningServer.Test
 
             var configuration = new SigningServerConfiguration
             {
-                Port = 4711,
+                Port = 47111,
                 TimestampServer = ConfigurationManager.AppSettings["TimestampServer"],
                 Certificates = new[]
                 {
@@ -54,13 +54,13 @@ namespace SigningServer.Test
         {
             var client = new SigningClient(new SigningClientConfiguration
             {
-                SigningServer = "localhost:4711"
+                SigningServer = "localhost:47111"
             });
             client.SignFile("IntegrationTestFiles/unsigned");
 
             Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
 
-            var signedFiles = Directory.GetFiles("IntegrationTestFiles");
+            var signedFiles = Directory.GetFiles("IntegrationTestFiles", "*.*", SearchOption.AllDirectories);
             var signingTools = _service.SigningServer.SigningToolProvider;
 
             foreach (var signedFile in signedFiles)

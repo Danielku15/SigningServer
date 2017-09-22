@@ -9,7 +9,8 @@ namespace SigningServer.Server
         private static readonly ISigningTool[] SigningTools =
         {
             new PortableExectuableSigningTool(),
-            new AndroidApkSigningTool()
+            new AndroidApkSigningTool(),
+            new ClickOnceSigningTool()
         };
 
         public DefaultSigningToolProvider()

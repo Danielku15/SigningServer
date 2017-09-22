@@ -83,7 +83,6 @@ namespace SigningServer.Server.SigningTool
                 else
                 {
                     signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
-                    signFileResponse.FileContent = null;
                     return;
                 }
             }

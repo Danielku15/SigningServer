@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading;
@@ -135,6 +136,7 @@ namespace SigningServer.Client
                                     response.FileContent.CopyTo(fs);
                                 }
                                 Log.Info("File downloaded");
+                                retry = 0;
                                 break;
                             case SignFileResponseResult.FileResigned:
                                 Log.Info("File signed and old signature was removed, start downloading");
@@ -143,6 +145,7 @@ namespace SigningServer.Client
                                     response.FileContent.CopyTo(fs);
                                 }
                                 Log.Info("File downloaded");
+                                retry = 0;
                                 break;
                             case SignFileResponseResult.FileAlreadySigned:
                                 Log.Warn("File is already signed and was therefore skipped");
@@ -151,6 +154,10 @@ namespace SigningServer.Client
                                     Log.Info("Signing failed");
                                     throw new FileAlreadySignedException();
                                 }
+                                else
+                                {
+                                    retry = 0;
+                                }
                                 break;
                             case SignFileResponseResult.FileNotSignedUnsupportedFormat:
                                 Log.Warn("File is not supported for signing");
@@ -158,6 +165,10 @@ namespace SigningServer.Client
                                 {
                                     Log.Error("Signing failed");
                                     throw new UnsupportedFileFormatException();
+                                }
+                                else
+                                {
+                                    retry = 0;
                                 }
                                 break;
                             case SignFileResponseResult.FileNotSignedError:
@@ -172,7 +183,7 @@ namespace SigningServer.Client
                 }
                 catch (Exception)
                 {
-                    // wait 1sec if we have trials left
+                    // wait 1sec if we haf 
                     if (retry > 0)
                     {
                         Log.Error("Waiting 1sec, then retry signing");
@@ -180,11 +191,10 @@ namespace SigningServer.Client
                     }
                     else
                     {
-                        // forward exception if no retrys are left. 
                         throw;
                     }
                 }
-                
+
             } while (retry-- > 0);
 
         }

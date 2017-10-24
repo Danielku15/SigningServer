@@ -104,6 +104,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="TestFiles\signed\Signed.exe.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="TestFiles\signed\Signed.msi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -111,6 +114,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="TestFiles\unsigned\Unsigned.application">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\unsigned\Unsigned.exe.manifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="TestFiles\unsigned\Unsigned.msi">

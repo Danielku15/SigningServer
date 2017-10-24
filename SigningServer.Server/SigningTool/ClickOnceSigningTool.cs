@@ -16,7 +16,8 @@ namespace SigningServer.Server.SigningTool
 
         private static readonly HashSet<string> ClickOnceSupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
         {
-            ".application"
+            ".application",
+            ".manifest"
         };
         private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
 
@@ -56,12 +57,12 @@ namespace SigningServer.Server.SigningTool
         {
             try
             {
-                var applicationXml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
-                if (applicationXml.Root == null)
+                var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
+                if (xml.Root == null)
                 {
                     return false;
                 }
-                if (applicationXml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
+                if (xml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
                 {
                     return true;
                 }
@@ -77,12 +78,12 @@ namespace SigningServer.Server.SigningTool
 
         public void UnsignFile(string inputFileName)
         {
-            var applicationXml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
-            if (applicationXml.Root != null)
+            var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
+            if (xml.Root != null)
             {
-                applicationXml.Root.Elements().Where(e=> e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature").Remove();
+                xml.Root.Elements().Where(e=> e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature").Remove();
             }
-            File.WriteAllText(inputFileName, applicationXml.ToString(SaveOptions.DisableFormatting));
+            File.WriteAllText(inputFileName, xml.ToString(SaveOptions.DisableFormatting));
         }
 
         /// <inheritdoc />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.ServiceModel.Security;
 using Newtonsoft.Json;
 using NLog;
 
@@ -69,6 +70,10 @@ namespace SigningServer.Client
             {
                 Environment.ExitCode = ErrorCodes.Unauthorized;
             }
+            catch (SecurityNegotiationException)
+            {
+                Environment.ExitCode = ErrorCodes.SecurityNegotiationFailed;
+            }
             catch (UnsupportedFileFormatException)
             {
                 Environment.ExitCode = ErrorCodes.UnsupportedFileFormat;
@@ -98,6 +103,7 @@ namespace SigningServer.Client
         public const int Unauthorized = 5;
         public const int InvalidConfiguration = 6;
         public const int CommunicationError = 7;
+        public const int SecurityNegotiationFailed = 8;
     }
 
     public class SigningClientConfiguration

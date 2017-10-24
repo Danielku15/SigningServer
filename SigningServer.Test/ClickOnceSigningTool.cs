@@ -12,8 +12,9 @@ namespace SigningServer.Test
     [TestFixture]
     public class ClickOnceSigningToolTest : UnitTestBase
     {
+        #region .application
         [Test]
-        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
+        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.application"));
@@ -21,7 +22,7 @@ namespace SigningServer.Test
         }
 
         [Test]
-        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
+        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/signed/signed.application"));
@@ -29,7 +30,7 @@ namespace SigningServer.Test
         }
 
         [Test]
-        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
+        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Application()
         {
             using (
                 new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
@@ -44,7 +45,7 @@ namespace SigningServer.Test
         }
 
         [Test]
-        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
+        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Application()
         {
             using (
                 new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
@@ -60,7 +61,7 @@ namespace SigningServer.Test
 
         [Test]
         [DeploymentItem("TestFiles", "Unsign_Works")]
-        public void Unsign_Works()
+        public void Unsign_Works_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             {
@@ -72,7 +73,7 @@ namespace SigningServer.Test
 
         [Test]
         [DeploymentItem("TestFiles", "SignFile_Works")]
-        public void SignFile_Unsigned_Works()
+        public void SignFile_Unsigned_Works_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             {
@@ -83,7 +84,7 @@ namespace SigningServer.Test
 
         [Test]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
-        public void SignFile_Signed_NoResign_Fails()
+        public void SignFile_Signed_NoResign_Fails_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             {
@@ -93,12 +94,106 @@ namespace SigningServer.Test
 
         [Test]
         [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_NoResign_Works()
+        public void SignFile_Signed_NoResign_Works_Application()
         {
             var signingTool = new ClickOnceSigningTool();
             {
                 CanResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx");
             }
         }
+
+        #endregion      
+        
+        #region .manifest
+        [Test]
+        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.exe.manifest"));
+            Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.exe.manifest"));
+        }
+
+        [Test]
+        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            Assert.IsTrue(File.Exists("TestFiles/signed/signed.exe.manifest"));
+            Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.exe.manifest"));
+        }
+
+        [Test]
+        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Manifest()
+        {
+            using (
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                    StoreLocation.LocalMachine))
+            {
+                var signingTool = new ClickOnceSigningTool();
+                {
+                    Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.exe.manifest"));
+                    Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.exe.manifest"));
+                }
+            }
+        }
+
+        [Test]
+        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Manifest()
+        {
+            using (
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                    StoreLocation.LocalMachine))
+            {
+                var signingTool = new ClickOnceSigningTool();
+                {
+                    Assert.IsTrue(File.Exists("TestFiles/signed/signed.exe.manifest"));
+                    Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.exe.manifest"));
+                }
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "Unsign_Works")]
+        public void Unsign_Works_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            {
+                Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest"));
+                signingTool.UnsignFile("Unsign_Works/signed/signed.exe.manifest");
+                Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest"));
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "SignFile_Works")]
+        public void SignFile_Unsigned_Works_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            {
+                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe.manifest", "Certificates/SigningServer.Test.pfx");
+            }
+        }
+
+
+        [Test]
+        [DeploymentItem("TestFiles", "NoResign_Fails")]
+        public void SignFile_Signed_NoResign_Fails_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            {
+                CannotResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx");
+            }
+        }
+
+        [Test]
+        [DeploymentItem("TestFiles", "NoResign_Works")]
+        public void SignFile_Signed_NoResign_Works_Manifest()
+        {
+            var signingTool = new ClickOnceSigningTool();
+            {
+                CanResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx");
+            }
+        }
+
+        #endregion
     }
 }

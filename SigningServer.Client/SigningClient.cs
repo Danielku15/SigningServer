@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
@@ -20,11 +21,11 @@ namespace SigningServer.Client
         private ISigningServer _client;
         private TimeSpan _timeout;
         private HashSet<string> _supportedHashAlgorithms;
+        private Uri _signingServer;
 
         public SigningClient(SigningClientConfiguration configuration)
         {
             _configuration = configuration;
-            Uri signingServer;
             if (string.IsNullOrWhiteSpace(configuration.SigningServer))
             {
                 throw new ArgumentException("Empty SigningServer in configuraiton", nameof(configuration));
@@ -53,9 +54,8 @@ namespace SigningServer.Client
                 Host = parts[0],
                 Port = int.Parse(parts[1])
             };
-            signingServer = uriBuilder.Uri;
-
-            Connect(signingServer);
+            _signingServer = uriBuilder.Uri;
+            Connect();
         }
 
         public void Dispose()
@@ -111,6 +111,8 @@ namespace SigningServer.Client
             {
                 try
                 {
+                    var sw = new Stopwatch();
+                    sw.Start();
                     using (var request = new SignFileRequest
                     {
                         FileName = info.Name,
@@ -135,7 +137,9 @@ namespace SigningServer.Client
                                 {
                                     response.FileContent.CopyTo(fs);
                                 }
-                                Log.Info("File downloaded");
+                                sw.Stop();
+                                Log.Info("File downloaded, signing finished in {0}ms", sw.ElapsedMilliseconds);
+                                
                                 retry = 0;
                                 break;
                             case SignFileResponseResult.FileResigned:
@@ -144,7 +148,9 @@ namespace SigningServer.Client
                                 {
                                     response.FileContent.CopyTo(fs);
                                 }
-                                Log.Info("File downloaded");
+                                sw.Stop();
+                                Log.Info("File downloaded, signing finished in {0}ms", sw.ElapsedMilliseconds);
+
                                 retry = 0;
                                 break;
                             case SignFileResponseResult.FileAlreadySigned:
@@ -188,6 +194,15 @@ namespace SigningServer.Client
                     {
                         Log.Error("Waiting 1sec, then retry signing");
                         Thread.Sleep(1000);
+                        try
+                        {
+                            Dispose();
+                        }
+                        catch (Exception e)
+                        { 
+                            Log.Warn(e, "Cleanup of existing connection failed");
+                        }
+                        Connect();
                     }
                     else
                     {
@@ -199,7 +214,7 @@ namespace SigningServer.Client
 
         }
 
-        private void Connect(Uri signingServer)
+        private void Connect()
         {
             Log.Info("Connecting to signing server");
             _clientFactory = new ChannelFactory<ISigningServer>(new NetTcpBinding
@@ -211,12 +226,23 @@ namespace SigningServer.Client
                 SendTimeout = _timeout,
                 ReceiveTimeout = _timeout,
                 CloseTimeout = _timeout
-            }, signingServer.ToString());
+            }, _signingServer.ToString());
             _client = _clientFactory.CreateChannel();
+
+
+            var channel = _client as IClientChannel;
+            if (channel != null)
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+                channel.Open();
+                sw.Stop();
+                Log.Info("Connected to signing server in {0}ms", sw.ElapsedMilliseconds);
+            }
 
             _supportedFileFormats = new HashSet<string>(_client.GetSupportedFileExtensions());
             _supportedHashAlgorithms = new HashSet<string>(_client.GetSupportedHashAlgorithms());
-            Log.Info("Connected, supported file formats: {0}", string.Join(", ", _supportedFileFormats));
+            Log.Info("supported file formats: {0}", string.Join(", ", _supportedFileFormats));
             Log.Info("supported hash algorithms: {0}", string.Join(", ", _supportedHashAlgorithms));
         }
     }

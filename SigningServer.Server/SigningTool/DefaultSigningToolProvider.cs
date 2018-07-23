@@ -1,4 +1,5 @@
 ﻿using SigningServer.Contracts;
+using SigningServer.Server.Appx;
 using SigningServer.Server.PE;
 using SigningServer.Server.SigningTool;
 
@@ -10,13 +11,13 @@ namespace SigningServer.Server
         {
             new PortableExectuableSigningTool(),
             new AndroidApkSigningTool(),
-            new ClickOnceSigningTool()
+            new ClickOnceSigningTool(),
+            new AppxSigningTool()
         };
 
         public DefaultSigningToolProvider()
             : base(SigningTools)
         {
-            
         }
     }
 }

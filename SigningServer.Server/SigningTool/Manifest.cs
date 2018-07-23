@@ -36,9 +36,9 @@ namespace SigningServer.Server.SigningTool
 
         public void Write(Stream stream, AndroidApkSigningTool.HashAlgorithmInfo hashAlgorithmInfo)
         {
-            using (var manifestHasher = hashAlgorithmInfo.HashAlgorithmFactory())
+            using (var manifestHasher = hashAlgorithmInfo?.HashAlgorithmFactory())
             {
-                manifestHasher.Initialize();
+                manifestHasher?.Initialize();
 
                 MainSection.Write(stream, manifestHasher, hashAlgorithmInfo);
 
@@ -47,10 +47,11 @@ namespace SigningServer.Server.SigningTool
                     section.Write(stream, manifestHasher, hashAlgorithmInfo);
                 }
 
-                //stream.Write(NewLineBytes,0, NewLineBytes.Length);
-                manifestHasher.TransformFinalBlock(new byte[0], 0, 0);
-                Digest = Convert.ToBase64String(manifestHasher.Hash);
-
+                if (manifestHasher != null)
+                {
+                    manifestHasher.TransformFinalBlock(new byte[0], 0, 0);
+                    Digest = Convert.ToBase64String(manifestHasher.Hash);
+                }
             }
         }
     }

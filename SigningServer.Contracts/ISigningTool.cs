@@ -10,6 +10,5 @@ namespace SigningServer.Contracts
 
         void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,SignFileRequest signFileRequest, SignFileResponse signFileResponse);
         bool IsFileSigned(string inputFileName);
-        void UnsignFile(string inputFileName);
     }
 }

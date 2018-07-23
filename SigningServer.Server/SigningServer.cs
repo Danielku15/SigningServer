@@ -32,6 +32,8 @@ namespace SigningServer.Server
 
             Log.Info("Validating configuration");
             Configuration = new SigningServerConfiguration();
+            Configuration.LegacyPort = configuration.LegacyPort;
+            Configuration.Port = configuration.Port;
             Configuration.TimestampServer = configuration.TimestampServer ?? "";
             Configuration.WorkingDirectory = configuration.WorkingDirectory ?? "";
 
@@ -92,6 +94,8 @@ namespace SigningServer.Server
 
         public string[] GetSupportedFileExtensions()
         {
+            var remoteIp = RemoteIp;
+            Log.Trace($"[{remoteIp}] Requesting supported file extensions");
             return SigningToolProvider.SupportedFileExtensions;
         }
 
@@ -104,12 +108,18 @@ namespace SigningServer.Server
         {
             var signFileResponse = new SignFileResponse();
             var remoteIp = RemoteIp;
+            var isLegacy = IsLegacyEndpoint;
             string inputFileName = null;
             try
             {
                 //
                 // validate input
-                Log.Info("New sign request for file {0} by {1} ({2} bytes)", signFileRequest.FileName, remoteIp, signFileRequest.FileSize);
+                if (isLegacy)
+                {
+                    Log.Warn($"[{remoteIp}] Client is using legacy endpoint!");
+                }
+
+                Log.Info($"[{remoteIp}] New sign request for file {signFileRequest.FileName} by {remoteIp} ({signFileRequest.FileSize} bytes)");
                 if (signFileRequest.FileSize == 0 || signFileRequest.FileContent == null)
                 {
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
@@ -159,11 +169,11 @@ namespace SigningServer.Server
                 // sign file
                 signingTool.SignFile(inputFileName, certificate.Certificate, Configuration.TimestampServer, signFileRequest, signFileResponse);
 
-                Log.Info("New sign request for file {0} finished ({1} bytes)", signFileRequest.FileName, signFileRequest.FileSize);
+                Log.Info($"[{remoteIp}] New sign request for file {signFileRequest.FileName} finished ({signFileRequest.FileSize} bytes)");
             }
             catch (Exception e)
             {
-                Log.Error(e, $"Signing of {signFileRequest.FileName} by {remoteIp} failed: {e.Message}");
+                Log.Error(e, $"[{remoteIp}] Signing of {signFileRequest.FileName} failed: {e.Message}");
                 signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
                 signFileResponse.ErrorMessage = e.Message;
                 if (!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName))
@@ -174,7 +184,7 @@ namespace SigningServer.Server
                     }
                     catch (Exception fileException)
                     {
-                        Log.Error(fileException, $"Failed to delete file {inputFileName} by {remoteIp}");
+                        Log.Error(fileException, $"[{remoteIp}] Failed to delete file {inputFileName}");
                     }
                 }
             }
@@ -182,6 +192,22 @@ namespace SigningServer.Server
             return signFileResponse;
         }
 
+        private bool IsLegacyEndpoint
+        {
+            get
+            {
+                try
+                {
+                    var context = OperationContext.Current;
+                    return context.IncomingMessageProperties.Via.Port == Configuration.LegacyPort;
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Could not check for legacy enpdoint");
+                    return false;
+                }
+            }
+        }
         private string RemoteIp
         {
             get
@@ -191,7 +217,11 @@ namespace SigningServer.Server
                     var context = OperationContext.Current;
                     var properties = context.IncomingMessageProperties;
                     var endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-                    return endpoint?.Address ?? "Unknown";
+                    if (endpoint != null)
+                    {
+                        return $"{endpoint.Address}:{endpoint.Port}";
+                    }
+                    return "Unknown";
                 }
                 catch (Exception e)
                 {

@@ -135,6 +135,32 @@ typedef struct _SIGNER_CONTEXT {
 	BYTE *pbBlob;
 } SIGNER_CONTEXT, *PSIGNER_CONTEXT;
 
+// https://msdn.microsoft.com/en-us/library/windows/desktop/jj835834(v=vs.85).aspx
+typedef struct _SIGNER_SIGN_EX2_PARAMS
+{
+    DWORD dwFlags;
+    PSIGNER_SUBJECT_INFO pSubjectInfo;
+    PSIGNER_CERT pSigningCert;
+    PSIGNER_SIGNATURE_INFO pSignatureInfo;
+    PSIGNER_PROVIDER_INFO pProviderInfo;
+    DWORD dwTimestampFlags;
+    PCSTR pszAlgorithmOid;
+    PCWSTR pwszTimestampURL;
+    PCRYPT_ATTRIBUTES pCryptAttrs;
+    PVOID pSipData;
+    PSIGNER_CONTEXT *pSignerContext;
+    PVOID pCryptoPolicy;
+    PVOID pReserved;
+} SIGNER_SIGN_EX2_PARAMS, *PSIGNER_SIGN_EX2_PARAMS;
+
+typedef struct _APPX_SIP_CLIENT_DATA
+{
+    PSIGNER_SIGN_EX2_PARAMS pSignerParams;
+    IUnknown* pAppxSipState;
+} APPX_SIP_CLIENT_DATA, *PAPPX_SIP_CLIENT_DATA;
+
+
+
 //-----------------------------------------------------------------------------
 // Function declarations.
 //
@@ -215,6 +241,23 @@ typedef HRESULT(WINAPI *SignerTimeStampPtr)(
 	_In_opt_ LPVOID              pSipData
 	);
 
+typedef HRESULT(WINAPI *SignerSignEx2Ptr)(
+    DWORD,
+    PSIGNER_SUBJECT_INFO,
+    PSIGNER_CERT,
+    PSIGNER_SIGNATURE_INFO,
+    PSIGNER_PROVIDER_INFO,
+    DWORD,
+    PCSTR,
+    PCWSTR,
+    PCRYPT_ATTRIBUTES,
+    PVOID,
+    PSIGNER_CONTEXT *,
+    PVOID,
+    PVOID);
+
+#define SIGNER_TIMESTAMP_AUTHENTICODE 1
+
 class MsSign32
 {
 public:
@@ -222,6 +265,7 @@ public:
 	static SignerSignExPtr SignerExSign;
 	static SignerFreeSignerContextPtr SignerFreeSignerContext;
 	static SignerTimeStampPtr SignerTimeStamp;
+	static SignerSignEx2Ptr SignerSignEx2;
 
 	static HRESULT Init();
 

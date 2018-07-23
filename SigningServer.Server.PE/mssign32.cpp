@@ -6,6 +6,7 @@ SignerSignPtr MsSign32::SignerSign = nullptr;
 SignerSignExPtr MsSign32::SignerExSign = nullptr;
 SignerFreeSignerContextPtr MsSign32::SignerFreeSignerContext = nullptr;
 SignerTimeStampPtr MsSign32::SignerTimeStamp = nullptr;
+SignerSignEx2Ptr MsSign32::SignerSignEx2 = nullptr;
 
 HRESULT MsSign32::Init()
 {
@@ -37,6 +38,12 @@ HRESULT MsSign32::Init()
 	{
 		return GetLastError();
 	}
+
+    SignerSignEx2 = (SignerSignEx2Ptr)(GetProcAddress(_hMsSignDll, "SignerSignEx2"));
+    if (!SignerSignEx2)
+    {
+        return GetLastError();
+    }
 
 	return ERROR_SUCCESS;
 }

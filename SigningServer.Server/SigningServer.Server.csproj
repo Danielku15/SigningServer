@@ -92,6 +92,8 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AddClientMessageInspectorBehavior.cs" />
+    <Compile Include="ClientConnectInitializer.cs" />
     <Compile Include="SigningTool\AndroidApkSigningTool.cs" />
     <Compile Include="Configuration\CertificateConfiguration.cs" />
     <Compile Include="Configuration\CertificateNotFoundException.cs" />

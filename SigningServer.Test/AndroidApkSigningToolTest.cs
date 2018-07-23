@@ -41,6 +41,22 @@ namespace SigningServer.Test
                             " _123456789_123456789_\r\n", Encoding.UTF8.GetString(ms.ToArray()));
         }
 
+        [Test]
+        public void ManifestReaderMultiline()
+        {
+            var manifest = new Manifest();
+            using (var fs = File.OpenRead("TestFiles/unsigned/MultiLineManifest.mf"))
+            {
+                manifest.Read(fs);
+            }
+
+            var expectedText = File.ReadAllText("TestFiles/unsigned/MultiLineManifest.mf");
+            var ms = new MemoryStream();
+            manifest.Write(ms, null);
+            var actualText = Encoding.UTF8.GetString(ms.ToArray());
+            Assert.AreEqual(expectedText, actualText);
+        }
+
 
         [Test]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()

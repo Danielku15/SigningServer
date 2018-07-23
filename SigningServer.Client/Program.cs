@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.ServiceModel.Security;
 using Newtonsoft.Json;
@@ -15,12 +16,27 @@ namespace SigningServer.Client
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("usage: SigningServer.Client.exe Source1 [Source2 Source3 ...]");
+                Console.WriteLine("usage: SigningServer.Client.exe [--config File] Source1 [Source2 Source3 ...]");
                 return;
             }
 
-            var configFile = Path.Combine(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName,
-                "config.json");
+            string configFile = null;
+            if (args.Length > 2)
+            {
+                if (args[0] == "--config")
+                {
+                    configFile = args[1];
+                    args = args.Skip(2).ToArray();
+                }
+            }
+
+
+            if (string.IsNullOrEmpty(configFile))
+            {
+                configFile = Path.Combine(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName,
+                    "config.json");
+            }
+
             if (!File.Exists(configFile))
             {
                 Log.Fatal("Could not find config.json beside executable");

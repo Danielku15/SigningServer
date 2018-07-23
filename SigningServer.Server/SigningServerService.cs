@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.ServiceModel;
@@ -64,24 +65,46 @@ namespace SigningServer.Server
 
                 SigningServer = new SigningServer(configuration, new DefaultSigningToolProvider());
                 _serviceHost = new ServiceHost(SigningServer);
+                
+                // Setup without transport security (new mode)
                 var uri = new UriBuilder
                 {
                     Scheme = "net.tcp",
                     Host = Dns.GetHostName(),
                     Port = configuration.Port
                 };
-                _serviceHost.AddServiceEndpoint(typeof (ISigningServer), new NetTcpBinding
+                var binding = new NetTcpBinding
                 {
                     TransferMode = TransferMode.Streamed,
                     MaxReceivedMessageSize = int.MaxValue,
                     MaxBufferSize = int.MaxValue,
-                    OpenTimeout = TimeSpan.MaxValue,
-                    CloseTimeout = TimeSpan.MaxValue,
-                    SendTimeout = TimeSpan.MaxValue,
-                    ReceiveTimeout = TimeSpan.MaxValue,
+                    OpenTimeout = TimeSpan.FromMinutes(5),
+                    CloseTimeout = TimeSpan.FromMinutes(5),
+                    SendTimeout = TimeSpan.FromMinutes(60),
+                    ReceiveTimeout = TimeSpan.FromMinutes(60),
                     MaxConnections = int.MaxValue,
-                }, uri.Uri);
+                    PortSharingEnabled = false,
+                };
+                binding.Security.Mode = SecurityMode.None;
+                var endPoint = _serviceHost.AddServiceEndpoint(typeof(ISigningServer), binding, uri.Uri);
+                endPoint.Behaviors.Add(new AddClientMessageInspectorBehavior());
 
+                // Setup without transport security (new mode)
+                uri.Port = configuration.LegacyPort;
+                var legacyBinding = new NetTcpBinding
+                {
+                    TransferMode = TransferMode.Streamed,
+                    MaxReceivedMessageSize = int.MaxValue,
+                    MaxBufferSize = int.MaxValue,
+                    OpenTimeout = TimeSpan.FromMinutes(5),
+                    CloseTimeout = TimeSpan.FromMinutes(5),
+                    SendTimeout = TimeSpan.FromMinutes(60),
+                    ReceiveTimeout = TimeSpan.FromMinutes(60),
+                    MaxConnections = int.MaxValue,
+                    PortSharingEnabled = false,
+                };
+                var legacyEndpoint = _serviceHost.AddServiceEndpoint(typeof(ISigningServer), legacyBinding, uri.Uri);
+                legacyEndpoint.Behaviors.Add(new AddClientMessageInspectorBehavior());
                 _serviceHost.Open();
             }
             catch (Exception e)

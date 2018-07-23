@@ -60,7 +60,7 @@ namespace SigningServer.Test
             Assert.AreEqual(hashAlgorithmOid, signerInfo.SignerInfos[0].DigestAlgorithm.Value);
         }
 
-        protected void CanResign(ISigningTool signingTool, string fileName, string pfx)
+        protected byte[] CanResign(ISigningTool signingTool, string fileName, string pfx)
         {
             var certificate = new X509Certificate2(pfx);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
@@ -82,9 +82,12 @@ namespace SigningServer.Test
                 using (response.FileContent)
                 {
                     response.FileContent.CopyTo(data);
+
                     Assert.AreEqual(response.FileSize, data.ToArray().Length);
                 }
+                return data.ToArray();
             }
+
         }
 
         protected void CannotResign(ISigningTool signingTool, string fileName, string pfx)

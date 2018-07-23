@@ -75,6 +75,7 @@
     <Compile Include="ClickOnceSigningTool.cs" />
     <Compile Include="AndroidApkSigningToolTest.cs" />
     <Compile Include="CertificateStoreHelper.cs" />
+    <Compile Include="AppxSigningToolTest.cs" />
     <Compile Include="PortableExectuableSigningToolTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SigningServerSigningTest.cs" />
@@ -107,6 +108,9 @@
     <Content Include="TestFiles\signed\Signed.exe.manifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestFiles\signed\Signed.appx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="TestFiles\signed\Signed.msi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -119,6 +123,15 @@
     <Content Include="TestFiles\unsigned\Unsigned.exe.manifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestFiles\unsigned\Unsigned.appx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\unsigned\UnsignedWrongPublisher.appx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="TestFiles\unsigned\MultiLineManifest.mf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\unsigned\Unsigned.msi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

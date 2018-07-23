@@ -133,7 +133,7 @@ namespace SigningServer.Client
                         {
                             case SignFileResponseResult.FileSigned:
                                 Log.Info("File signed, start downloading");
-                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                                using (var fs = new FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
                                 {
                                     response.FileContent.CopyTo(fs);
                                 }
@@ -217,7 +217,7 @@ namespace SigningServer.Client
         private void Connect()
         {
             Log.Info("Connecting to signing server");
-            _clientFactory = new ChannelFactory<ISigningServer>(new NetTcpBinding
+            var binding = new NetTcpBinding
             {
                 TransferMode = TransferMode.Streamed,
                 MaxReceivedMessageSize = int.MaxValue,
@@ -226,9 +226,11 @@ namespace SigningServer.Client
                 SendTimeout = _timeout,
                 ReceiveTimeout = _timeout,
                 CloseTimeout = _timeout
-            }, _signingServer.ToString());
-            _client = _clientFactory.CreateChannel();
+            };
+            binding.Security.Mode = SecurityMode.None;
 
+            _clientFactory = new ChannelFactory<ISigningServer>(binding, _signingServer.ToString());
+            _client = _clientFactory.CreateChannel();
 
             var channel = _client as IClientChannel;
             if (channel != null)

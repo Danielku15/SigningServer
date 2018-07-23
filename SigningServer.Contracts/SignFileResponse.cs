@@ -37,12 +37,25 @@ namespace SigningServer.Contracts
         {
             if (FileContent != null)
             {
-                var fileName = FileContent is FileStream ? ((FileStream) FileContent).Name : "";
-                FileContent.Dispose();
-                FileContent = null;
+                var fileName = FileContent is FileStream ? ((FileStream)FileContent).Name : "";
+                try
+                {
+
+                    FileContent.Dispose();
+                    FileContent = null;
+                }
+                catch 
+                {
+                }
                 if (!string.IsNullOrWhiteSpace(fileName) && File.Exists(fileName))
                 {
-                    File.Delete(fileName);
+                    try
+                    {
+                        File.Delete(fileName);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }

@@ -31,6 +31,10 @@ namespace SigningServer.Server.SigningTool
                     {
                         last.Value += line.Substring(1);
                     }
+                    else if(Value != null)
+                    {
+                        Value += line.Substring(1);
+                    }
                     else
                     {
                         throw new MalformedManifestException($"found multiline continue without entry start '{line}'");
@@ -67,25 +71,30 @@ namespace SigningServer.Server.SigningTool
 
         public void Write(Stream target, HashAlgorithm manifestHasher, AndroidApkSigningTool.HashAlgorithmInfo hashAlgorithmInfo)
         {
-            using (var sectionHasher = hashAlgorithmInfo.HashAlgorithmFactory())
+            using (var sectionHasher = hashAlgorithmInfo?.HashAlgorithmFactory())
             {
-                sectionHasher.Initialize();
+                sectionHasher?.Initialize();
 
                 byte[] writtenData = target.WriteManifestLine($"{Name}: {Value}");
-                manifestHasher.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
-                sectionHasher.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
+
+                manifestHasher?.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
+                sectionHasher?.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
 
                 foreach (var entry in this)
                 {
                     writtenData = target.WriteManifestLine($"{entry.Key}: {entry.Value}");
-                    manifestHasher.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
-                    sectionHasher.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
+                    manifestHasher?.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
+                    sectionHasher?.TransformBlock(writtenData, 0, writtenData.Length, null, 0);
                 }
 
                 target.Write(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
-                manifestHasher.TransformFinalBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
-                sectionHasher.TransformFinalBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
-                Digest = Convert.ToBase64String(sectionHasher.Hash);
+                manifestHasher?.TransformBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length, null, 0);
+                sectionHasher?.TransformFinalBlock(Manifest.NewLineBytes, 0, Manifest.NewLineBytes.Length);
+
+                if (sectionHasher != null)
+                {
+                    Digest = Convert.ToBase64String(sectionHasher.Hash);
+                }
             }
         }
     }

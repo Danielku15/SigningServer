@@ -14,12 +14,16 @@ namespace SigningServer.Test
     [TestFixture]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private static readonly HashSet<string> FilesToIgnore = new HashSet<string> { "UnsignedWrongPublished.appx" };
+        private static readonly HashSet<string> FilesToIgnore = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { "UnsignedWrongPublisher.appx" };
         private CertificateStoreHelper _certificateHelper;
         private SigningServerService _service;
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Setup()
         {
+            Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
+            Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
+
+            DeploymentItemAttribute.Deploy("Certificates", "Certificates");
             _certificateHelper = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
                 StoreLocation.LocalMachine);
 
@@ -44,7 +48,7 @@ namespace SigningServer.Test
             _service.ConsoleStart();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             _service.ConsoleStop();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using NUnit.Framework;
 
 namespace SigningServer.Test
 {
@@ -25,11 +26,16 @@ namespace SigningServer.Test
 
         public void Deploy()
         {
-// Escape input-path to correct back-slashes for Windows
-            string filePath = _path.Replace("/", "\\");
+            Deploy(_path, _outputDirectory);
+        }
+
+        public static void Deploy(string path, string outputDirectory = null)
+        {
+            // Escape input-path to correct back-slashes for Windows
+            string filePath = path.Replace("/", "\\");
 
             // Look up where we are right now
-            DirectoryInfo environmentDir = new DirectoryInfo(Environment.CurrentDirectory);
+            DirectoryInfo environmentDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
 
             // Get the full path and name of the deployment item
             string itemPath = new Uri(Path.Combine(environmentDir.FullName, filePath)).LocalPath;
@@ -43,18 +49,20 @@ namespace SigningServer.Test
 
             // Assemble the target path
             string itemPathInBin;
-            if (string.IsNullOrEmpty(_outputDirectory))
+            if (string.IsNullOrEmpty(outputDirectory))
             {
                 itemPathInBin = new Uri(Path.Combine(binFolderPath, itemName)).LocalPath;
             }
-            else if (!string.IsNullOrEmpty(Path.GetPathRoot(_outputDirectory)))
+            else if (!string.IsNullOrEmpty(Path.GetPathRoot(outputDirectory)))
             {
-                itemPathInBin = new Uri(Path.Combine(_outputDirectory)).LocalPath;
+                itemPathInBin = new Uri(Path.Combine(outputDirectory)).LocalPath;
             }
             else
             {
-                itemPathInBin = new Uri(Path.Combine(binFolderPath, _outputDirectory)).LocalPath;
+                itemPathInBin = new Uri(Path.Combine(binFolderPath, outputDirectory)).LocalPath;
             }
+
+            if (itemPathInBin == itemPath) return;
 
             // Decide whether it's a file or a folder
             if (File.Exists(itemPath)) // It's a file

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using NUnit.Framework;
 
 namespace SigningServer.Test
 {
@@ -9,8 +11,15 @@ namespace SigningServer.Test
         public X509Store Store { get; private set; }
 
         public CertificateStoreHelper(string certificateFile, StoreName name, StoreLocation location)
-            : this(new X509Certificate2(certificateFile), name, location)
         {
+            if (!File.Exists(certificateFile))
+            {
+                Assert.Fail($"Certificate file {certificateFile} not found (CurrentDirectory:{Environment.CurrentDirectory})");
+            }
+            Certificate = new X509Certificate2(certificateFile);
+            Store = new X509Store(name, location);
+            Store.Open(OpenFlags.ReadWrite);
+            Store.Add(Certificate);
         }
 
         public CertificateStoreHelper(X509Certificate2 certificate, StoreName name, StoreLocation location)

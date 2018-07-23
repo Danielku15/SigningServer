@@ -10,55 +10,6 @@ namespace SigningServer.Test
     public class AndroidApkSigningToolTest : UnitTestBase
     {
         [Test]
-        public void ManifestWriterTestSingleLine()
-        {
-            var ms = new MemoryStream();
-            ms.WriteManifestLine("123456789_123456789_123456789_123456789_");
-
-            Assert.AreEqual("123456789_123456789_123456789_123456789_\r\n", Encoding.UTF8.GetString(ms.ToArray()));
-        }
-
-        [Test]
-        public void ManifestWriterTestTwoLines()
-        {
-            var ms = new MemoryStream();
-            ms.WriteManifestLine("123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_");
-
-            Assert.AreEqual("123456789_123456789_123456789_123456789_123456789_123456789_123456789_\r\n 123456789_\r\n", Encoding.UTF8.GetString(ms.ToArray()));
-        }
-
-        [Test]
-        public void ManifestWriterTestThreeLines()
-        {
-            var ms = new MemoryStream();
-            ms.WriteManifestLine(
-                "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_" +
-                "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_"
-            );
-
-            Assert.AreEqual("123456789_123456789_123456789_123456789_123456789_123456789_123456789_\r\n" +
-                            " 123456789_123456789_123456789_123456789_123456789_123456789_123456789\r\n" +
-                            " _123456789_123456789_\r\n", Encoding.UTF8.GetString(ms.ToArray()));
-        }
-
-        [Test]
-        public void ManifestReaderMultiline()
-        {
-            var manifest = new Manifest();
-            using (var fs = File.OpenRead("TestFiles/unsigned/MultiLineManifest.mf"))
-            {
-                manifest.Read(fs);
-            }
-
-            var expectedText = File.ReadAllText("TestFiles/unsigned/MultiLineManifest.mf");
-            var ms = new MemoryStream();
-            manifest.Write(ms, null);
-            var actualText = Encoding.UTF8.GetString(ms.ToArray());
-            Assert.AreEqual(expectedText, actualText);
-        }
-
-
-        [Test]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
         {
             var signingTool = new AndroidApkSigningTool();
@@ -98,16 +49,6 @@ namespace SigningServer.Test
                 Assert.IsTrue(File.Exists("TestFiles/signed/signed.jar"));
                 Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.jar"));
             }
-        }
-
-        [Test]
-        [DeploymentItem("TestFiles", "Unsign_Works")]
-        public void Unsign_Works()
-        {
-            var signingTool = new AndroidApkSigningTool();
-            Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.jar"));
-            signingTool.UnsignFile("Unsign_Works/signed/signed.jar");
-            Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.jar"));
         }
 
         [Test]

@@ -18,7 +18,7 @@ namespace SigningServer.Test
         private ISigningToolProvider _emptySigningToolProvider;
         private ISigningToolProvider _simultateSigningToolProvider;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Setup()
         {
             _certificateHelper = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
@@ -57,7 +57,7 @@ namespace SigningServer.Test
             _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             _certificateHelper.Dispose();

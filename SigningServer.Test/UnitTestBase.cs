@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -14,6 +15,9 @@ namespace SigningServer.Test
         [SetUp]
         public void SetupBase()
         {
+            Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
+            Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
+
             var deploymentItems = GetType().GetMethod(TestContext.CurrentContext.Test.Name).GetCustomAttributes<DeploymentItemAttribute>();
             foreach (var item in deploymentItems)
             {

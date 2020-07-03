@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -13,152 +12,44 @@
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
+	  <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AndroidApkSigningToolTest.cs" />
-    <Compile Include="CertificateStoreHelper.cs" />
-    <Compile Include="PortableExectuableSigningToolTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SigningServerSigningTest.cs" />
-    <Compile Include="SigningServerIntegrationTest.cs" />
-    <Compile Include="SigningServerTest.cs" />
-    <Compile Include="DeploymentItemAttribute.cs" />
-    <Compile Include="UnitTestBase.cs" />
-    <Compile Include="WinCrypt.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config" />
     <None Include="Certificates\SigningServer.Test.cer" />
-    <None Include="Certificates\SigningServer.Test.pfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Certificates\SigningServer.Test.pvk">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestFiles\signed\Signed.msi">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestFiles\signed\Signed.sys">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestFiles\unsigned\Unsigned.msi">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestFiles\unsigned\Unsigned.sys">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Certificates\SigningServer.Test.pvk" />
+    <None Include="NLog.config" />
+    <None Include="TestFiles\signed\Signed.msi" />
+    <None Include="TestFiles\signed\Signed.sys" />
+    <None Include="TestFiles\unsigned\Unsigned.msi" />
+    <None Include="TestFiles\unsigned\Unsigned.sys" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj">
-      <Project>{70999530-7B5C-4154-8414-0717D0A9C4D6}</Project>
-      <Name>SigningServer.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj">
-      <Project>{72a0985e-3e37-4cff-8562-da47e7c8496b}</Project>
-      <Name>SigningServer.Contracts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj">
-      <Project>{d21aaffc-1098-4a51-acf4-48b4b73f5022}</Project>
-      <Name>SigningServer.Server.PE</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj">
-      <Project>{50287122-BA69-45AA-8EA5-974725E94949}</Project>
-      <Name>SigningServer.Server</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
+    <ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />
+    <ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Content Include="TestFiles\signed\Signed.cab">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\signed\Signed.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\signed\Signed.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\signed\Signed.jar">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\unsigned\Unsigned.cab">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\unsigned\Unsigned.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\unsigned\Unsigned.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestFiles\unsigned\Unsigned.jar">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.14.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog">
       <Version>4.7.2</Version>
     </PackageReference>
+    <PackageReference Include="NUnit" Version="3.12.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Update="Certificates\SigningServer.Test.pfx" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y /D /E /S /I &quot;$(ProjectDir)\TestFiles&quot; &quot;$(TargetDir)\TestFiles&quot;&#xD;&#xA;xcopy /Y /D /E /S /I &quot;$(ProjectDir)\Certificates&quot; &quot;$(TargetDir)\Certificates&quot;" />
+  </Target>
+
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

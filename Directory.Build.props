@@ -1,0 +1,30 @@
+<Project>
+<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <TargetFramework>net48</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Configurations>Debug;Release</Configurations>
+    <IntermediateOutputPath>..\obj\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+    <OutputPath>..\bin\$(Platform)\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>1591</NoWarn>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <LangVersion>7.3</LangVersion>
+</PropertyGroup>
+  
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' AND '$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DefineConstants>TRACE;DEBUG;X64;CODE_ANALYSIS</DefineConstants>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' AND '$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DefineConstants>TRACE;X64;CODE_ANALYSIS</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <!-- Add PDBs and source link support -->
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+  </ItemGroup>
+</Project>

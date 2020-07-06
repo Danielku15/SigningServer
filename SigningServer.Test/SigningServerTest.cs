@@ -23,34 +23,28 @@ namespace SigningServer.Test
         [Test]
         public void TestNoCertificatesThrowsError()
         {
-            var ex = Assert.Throws<InvalidConfigurationException>(() =>
-            {
-                var emptyConfig = new SigningServerConfiguration();
-                var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-            });
-            Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, ex.Message);
+            var emptyConfig = new SigningServerConfiguration();
+            var error = Assert.Throws<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, error.Message);
         }
 
         [Test]
         public void InvalidWorkingDirectoryThrowsError()
         {
-            var ex = Assert.Throws<InvalidConfigurationException>(() =>
+            var emptyConfig = new SigningServerConfiguration
             {
-                var emptyConfig = new SigningServerConfiguration
+                Certificates = new[]
                 {
-                    Certificates = new[]
+                    new CertificateConfiguration
                     {
-                        new CertificateConfiguration
-                        {
-                            Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
-                        }
-                    },
-                    WorkingDirectory = "T:\\NotExisting"
-                };
-                var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-                server.GetSupportedFileExtensions();
-            });
-            Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, ex.Message);
+                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                    }
+                },
+                WorkingDirectory = "T:\\NotExisting"
+            };
+            var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
+            var exception = Assert.Throws<InvalidConfigurationException>(() => server.GetSupportedFileExtensions());
+            Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, exception.Message);
         }
 
         [Test]

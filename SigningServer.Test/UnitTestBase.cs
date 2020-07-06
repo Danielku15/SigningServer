@@ -12,6 +12,9 @@ namespace SigningServer.Test
 {
     public class UnitTestBase
     {
+	    protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
+	    protected static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
+
         [SetUp]
         public void SetupBase()
         {
@@ -110,8 +113,6 @@ namespace SigningServer.Test
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.IsInstanceOf<MemoryStream>(response.FileContent);
-            Assert.AreEqual(response.FileSize, response.FileContent.Length);
             Assert.AreEqual(0, response.FileSize);
         }
     }

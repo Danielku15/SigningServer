@@ -37,13 +37,13 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = "T:\\NotExisting"
             };
-            var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-            var exception = Assert.Throws<InvalidConfigurationException>(() => server.GetSupportedFileExtensions());
+
+            var exception = Assert.Throws<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
             Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, exception.Message);
         }
 
@@ -56,7 +56,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -75,7 +75,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -101,7 +101,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = temp
@@ -114,7 +114,7 @@ namespace SigningServer.Test
         [Test]
         public void LoadCertificateFromStoreWorks()
         {
-            using (var cert = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
+            using (var cert = new CertificateStoreHelper(CertificatePath, StoreName.My,
                     StoreLocation.LocalMachine))
             {
                 var emptyConfig = new SigningServerConfiguration

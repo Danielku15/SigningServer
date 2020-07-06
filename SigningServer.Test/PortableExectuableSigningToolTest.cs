@@ -13,8 +13,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.dll"));
-                Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.dll"));
+                Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
+                Assert.IsFalse(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
             }
         }
 
@@ -23,8 +23,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                Assert.IsTrue(File.Exists("TestFiles/signed/signed.dll"));
-                Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.dll"));
+                Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
+                Assert.IsTrue(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
             }
         }
 
@@ -32,13 +32,13 @@ namespace SigningServer.Test
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper(CertificatePath, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 using (var signingTool = new PortableExectuableSigningTool())
                 {
-                    Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.dll"));
-                    Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.dll"));
+                    Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
+                    Assert.IsFalse(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
                 }
             }
         }
@@ -47,13 +47,13 @@ namespace SigningServer.Test
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
         {
             using (
-              new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+              new CertificateStoreHelper(CertificatePath, StoreName.Root,
                   StoreLocation.LocalMachine))
             {
                 using (var signingTool = new PortableExectuableSigningTool())
                 {
-                    Assert.IsTrue(File.Exists("TestFiles/signed/signed.dll"));
-                    Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.dll"));
+                    Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
+                    Assert.IsTrue(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
                 }
             }
         }
@@ -64,9 +64,10 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.dll"));
-                signingTool.UnsignFile("Unsign_Works/signed/signed.dll");
-                Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.dll"));
+	            string file = Path.Combine(ExecutionDirectory, "Unsign_Works/signed/signed.dll");
+                Assert.IsTrue(signingTool.IsFileSigned(file));
+                signingTool.UnsignFile(file);
+                Assert.IsFalse(signingTool.IsFileSigned(file));
             }
         }
 
@@ -78,7 +79,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.exe"), CertificatePath);
             }
         }
 
@@ -88,7 +89,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.dll", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.dll"), CertificatePath);
             }
         }
 
@@ -98,7 +99,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.cab", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cab"), CertificatePath);
             }
         }
 
@@ -108,7 +109,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.msi", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.msi"), CertificatePath);
             }
         }
 
@@ -118,7 +119,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.sys", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.sys"), CertificatePath);
             }
         }
 
@@ -132,8 +133,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.exe", "Certificates/SigningServer.Test.pfx", "SHA1");
-                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.exe", Sha1Oid);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.exe"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.exe"), Sha1Oid);
             }
         }
 
@@ -143,8 +144,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.dll", "Certificates/SigningServer.Test.pfx", "SHA1");
-                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.dll", Sha1Oid);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.dll"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.dll"), Sha1Oid);
             }
         }
 
@@ -154,8 +155,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.cab", "Certificates/SigningServer.Test.pfx", "SHA1");
-                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.cab", Sha1Oid);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cab"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cab"), Sha1Oid);
             }
         }
 
@@ -165,8 +166,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.msi", "Certificates/SigningServer.Test.pfx", "SHA1");
-                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.msi", Sha1Oid);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.msi"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.msi"), Sha1Oid);
             }
         }
 
@@ -176,8 +177,8 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanSign(signingTool, "SignFile_Works_Sha1/unsigned/unsigned.sys", "Certificates/SigningServer.Test.pfx", "SHA1");
-                EnsureSignature("SignFile_Works_Sha1/unsigned/unsigned.sys", Sha1Oid);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.sys"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.sys"), Sha1Oid);
             }
         }
 
@@ -191,7 +192,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.exe", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.exe"), CertificatePath);
             }
         }
 
@@ -201,7 +202,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.dll", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.dll"), CertificatePath);
             }
         }
 
@@ -211,7 +212,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.cab", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cab"), CertificatePath);
             }
         }
 
@@ -221,7 +222,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.msi", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.msi"), CertificatePath);
             }
         }
 
@@ -231,7 +232,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.sys", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.sys"), CertificatePath);
             }
         }
 
@@ -245,7 +246,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanResign(signingTool, "NoResign_Works/signed/signed.exe", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.exe"), CertificatePath);
             }
         }
 
@@ -255,7 +256,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanResign(signingTool, "NoResign_Works/signed/signed.dll", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.dll"), CertificatePath);
             }
         }
 
@@ -265,7 +266,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanResign(signingTool, "NoResign_Works/signed/signed.cab", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cab"), CertificatePath);
             }
         }
 
@@ -275,7 +276,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanResign(signingTool, "NoResign_Works/signed/signed.msi", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.msi"), CertificatePath);
             }
         }
 
@@ -285,7 +286,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool())
             {
-                CanResign(signingTool, "NoResign_Works/signed/signed.sys", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.sys"), CertificatePath);
             }
         }
 

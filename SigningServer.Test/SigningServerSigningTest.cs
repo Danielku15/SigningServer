@@ -21,7 +21,7 @@ namespace SigningServer.Test
         [OneTimeSetUp]
         public void Setup()
         {
-            _certificateHelper = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
+            _certificateHelper = new CertificateStoreHelper(CertificatePath, StoreName.My,
                 StoreLocation.LocalMachine);
 
             _configuration = new SigningServerConfiguration
@@ -114,7 +114,7 @@ namespace SigningServer.Test
 
             var server = new Server.SigningServer(configuration, _emptySigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
                 FileName = "unsigned.exe",
@@ -131,7 +131,7 @@ namespace SigningServer.Test
         {
             var server = new Server.SigningServer(_configuration, _emptySigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
                 FileName = "unsigned.exe",
@@ -148,7 +148,7 @@ namespace SigningServer.Test
         {
             var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
                 FileName = "unsigned.exe",
@@ -168,7 +168,7 @@ namespace SigningServer.Test
         {
             var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
                 FileName = "unsigned.exe",

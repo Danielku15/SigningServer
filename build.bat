@@ -1,15 +1,13 @@
 @echo OFF
-set msbuild_exe="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
-if not exist %msbuild_exe% echo error: %msbuild_exe%: not found & goto :eof
+set msbuild_exe=msbuild.exe
 
-echo "Building 32 bit (Debug)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Debug /p:Platform=x86
+where %msbuild_exe%
+if errorlevel 0 goto alreadyinpath
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat"
+:alreadyInPath
 
-echo "Building 64 bit (Debug)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Debug /p:Platform=x64
+echo "Building x64/AnyCpu (Debug)"
+%msbuild_exe% SigningServer.sln -restore:true -p:Configuration=Debug
 
-echo "Building 32 bit (Release)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Release /p:Platform=x86
-
-echo "Building 64 bit (Release)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Release /p:Platform=x64
+echo "Building x64/AnyCpu (Release)"
+%msbuild_exe% SigningServer.sln -restore:true -p:Configuration=Release

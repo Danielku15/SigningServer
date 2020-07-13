@@ -107,6 +107,19 @@ namespace SigningServer.Server
         public SignFileResponse SignFile(SignFileRequest signFileRequest)
         {
             var signFileResponse = new SignFileResponse();
+            signFileResponse.DeleteFailed += (response, file, exception) =>
+            {
+                Log.Error(exception, $"Failed to delete file '{file}'");
+            };
+            signFileResponse.DeleteSkipped += (response, file) =>
+            {
+                Log.Warn($"Skipped file delete '{file}'");
+            };
+            signFileResponse.DeleteSuccess += (response, file) =>
+            {
+                Log.Trace($"Successfully deleted file '{file}'");
+            };
+            
             var remoteIp = RemoteIp;
             var isLegacy = IsLegacyEndpoint;
             string inputFileName = null;
@@ -170,6 +183,36 @@ namespace SigningServer.Server
                 signingTool.SignFile(inputFileName, certificate.Certificate, Configuration.TimestampServer, signFileRequest, signFileResponse);
 
                 Log.Info($"[{remoteIp}] New sign request for file {signFileRequest.FileName} finished ({signFileRequest.FileSize} bytes)");
+
+                switch (signFileResponse.Result)
+                {
+                    case SignFileResponseResult.FileSigned:
+                    case SignFileResponseResult.FileResigned:
+                        break;
+                    case SignFileResponseResult.FileAlreadySigned:
+                    case SignFileResponseResult.FileNotSignedUnsupportedFormat:
+                    case SignFileResponseResult.FileNotSignedError:
+                    case SignFileResponseResult.FileNotSignedUnauthorized:
+                        // ensure input file is cleaned in error cases where the sign tool does not have a result
+                        if (!(signFileResponse.FileContent is FileStream))
+                        {
+                            try
+                            {
+                                Log.Trace($"Deleting file {inputFileName}");
+                                File.Delete(inputFileName);
+                                Log.Trace($"File successfully deleted {inputFileName}");
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Could not delete input file for failed request");
+                            }
+                        }
+                        else
+                        {
+                            Log.Trace($"Delete file skipped for failed request {signFileResponse.Result} {inputFileName}, {signFileResponse.FileContent.GetType()}");
+                        }
+                        break;
+                }
             }
             catch (Exception e)
             {

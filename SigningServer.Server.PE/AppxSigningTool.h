@@ -32,7 +32,7 @@ namespace SigningServer {
                 initonly ILogger^ m_log;
                 static initonly HashSet<String^>^ AppxSupportedExtensions;
                 static initonly Dictionary<String^, unsigned int>^ AppxSupportedHashAlgorithms;
-                static initonly HRESULT CanSign;
+                static initonly bool CanSign;
             };
 
         }

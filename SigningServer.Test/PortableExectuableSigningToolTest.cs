@@ -127,6 +127,16 @@ namespace SigningServer.Test
             }
         }
 
+        [TestMethod]
+        [DeploymentItem("TestFiles", "SignFile_Works")]
+        public void SignFile_Unsigned_Cat_Works()
+        {
+            using (var signingTool = new PortableExectuableSigningTool(Log))
+            {
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cat"), CertificatePath);
+            }
+        }
+
         #endregion
 
         #region Signing Works (Sha1)
@@ -186,6 +196,17 @@ namespace SigningServer.Test
             }
         }
 
+        [TestMethod]
+        [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+        public void SignFile_Unsigned_Cat_Works_Sha1()
+        {
+            using (var signingTool = new PortableExectuableSigningTool(Log))
+            {
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), CertificatePath, "SHA1");
+                EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), Sha1Oid);
+            }
+        }
+
         #endregion
 
         #region Resign Fails
@@ -240,6 +261,16 @@ namespace SigningServer.Test
             }
         }
 
+        [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Fails")]
+        public void SignFile_Signed_Cat_NoResign_Fails()
+        {
+            using (var signingTool = new PortableExectuableSigningTool(Log))
+            {
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cat"), CertificatePath);
+            }
+        }
+
         #endregion
 
         #region Resign Works
@@ -256,7 +287,7 @@ namespace SigningServer.Test
 
         [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Dlle_NoResign_Works()
+        public void SignFile_Signed_Dll_NoResign_Works()
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
@@ -291,6 +322,16 @@ namespace SigningServer.Test
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
                 CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.sys"), CertificatePath);
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Works")]
+        public void SignFile_Signed_Cat_NoResign_Works()
+        {
+            using (var signingTool = new PortableExectuableSigningTool(Log))
+            {
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cat"), CertificatePath);
             }
         }
 

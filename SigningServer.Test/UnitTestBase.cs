@@ -2,8 +2,6 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
@@ -12,8 +10,8 @@ namespace SigningServer.Test
 {
     public class UnitTestBase
     {
-	    protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
-	    protected static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
+        protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        protected static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
 
         protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string hashAlgorithm = null)
         {
@@ -24,7 +22,7 @@ namespace SigningServer.Test
             var request = new SignFileRequest
             {
                 FileName = fileName,
-                OverwriteSignature = false, 
+                OverwriteSignature = false,
                 HashAlgorithm = hashAlgorithm
             };
             signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
@@ -67,17 +65,24 @@ namespace SigningServer.Test
             };
             signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
 
-            Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
-            Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.IsNotNull(response.FileContent);
-            Assert.IsTrue(response.FileSize > 0);
-            using (var data = new MemoryStream())
+            try
             {
-                using (response.FileContent)
+                Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
+                Assert.IsTrue(signingTool.IsFileSigned(fileName));
+                Assert.IsNotNull(response.FileContent);
+                Assert.IsTrue(response.FileSize > 0);
+                using (var data = new MemoryStream())
                 {
-                    response.FileContent.CopyTo(data);
-                    Assert.AreEqual(response.FileSize, data.ToArray().Length);
+                    using (response.FileContent)
+                    {
+                        response.FileContent.CopyTo(data);
+                        Assert.AreEqual(response.FileSize, data.ToArray().Length);
+                    }
                 }
+            }
+            finally
+            {
+                response.Dispose();
             }
         }
 
@@ -95,9 +100,16 @@ namespace SigningServer.Test
             signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
 
             Trace.WriteLine(response);
-            Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
-            Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.AreEqual(0, response.FileSize);
+            try
+            {
+                Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
+                Assert.IsTrue(signingTool.IsFileSigned(fileName));
+                Assert.AreEqual(0, response.FileSize);
+            }
+            finally
+            {
+                response.Dispose();
+            }
         }
     }
 }

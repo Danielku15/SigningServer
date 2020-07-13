@@ -221,7 +221,7 @@ namespace SigningServer.Test
             };
 
             var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
+            Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
 
             var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
             Assert.AreEqual(1, files.Length);

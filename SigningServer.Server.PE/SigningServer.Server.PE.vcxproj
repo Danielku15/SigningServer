@@ -78,12 +78,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppxSigningTool.h" />
+    <ClInclude Include="ILogger.h" />
     <ClInclude Include="mssign32.h" />
     <ClInclude Include="PortableExectuableSigningTool.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppxSigningTool.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="mssign32.cpp" />
     <ClCompile Include="PortableExectuableSigningTool.cpp" />

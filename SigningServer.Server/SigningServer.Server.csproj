@@ -5,6 +5,7 @@
 		<Description>This is the server side component for running a signing server.</Description>
 	</PropertyGroup>
 	<ItemGroup>
+		<Reference Include="Microsoft.Build.Tasks.v4.0" />
 		<Reference Include="System.Configuration.Install" />
 		<Reference Include="System.Security" />
 		<Reference Include="System.ServiceModel" />
@@ -28,6 +29,7 @@
 		<PackageReference Include="SharpZipLib" Version="1.2.0" />
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
 		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
 		<ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
 		<ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />

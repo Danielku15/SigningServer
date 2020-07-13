@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonFiles", "CommonFiles"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Contracts", "SigningServer.Contracts\SigningServer.Contracts.csproj", "{EC706B59-9540-45A3-A6E3-29634855DA74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android", "SigningServer.Android\SigningServer.Android.csproj", "{A5A936B4-AF08-4231-A3FB-9D3421701C48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +46,10 @@ Global
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Debug|x64.Build.0 = Debug|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|x64.ActiveCfg = Release|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|x64.Build.0 = Release|Any CPU
+		{A5A936B4-AF08-4231-A3FB-9D3421701C48}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A5A936B4-AF08-4231-A3FB-9D3421701C48}.Debug|x64.Build.0 = Debug|Any CPU
+		{A5A936B4-AF08-4231-A3FB-9D3421701C48}.Release|x64.ActiveCfg = Release|Any CPU
+		{A5A936B4-AF08-4231-A3FB-9D3421701C48}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

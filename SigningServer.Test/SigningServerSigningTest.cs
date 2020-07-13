@@ -189,7 +189,7 @@ namespace SigningServer.Test
         }
         
         
-        [Test]
+        [TestMethod]
         public void SignFile_AlreadySigned_ResponseDisposeCleansFile()
         {
 

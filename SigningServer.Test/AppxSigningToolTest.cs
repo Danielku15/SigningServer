@@ -82,7 +82,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new AppxSigningTool(Log))
             {
-                var fileName = "Unsigned_WrongPublishedFails/unsigned/UnsignedWrongPublisher.appx";
+                var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
                 var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx");
                 Assert.IsTrue(signingTool.IsFileSupported(fileName));
 

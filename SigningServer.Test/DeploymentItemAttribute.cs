@@ -26,7 +26,7 @@ namespace SigningServer.Test
 
         public void Deploy()
         {
-// Escape input-path to correct back-slashes for Windows
+            // Escape input-path to correct back-slashes for Windows
             string filePath = _path.Replace("/", "\\");
 
             // Look up where we are right now
@@ -93,19 +93,19 @@ namespace SigningServer.Test
                 // Now Create all of the sub-directories
                 foreach (string dirPath in Directory.GetDirectories(itemPath, "*", SearchOption.AllDirectories))
                 {
-	                for (int i = 0; i < 5; i++)
-	                {
-		                try
-		                {
-			                Directory.CreateDirectory(dirPath.Replace(itemPath, itemPathInBin));
-			                break;
-		                }
-		                catch (UnauthorizedAccessException)
-		                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(dirPath.Replace(itemPath, itemPathInBin));
+                            break;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
                             // CreateDirectory sometimes throws for no apparent reason (probably another process interfering)
-			                Thread.Sleep(100);
-		                }
-	                }
+                            Thread.Sleep(100);
+                        }
+                    }
                 }
 
                 //Copy all the files & Replace any files with the same name

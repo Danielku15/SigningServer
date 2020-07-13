@@ -5,8 +5,8 @@ using namespace System::Reflection;
 using namespace System::Runtime::InteropServices;
 
 [assembly:AssemblyTitle("SigningServer PE Signer")]
-[assembly:AssemblyDescription("This library contains the required classes to sign PE files..")]
-[assembly:AssemblyCompany("CoderLine.net")];
+[assembly:AssemblyDescription("This library contains the required classes to sign PE files.")]
+[assembly:AssemblyCompany("Daniel Kuschny")];
 [assembly:AssemblyProduct("CoderLine SigningServer")];
 [assembly:AssemblyCopyright("Copyright ©  2015 Daniel Kuschny")];
 

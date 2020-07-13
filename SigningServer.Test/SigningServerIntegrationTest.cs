@@ -3,20 +3,21 @@ using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Server;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private CertificateStoreHelper _certificateHelper;
-        private SigningServerService _service;
-        [OneTimeSetUp]
-        public void Setup()
+        private static CertificateStoreHelper _certificateHelper;
+        private static SigningServerService _service;
+
+        [ClassInitialize]
+        public static void Setup(TestContext _)
         {
             _certificateHelper = new CertificateStoreHelper(CertificatePath, StoreName.My,
                 StoreLocation.LocalMachine);
@@ -42,13 +43,13 @@ namespace SigningServer.Test
             _service.ConsoleStart();
         }
 
-        [OneTimeTearDown]
-        public void TearDown()
+        [ClassCleanup]
+        public static void TearDown()
         {
             _service.ConsoleStop();
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "IntegrationTestFiles")]
         public void ValidTestRun()
         {

@@ -1,14 +1,14 @@
 ﻿using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Server.PE;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class PortableExectuableSigningToolTest : UnitTestBase
     {
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
         {
             using (var signingTool = new PortableExectuableSigningTool())
@@ -18,7 +18,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
         {
             using (var signingTool = new PortableExectuableSigningTool())
@@ -28,7 +28,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
         {
             using (
@@ -43,7 +43,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
         {
             using (
@@ -58,7 +58,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "Unsign_Works")]
         public void Unsign_Works()
         {
@@ -73,7 +73,7 @@ namespace SigningServer.Test
 
         #region Signing Works
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Exe_Works()
         {
@@ -83,7 +83,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Dll_Works()
         {
@@ -93,7 +93,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Cab_Works()
         {
@@ -103,7 +103,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Msi_Works()
         {
@@ -113,7 +113,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Sys_Works()
         {
@@ -127,7 +127,7 @@ namespace SigningServer.Test
 
         #region Signing Works (Sha1)
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
         public void SignFile_Unsigned_Exe_Works_Sha1()
         {
@@ -138,7 +138,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
         public void SignFile_Unsigned_Dll_Works_Sha1()
         {
@@ -149,7 +149,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
         public void SignFile_Unsigned_Cab_Works_Sha1()
         {
@@ -160,7 +160,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
         public void SignFile_Unsigned_Msi_Works_Sha1()
         {
@@ -171,7 +171,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
         public void SignFile_Unsigned_Sys_Works_Sha1()
         {
@@ -186,7 +186,7 @@ namespace SigningServer.Test
 
         #region Resign Fails
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Exe_NoResign_Fails()
         {
@@ -196,7 +196,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Dll_NoResign_Fails()
         {
@@ -206,7 +206,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Cab_NoResign_Fails()
         {
@@ -216,7 +216,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Msi_NoResign_Fails()
         {
@@ -226,7 +226,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Sys_NoResign_Fails()
         {
@@ -240,7 +240,7 @@ namespace SigningServer.Test
 
         #region Resign Works
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Exe_NoResign_Works()
         {
@@ -250,7 +250,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Dlle_NoResign_Works()
         {
@@ -260,7 +260,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Cab_NoResign_Works()
         {
@@ -270,7 +270,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Msi_NoResign_Works()
         {
@@ -280,7 +280,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Sys_NoResign_Works()
         {

@@ -1,60 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SigningServer.Test</RootNamespace>
-    <AssemblyName>SigningServer.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <ItemGroup>
-	  <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="Certificates\SigningServer.Test.cer" />
-    <None Include="Certificates\SigningServer.Test.pvk" />
-    <None Include="NLog.config" />
-    <None Include="TestFiles\signed\Signed.msi" />
-    <None Include="TestFiles\signed\Signed.sys" />
-    <None Include="TestFiles\unsigned\Unsigned.msi" />
-    <None Include="TestFiles\unsigned\Unsigned.sys" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
-    <ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />
-    <ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Moq" Version="4.14.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog">
-      <Version>4.7.2</Version>
-    </PackageReference>
-    <PackageReference Include="NUnit" Version="3.12.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Certificates\SigningServer.Test.pfx" />
-  </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /Y /D /E /S /I &quot;$(ProjectDir)\TestFiles&quot; &quot;$(TargetDir)\TestFiles&quot;&#xD;&#xA;xcopy /Y /D /E /S /I &quot;$(ProjectDir)\Certificates&quot; &quot;$(TargetDir)\Certificates&quot;" />
-  </Target>
-
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+	<ItemGroup>
+		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
+		<ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />
+		<ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Moq" Version="4.14.5" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="NLog" Version="4.7.2" />
+		<PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
+		<PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="TestFiles/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Certificates/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="System.Security" />
+	  <Reference Include="System.ServiceProcess" />
+	</ItemGroup>
 </Project>

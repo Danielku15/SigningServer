@@ -13,7 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Client", "Sig
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonFiles", "CommonFiles", "{8EA70BD6-AE4B-48C4-A73D-E9A8595F8755}"
 	ProjectSection(SolutionItems) = preProject
-		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
@@ -21,44 +20,28 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Contracts", "
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x64.ActiveCfg = Debug|x64
 		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|x64.Build.0 = Debug|x64
-		{50287122-BA69-45AA-8EA5-974725E94949}.Release|Any CPU.ActiveCfg = Release|x64
 		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x64.ActiveCfg = Release|x64
 		{50287122-BA69-45AA-8EA5-974725E94949}.Release|x64.Build.0 = Release|x64
-		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x64.ActiveCfg = Debug|x64
 		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Debug|x64.Build.0 = Debug|x64
-		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|Any CPU.ActiveCfg = Release|x64
 		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x64.ActiveCfg = Release|x64
 		{D21AAFFC-1098-4A51-ACF4-48B4B73F5022}.Release|x64.Build.0 = Release|x64
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x64.ActiveCfg = Debug|x64
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|x64.Build.0 = Debug|x64
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|Any CPU.ActiveCfg = Release|x64
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x64.ActiveCfg = Release|x64
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|x64.Build.0 = Release|x64
-		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Debug|x64.Build.0 = Debug|Any CPU
-		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x64.ActiveCfg = Release|Any CPU
 		{70999530-7B5C-4154-8414-0717D0A9C4D6}.Release|x64.Build.0 = Release|Any CPU
-		{EC706B59-9540-45A3-A6E3-29634855DA74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC706B59-9540-45A3-A6E3-29634855DA74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Debug|x64.Build.0 = Debug|Any CPU
-		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|x64.ActiveCfg = Release|Any CPU
 		{EC706B59-9540-45A3-A6E3-29634855DA74}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection

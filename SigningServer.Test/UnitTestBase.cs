@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
 
 namespace SigningServer.Test
@@ -14,19 +14,6 @@ namespace SigningServer.Test
     {
 	    protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
 	    protected static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
-
-        [SetUp]
-        public void SetupBase()
-        {
-            Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
-            Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
-
-            var deploymentItems = GetType().GetMethod(TestContext.CurrentContext.Test.Name).GetCustomAttributes<DeploymentItemAttribute>();
-            foreach (var item in deploymentItems)
-            {
-                item.Deploy();
-            }
-        }
 
         protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string hashAlgorithm = null)
         {
@@ -67,7 +54,7 @@ namespace SigningServer.Test
             Assert.AreEqual(hashAlgorithmOid, signerInfo.SignerInfos[0].DigestAlgorithm.Value);
         }
 
-        protected byte[] CanResign(ISigningTool signingTool, string fileName, string pfx)
+        protected void CanResign(ISigningTool signingTool, string fileName, string pfx)
         {
             var certificate = new X509Certificate2(pfx);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
@@ -89,12 +76,9 @@ namespace SigningServer.Test
                 using (response.FileContent)
                 {
                     response.FileContent.CopyTo(data);
-
                     Assert.AreEqual(response.FileSize, data.ToArray().Length);
                 }
-                return data.ToArray();
             }
-
         }
 
         protected void CannotResign(ISigningTool signingTool, string fileName, string pfx)

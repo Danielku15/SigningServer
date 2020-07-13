@@ -1,62 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{70999530-7B5C-4154-8414-0717D0A9C4D6}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SigningServer.Client</RootNamespace>
-    <AssemblyName>SigningServer.Client</AssemblyName>
-    <Platforms>AnyCPU</Platforms>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog">
-      <Version>4.7.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
-  </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>SET DistTarget="$(SolutionDir)Dist\$(ConfigurationName)-$(PlatformName)\$(ProjectName)"
-
-xcopy "$(TargetDir)$(TargetFileName)" "%25DistTarget%25\$(TargetFileName)*" /F /Y
-xcopy "$(TargetDir)*.dll" "%25DistTarget%25" /F /Y
-xcopy "$(TargetDir)*.config" "%25DistTarget%25" /F /Y
-xcopy "$(TargetDir)*.json" "%25DistTarget%25" /F /Y
-del "%25DistTarget%25\*vshost*"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<Title>SigningServer Client</Title>
+		<Description>This is the client for signing files on a signing server.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="System.ServiceModel" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="config.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="NLog.config">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="NLog" Version="4.7.2" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
+	</ItemGroup>
 </Project>

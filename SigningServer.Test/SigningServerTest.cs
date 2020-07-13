@@ -2,13 +2,13 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Moq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class SigningServerTest : UnitTestBase
     {
         private ISigningToolProvider CreateEmptySigningToolProvider()
@@ -20,15 +20,15 @@ namespace SigningServer.Test
             return mockedSigningToolProvider.Object;
         }
 
-        [Test]
+        [TestMethod]
         public void TestNoCertificatesThrowsError()
         {
             var emptyConfig = new SigningServerConfiguration();
-            var error = Assert.Throws<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            var error = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
             Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, error.Message);
         }
 
-        [Test]
+        [TestMethod]
         public void InvalidWorkingDirectoryThrowsError()
         {
             var emptyConfig = new SigningServerConfiguration
@@ -43,11 +43,11 @@ namespace SigningServer.Test
                 WorkingDirectory = "T:\\NotExisting"
             };
 
-            var exception = Assert.Throws<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            var exception = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
             Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, exception.Message);
         }
 
-        [Test]
+        [TestMethod]
         public void RelativeWorkingDirectoryGetsCreated()
         {
             var config = new SigningServerConfiguration
@@ -66,7 +66,7 @@ namespace SigningServer.Test
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory), true);
         }
 
-        [Test]
+        [TestMethod]
         public void RelativeWorkingDirectoryGetsCleaned()
         {
             var config = new SigningServerConfiguration
@@ -91,7 +91,7 @@ namespace SigningServer.Test
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory), true);
         }
 
-        [Test]
+        [TestMethod]
         public void AbsoluteWorkingDirectoryGetsCreated()
         {
             var temp = Path.Combine(Path.GetTempPath(), "WorkingDirectory");
@@ -111,7 +111,7 @@ namespace SigningServer.Test
             Directory.Delete(temp, true);
         }
 
-        [Test]
+        [TestMethod]
         public void LoadCertificateFromStoreWorks()
         {
             using (var cert = new CertificateStoreHelper(CertificatePath, StoreName.My,

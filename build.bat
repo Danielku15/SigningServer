@@ -1,15 +1,34 @@
 @echo OFF
-set msbuild_exe="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
-if not exist %msbuild_exe% echo error: %msbuild_exe%: not found & goto :eof
 
-echo "Building 32 bit (Debug)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Debug /p:Platform=x86
+where msbuild >nul 2>&1
+if %errorlevel% equ 0 (
+	goto compile	
+)
 
-echo "Building 64 bit (Debug)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Debug /p:Platform=x64
+echo Looking for VS2019 Professional
+SET VS="C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat"
+if EXIST %VS% (
+	echo Found VS2019 Professional
+	call %VS%
+	goto compile
+)
 
-echo "Building 32 bit (Release)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Release /p:Platform=x86
+echo Looking for VS2019 Community
+SET VS="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+if EXIST %VS% (
+	echo Found VS2019 Community
+	call %VS%
+	goto compile
+) 
 
-echo "Building 64 bit (Release)"
-%msbuild_exe% SigningServer.sln /p:Configuration=Release /p:Platform=x64
+
+echo "Could not detect Visual Studio 2019"
+exit 1
+
+:compile
+
+echo "Building x64 (Debug)"
+msbuild SigningServer.sln -t:Rebuild -p:Configuration=Debug -p:Platform=x64 -p:CopyToDist=true
+
+echo "Building x64 (Release)"
+msbuild SigningServer.sln -t:Rebuild -p:Configuration=Release -p:Platform=x64 -p:CopyToDist=true

@@ -1,15 +1,15 @@
 ﻿using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class AndroidApkSigningToolTest : UnitTestBase
     {
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
         {
             var signingTool = new AndroidApkSigningTool();
@@ -17,7 +17,7 @@ namespace SigningServer.Test
             Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.jar"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
         {
             var signingTool = new AndroidApkSigningTool();
@@ -25,7 +25,7 @@ namespace SigningServer.Test
             Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.jar"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
         {
             using (
@@ -38,7 +38,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
         {
             using (
@@ -51,7 +51,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Jar_Works()
         {
@@ -59,14 +59,14 @@ namespace SigningServer.Test
         }
 
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Jar_NoResign_Fails()
         {
             CannotResign(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed.jar", "Certificates/SigningServer.Test.pfx");
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Jar_NoResign_Works()
         {

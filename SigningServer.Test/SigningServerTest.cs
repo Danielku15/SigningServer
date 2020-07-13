@@ -2,13 +2,13 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Moq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class SigningServerTest : UnitTestBase
     {
         private ISigningToolProvider CreateEmptySigningToolProvider()
@@ -20,40 +20,34 @@ namespace SigningServer.Test
             return mockedSigningToolProvider.Object;
         }
 
-        [Test]
+        [TestMethod]
         public void TestNoCertificatesThrowsError()
         {
-            var ex = Assert.Throws<InvalidConfigurationException>(() =>
-            {
-                var emptyConfig = new SigningServerConfiguration();
-                var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-            });
-            Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, ex.Message);
+            var emptyConfig = new SigningServerConfiguration();
+            var error = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, error.Message);
         }
 
-        [Test]
+        [TestMethod]
         public void InvalidWorkingDirectoryThrowsError()
         {
-            var ex = Assert.Throws<InvalidConfigurationException>(() =>
+            var emptyConfig = new SigningServerConfiguration
             {
-                var emptyConfig = new SigningServerConfiguration
+                Certificates = new[]
                 {
-                    Certificates = new[]
+                    new CertificateConfiguration
                     {
-                        new CertificateConfiguration
-                        {
-                            Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
-                        }
-                    },
-                    WorkingDirectory = "T:\\NotExisting"
-                };
-                var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-                server.GetSupportedFileExtensions();
-            });
-            Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, ex.Message);
+                        Certificate = new X509Certificate2(CertificatePath)
+                    }
+                },
+                WorkingDirectory = "T:\\NotExisting"
+            };
+
+            var exception = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, exception.Message);
         }
 
-        [Test]
+        [TestMethod]
         public void RelativeWorkingDirectoryGetsCreated()
         {
             var config = new SigningServerConfiguration
@@ -62,7 +56,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -72,7 +66,7 @@ namespace SigningServer.Test
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory), true);
         }
 
-        [Test]
+        [TestMethod]
         public void RelativeWorkingDirectoryGetsCleaned()
         {
             var config = new SigningServerConfiguration
@@ -81,7 +75,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -97,7 +91,7 @@ namespace SigningServer.Test
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory), true);
         }
 
-        [Test]
+        [TestMethod]
         public void AbsoluteWorkingDirectoryGetsCreated()
         {
             var temp = Path.Combine(Path.GetTempPath(), "WorkingDirectory");
@@ -107,7 +101,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx")
+                        Certificate = new X509Certificate2(CertificatePath)
                     }
                 },
                 WorkingDirectory = temp
@@ -117,10 +111,10 @@ namespace SigningServer.Test
             Directory.Delete(temp, true);
         }
 
-        [Test]
+        [TestMethod]
         public void LoadCertificateFromStoreWorks()
         {
-            using (var cert = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
+            using (var cert = new CertificateStoreHelper(CertificatePath, StoreName.My,
                     StoreLocation.LocalMachine))
             {
                 var emptyConfig = new SigningServerConfiguration

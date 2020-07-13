@@ -2,11 +2,12 @@
 
 #include <Windows.h>
 
+#include "ILogger.h"
+
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Security::Cryptography::X509Certificates;
 using namespace SigningServer::Contracts;
-using namespace NLog;
 
 namespace SigningServer {
     namespace Server {
@@ -16,7 +17,7 @@ namespace SigningServer {
                 : public ISigningTool
             {
             public:
-                AppxSigningTool();
+                AppxSigningTool(ILogger^ log);
                 static AppxSigningTool();
                 virtual ~AppxSigningTool();
 
@@ -28,10 +29,10 @@ namespace SigningServer {
                 virtual bool IsFileSigned(String^ fileName);
 
             private:
-                static initonly Logger^ Log;
+                initonly ILogger^ m_log;
                 static initonly HashSet<String^>^ AppxSupportedExtensions;
                 static initonly Dictionary<String^, unsigned int>^ AppxSupportedHashAlgorithms;
-                static initonly bool CanSign;
+                static initonly HRESULT CanSign;
             };
 
         }

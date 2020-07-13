@@ -1,35 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Server;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private static readonly HashSet<string> FilesToIgnore = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { "UnsignedWrongPublisher.appx" };
-        private CertificateStoreHelper _certificateHelper;
-        private SigningServerService _service;
-        [OneTimeSetUp]
-        public void Setup()
-        {
-            Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
-            Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
+        private static CertificateStoreHelper _certificateHelper;
+        private static SigningServerService _service;
 
-            DeploymentItemAttribute.Deploy("Certificates", "Certificates");
-            _certificateHelper = new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.My,
+        [ClassInitialize]
+        public static void Setup(TestContext _)
+        {
+            _certificateHelper = new CertificateStoreHelper(CertificatePath, StoreName.My,
                 StoreLocation.LocalMachine);
 
             var configuration = new SigningServerConfiguration
             {
-                Port = 47111,
+                Port = 4711,
                 TimestampServer = ConfigurationManager.AppSettings["TimestampServer"],
                 Certificates = new[]
                 {
@@ -48,27 +43,25 @@ namespace SigningServer.Test
             _service.ConsoleStart();
         }
 
-        [OneTimeTearDown]
-        public void TearDown()
+        [ClassCleanup]
+        public static void TearDown()
         {
             _service.ConsoleStop();
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "IntegrationTestFiles")]
         public void ValidTestRun()
         {
-            CleanFilesToIgnore("IntegrationTestFiles");
             var client = new SigningClient(new SigningClientConfiguration
             {
-                SigningServer = "localhost:47111"
+                SigningServer = "localhost:4711"
             });
-
-            client.SignFile("IntegrationTestFiles/unsigned");
+            client.SignFile(Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned"));
 
             Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
 
-            var signedFiles = Directory.GetFiles("IntegrationTestFiles", "*.*", SearchOption.AllDirectories);
+            var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
             var signingTools = _service.SigningServer.SigningToolProvider;
 
             foreach (var signedFile in signedFiles)
@@ -79,44 +72,6 @@ namespace SigningServer.Test
                 Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
             }
 
-        }
-
-        private void CleanFilesToIgnore(string folder)
-        {
-            var files = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                if (FilesToIgnore.Contains(Path.GetFileName(file)))
-                {
-                    File.Delete(file);
-                }
-            }
-        }
-
-
-        [Test]
-        [DeploymentItem("TestFiles", "IntegrationNonTimestamped")]
-        public void TestNoTimestamp()
-        {
-            CleanFilesToIgnore("IntegrationNonTimestamped");
-            var client = new SigningClient(new SigningClientConfiguration
-            {
-                SigningServer = "localhost:47111",
-            });
-            client.SignFile("IntegrationNonTimestamped/unsigned");
-
-            Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
-
-            var signedFiles = Directory.GetFiles("IntegrationNonTimestamped", "*.*", SearchOption.AllDirectories);
-            var signingTools = _service.SigningServer.SigningToolProvider;
-
-            foreach (var signedFile in signedFiles)
-            {
-                var tool = signingTools.GetSigningTool(signedFile);
-                Assert.IsNotNull(tool, "Could not find signing tool for file {0}", signedFile);
-
-                Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
-            }
         }
 
     }

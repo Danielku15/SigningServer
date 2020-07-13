@@ -55,8 +55,6 @@ namespace SigningServer.Test
 
         public static SignedCms GetDigitalCertificate(string filename)
         {
-            X509Certificate2 cert = null;
-
             int encodingType;
             int contentType;
             int formatType;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using NUnit.Framework;
+using System.Threading;
 
 namespace SigningServer.Test
 {
@@ -26,43 +26,36 @@ namespace SigningServer.Test
 
         public void Deploy()
         {
-            Deploy(_path, _outputDirectory);
-        }
-
-        public static void Deploy(string path, string outputDirectory = null)
-        {
             // Escape input-path to correct back-slashes for Windows
-            string filePath = path.Replace("/", "\\");
+            string filePath = _path.Replace("/", "\\");
 
             // Look up where we are right now
-            DirectoryInfo environmentDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            DirectoryInfo environmentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
             // Get the full path and name of the deployment item
             string itemPath = new Uri(Path.Combine(environmentDir.FullName, filePath)).LocalPath;
             string itemName = Path.GetFileName(itemPath);
 
             // Get the target-path where to copy the deployment item to
-            string binFolderPath = Environment.CurrentDirectory;
+            string binFolderPath = environmentDir.ToString();
 
             // NUnit uses an obscure ShadowCopyCache directory which can be hard to find, so let's output it so the poor developer can get at it more easily
             Debug.WriteLine("DeploymentItem: Copying " + itemPath + " to " + binFolderPath);
 
             // Assemble the target path
             string itemPathInBin;
-            if (string.IsNullOrEmpty(outputDirectory))
+            if (string.IsNullOrEmpty(_outputDirectory))
             {
                 itemPathInBin = new Uri(Path.Combine(binFolderPath, itemName)).LocalPath;
             }
-            else if (!string.IsNullOrEmpty(Path.GetPathRoot(outputDirectory)))
+            else if (!string.IsNullOrEmpty(Path.GetPathRoot(_outputDirectory)))
             {
-                itemPathInBin = new Uri(Path.Combine(outputDirectory)).LocalPath;
+                itemPathInBin = new Uri(Path.Combine(_outputDirectory)).LocalPath;
             }
             else
             {
-                itemPathInBin = new Uri(Path.Combine(binFolderPath, outputDirectory)).LocalPath;
+                itemPathInBin = new Uri(Path.Combine(binFolderPath, _outputDirectory)).LocalPath;
             }
-
-            if (itemPathInBin == itemPath) return;
 
             // Decide whether it's a file or a folder
             if (File.Exists(itemPath)) // It's a file
@@ -100,7 +93,19 @@ namespace SigningServer.Test
                 // Now Create all of the sub-directories
                 foreach (string dirPath in Directory.GetDirectories(itemPath, "*", SearchOption.AllDirectories))
                 {
-                    Directory.CreateDirectory(dirPath.Replace(itemPath, itemPathInBin));
+                    for (int i = 0; i < 5; i++)
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(dirPath.Replace(itemPath, itemPathInBin));
+                            break;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // CreateDirectory sometimes throws for no apparent reason (probably another process interfering)
+                            Thread.Sleep(100);
+                        }
+                    }
                 }
 
                 //Copy all the files & Replace any files with the same name

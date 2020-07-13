@@ -10,8 +10,13 @@
 #include <Imagehlp.h>
 using namespace System::Security::Cryptography;
 
-SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool()
+SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool(ILogger^ log)
+    : m_log(log)
 {
+    if (CanSign != ERROR_SUCCESS)
+    {
+        log->Error(System::String::Format("Could not load mssign32.dll: {0}", CanSign));
+    }
 }
 
 static SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool()
@@ -25,13 +30,8 @@ static SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool()
     AppxSupportedHashAlgorithms["SHA384"] = CALG_SHA_384;
     AppxSupportedHashAlgorithms["SHA512"] = CALG_SHA_512;
 
-    Log = LogManager::GetCurrentClassLogger();
     HRESULT mssign = MsSign32::Init();
-    CanSign = mssign == ERROR_SUCCESS;
-    if (!CanSign)
-    {
-        Log->Error("Could not load mssign32.dll: {0}", mssign);
-    }
+    CanSign = mssign;
 }
 
 
@@ -85,7 +85,7 @@ bool SigningServer::Server::Appx::AppxSigningTool::IsFileSigned(String^ inputFil
         &actionId,
         &winTrustData
     );
-    Log->Trace("WinVerifyTrust returned {0}", result);
+    m_log->Trace(System::String::Format("WinVerifyTrust returned {0}", result));
     DWORD dwLastError;
 
     switch (result)
@@ -140,13 +140,13 @@ void SigningServer::Server::Appx::AppxSigningTool::SignFile(String^ inputFileNam
     {
         if (signFileRequest->OverwriteSignature)
         {
-            Log->Trace("File {0} is already signed, cannot overwrite signature for appx files. Build your package with 'msbuild /p:AppxPackageSigningEnabled=true", inputFileName);
+            m_log->Trace(System::String::Format("File {0} is already signed, cannot overwrite signature for appx files. Build your package with 'msbuild /p:AppxPackageSigningEnabled=true", inputFileName));
             signFileResponse->Result = SignFileResponseResult::FileNotSignedError;
             return;
         }
         else
         {
-            Log->Trace("File {0} is already signed, abort signing", inputFileName);
+            m_log->Trace(System::String::Format("File {0} is already signed, abort signing", inputFileName));
             signFileResponse->Result = SignFileResponseResult::FileAlreadySigned;
             return;
         }
@@ -156,7 +156,7 @@ void SigningServer::Server::Appx::AppxSigningTool::SignFile(String^ inputFileNam
     pin_ptr<BYTE> rawCertDataPin = &rawCertData[0];
     BYTE * nativeRawCertCata = rawCertDataPin;
 
-    Log->Trace("Creating certificate context", inputFileName);
+    m_log->Trace(System::String::Format("Creating certificate context {0}", inputFileName));
     PCCERT_CONTEXT pCertContext = CertCreateCertificateContext(
         X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
         nativeRawCertCata,
@@ -272,7 +272,7 @@ void SigningServer::Server::Appx::AppxSigningTool::SignFile(String^ inputFileNam
 
     if (hr == S_OK)
     {
-        Log->Trace("{0} successfully signed", inputFileName);
+        m_log->Trace(System::String::Format("{0} successfully signed", inputFileName));
         signFileResponse->Result = successResult;
         signFileResponse->FileContent = gcnew System::IO::FileStream(inputFileName, System::IO::FileMode::Open, System::IO::FileAccess::Read);
         signFileResponse->FileSize = signFileResponse->FileContent->Length;
@@ -305,6 +305,6 @@ void SigningServer::Server::Appx::AppxSigningTool::SignFile(String^ inputFileNam
         {
             signFileResponse->ErrorMessage = String::Format("signing file failed (0x{0:x})", hr);
         }
-        Log->Error("{0} signing failed {1}", inputFileName, signFileResponse->ErrorMessage);
+        m_log->Error(System::String::Format("{0} signing failed {1}", inputFileName, signFileResponse->ErrorMessage));
     }
 }

@@ -10,16 +10,20 @@
 #include <Imagehlp.h>
 using namespace System::Security::Cryptography;
 
-
-SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool()
+SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool(ILogger^ log)
+	: m_log(log)
 {
+	if (!CanSign)
+	{
+		log->Error(String::Format("Could not load mssign32.dll."));
+	}
 }
 
 static SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool()
 {
 	PESupportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
 		".exe", ".dll", ".sys", ".msi", ".cab"
-			// , ".drv", ".scr", ".cpl", ".ocx", ".ax", ".efi"
+		// , ".drv", ".scr", ".cpl", ".ocx", ".ax", ".efi"
 	}, System::StringComparer::CurrentCultureIgnoreCase);
 
 	PESupportedHashAlgorithms = gcnew Dictionary<String^, unsigned int>(System::StringComparer::CurrentCultureIgnoreCase);
@@ -29,13 +33,8 @@ static SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectua
 	PESupportedHashAlgorithms["SHA384"] = CALG_SHA_384;
 	PESupportedHashAlgorithms["SHA512"] = CALG_SHA_512;
 
-	Log = LogManager::GetCurrentClassLogger();
 	HRESULT mssign = MsSign32::Init();
 	CanSign = mssign == ERROR_SUCCESS;
-	if (!CanSign)
-	{
-		Log->Error("Could not load mssign32.dll: {0}", mssign);
-	}
 }
 
 
@@ -89,7 +88,7 @@ bool SigningServer::Server::PE::PortableExectuableSigningTool::IsFileSigned(Stri
 		&actionId,
 		&winTrustData
 		);
-	Log->Trace("WinVerifyTrust returned {0}", result);
+	m_log->Trace(String::Format("WinVerifyTrust returned {0}", result));
 	DWORD dwLastError;
 
 	switch (result)
@@ -163,13 +162,13 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	{
 		if (signFileRequest->OverwriteSignature)
 		{
-			Log->Trace("File {0} is already signed, removing signature", inputFileName);
+			m_log->Trace(String::Format("File {0} is already signed, removing signature", inputFileName));
 			UnsignFile(inputFileName);
 			successResult = SignFileResponseResult::FileResigned;
 		}
 		else
 		{
-			Log->Trace("File {0} is already signed, abort signing", inputFileName);
+			m_log->Trace(String::Format("File {0} is already signed, abort signing", inputFileName));
 			signFileResponse->Result = SignFileResponseResult::FileAlreadySigned;
 			return;
 		}
@@ -179,7 +178,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	pin_ptr<BYTE> rawCertDataPin = &rawCertData[0];
 	BYTE * nativeRawCertCata = rawCertDataPin;
 
-	Log->Trace("Creating certificate context", inputFileName);
+	m_log->Trace(String::Format("Creating certificate context", inputFileName));
 	PCCERT_CONTEXT pCertContext = CertCreateCertificateContext(
 		X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 		nativeRawCertCata,
@@ -244,14 +243,14 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 	signerProviderInfo.dwPvkChoice = PVK_TYPE_KEYCONTAINER;
 	signerProviderInfo.pwszKeyContainer = (LPWSTR)pwszKeyContainer;
 
-	Log->Trace("Call signing of  {0}", inputFileName);
+	m_log->Trace(String::Format("Call signing of  {0}", inputFileName));
 	SIGNER_CONTEXT* pSignerContext = nullptr;
 	HRESULT hr = MsSign32::SignerSign(&signerSubjectInfo, &signerCert, &signerSignatureInfo, &signerProviderInfo, nullptr, nullptr, &pSignerContext);
 
 	HRESULT tshr = S_OK;
 	if (!String::IsNullOrWhiteSpace(timeStampUrl))
 	{
-		Log->Trace("Timestamping with url {0}", timeStampUrl);
+		m_log->Trace(String::Format("Timestamping with url {0}", timeStampUrl));
 		pin_ptr<const wchar_t> pwszTimestampUrl = PtrToStringChars(timeStampUrl);
 		int timestampRetries = 5;
 		do
@@ -259,11 +258,11 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 			tshr = MsSign32::SignerTimeStamp(&signerSubjectInfo, pwszTimestampUrl, nullptr, nullptr);
 			if (tshr == S_OK)
 			{
-				Log->Trace("Timestamping succeeded");
+				m_log->Trace(String::Format("Timestamping succeeded"));
 			}
 			else
 			{
-				Log->Trace("Timestamping failed with {0}, retries: {1}", tshr, timestampRetries);
+				m_log->Trace(String::Format("Timestamping failed with {0}, retries: {1}", tshr, timestampRetries));
 				System::Threading::Thread::Sleep(1000);
 			}
 		} while (tshr != S_OK && (timestampRetries--) > 0);
@@ -281,7 +280,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 
 	if (hr == S_OK && tshr == S_OK)
 	{
-		Log->Trace("{0} successfully signed", inputFileName);
+		m_log->Trace(String::Format("{0} successfully signed", inputFileName));
 		signFileResponse->Result = successResult;
 		signFileResponse->FileContent = gcnew System::IO::FileStream(inputFileName, System::IO::FileMode::Open, System::IO::FileAccess::Read);
 		signFileResponse->FileSize = signFileResponse->FileContent->Length;
@@ -309,7 +308,7 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 		{
 			signFileResponse->ErrorMessage = String::Format("signing file failed (0x{0:x})", hr);
 		}
-		Log->Error("{0} signing failed {1}", inputFileName, signFileResponse->ErrorMessage);
+		m_log->Error(String::Format("{0} signing failed {1}", inputFileName, signFileResponse->ErrorMessage));
 	}
 	else
 	{
@@ -334,6 +333,6 @@ void SigningServer::Server::PE::PortableExectuableSigningTool::SignFile(String^ 
 		{
 			signFileResponse->ErrorMessage = String::Format("timestamping failed (0x{0:x})", hr);
 		}
-		Log->Error("{0} timestamping failed {1}", inputFileName, signFileResponse->ErrorMessage);
+		m_log->Error(String::Format("{0} timestamping failed {1}", inputFileName, signFileResponse->ErrorMessage));
 	}
 }

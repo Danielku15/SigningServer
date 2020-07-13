@@ -2,18 +2,18 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Server.PE;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Test
 {
-    [TestFixture]
+    [TestClass]
     public class ClickOnceSigningToolTest : UnitTestBase
     {
         #region .application
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse_Application()
         {
             var signingTool = new ClickOnceSigningTool();
@@ -21,7 +21,7 @@ namespace SigningServer.Test
             Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.application"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue_Application()
         {
             var signingTool = new ClickOnceSigningTool();
@@ -29,7 +29,7 @@ namespace SigningServer.Test
             Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.application"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Application()
         {
             using (
@@ -44,7 +44,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Application()
         {
             using (
@@ -59,7 +59,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "Unsign_Works")]
         public void Unsign_Works_Application()
         {
@@ -71,7 +71,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Works_Application()
         {
@@ -82,7 +82,7 @@ namespace SigningServer.Test
         }
 
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_NoResign_Fails_Application()
         {
@@ -92,7 +92,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_NoResign_Works_Application()
         {
@@ -105,7 +105,7 @@ namespace SigningServer.Test
         #endregion      
         
         #region .manifest
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse_Manifest()
         {
             var signingTool = new ClickOnceSigningTool();
@@ -113,7 +113,7 @@ namespace SigningServer.Test
             Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.exe.manifest"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue_Manifest()
         {
             var signingTool = new ClickOnceSigningTool();
@@ -121,7 +121,7 @@ namespace SigningServer.Test
             Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.exe.manifest"));
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Manifest()
         {
             using (
@@ -136,7 +136,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Manifest()
         {
             using (
@@ -151,7 +151,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "Unsign_Works")]
         public void Unsign_Works_Manifest()
         {
@@ -163,7 +163,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Works_Manifest()
         {
@@ -174,7 +174,7 @@ namespace SigningServer.Test
         }
 
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_NoResign_Fails_Manifest()
         {
@@ -184,7 +184,7 @@ namespace SigningServer.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_NoResign_Works_Manifest()
         {

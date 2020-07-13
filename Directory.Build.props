@@ -1,0 +1,42 @@
+<Project>
+	<PropertyGroup Label="Globals">
+		<Optimize>false</Optimize>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+
+		<!--  Ensure PlatformTarget to be equal to Platform (https://github.com/dotnet/sdk/issues/1560) -->
+		<Platform>x64</Platform>
+		<Platforms>$(Platform)</Platforms>
+		<PlatformTarget>$(Platform)</PlatformTarget>
+		<PlatformName>$(Platform)</PlatformName>
+
+		<TargetFramework>net48</TargetFramework>
+		<LangVersion>7.3</LangVersion>
+
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
+		<Version>1.0.0.$(BuildNumber)</Version>
+		<Company>Daniel Kuschny</Company>
+		<Copyright>Copyright © 2020 Daniel Kuschny</Copyright>
+		<Product>CoderLine SigningServer</Product>
+
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+
+		<DistPath>$(MSBuildThisFileDirectory)Dist\</DistPath>
+	</PropertyGroup>
+
+	<Target Name="CopyToDist" BeforeTargets="AfterBuild" Condition=" '$(CopyToDist)' == 'true' ">
+		<Message Text="Copying binaries to from $(OutputPath) to $(DistPath)" Importance="High" />
+		<ItemGroup>
+			<OutputFilesToCopy Include="$(OutputPath)\**\*.*" Exclude="$(OutputPath)\**\*.obj;$(OutputPath)\**\*.tlog" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(OutputFilesToCopy)"
+			  DestinationFiles="@(OutputFilesToCopy->'$(DistPath)$(Configuration)\$(MSBuildProjectName)\%(RecursiveDir)%(Filename)%(Extension)')"
+			  SkipUnchangedFiles="True"
+			  Condition="'$(OutputType)' == 'Exe'" />
+	</Target>
+
+
+</Project>

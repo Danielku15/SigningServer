@@ -1,12 +1,12 @@
 #pragma once
 
 #include <Windows.h>
+#include "ILogger.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Security::Cryptography::X509Certificates;
 using namespace SigningServer::Contracts;
-using namespace NLog;
 
 namespace SigningServer { namespace Server { namespace PE {
 
@@ -14,7 +14,7 @@ namespace SigningServer { namespace Server { namespace PE {
 		: public ISigningTool
 	{
 	public:
-		PortableExectuableSigningTool();
+		PortableExectuableSigningTool(ILogger^ log);
 		static PortableExectuableSigningTool();
 		virtual ~PortableExectuableSigningTool();
 
@@ -27,7 +27,8 @@ namespace SigningServer { namespace Server { namespace PE {
 		virtual void UnsignFile(String^ fileName);
 
 	private:
-		static initonly Logger^ Log;
+		ILogger^ m_log;
+
 		static initonly HashSet<String^>^ PESupportedExtensions;
 		static initonly Dictionary<String^, unsigned int>^ PESupportedHashAlgorithms;
 		static initonly bool CanSign;

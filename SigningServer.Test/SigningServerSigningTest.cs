@@ -187,5 +187,49 @@ namespace SigningServer.Test
             files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
             Assert.AreEqual(0, files.Length);
         }
+        
+        
+        [Test]
+        public void SignFile_AlreadySigned_ResponseDisposeCleansFile()
+        {
+
+            var simulateSigningTool = new Mock<ISigningTool>();
+            simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
+            simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
+            simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
+            simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
+            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
+                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest rq, SignFileResponse rs) =>
+                {
+                    rs.Result = SignFileResponseResult.FileAlreadySigned;
+                    var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+                    rs.FileContent = fs;
+                    rs.FileSize = fs.Length;
+                });
+
+            var simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
+  
+
+            var server = new Server.SigningServer(_configuration, simultateSigningToolProvider);
+
+            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+            var request = new SignFileRequest
+            {
+                FileName = "unsigned.exe",
+                FileSize = testData.Length,
+                FileContent = testData
+            };
+
+            var response = server.SignFile(request);
+            Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
+
+            var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+            Assert.AreEqual(1, files.Length);
+
+            response.Dispose();
+
+            files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+            Assert.AreEqual(0, files.Length);
+        }
     }
 }

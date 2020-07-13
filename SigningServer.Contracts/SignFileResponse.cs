@@ -12,16 +12,19 @@ namespace SigningServer.Contracts
         /// </summary>
         [MessageHeader]
         public SignFileResponseResult Result { get; set; }
+
         /// <summary>
         /// The detailed error message in case <see cref="Result"/> is set to <see cref="SignFileResponseResult.FileNotSignedError"/>
         /// </summary>
         [MessageHeader]
         public string ErrorMessage { get; set; }
+
         /// <summary>
         /// The size of the signed file in bytes.
         /// </summary>
         [MessageHeader]
         public long FileSize { get; set; }
+
         /// <summary>
         /// The signed file. 
         /// </summary>
@@ -37,28 +40,38 @@ namespace SigningServer.Contracts
         {
             if (FileContent != null)
             {
-                var fileName = FileContent is FileStream ? ((FileStream)FileContent).Name : "";
+                var fileName = FileContent is FileStream ? ((FileStream) FileContent).Name : "";
                 try
                 {
-
                     FileContent.Dispose();
                     FileContent = null;
                 }
-                catch 
+                catch
                 {
                 }
+
                 if (!string.IsNullOrWhiteSpace(fileName) && File.Exists(fileName))
                 {
                     try
                     {
                         File.Delete(fileName);
+                        DeleteSuccess?.Invoke(this, fileName);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        DeleteFailed?.Invoke(this, fileName, e);
                     }
+                }
+                else
+                {
+                    DeleteSkipped?.Invoke(this, fileName);
                 }
             }
         }
+
+        public event Action<SignFileResponse, string> DeleteSkipped;
+        public event Action<SignFileResponse, string> DeleteSuccess;
+        public event Action<SignFileResponse, string, Exception> DeleteFailed;
 
         public override string ToString()
         {

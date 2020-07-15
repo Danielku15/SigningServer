@@ -44,15 +44,6 @@ namespace SigningServer.Server.Configuration
 
         public void LoadCertificate()
         {
-            //if (!string.IsNullOrEmpty(TokenCryptoProvider))
-            //{
-            //    // eToken Base Cryptographic Provider
-
-            //    // we keep the token unlocked for the lifetime of the process
-            //    // hence we do not release the handle via CryptReleaseContext
-            //    UnlockToken();
-            //}
-
             using (var store = new X509Store(StoreName, StoreLocation))
             {
                 store.Open(OpenFlags.ReadOnly);
@@ -94,34 +85,6 @@ namespace SigningServer.Server.Configuration
 
             }
         }
-
-        //private void UnlockToken()
-        //{
-        //    IntPtr cryptProv = IntPtr.Zero;
-        //    if (!CryptAcquireContext(ref cryptProv, TokenContainerName, TokenCryptoProvider, PROV_RSA_FULL, CRYPT_SILENT))
-        //    {
-        //        throw new InvalidConfigurationException($"Could not unlock token, could not acquire contet {Marshal.GetLastWin32Error():X}");
-        //    }
-
-        //    var bytes = Encoding.ASCII.GetBytes(TokenPin);
-
-        //    if (!CryptSetProvParam(cryptProv, PP_SIGNATURE_PIN, bytes, 0))
-        //    {
-        //        throw new InvalidConfigurationException($"Could not unlock token, could not set provider param {Marshal.GetLastWin32Error():X}");
-        //    }
-        //}
-
-        //private const int PROV_RSA_FULL = 1;
-        //private const uint CRYPT_SILENT = 0x40;
-        //private const uint PP_SIGNATURE_PIN = 0x21;
-
-        //[DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        //private static extern bool CryptAcquireContext(ref IntPtr hProv, string pszContainer, string pszProvider, uint dwProvType, uint dwFlags);
-
-        //[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        //private static extern bool CryptSetProvParam(IntPtr hProv, uint dwParam, [In] byte[] pbData, uint dwFlags);
 
         public bool IsAuthorized(string username, string password)
         {

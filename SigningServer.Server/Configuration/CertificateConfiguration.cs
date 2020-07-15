@@ -76,27 +76,24 @@ namespace SigningServer.Server.Configuration
                 var rsa = (RSACryptoServiceProvider)Certificate.PrivateKey;
                 if (rsa.CspKeyContainerInfo.HardwareDevice)
                 {
+                    var keyPassword = new SecureString();
+                    foreach (var c in TokenPin)
+                    {
+                        keyPassword.AppendChar(c);
+                    }
                     var csp = new CspParameters(1 /*RSA*/,
                                         rsa.CspKeyContainerInfo.ProviderName,
                                         rsa.CspKeyContainerInfo.KeyContainerName,
                                         new System.Security.AccessControl.CryptoKeySecurity(),
-                                        GetSecurePin());
-                    var rsaCsp = new RSACryptoServiceProvider(csp);
-                    Certificate.PrivateKey = rsaCsp;
+                                        keyPassword);
+                    Certificate = new X509Certificate2(Certificate.RawData)
+                    {
+                        PrivateKey = new RSACryptoServiceProvider(csp)
+                    };
                 }
 
             }
         }
-        private SecureString GetSecurePin()
-        {
-            var pwd = new SecureString();
-            foreach (var c in TokenPin)
-            {
-                pwd.AppendChar(c);
-            }
-            return pwd;
-        }
-
 
         //private void UnlockToken()
         //{

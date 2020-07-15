@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -378,13 +379,30 @@ namespace SigningServer.Android.Apk
             {
                 var digestAlgorithm = signatureAlgorithm.DigestAlgorithm;
                 byte[] signatureBytes;
-                if (signerConfig.Certificates.PrivateKey is RSACryptoServiceProvider rsa)
+
+                var x509Key = new X509AsymmetricSecurityKey(signerConfig.Certificates);
+
+                if (signerConfig.Certificates.PrivateKey is RSACryptoServiceProvider x)
                 {
-                    using (var rsa2 = new RSACryptoServiceProvider())
-                    using (var hash = digestAlgorithm.CreateInstance())
+                    if (digestAlgorithm.Oid == DigestAlgorithm.SHA1.Oid)
                     {
-                        rsa2.ImportParameters(rsa.ExportParameters(true));
-                        signatureBytes = rsa2.SignData(signer.SignedData, hash);
+                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm(SecurityAlgorithms.RsaSha1Signature, true);
+                        signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+                    }
+                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA256.Oid)
+                    {
+                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm(SecurityAlgorithms.RsaSha256Signature, true);
+                        signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                    }
+                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA512.Oid)
+                    {
+                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", true);
+
+                        signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
+                    }
+                    else
+                    {
+                        throw new CryptographicException($"Failed to sign using {digestAlgorithm.Name} unsupproted digest");
                     }
                 }
                 else if (signerConfig.Certificates.PrivateKey is DSACryptoServiceProvider dsa)

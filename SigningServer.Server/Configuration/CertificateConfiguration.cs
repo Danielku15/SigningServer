@@ -68,7 +68,8 @@ namespace SigningServer.Server.Configuration
                 if (rsa.CspKeyContainerInfo.HardwareDevice)
                 {
                     var keyPassword = new SecureString();
-                    foreach (var c in TokenPin)
+                    var decrypted = DataProtector.UnprotectData(TokenPin);
+                    foreach (var c in decrypted)
                     {
                         keyPassword.AppendChar(c);
                     }

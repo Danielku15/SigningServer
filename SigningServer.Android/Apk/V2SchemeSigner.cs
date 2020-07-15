@@ -397,7 +397,6 @@ namespace SigningServer.Android.Apk
                     else if (digestAlgorithm.Oid == DigestAlgorithm.SHA512.Oid)
                     {
                         var rsa = (RSA)x509Key.GetAsymmetricAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", true);
-
                         signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
                     }
                     else

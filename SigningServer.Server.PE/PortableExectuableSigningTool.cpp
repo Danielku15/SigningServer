@@ -22,7 +22,7 @@ SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSign
 static SigningServer::Server::PE::PortableExectuableSigningTool::PortableExectuableSigningTool()
 {
 	PESupportedExtensions = gcnew HashSet<String^>(gcnew array<String^> {
-		".exe", ".dll", ".sys", ".msi", ".cab"
+		".exe", ".dll", ".sys", ".msi", ".cab", ".cat"
 		// , ".drv", ".scr", ".cpl", ".ocx", ".ax", ".efi"
 	}, System::StringComparer::CurrentCultureIgnoreCase);
 

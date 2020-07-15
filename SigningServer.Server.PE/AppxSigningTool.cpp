@@ -13,9 +13,9 @@ using namespace System::Security::Cryptography;
 SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool(ILogger^ log)
     : m_log(log)
 {
-    if (CanSign != ERROR_SUCCESS)
+    if (!CanSign)
     {
-        log->Error(System::String::Format("Could not load mssign32.dll: {0}", CanSign));
+        log->Error(String::Format("Could not load mssign32.dll."));
     }
 }
 
@@ -31,7 +31,7 @@ static SigningServer::Server::Appx::AppxSigningTool::AppxSigningTool()
     AppxSupportedHashAlgorithms["SHA512"] = CALG_SHA_512;
 
     HRESULT mssign = MsSign32::Init();
-    CanSign = mssign;
+    CanSign = mssign == ERROR_SUCCESS;
 }
 
 

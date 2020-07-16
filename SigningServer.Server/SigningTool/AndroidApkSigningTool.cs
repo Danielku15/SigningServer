@@ -2,17 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
 using NLog;
-using Org.BouncyCastle.Tsp;
 using SigningServer.Android;
 using SigningServer.Android.Crypto;
 using SigningServer.Contracts;
-using BigInteger = Org.BouncyCastle.Math.BigInteger;
 
 namespace SigningServer.Server.SigningTool
 {

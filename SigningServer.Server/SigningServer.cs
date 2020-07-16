@@ -15,9 +15,10 @@ namespace SigningServer.Server
     public class SigningServer : ISigningServer
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private HardwareCertificateUnlocker _hardwareCertificateUnlocker;
 
         public SigningServerConfiguration Configuration { get; private set; }
-        public ISigningToolProvider SigningToolProvider { get; set; }
+        public ISigningToolProvider SigningToolProvider { get; }
 
         public SigningServer(SigningServerConfiguration configuration, ISigningToolProvider signingToolProvider)
         {
@@ -29,13 +30,23 @@ namespace SigningServer.Server
         private void Initialize(SigningServerConfiguration configuration)
         {
             Configuration = configuration;
-
+            
             Log.Info("Validating configuration");
-            Configuration = new SigningServerConfiguration();
-            Configuration.LegacyPort = configuration.LegacyPort;
-            Configuration.Port = configuration.Port;
-            Configuration.TimestampServer = configuration.TimestampServer ?? "";
-            Configuration.WorkingDirectory = configuration.WorkingDirectory ?? "";
+            Configuration = new SigningServerConfiguration
+            {
+                LegacyPort = configuration.LegacyPort,
+                Port = configuration.Port,
+                TimestampServer = configuration.TimestampServer ?? "",
+                WorkingDirectory = configuration.WorkingDirectory ?? "",
+                HardwareCertificateUnlockIntervalInSeconds =
+                    configuration.HardwareCertificateUnlockIntervalInSeconds > 0
+                        ? configuration.HardwareCertificateUnlockIntervalInSeconds
+                        : 60 * 60
+            };
+
+            _hardwareCertificateUnlocker =
+                new HardwareCertificateUnlocker(
+                    TimeSpan.FromSeconds(Configuration.HardwareCertificateUnlockIntervalInSeconds));
 
             var list = new List<CertificateConfiguration>();
             if (configuration.Certificates != null)
@@ -51,12 +62,12 @@ namespace SigningServer.Server
                     try
                     {
                         Log.Info("Loading certificate '{0}'", certificateConfiguration.Thumbprint);
-                        certificateConfiguration.LoadCertificate();
+                        certificateConfiguration.LoadCertificate(_hardwareCertificateUnlocker);
                         list.Add(certificateConfiguration);
                     }
                     catch (CryptographicException e)
                     {
-                        Log.Error(e, $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} coult not be loaded: 0x{e.HResult.ToString("X")}");
+                        Log.Error(e, $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} coult not be loaded: 0x{e.HResult:X}");
                     }
                     catch (Exception e)
                     {
@@ -259,8 +270,7 @@ namespace SigningServer.Server
                 {
                     var context = OperationContext.Current;
                     var properties = context.IncomingMessageProperties;
-                    var endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-                    if (endpoint != null)
+                    if (properties[RemoteEndpointMessageProperty.Name] is RemoteEndpointMessageProperty endpoint)
                     {
                         return $"{endpoint.Address}:{endpoint.Port}";
                     }

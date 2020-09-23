@@ -47,6 +47,7 @@ namespace SigningServer.Test
         public static void TearDown()
         {
             _service.ConsoleStop();
+            _certificateHelper?.Dispose();
         }
 
         [TestMethod]

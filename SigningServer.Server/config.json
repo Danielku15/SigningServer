@@ -2,6 +2,7 @@
   "Port": 4712,
   "LegacyPort": 4711,
   "WorkingDirectory": "D:\\temp\\Signing",
+  "HardwareCertificateUnlockIntervalInSeconds": 3600,
   // please don't use verisign timestamp server with this tool, it's will not work due to
   // protocol incompatibilities
   "TimestampServer": "http://timestamp.globalsign.com/scripts/timstamp.dll",
@@ -10,7 +11,8 @@
     {
       "StoreName": "My",
       "StoreLocation": "LocalMachine",
-      "Thumbprint": "‎42e71dba9c9d02dc3dd1d58868a2d4773bb78f30"
+      "Thumbprint": "‎0b1e58612300070683cfaa9cee9f76437fb64c1a",
+      "TokenPin": "Qm38kOk7kUy0czhihP+qlA=="
     }
   ]
 }

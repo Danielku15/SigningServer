@@ -12,7 +12,7 @@ namespace SigningServer.Server
             var server = new SigningServerService();
             if (Environment.UserInteractive)
             {
-                if (args.Length == 1)
+                if (args.Length > 0)
                 {
                     switch (args[0])
                     {
@@ -23,6 +23,10 @@ namespace SigningServer.Server
                         case "-remove":
                             Console.WriteLine("Removing Windows Service");
                             ManagedInstallerClass.InstallHelper(new[] { "/u", Assembly.GetExecutingAssembly().Location });
+                            return;
+                        case "-encode":
+                            Console.WriteLine("Original data: " + args[1]);
+                            Console.WriteLine("Encrypted data: " + DataProtector.ProtectData(args[1]));
                             return;
                     }
                 }

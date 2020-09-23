@@ -60,6 +60,20 @@ namespace SigningServer.Test
 
 
         [TestMethod]
+        [DeploymentItem("TestFiles", "SignFile_Works")]
+        public void SignFile_Unsigned_ApkAligned_Works()
+        {
+            CanSign(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-aligned.apk", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestFiles", "SignFile_Works")]
+        public void SignFile_Unsigned_ApkUnaligned_Works()
+        {
+            CanSign(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-unaligned.apk", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Fails")]
         public void SignFile_Signed_Jar_NoResign_Fails()
         {
@@ -67,10 +81,38 @@ namespace SigningServer.Test
         }
 
         [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Fails")]
+        public void SignFile_Signed_ApkUnaligned_NoResign_Fails()
+        {
+            CannotResign(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-unaligned.apk", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Fails")]
+        public void SignFile_Signed_ApkAligned_NoResign_Fails()
+        {
+            CannotResign(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-aligned.apk", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
         public void SignFile_Signed_Jar_NoResign_Works()
         {
             CanResign(new AndroidApkSigningTool(), "NoResign_Works/signed/signed.jar", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Works")]
+        public void SignFile_Signed_ApkAligned_NoResign_Works()
+        {
+            CanResign(new AndroidApkSigningTool(), "NoResign_Works/signed/signed-aligned.apk", "Certificates/SigningServer.Test.pfx");
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestFiles", "NoResign_Works")]
+        public void SignFile_Signed_ApkUnaligned_NoResign_Works()
+        {
+            CanResign(new AndroidApkSigningTool(), "NoResign_Works/signed/signed-unaligned.apk", "Certificates/SigningServer.Test.pfx");
         }
     }
 }

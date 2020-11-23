@@ -19,7 +19,7 @@ jobs:
         with:
           dotnet-version: '3.1.100'
       - uses: microsoft/setup-msbuild@v1
-      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=${{ matrix.configuration }} -p:Platform=x64 -p:CopyToDist=true -m
+      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=${{ matrix.configuration }} -p:Platform=x64 -p:CopyToDist=true -m -p:BuildNumber=${{ github.run_number }}
       - run: dotnet test SigningServer.sln -c ${{ matrix.configuration }} -p:Platform=x64 --no-build
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v2
@@ -33,4 +33,3 @@ jobs:
           name: SigningServer.Client
           path: |
             Dist/${{ matrix.configuration }}/SigningServer.Client/*.*
-      

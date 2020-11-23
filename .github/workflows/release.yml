@@ -14,6 +14,12 @@ jobs:
         with:
           dotnet-version: '3.1.100'
       - uses: microsoft/setup-msbuild@v1
+      - name: Extract Tag   
+        id: extract_tag
+        run: |
+            $ref = "${{ github.ref }}"
+            $ref = $ref.Substring($ref.LastIndexOf("/") + 1)
+            echo "::set-output name=TAG::$ref"
       - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=Release -p:Platform=x64 -p:CopyToDist=true -m
       - name: Create Release
         id: create_release
@@ -22,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Release ${{ steps.extract_tag.outputs.TAG }}
           body: |
             Changes in this Release
             - TODO
@@ -30,29 +36,29 @@ jobs:
           prerelease: false
 
       - name: Package Server
+        id: pack_server
         run: |
             & Compress-Archive -Path .\dist\Release\SigningServer.Server -DestinationPath dist\Release\SigningServer.Server.zip
       - name: Upload Server
-        id: upload-server
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./dist/Release/SigningServer.Server.zip
-          asset_name: SigningServer.Server-x64-${{ github.ref }}.zip
+          asset_name: SigningServer.Server-x64-${{ steps.extract_tag.outputs.TAG }}.zip
           asset_content_type: application/zip
 
       - name: Package Client
+        id: pack_client      
         run: |
             & Compress-Archive -Path .\dist\Release\SigningServer.Client -DestinationPath dist\Release\SigningServer.Client.zip
       - name: Upload Client
-        id: upload-client
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./dist/Release/SigningServer.Client.zip
-          asset_name: SigningServer.Client-x64-${{ github.ref }}.zip
+          asset_name: SigningServer.Client-x64-${{ steps.extract_tag.outputs.TAG }}.zip
           asset_content_type: application/zip

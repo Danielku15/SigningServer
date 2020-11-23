@@ -1,0 +1,36 @@
+name: Build
+on: 
+  push:
+    branches: 
+      - develop
+      - master
+  pull_request:
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: windows-latest
+    strategy:
+        matrix: 
+            configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.100'
+      - uses: microsoft/setup-msbuild@v1
+      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=${{ matrix.configuration }} -p:Platform=x64 -p:CopyToDist=true -m -p:BuildNumber=${{ github.run_number }}
+      - run: |
+            & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe" SigningServer.Test\bin\x64\${{ matrix.configuration }}\net48\SigningServer.Test.dll /Platform:x64
+      - name: Archive Server Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: SigningServer.Server
+          path: |
+            Dist/${{ matrix.configuration }}/SigningServer.Server/*.*
+      - name: Archive Client Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: SigningServer.Client
+          path: |
+            Dist/${{ matrix.configuration }}/SigningServer.Client/*.*

@@ -10,7 +10,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: montudor/action-zip@v0.1.0  
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.100'
@@ -31,7 +30,8 @@ jobs:
           prerelease: false
 
       - name: Package Server
-        run: zip -qq -r ./dist/Release/SigningServer.Server.zip ./Release/SigningServer.Server
+        run: |
+            & Compress-Archive -Path .\dist\Release\SigningServer.Server -DestinationPath dist\Release\SigningServer.Server.zip
       - name: Upload Server
         id: upload-server
         uses: actions/upload-release-asset@v1
@@ -44,7 +44,8 @@ jobs:
           asset_content_type: application/zip
 
       - name: Package Client
-        run: zip -qq -r ./dist/Release/SigningServer.Client.zip ./Release/SigningServer.Client
+        run: |
+            & Compress-Archive -Path .\dist\Release\SigningServer.Client -DestinationPath dist\Release\SigningServer.Client.zip
       - name: Upload Client
         id: upload-client
         uses: actions/upload-release-asset@v1

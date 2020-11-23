@@ -1,0 +1,57 @@
+name: Release
+on: 
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: montudor/action-zip@v0.1.0      
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.100'
+      - uses: microsoft/setup-msbuild@v1
+      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=Release -p:Platform=x64 -p:CopyToDist=true -m
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - TODO
+          draft: false
+          prerelease: false
+
+      - name: Package Server
+        run: zip -qq -r ./dist/Release/SigningServer.Server.zip ./Release/SigningServer.Server
+      - name: Upload Server
+        id: upload-server
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./dist/Release/SigningServer.Server.zip
+          asset_name: SigningServer.Server-x64-${{ github.ref }}.zip
+          asset_content_type: application/zip
+
+      - name: Package Client
+        run: zip -qq -r ./dist/Release/SigningServer.Client.zip ./Release/SigningServer.Client
+      - name: Upload Client
+        id: upload-client
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./dist/Release/SigningServer.Client.zip
+          asset_name: SigningServer.Client-x64-${{ github.ref }}.zip
+          asset_content_type: application/zip

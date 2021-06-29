@@ -16,8 +16,8 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-		<PackageReference Include="NLog" Version="4.7.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="NLog" Version="4.7.10" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />

@@ -10,13 +10,13 @@ namespace SigningServer.Test
         public X509Certificate2 Certificate { get; }
         public X509Store Store { get; private set; }
 
-        public CertificateStoreHelper(string certificateFile, StoreName name, StoreLocation location)
+        public CertificateStoreHelper(string certificateFile, string certificatePassword, StoreName name, StoreLocation location)
         {
             if (!File.Exists(certificateFile))
             {
                 Assert.Fail($"Certificate file {certificateFile} not found (CurrentDirectory:{Environment.CurrentDirectory})");
             }
-            Certificate = new X509Certificate2(certificateFile);
+            Certificate = new X509Certificate2(certificateFile, certificatePassword);
             Store = new X509Store(name, location);
             Store.Open(OpenFlags.ReadWrite);
             Store.Add(Certificate);

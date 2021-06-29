@@ -14,7 +14,8 @@ namespace SigningServer.Server
             new PortableExectuableSigningTool(Log),
             new AndroidApkSigningTool(),
             new ClickOnceSigningTool(),
-            new AppxSigningTool(Log)
+            new AppxSigningTool(Log),
+            new PowerShellSigningTool()
         };
 
         public DefaultSigningToolProvider()

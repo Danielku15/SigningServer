@@ -40,7 +40,7 @@ namespace SigningServer.Test
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 using (var signingTool = new AppxSigningTool(Log))
@@ -55,7 +55,7 @@ namespace SigningServer.Test
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
         {
             using (
-              new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+              new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                   StoreLocation.LocalMachine))
             {
                 using (var signingTool = new AppxSigningTool(Log))
@@ -72,7 +72,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new AppxSigningTool(Log))
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -83,7 +83,7 @@ namespace SigningServer.Test
             using (var signingTool = new AppxSigningTool(Log))
             {
                 var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
-                var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx");
+                var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
                 Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
                 var response = new SignFileResponse();
@@ -109,7 +109,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new AppxSigningTool(Log))
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.appx", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, "NoResign_Fails/signed/signed.appx", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -120,7 +120,7 @@ namespace SigningServer.Test
             using (var signingTool = new AppxSigningTool(Log))
             {
                 var fileName = "NoResign_Works/signed/signed.appx";
-                var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx");
+                var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
                 Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
                 var response = new SignFileResponse();

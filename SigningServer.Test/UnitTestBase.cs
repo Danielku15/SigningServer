@@ -12,10 +12,11 @@ namespace SigningServer.Test
     {
         protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
         protected static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
+        protected static string CertificatePassword = "SigningServer";
 
-        protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string hashAlgorithm = null)
+        protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string password, string hashAlgorithm = null)
         {
-            var certificate = new X509Certificate2(pfx);
+            var certificate = new X509Certificate2(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
@@ -52,9 +53,9 @@ namespace SigningServer.Test
             Assert.AreEqual(hashAlgorithmOid, signerInfo.SignerInfos[0].DigestAlgorithm.Value);
         }
 
-        protected void CanResign(ISigningTool signingTool, string fileName, string pfx)
+        protected void CanResign(ISigningTool signingTool, string fileName, string pfx, string password)
         {
-            var certificate = new X509Certificate2(pfx);
+            var certificate = new X509Certificate2(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
@@ -86,9 +87,9 @@ namespace SigningServer.Test
             }
         }
 
-        protected void CannotResign(ISigningTool signingTool, string fileName, string pfx)
+        protected void CannotResign(ISigningTool signingTool, string fileName, string pfx, string password)
         {
-            var certificate = new X509Certificate2(pfx);
+            var certificate = new X509Certificate2(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();

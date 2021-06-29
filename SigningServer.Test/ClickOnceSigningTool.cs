@@ -33,7 +33,7 @@ namespace SigningServer.Test
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Application()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 var signingTool = new ClickOnceSigningTool();
@@ -48,7 +48,7 @@ namespace SigningServer.Test
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Application()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 var signingTool = new ClickOnceSigningTool();
@@ -77,7 +77,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.application", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.application", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -88,7 +88,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -98,7 +98,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CanResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -125,7 +125,7 @@ namespace SigningServer.Test
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse_Manifest()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 var signingTool = new ClickOnceSigningTool();
@@ -140,7 +140,7 @@ namespace SigningServer.Test
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue_Manifest()
         {
             using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", StoreName.Root,
+                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 var signingTool = new ClickOnceSigningTool();
@@ -169,7 +169,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe.manifest", "Certificates/SigningServer.Test.pfx");
+                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe.manifest", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -180,7 +180,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx");
+                CannotResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 
@@ -190,7 +190,7 @@ namespace SigningServer.Test
         {
             var signingTool = new ClickOnceSigningTool();
             {
-                CanResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx");
+                CanResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx", CertificatePassword);
             }
         }
 

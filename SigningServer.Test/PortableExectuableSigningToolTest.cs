@@ -36,7 +36,7 @@ namespace SigningServer.Test
         public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
         {
             using (
-                new CertificateStoreHelper(CertificatePath, StoreName.Root,
+                new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.Root,
                     StoreLocation.LocalMachine))
             {
                 using (var signingTool = new PortableExectuableSigningTool(Log))
@@ -51,7 +51,7 @@ namespace SigningServer.Test
         public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
         {
             using (
-              new CertificateStoreHelper(CertificatePath, StoreName.Root,
+              new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.Root,
                   StoreLocation.LocalMachine))
             {
                 using (var signingTool = new PortableExectuableSigningTool(Log))
@@ -83,7 +83,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.exe"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.exe"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -93,7 +93,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.dll"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.dll"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -103,7 +103,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cab"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cab"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -113,7 +113,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.msi"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.msi"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -123,7 +123,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.sys"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.sys"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -133,7 +133,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cat"), CertificatePath);
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cat"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -147,7 +147,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.exe"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.exe"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.exe"), Sha1Oid);
             }
         }
@@ -158,7 +158,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.dll"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.dll"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.dll"), Sha1Oid);
             }
         }
@@ -169,7 +169,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cab"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cab"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cab"), Sha1Oid);
             }
         }
@@ -180,7 +180,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.msi"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.msi"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.msi"), Sha1Oid);
             }
         }
@@ -191,7 +191,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.sys"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.sys"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.sys"), Sha1Oid);
             }
         }
@@ -202,7 +202,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), CertificatePath, "SHA1");
+                CanSign(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), CertificatePath, CertificatePassword, "SHA1");
                 EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), Sha1Oid);
             }
         }
@@ -217,7 +217,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.exe"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.exe"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -227,7 +227,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.dll"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.dll"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -237,7 +237,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cab"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cab"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -247,7 +247,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.msi"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.msi"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -257,7 +257,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.sys"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.sys"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -267,7 +267,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cat"), CertificatePath);
+                CannotResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cat"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -281,7 +281,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.exe"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.exe"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -291,7 +291,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.dll"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.dll"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -301,7 +301,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cab"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cab"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -311,7 +311,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.msi"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.msi"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -321,7 +321,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.sys"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.sys"), CertificatePath, CertificatePassword);
             }
         }
 
@@ -331,7 +331,7 @@ namespace SigningServer.Test
         {
             using (var signingTool = new PortableExectuableSigningTool(Log))
             {
-                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cat"), CertificatePath);
+                CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cat"), CertificatePath, CertificatePassword);
             }
         }
 

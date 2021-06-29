@@ -21,7 +21,7 @@ namespace SigningServer.Test
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _certificateHelper = new CertificateStoreHelper(CertificatePath, StoreName.My,
+            _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
                 StoreLocation.LocalMachine);
 
             _configuration = new SigningServerConfiguration

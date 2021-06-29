@@ -37,7 +37,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath)
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "T:\\NotExisting"
@@ -56,7 +56,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath)
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -75,7 +75,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath)
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -101,7 +101,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath)
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = temp
@@ -114,7 +114,7 @@ namespace SigningServer.Test
         [TestMethod]
         public void LoadCertificateFromStoreWorks()
         {
-            using (var cert = new CertificateStoreHelper(CertificatePath, StoreName.My,
+            using (var cert = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
                     StoreLocation.LocalMachine))
             {
                 var emptyConfig = new SigningServerConfiguration

@@ -15,9 +15,9 @@
 
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-		<Version>1.1.1.$(BuildNumber)</Version>
+		<Version>1.2.0.$(BuildNumber)</Version>
 		<Company>Daniel Kuschny</Company>
-		<Copyright>Copyright © 2020 Daniel Kuschny</Copyright>
+		<Copyright>Copyright © 2021 Daniel Kuschny</Copyright>
 		<Product>CoderLine SigningServer</Product>
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

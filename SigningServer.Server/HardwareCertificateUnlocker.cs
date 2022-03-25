@@ -16,10 +16,10 @@ namespace SigningServer.Server
         public HardwareCertificateUnlocker(TimeSpan refreshTime)
         {
             _certificatesToRefresh = new ConcurrentBag<CertificateConfiguration>();
-            _refreshTimer = new Timer(UnlockAllTOkens, null, refreshTime, refreshTime);
+            _refreshTimer = new Timer(UnlockAllTokens, null, refreshTime, refreshTime);
         }
 
-        private void UnlockAllTOkens(object state)
+        private void UnlockAllTokens(object state)
         {
             foreach (var configuration in _certificatesToRefresh)
             {

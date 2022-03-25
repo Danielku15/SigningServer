@@ -67,7 +67,7 @@ namespace SigningServer.Server
                     }
                     catch (CryptographicException e)
                     {
-                        Log.Error(e, $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} coult not be loaded: 0x{e.HResult:X}");
+                        Log.Error(e, $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
                     }
                     catch (Exception e)
                     {

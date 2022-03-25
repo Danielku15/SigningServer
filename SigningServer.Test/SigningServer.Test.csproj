@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
 		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
-		<ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />
 		<ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
 	</ItemGroup>
 	<ItemGroup>

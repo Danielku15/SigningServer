@@ -382,7 +382,7 @@ namespace SigningServer.Android.Apk
 
                 var x509Key = new X509AsymmetricSecurityKey(signerConfig.Certificates);
 
-                if (signerConfig.Certificates.PrivateKey is RSACryptoServiceProvider x)
+                if (signerConfig.Certificates.GetRSAPrivateKey() != null)
                 {
                     if (digestAlgorithm.Oid == DigestAlgorithm.SHA1.Oid)
                     {
@@ -404,9 +404,24 @@ namespace SigningServer.Android.Apk
                         throw new CryptographicException($"Failed to sign using {digestAlgorithm.Name} unsupproted digest");
                     }
                 }
-                else if (signerConfig.Certificates.PrivateKey is DSACryptoServiceProvider dsa)
+                else if (signerConfig.Certificates.GetDSAPrivateKey() is DSA dsa)
                 {
-                    signatureBytes = dsa.SignData(signer.SignedData);
+                    if (digestAlgorithm.Oid == DigestAlgorithm.SHA1.Oid)
+                    {
+                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA1);
+                    }
+                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA256.Oid)
+                    {
+                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA256);
+                    }
+                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA512.Oid)
+                    {
+                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA512);
+                    }
+                    else
+                    {
+                        throw new CryptographicException($"Failed to sign using {digestAlgorithm.Name} unsupproted digest");
+                    }
                 }
                 else
                 {

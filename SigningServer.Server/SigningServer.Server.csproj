@@ -33,6 +33,5 @@
 		<ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
 		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
 		<ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
-		<ProjectReference Include="..\SigningServer.Server.PE\SigningServer.Server.PE.vcxproj" />
 	</ItemGroup>
 </Project>

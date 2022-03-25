@@ -359,7 +359,7 @@ namespace SigningServer.Server.SigningTool
                 }
 
                 var tshr = MsSign32.S_OK;
-                if (!string.IsNullOrWhiteSpace(timestampServer))
+                if (hr == MsSign32.S_OK && !string.IsNullOrWhiteSpace(timestampServer))
                 {
                     Log.Trace($"Timestamping with url {timestampServer}");
                     var timestampRetries = 5;

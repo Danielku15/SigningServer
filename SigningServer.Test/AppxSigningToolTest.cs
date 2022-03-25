@@ -94,7 +94,7 @@ namespace SigningServer.Test
 
         [TestMethod]
         [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Resign_Fails()
+        public void SignFile_Signed_Resign_Works()
         {
             var signingTool = new AppxSigningTool();
             var fileName = "NoResign_Works/signed/signed.appx";
@@ -108,11 +108,9 @@ namespace SigningServer.Test
             };
             signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
             Trace.WriteLine(response);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+            Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.IsInstanceOfType(response.FileContent, typeof(MemoryStream));
-            Assert.AreEqual(response.FileSize, response.FileContent.Length);
-            Assert.AreEqual(0, response.FileSize);
+            Assert.IsInstanceOfType(response.FileContent, typeof(FileStream));
         }
     }
 }

@@ -164,10 +164,12 @@ namespace SigningServer.Server.SigningTool
                 }
             };
 
-            if (certificate is SigningCertificateFromPfxFile)
+            if (certificate is SigningCertificateFromPfxFile file)
             {
                 signerProviderInfo.pwszProviderName = null;
                 signerProviderInfo.dwProviderType = 0;
+                signerProviderInfo.dwPvkChoice = MsSign32.PVK_TYPE_FILE_NAME;
+                signerProviderInfo.union.pwszPvkFileName = file.FileName;
             }
                 
             using (var signerFileInfo = new UnmanagedStruct<MsSign32.SIGNER_FILE_INFO>(new MsSign32.SIGNER_FILE_INFO

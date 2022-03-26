@@ -7,6 +7,9 @@ namespace SigningServer.Server
         public SigningCertificateFromPfxFile(string pfx, string password)
             : base(new X509Certificate2(pfx, password))
         {
+            FileName = pfx;
         }
+
+        public string FileName { get; }
     }
 }

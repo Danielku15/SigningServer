@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using NLog;
 
 namespace SigningServer.Server.SigningTool
 {
@@ -32,7 +31,9 @@ namespace SigningServer.Server.SigningTool
             return PeSupportedExtensions.Contains(Path.GetExtension(fileName));
         }
 
-        private protected override (int hr, int tshr) SignAndTimestamp(string inputFileName, string timestampServer,
+        private protected override (int hr, int tshr) SignAndTimestamp(
+            string timestampHashOid,
+            string inputFileName, string timestampServer,
             /*PSIGNER_SUBJECT_INFO*/ IntPtr signerSubjectInfo,
             /*PSIGNER_CERT*/ IntPtr signerCert,
             /*PSIGNER_SIGNATURE_INFO*/ IntPtr signerSignatureInfo,
@@ -49,14 +50,17 @@ namespace SigningServer.Server.SigningTool
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
                     pProviderInfo = signerProviderInfo,
-                    pszAlgorithmOid = null, // not needed for authenticode
                     pCryptAttrs = IntPtr.Zero, // no additional crypto attributes for signing
-                    dwTimestampFlags = string.IsNullOrWhiteSpace(timestampServer)
-                        ? 0
-                        : MsSign32.SIGNER_TIMESTAMP_AUTHENTICODE,
-                    pwszTimestampURL = string.IsNullOrWhiteSpace(timestampServer) ? null : timestampServer,
                     pSipData = unmangedSipClientData.Pointer
                 };
+
+                if (!string.IsNullOrWhiteSpace(timestampServer))
+                {
+                    signerParams.pszTimestampAlgorithmOid = timestampHashOid;
+                    signerParams.dwTimestampFlags = MsSign32.SIGNER_TIMESTAMP_RFC3161;
+                    signerParams.pwszTimestampURL = timestampServer;
+                }
+                
                 unmanagedSignerParams.Fill(signerParams);
 
                 unmangedSipClientData.Fill(new MsSign32.APPX_SIP_CLIENT_DATA
@@ -72,7 +76,7 @@ namespace SigningServer.Server.SigningTool
                     signerParams.pSignatureInfo,
                     signerParams.pProviderInfo,
                     signerParams.dwTimestampFlags,
-                    signerParams.pszAlgorithmOid,
+                    signerParams.pszTimestampAlgorithmOid,
                     signerParams.pwszTimestampURL,
                     signerParams.pCryptAttrs,
                     signerParams.pSipData,

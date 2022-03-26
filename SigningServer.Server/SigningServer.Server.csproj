@@ -4,6 +4,7 @@
 		<Title>SigningServer Server</Title>
 		<Description>This is the server side component for running a signing server.</Description>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Microsoft.Build.Tasks.v4.0" />

@@ -115,7 +115,7 @@ namespace SigningServer.Test
         public void LoadCertificateFromStoreWorks()
         {
             using (var cert = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                    StoreLocation.LocalMachine))
+                    StoreLocation.CurrentUser))
             {
                 var emptyConfig = new SigningServerConfiguration
                 {

@@ -30,13 +30,14 @@ namespace SigningServer.Server
         private void Initialize(SigningServerConfiguration configuration)
         {
             Configuration = configuration;
-            
+
             Log.Info("Validating configuration");
             Configuration = new SigningServerConfiguration
             {
                 LegacyPort = configuration.LegacyPort,
                 Port = configuration.Port,
                 TimestampServer = configuration.TimestampServer ?? "",
+                Sha1TimestampServer = configuration.TimestampServer ?? "",
                 WorkingDirectory = configuration.WorkingDirectory ?? "",
                 HardwareCertificateUnlockIntervalInSeconds =
                     configuration.HardwareCertificateUnlockIntervalInSeconds > 0
@@ -67,7 +68,8 @@ namespace SigningServer.Server
                     }
                     catch (CryptographicException e)
                     {
-                        Log.Error(e, $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
+                        Log.Error(e,
+                            $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
                     }
                     catch (Exception e)
                     {
@@ -91,12 +93,14 @@ namespace SigningServer.Server
                     Log.Info("Working directory exists, cleaning");
                     Directory.Delete(Configuration.WorkingDirectory, true);
                 }
+
                 Directory.CreateDirectory(Configuration.WorkingDirectory);
                 Log.Info("Working directory created");
             }
             catch (Exception e)
             {
-                throw new InvalidConfigurationException(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, e);
+                throw new InvalidConfigurationException(
+                    InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, e);
             }
 
             Log.Info("Working directory: {0}", Configuration.WorkingDirectory);
@@ -122,15 +126,9 @@ namespace SigningServer.Server
             {
                 Log.Error(exception, $"Failed to delete file '{file}'");
             };
-            signFileResponse.DeleteSkipped += (response, file) =>
-            {
-                Log.Warn($"Skipped file delete '{file}'");
-            };
-            signFileResponse.DeleteSuccess += (response, file) =>
-            {
-                Log.Trace($"Successfully deleted file '{file}'");
-            };
-            
+            signFileResponse.DeleteSkipped += (response, file) => { Log.Warn($"Skipped file delete '{file}'"); };
+            signFileResponse.DeleteSuccess += (response, file) => { Log.Trace($"Successfully deleted file '{file}'"); };
+
             var remoteIp = RemoteIp;
             var isLegacy = IsLegacyEndpoint;
             string inputFileName = null;
@@ -143,7 +141,8 @@ namespace SigningServer.Server
                     Log.Warn($"[{remoteIp}] Client is using legacy endpoint!");
                 }
 
-                Log.Info($"[{remoteIp}] New sign request for file {signFileRequest.FileName} by {remoteIp} ({signFileRequest.FileSize} bytes)");
+                Log.Info(
+                    $"[{remoteIp}] New sign request for file {signFileRequest.FileName} by {remoteIp} ({signFileRequest.FileSize} bytes)");
                 if (signFileRequest.FileSize == 0 || signFileRequest.FileContent == null)
                 {
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
@@ -161,8 +160,9 @@ namespace SigningServer.Server
                 else
                 {
                     certificate = Configuration.Certificates.FirstOrDefault(
-                            c => c.IsAuthorized(signFileRequest.Username, signFileRequest.Password));
+                        c => c.IsAuthorized(signFileRequest.Username, signFileRequest.Password));
                 }
+
                 if (certificate == null)
                 {
                     Log.Warn("Unauthorized signing request");
@@ -182,7 +182,9 @@ namespace SigningServer.Server
                 //
                 // upload file to working directory
                 inputFileName = signFileRequest.FileName ?? "";
-                inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + Path.GetFileNameWithoutExtension(inputFileName) + "_" + Guid.NewGuid() + (Path.GetExtension(inputFileName));
+                inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" +
+                                Path.GetFileNameWithoutExtension(inputFileName) + "_" + Guid.NewGuid() +
+                                (Path.GetExtension(inputFileName));
                 inputFileName = Path.Combine(Configuration.WorkingDirectory, inputFileName);
                 using (var targetFile = new FileStream(inputFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
@@ -191,9 +193,14 @@ namespace SigningServer.Server
 
                 //
                 // sign file
-                signingTool.SignFile(inputFileName, certificate.Certificate, Configuration.TimestampServer, signFileRequest, signFileResponse);
+                var timestampServer = "SHA1".Equals(signFileRequest.HashAlgorithm, StringComparison.OrdinalIgnoreCase)
+                    ? Configuration.Sha1TimestampServer
+                    : Configuration.TimestampServer;
+                signingTool.SignFile(inputFileName, certificate.Certificate, timestampServer,
+                    signFileRequest, signFileResponse);
 
-                Log.Info($"[{remoteIp}] New sign request for file {signFileRequest.FileName} finished ({signFileRequest.FileSize} bytes)");
+                Log.Info(
+                    $"[{remoteIp}] New sign request for file {signFileRequest.FileName} finished ({signFileRequest.FileSize} bytes)");
 
                 switch (signFileResponse.Result)
                 {
@@ -220,8 +227,10 @@ namespace SigningServer.Server
                         }
                         else
                         {
-                            Log.Trace($"Delete file skipped for failed request {signFileResponse.Result} {inputFileName}, {signFileResponse.FileContent.GetType()}");
+                            Log.Trace(
+                                $"Delete file skipped for failed request {signFileResponse.Result} {inputFileName}, {signFileResponse.FileContent.GetType()}");
                         }
+
                         break;
                 }
             }
@@ -262,6 +271,7 @@ namespace SigningServer.Server
                 }
             }
         }
+
         private string RemoteIp
         {
             get
@@ -274,6 +284,7 @@ namespace SigningServer.Server
                     {
                         return $"{endpoint.Address}:{endpoint.Port}";
                     }
+
                     return "Unknown";
                 }
                 catch (Exception e)

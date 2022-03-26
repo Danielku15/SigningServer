@@ -22,7 +22,7 @@ namespace SigningServer.Test
         public static void Setup(TestContext _)
         {
             _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.LocalMachine);
+                StoreLocation.CurrentUser);
 
             _configuration = new SigningServerConfiguration
             {

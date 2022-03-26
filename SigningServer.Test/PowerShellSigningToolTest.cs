@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Server.SigningTool;
 
@@ -9,7 +8,7 @@ namespace SigningServer.Test
     public class PowerShellSigningToolTest : UnitTestBase
     {
         [TestMethod]
-        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
+        public void IsFileSigned_UnsignedFile_ReturnsFalse()
         {
             var signingTool = new PowerShellSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.ps1"));
@@ -17,41 +16,11 @@ namespace SigningServer.Test
         }
 
         [TestMethod]
-        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
+        public void IsFileSigned_SignedFile_ReturnsTrue()
         {
             var signingTool = new PowerShellSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/signed/signed.ps1"));
             Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.ps1"));
-        }
-
-        [TestMethod]
-        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
-        {
-            using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
-                    StoreLocation.LocalMachine))
-            {
-                var signingTool = new PowerShellSigningTool();
-                {
-                    Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.ps1"));
-                    Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.ps1"));
-                }
-            }
-        }
-
-        [TestMethod]
-        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
-        {
-            using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
-                    StoreLocation.LocalMachine))
-            {
-                var signingTool = new PowerShellSigningTool();
-                {
-                    Assert.IsTrue(File.Exists("TestFiles/signed/signed.ps1"));
-                    Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.ps1"));
-                }
-            }
         }
 
         [TestMethod]
@@ -71,9 +40,8 @@ namespace SigningServer.Test
         public void SignFile_Unsigned_Works()
         {
             var signingTool = new PowerShellSigningTool();
-            {
-                CanSign(signingTool, "SignFile_Works/unsigned/unsigned.ps1", "Certificates/SigningServer.Test.pfx", CertificatePassword);
-            }
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.ps1", "Certificates/SigningServer.Test.pfx",
+                CertificatePassword);
         }
 
 
@@ -82,19 +50,17 @@ namespace SigningServer.Test
         public void SignFile_Signed_NoResign_Fails()
         {
             var signingTool = new PowerShellSigningTool();
-            {
-                CannotResign(signingTool, "NoResign_Fails/signed/signed.ps1", "Certificates/SigningServer.Test.pfx", CertificatePassword);
-            }
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.ps1", "Certificates/SigningServer.Test.pfx",
+                CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Resign_Works()
         {
             var signingTool = new PowerShellSigningTool();
-            {
-                CanResign(signingTool, "NoResign_Fails/signed/signed.ps1", "Certificates/SigningServer.Test.pfx", CertificatePassword);
-            }
+            CanResign(signingTool, "Resign_Works/signed/signed.ps1", "Certificates/SigningServer.Test.pfx",
+                CertificatePassword);
         }
     }
 }

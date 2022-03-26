@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Server.SigningTool;
 
@@ -9,7 +8,7 @@ namespace SigningServer.Test
     public class PortableExecutableSigningToolTest : UnitTestBase
     {
         [TestMethod]
-        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
+        public void IsFileSigned_UnsignedFile_ReturnsFalse()
         {
             var signingTool = new PortableExecutableSigningTool();
             Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
@@ -17,37 +16,11 @@ namespace SigningServer.Test
         }
 
         [TestMethod]
-        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
+        public void IsFileSigned_SignedFile_ReturnsTrue()
         {
             var signingTool = new PortableExecutableSigningTool();
             Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
             Assert.IsTrue(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
-        }
-
-        [TestMethod]
-        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
-        {
-            using (
-                new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.Root,
-                    StoreLocation.LocalMachine))
-            {
-                var signingTool = new PortableExecutableSigningTool();
-                Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
-                Assert.IsFalse(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
-            }
-        }
-
-        [TestMethod]
-        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
-        {
-            using (
-              new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.Root,
-                  StoreLocation.LocalMachine))
-            {
-                var signingTool = new PortableExecutableSigningTool();
-                Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
-                Assert.IsTrue(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
-            }
         }
 
         [TestMethod]
@@ -226,51 +199,51 @@ namespace SigningServer.Test
         #region Resign Works
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Exe_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Exe_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.exe"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.exe"), CertificatePath, CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Dll_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Dll_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.dll"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.dll"), CertificatePath, CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Cab_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Cab_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cab"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.cab"), CertificatePath, CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Msi_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Msi_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.msi"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.msi"), CertificatePath, CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Sys_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Sys_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.sys"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.sys"), CertificatePath, CertificatePassword);
         }
 
         [TestMethod]
-        [DeploymentItem("TestFiles", "NoResign_Works")]
-        public void SignFile_Signed_Cat_NoResign_Works()
+        [DeploymentItem("TestFiles", "Resign_Works")]
+        public void SignFile_Signed_Cat_Resign_Works()
         {
             var signingTool = new PortableExecutableSigningTool();
-            CanResign(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Works/signed/signed.cat"), CertificatePath, CertificatePassword);
+            CanResign(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.cat"), CertificatePath, CertificatePassword);
         }
 
         #endregion

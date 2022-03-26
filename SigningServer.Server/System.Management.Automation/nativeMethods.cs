@@ -6,7 +6,6 @@
 
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Management.Automation.Internal;
 using DWORD = System.UInt32;
 using BOOL = System.UInt32;
 

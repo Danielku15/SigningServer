@@ -10,7 +10,12 @@ namespace SigningServer.Server.SigningTool
 {
     internal static class MsSign32
     {
-        public const uint SIGNER_TIMESTAMP_AUTHENTICODE = 1;
+        public const string OID_OIWSEC_SHA1 = "1.3.14.3.2.26";
+        public const string OID_RSA_MD5 = "1.2.840.113549.2.5";
+        public const string OID_OIWSEC_SHA256 = "2.16.840.1.101.3.4.2.1";
+        public const string OID_OIWSEC_SHA384 = "2.16.840.1.101.3.4.2.2";
+        public const string OID_OIWSEC_SHA512 = "2.16.840.1.101.3.4.2.3";
+        public const uint SIGNER_TIMESTAMP_RFC3161 = 2;
         public const uint PKCS_7_ASN_ENCODING = 0x00010000;
         public const uint X509_ASN_ENCODING = 0x00000001;
 
@@ -224,6 +229,17 @@ namespace SigningServer.Server.SigningTool
             [In, Optional] IntPtr pSipData
         );
 
+        [DllImport("mssign32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int SignerTimeStampEx2 (
+            [In] uint dwFlags,
+            [In] /*PSIGNER_SUBJECT_INFO*/ IntPtr pSubjectInfo,
+            [In] string pwszHttpTimeStamp,
+            [In, MarshalAs(UnmanagedType.LPStr)] string dwAlgId,
+            [In, Optional] /*PCRYPT_ATTRIBUTES*/ IntPtr psRequest,
+            [In, Optional] IntPtr pSipData,
+            [Out] /*PPSIGNER_CONTEXT*/IntPtr ppSignerContext
+        );
+
 
         public enum WinVerifyTrustResult : uint
         {
@@ -371,7 +387,8 @@ namespace SigningServer.Server.SigningTool
             public /*PSIGNER_SIGNATURE_INFO*/ IntPtr pSignatureInfo;
             public /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo;
             public uint dwTimestampFlags;
-            public string pszAlgorithmOid;
+            [MarshalAs(UnmanagedType.LPStr)]
+            public string pszTimestampAlgorithmOid;
             [MarshalAs(UnmanagedType.LPWStr)] public string pwszTimestampURL;
             public /*PCRYPT_ATTRIBUTES*/ IntPtr pCryptAttrs;
             public IntPtr pSipData;

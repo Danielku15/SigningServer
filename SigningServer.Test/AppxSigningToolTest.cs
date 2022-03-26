@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,7 +11,7 @@ namespace SigningServer.Test
     public class AppxSigningToolTest : UnitTestBase
     {
         [TestMethod]
-        public void IsFileSigned_UnsignedFile_UntrustedCertificate_ReturnsFalse()
+        public void IsFileSigned_UnsignedFile_ReturnsFalse()
         {
             var signingTool = new AppxSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.appx"));
@@ -20,7 +19,7 @@ namespace SigningServer.Test
         }
 
         [TestMethod]
-        public void IsFileSigned_SignedFile_UntrustedCertificate_ReturnsTrue()
+        public void IsFileSigned_SignedFile_ReturnsTrue()
         {
             var signingTool = new AppxSigningTool();
             Assert.IsTrue(File.Exists("TestFiles/signed/signed.appx"));
@@ -28,37 +27,12 @@ namespace SigningServer.Test
         }
 
         [TestMethod]
-        public void IsFileSigned_UnsignedFile_TrustedCertificate_ReturnsFalse()
-        {
-            using (
-                new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
-                    StoreLocation.LocalMachine))
-            {
-                var signingTool = new AppxSigningTool();
-                Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.appx"));
-                Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.appx"));
-            }
-        }
-
-        [TestMethod]
-        public void IsFileSigned_SignedFile_TrustedCertificate_ReturnsTrue()
-        {
-            using (
-              new CertificateStoreHelper("Certificates/SigningServer.Test.pfx", CertificatePassword, StoreName.Root,
-                  StoreLocation.LocalMachine))
-            {
-                var signingTool = new AppxSigningTool();
-                Assert.IsTrue(File.Exists("TestFiles/signed/signed.appx"));
-                Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.appx"));
-            }
-        }
-
-        [TestMethod]
         [DeploymentItem("TestFiles", "SignFile_Works")]
         public void SignFile_Unsigned_Works()
         {
             var signingTool = new AppxSigningTool();
-            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx", "Certificates/SigningServer.Test.pfx", CertificatePassword);
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx", "Certificates/SigningServer.Test.pfx",
+                CertificatePassword);
         }
 
         [TestMethod]
@@ -75,7 +49,8 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = true
             };
-            signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
+            signingTool.SignFile(fileName, certificate, TimestampServer, request,
+                response);
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
             Assert.IsFalse(signingTool.IsFileSigned(fileName));
@@ -89,7 +64,8 @@ namespace SigningServer.Test
         public void SignFile_Signed_NoResign_Fails()
         {
             var signingTool = new AppxSigningTool();
-            CannotResign(signingTool, "NoResign_Fails/signed/signed.appx", "Certificates/SigningServer.Test.pfx", CertificatePassword);
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.appx", "Certificates/SigningServer.Test.pfx",
+                CertificatePassword);
         }
 
         [TestMethod]
@@ -106,7 +82,8 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = true
             };
-            signingTool.SignFile(fileName, certificate, ConfigurationManager.AppSettings["TimestampServer"], request, response);
+            signingTool.SignFile(fileName, certificate, TimestampServer, request,
+                response);
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));

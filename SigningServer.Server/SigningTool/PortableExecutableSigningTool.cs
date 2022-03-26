@@ -22,14 +22,14 @@ namespace SigningServer.Server.SigningTool
                 ".exe", ".dll", ".sys", ".msi", ".cab", ".cat"
             };
 
-        private static readonly Dictionary<string, uint> PeSupportedHashAlgorithms =
-            new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, (uint algId, string algOid)> PeSupportedHashAlgorithms =
+            new Dictionary<string, (uint algId, string algOid)>(StringComparer.OrdinalIgnoreCase)
             {
-                ["SHA1"] = MsSign32.CALG_SHA1,
-                ["MD5"] = MsSign32.CALG_MD5,
-                ["SHA256"] = MsSign32.CALG_SHA_256,
-                ["SHA384"] = MsSign32.CALG_SHA_384,
-                ["SHA512"] = MsSign32.CALG_SHA_512,
+                ["SHA1"] = (MsSign32.CALG_SHA1, MsSign32.OID_OIWSEC_SHA1),
+                ["MD5"] = (MsSign32.CALG_MD5, MsSign32.OID_RSA_MD5),
+                ["SHA256"] = (MsSign32.CALG_SHA_256, MsSign32.OID_OIWSEC_SHA256),
+                ["SHA384"] = (MsSign32.CALG_SHA_384, MsSign32.OID_OIWSEC_SHA384),
+                ["SHA512"] = (MsSign32.CALG_SHA_512, MsSign32.OID_OIWSEC_SHA512),
             };
 
         public virtual string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
@@ -146,9 +146,9 @@ namespace SigningServer.Server.SigningTool
             }
 
             if (!PeSupportedHashAlgorithms.TryGetValue(
-                    signFileRequest.HashAlgorithm ?? "", out var algidHash))
+                    signFileRequest.HashAlgorithm ?? "", out var algId))
             {
-                algidHash = MsSign32.CALG_SHA_256;
+                algId = PeSupportedHashAlgorithms["SHA256"];
             }
 
             var cspParameters = GetPrivateKeyInfo(certificate);
@@ -194,7 +194,7 @@ namespace SigningServer.Server.SigningTool
                        new MsSign32.SIGNER_SIGNATURE_INFO
                        {
                            cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_SIGNATURE_INFO>(),
-                           algidHash = algidHash,
+                           algidHash = algId.algId,
                            dwAttrChoice = MsSign32.SIGNER_NO_ATTR,
                            union =
                            {
@@ -214,10 +214,11 @@ namespace SigningServer.Server.SigningTool
                            {
                                pwszKeyContainer = cspParameters.KeyContainerName
                            },
-                           
                        }))
             {
-                var (hr, tshr) = SignAndTimestamp(inputFileName, timestampServer, signerSubjectInfo.Pointer,
+                var (hr, tshr) = SignAndTimestamp(
+                    algId.algOid,
+                    inputFileName, timestampServer, signerSubjectInfo.Pointer,
                     signerCert.Pointer,
                     signerSignatureInfo.Pointer, signerProviderInfo.Pointer);
 
@@ -253,7 +254,7 @@ namespace SigningServer.Server.SigningTool
                 }
                 else
                 {
-                    var errorText = new Win32Exception(hr).Message;
+                    var errorText = new Win32Exception(tshr).Message;
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
                     signFileResponse.ErrorMessage = !string.IsNullOrEmpty(errorText)
                         ? errorText
@@ -314,6 +315,7 @@ namespace SigningServer.Server.SigningTool
         }
 
         private protected virtual (int hr, int tshr) SignAndTimestamp(
+            string timestampHashOid,
             string inputFileName,
             string timestampServer,
             /*PSIGNER_SUBJECT_INFO*/IntPtr signerSubjectInfo,
@@ -330,8 +332,7 @@ namespace SigningServer.Server.SigningTool
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
                     pProviderInfo = signerProviderInfo,
-                    pszAlgorithmOid = null, // not needed for authenticode
-                    pCryptAttrs = IntPtr.Zero, // no additional crypto attributes for signing
+                    pCryptAttrs = IntPtr.Zero, // no additional crypto attributes for signing,
                 };
                 unmanagedSignerParams.Fill(signerParams);
 
@@ -342,7 +343,7 @@ namespace SigningServer.Server.SigningTool
                     signerParams.pSignatureInfo,
                     signerParams.pProviderInfo,
                     signerParams.dwTimestampFlags,
-                    signerParams.pszAlgorithmOid,
+                    signerParams.pszTimestampAlgorithmOid,
                     signerParams.pwszTimestampURL,
                     signerParams.pCryptAttrs,
                     signerParams.pSipData,
@@ -350,7 +351,7 @@ namespace SigningServer.Server.SigningTool
                     signerParams.pCryptoPolicy,
                     signerParams.pReserved
                 );
-                
+
                 if (signerParams.pSignerContext != IntPtr.Zero)
                 {
                     var signerContext = new IntPtr();
@@ -365,7 +366,17 @@ namespace SigningServer.Server.SigningTool
                     var timestampRetries = 5;
                     do
                     {
-                        tshr = MsSign32.SignerTimeStamp(signerSubjectInfo, timestampServer);
+                        tshr = timestampHashOid == MsSign32.OID_OIWSEC_SHA1
+                            ? MsSign32.SignerTimeStamp(signerSubjectInfo, timestampServer)
+                            : MsSign32.SignerTimeStampEx2(
+                                MsSign32.SIGNER_TIMESTAMP_RFC3161,
+                                signerSubjectInfo,
+                                timestampServer,
+                                timestampHashOid,
+                                IntPtr.Zero,
+                                IntPtr.Zero,
+                                IntPtr.Zero
+                            );
                         if (tshr == MsSign32.S_OK)
                         {
                             Log.Trace("Timestamping succeeded");

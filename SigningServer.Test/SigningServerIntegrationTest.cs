@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
@@ -20,12 +19,13 @@ namespace SigningServer.Test
         public static void Setup(TestContext _)
         {
             _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.LocalMachine);
+                StoreLocation.CurrentUser);
 
             var configuration = new SigningServerConfiguration
             {
                 Port = 4711,
-                TimestampServer = ConfigurationManager.AppSettings["TimestampServer"],
+                TimestampServer = TimestampServer,
+                Sha1TimestampServer = Sha1TimestampServer,
                 Certificates = new[]
                 {
                     new CertificateConfiguration

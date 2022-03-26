@@ -20,7 +20,7 @@ jobs:
             $ref = "${{ github.ref }}"
             $ref = $ref.Substring($ref.LastIndexOf("/") + 1)
             echo "::set-output name=TAG::$ref"
-      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=Release -p:Platform=x64 -p:CopyToDist=true -m
+      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -46,7 +46,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./dist/Release/SigningServer.Server.zip
-          asset_name: SigningServer.Server-x64-${{ steps.extract_tag.outputs.TAG }}.zip
+          asset_name: SigningServer.Server-${{ steps.extract_tag.outputs.TAG }}.zip
           asset_content_type: application/zip
 
       - name: Package Client
@@ -60,5 +60,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./dist/Release/SigningServer.Client.zip
-          asset_name: SigningServer.Client-x64-${{ steps.extract_tag.outputs.TAG }}.zip
+          asset_name: SigningServer.Client-${{ steps.extract_tag.outputs.TAG }}.zip
           asset_content_type: application/zip

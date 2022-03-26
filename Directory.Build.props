@@ -3,21 +3,15 @@
 		<Optimize>false</Optimize>
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
-
-		<!--  Ensure PlatformTarget to be equal to Platform (https://github.com/dotnet/sdk/issues/1560) -->
-		<Platform>x64</Platform>
-		<Platforms>$(Platform)</Platforms>
-		<PlatformTarget>$(Platform)</PlatformTarget>
-		<PlatformName>$(Platform)</PlatformName>
-
+		
 		<TargetFramework>net48</TargetFramework>
 		<LangVersion>7.3</LangVersion>
 
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-		<Version>1.2.0.$(BuildNumber)</Version>
+		<Version>1.3.0.$(BuildNumber)</Version>
 		<Company>Daniel Kuschny</Company>
-		<Copyright>Copyright © 2021 Daniel Kuschny</Copyright>
+		<Copyright>Copyright © 2022 Daniel Kuschny</Copyright>
 		<Product>CoderLine SigningServer</Product>
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

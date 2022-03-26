@@ -18,6 +18,7 @@ namespace SigningServer.Test
             // otherwise it seems the CSP is not active on the system
             try
             {
+                Log.Info("Installing Certificate for testing to store");
                 using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
                 {
                     store.Open(OpenFlags.ReadWrite);
@@ -25,6 +26,7 @@ namespace SigningServer.Test
                     store.Add(_certificate);
                     store.Close();
                 }
+                Log.Info("Certificate installed");
             }
             catch (Exception e)
             {
@@ -37,11 +39,13 @@ namespace SigningServer.Test
         {
             try
             {
+                Log.Info("Removeing test certificate from store");
                 using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
                 {
                     store.Open(OpenFlags.ReadWrite);
                     store.Remove(_certificate);
                     store.Close();
+                    Log.Info("Certificate removed");
                 }
             }
             catch (Exception e)

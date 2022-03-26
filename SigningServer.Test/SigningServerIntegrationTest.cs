@@ -12,15 +12,11 @@ namespace SigningServer.Test
     [TestClass]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private static CertificateStoreHelper _certificateHelper;
         private static SigningServerService _service;
 
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.CurrentUser);
-
             var configuration = new SigningServerConfiguration
             {
                 Port = 4711,
@@ -30,16 +26,13 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
             };
-            File.WriteAllText("config.json", JsonConvert.SerializeObject(configuration));
 
-            _service = new SigningServerService();
+            _service = new SigningServerService(configuration);
             _service.ConsoleStart();
         }
 
@@ -47,7 +40,6 @@ namespace SigningServer.Test
         public static void TearDown()
         {
             _service.ConsoleStop();
-            _certificateHelper?.Dispose();
         }
 
         [TestMethod]

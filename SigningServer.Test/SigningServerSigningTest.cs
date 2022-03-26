@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
+using SigningServer.Server;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 
@@ -13,7 +14,7 @@ namespace SigningServer.Test
     [TestClass]
     public class SigningServerSigningTest : UnitTestBase
     {
-        private static CertificateStoreHelper _certificateHelper;
+        private static ISigningCertificate _signingCertificate;
         private static SigningServerConfiguration _configuration;
         private static ISigningToolProvider _emptySigningToolProvider;
         private static ISigningToolProvider _simultateSigningToolProvider;
@@ -21,18 +22,14 @@ namespace SigningServer.Test
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.CurrentUser);
-
+            _signingCertificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword);
             _configuration = new SigningServerConfiguration
             {
                 Certificates = new[]
                 {
                     new CertificateConfiguration
                     {
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = _signingCertificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -45,8 +42,8 @@ namespace SigningServer.Test
             simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest request, SignFileResponse response) =>
+            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<ISigningCertificate>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
+                (string file, ISigningCertificate cert, string timestampserver, SignFileRequest request, SignFileResponse response) =>
                 {
                     response.Result = SignFileResponseResult.FileSigned;
                     var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
@@ -55,12 +52,6 @@ namespace SigningServer.Test
                 });
 
             _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
-        }
-
-        [ClassCleanup]
-        public static void TearDown()
-        {
-            _certificateHelper.Dispose();
         }
 
         [TestMethod]
@@ -104,9 +95,7 @@ namespace SigningServer.Test
                     {
                         Username = "SignUser",
                         Password = "SignPass",
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = _signingCertificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -198,8 +187,8 @@ namespace SigningServer.Test
             simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest rq, SignFileResponse rs) =>
+            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<ISigningCertificate>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
+                (string file, ISigningCertificate cert, string timestampserver, SignFileRequest rq, SignFileResponse rs) =>
                 {
                     rs.Result = SignFileResponseResult.FileAlreadySigned;
                     var fs = new FileStream(file, FileMode.Open, FileAccess.Read);

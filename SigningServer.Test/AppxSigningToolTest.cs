@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
+using SigningServer.Server;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Test
@@ -41,7 +42,7 @@ namespace SigningServer.Test
         {
             var signingTool = new AppxSigningTool();
             var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
-            var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
+            var certificate = new SigningCertificateFromPfxFile("Certificates/SigningServer.Test.pfx", CertificatePassword);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
             var response = new SignFileResponse();
             var request = new SignFileRequest
@@ -74,7 +75,7 @@ namespace SigningServer.Test
         {
             var signingTool = new AppxSigningTool();
             var fileName = "NoResign_Works/signed/signed.appx";
-            var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
+            var certificate = new SigningCertificateFromPfxFile("Certificates/SigningServer.Test.pfx", CertificatePassword);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
             var response = new SignFileResponse();
             var request = new SignFileRequest

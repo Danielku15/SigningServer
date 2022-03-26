@@ -21,6 +21,7 @@ namespace SigningServer.Server.SigningTool
 
         public const int S_OK = 0;
 
+        public const uint PVK_TYPE_FILE_NAME = 0x1;
         public const uint PVK_TYPE_KEYCONTAINER = 0x2;
 
         public const uint SIGNER_NO_ATTR = 0;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
+using SigningServer.Server;
 
 namespace SigningServer.Test
 {
@@ -17,7 +18,7 @@ namespace SigningServer.Test
 
         protected void CanSign(ISigningTool signingTool, string fileName, string pfx, string password, string hashAlgorithm = null)
         {
-            var certificate = new X509Certificate2(pfx, password);
+            var certificate = new SigningCertificateFromPfxFile(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
@@ -59,7 +60,7 @@ namespace SigningServer.Test
 
         protected void CanResign(ISigningTool signingTool, string fileName, string pfx, string password)
         {
-            var certificate = new X509Certificate2(pfx, password);
+            var certificate = new SigningCertificateFromPfxFile(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
@@ -95,7 +96,7 @@ namespace SigningServer.Test
         {
             // TODO: for PE and Appx Signtool certificate currently needs to be imported to windows or tests will fail
             // it cannot find the provider otherwise. 
-            var certificate = new X509Certificate2(pfx, password);
+            var certificate = new SigningCertificateFromPfxFile(pfx, password);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();

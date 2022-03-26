@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
+using SigningServer.Server;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Test
@@ -37,7 +38,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "T:\\NotExisting"
@@ -56,7 +57,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -75,7 +76,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -101,7 +102,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = temp
@@ -111,29 +112,30 @@ namespace SigningServer.Test
             Directory.Delete(temp, true);
         }
 
-        [TestMethod]
-        public void LoadCertificateFromStoreWorks()
-        {
-            using (var cert = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                    StoreLocation.CurrentUser))
-            {
-                var emptyConfig = new SigningServerConfiguration
-                {
-                    Certificates = new[]
-                    {
-                        new CertificateConfiguration
-                        {
-                            Thumbprint = cert.Certificate.Thumbprint,
-                            StoreName = (StoreName) Enum.Parse(typeof(StoreName), cert.Store.Name),
-                            StoreLocation = cert.Store.Location,
-                        }
-                    },
-                    WorkingDirectory = "WorkingDirectory"
-                };
-                var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
-                Assert.AreEqual(1, server.Configuration.Certificates.Length);
-                Assert.AreEqual(emptyConfig.Certificates[0].Thumbprint, server.Configuration.Certificates[0].Certificate.Thumbprint);
-            }
-        }
+        // TODO: we must not interfere with the certstore during tests
+        // [TestMethod]
+        // public void LoadCertificateFromStoreWorks()
+        // {
+        //     using (var cert = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
+        //             StoreLocation.CurrentUser))
+        //     {
+        //         var emptyConfig = new SigningServerConfiguration
+        //         {
+        //             Certificates = new[]
+        //             {
+        //                 new CertificateConfiguration
+        //                 {
+        //                     Thumbprint = cert.Certificate.Thumbprint,
+        //                     StoreName = (StoreName) Enum.Parse(typeof(StoreName), cert.Store.Name),
+        //                     StoreLocation = cert.Store.Location,
+        //                 }
+        //             },
+        //             WorkingDirectory = "WorkingDirectory"
+        //         };
+        //         var server = new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider());
+        //         Assert.AreEqual(1, server.Configuration.Certificates.Length);
+        //         Assert.AreEqual(emptyConfig.Certificates[0].Thumbprint, server.Configuration.Certificates[0].Certificate.Thumbprint);
+        //     }
+        // }
     }
 }

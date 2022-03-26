@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using SigningServer.Contracts;
 
 namespace SigningServer.Server.Configuration
 {
@@ -22,12 +23,17 @@ namespace SigningServer.Server.Configuration
         public string Thumbprint { get; set; }
         public string TokenPin { get; set; }
 
-        [JsonIgnore] public X509Certificate2 Certificate { get; set; }
+        [JsonIgnore] public ISigningCertificate Certificate { get; set; }
 
         [JsonIgnore] public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
         public void LoadCertificate(HardwareCertificateUnlocker unlocker)
         {
+            // only do reloads if cert needs hardware unlock or certificate is not loaded at all
+            if (string.IsNullOrEmpty(TokenPin) && Certificate != null)
+            {
+                return;
+            }
             Certificate?.Dispose();
 
             using (var store = new X509Store(StoreName, StoreLocation))
@@ -43,8 +49,8 @@ namespace SigningServer.Server.Configuration
                     throw new CertificateNotFoundException($"No certificate with the thumbprint '{Thumbprint}' found");
                 }
 
-                Certificate = certificates.FirstOrDefault(c => c.HasPrivateKey);
-                if (Certificate == null)
+                var certificate = certificates.FirstOrDefault(c => c.HasPrivateKey);
+                if (certificate == null)
                 {
                     throw new CertificateNotFoundException(
                         $"Certificate with thumbprint '{Thumbprint}' has no private key");
@@ -52,8 +58,9 @@ namespace SigningServer.Server.Configuration
 
 
                 // For SmartCards/Hardware dongles we create a new RSACryptoServiceProvider with the corresponding pin
+                // TODO: Cng support
                 if (!string.IsNullOrEmpty(TokenPin)
-                    && Certificate.PrivateKey is RSACryptoServiceProvider rsaCsp
+                    && certificate.PrivateKey is RSACryptoServiceProvider rsaCsp
                     && rsaCsp.CspKeyContainerInfo.HardwareDevice)
                 {
                     var keyPassword = new SecureString();
@@ -68,14 +75,16 @@ namespace SigningServer.Server.Configuration
                         rsaCsp.CspKeyContainerInfo.KeyContainerName,
                         new System.Security.AccessControl.CryptoKeySecurity(),
                         keyPassword);
-                    var oldCert = Certificate;
-                    Certificate = new X509Certificate2(oldCert.RawData)
+                    var oldCert = certificate;
+                    certificate = new X509Certificate2(oldCert.RawData)
                     {
                         PrivateKey = new RSACryptoServiceProvider(csp)
                     };
                     oldCert.Dispose();
                     unlocker?.RegisterForUpdate(this);
                 }
+                
+                Certificate = new SigningCertificateFromStore(certificate);
             }
         }
 

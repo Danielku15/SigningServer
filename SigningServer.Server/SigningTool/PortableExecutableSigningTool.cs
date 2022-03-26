@@ -109,7 +109,7 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, ISigningCertificate certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             var successResult = SignFileResponseResult.FileSigned;
@@ -151,8 +151,25 @@ namespace SigningServer.Server.SigningTool
                 algId = PeSupportedHashAlgorithms["SHA256"];
             }
 
-            var cspParameters = GetPrivateKeyInfo(certificate);
+            var cspParameters = GetPrivateKeyInfo(certificate.ToX509());
+            var signerProviderInfo = new MsSign32.SIGNER_PROVIDER_INFO
+            {
+                cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_PROVIDER_INFO>(),
+                pwszProviderName = cspParameters.ProviderName,
+                dwProviderType = (uint)cspParameters.ProviderType,
+                dwPvkChoice = MsSign32.PVK_TYPE_KEYCONTAINER,
+                union =
+                {
+                    pwszKeyContainer = cspParameters.KeyContainerName
+                }
+            };
 
+            if (certificate is SigningCertificateFromPfxFile)
+            {
+                signerProviderInfo.pwszProviderName = null;
+                signerProviderInfo.dwProviderType = 0;
+            }
+                
             using (var signerFileInfo = new UnmanagedStruct<MsSign32.SIGNER_FILE_INFO>(new MsSign32.SIGNER_FILE_INFO
                    {
                        cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_FILE_INFO>(),
@@ -203,24 +220,13 @@ namespace SigningServer.Server.SigningTool
                            psAuthenticated = IntPtr.Zero,
                            psUnauthenticated = IntPtr.Zero
                        }))
-            using (var signerProviderInfo = new UnmanagedStruct<MsSign32.SIGNER_PROVIDER_INFO>(
-                       new MsSign32.SIGNER_PROVIDER_INFO
-                       {
-                           cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_PROVIDER_INFO>(),
-                           pwszProviderName = cspParameters.ProviderName,
-                           dwProviderType = (uint)cspParameters.ProviderType,
-                           dwPvkChoice = MsSign32.PVK_TYPE_KEYCONTAINER,
-                           union =
-                           {
-                               pwszKeyContainer = cspParameters.KeyContainerName
-                           },
-                       }))
+            using (var unmanagedSignerProviderInfo = new UnmanagedStruct<MsSign32.SIGNER_PROVIDER_INFO>(signerProviderInfo))
             {
                 var (hr, tshr) = SignAndTimestamp(
                     algId.algOid,
                     inputFileName, timestampServer, signerSubjectInfo.Pointer,
                     signerCert.Pointer,
-                    signerSignatureInfo.Pointer, signerProviderInfo.Pointer);
+                    signerSignatureInfo.Pointer, unmanagedSignerProviderInfo.Pointer);
 
                 if (pCertContext != IntPtr.Zero)
                 {
@@ -247,7 +253,7 @@ namespace SigningServer.Server.SigningTool
                     if ((uint)hr == 0x8007000B)
                     {
                         signFileResponse.ErrorMessage =
-                            $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{certificate.SubjectName.Name}\" .. />.";
+                            $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{certificate.SubjectName}\" .. />.";
                     }
 
                     Log.Error($"{inputFileName} signing failed {signFileResponse.ErrorMessage}");

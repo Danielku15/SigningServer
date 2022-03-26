@@ -431,7 +431,7 @@ namespace SigningServer.Android.Apk
 
                 switch (publicKey.Key)
                 {
-                    case RSACryptoServiceProvider rsaPub:
+                    case RSA rsaPub:
                         using (var rsa2 = new RSACryptoServiceProvider())
                         using (var hash = digestAlgorithm.CreateInstance())
                         {
@@ -443,7 +443,7 @@ namespace SigningServer.Android.Apk
                         }
 
                         break;
-                    case DSACryptoServiceProvider dsaPub:
+                    case DSA dsaPub:
                         using (var dsa2 = new DSACryptoServiceProvider())
                         {
                             dsa2.ImportParameters(dsaPub.ExportParameters(false));

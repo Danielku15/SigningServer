@@ -65,18 +65,20 @@ namespace SigningServer.Android.Apk
             var result = new HashSet<string>();
             var signerName = signerConfig.Name;
             result.Add("META-INF/" + signerName + ".SF");
-            var publicKey = signerConfig.Certificate.PublicKey;
             var signatureBlockFileName =
                 "META-INF/" + signerName + ".";
 
-            switch (publicKey.Key)
+            if (signerConfig.Certificate.GetRSAPublicKey() != null)
             {
-                case RSACryptoServiceProvider _:
-                    signatureBlockFileName += "RSA";
-                    break;
-                case DSACryptoServiceProvider _:
-                    signatureBlockFileName += "DSA";
-                    break;
+                signatureBlockFileName += "RSA";
+            } 
+            else if(signerConfig.Certificate.GetDSAPublicKey() != null)
+            {
+                signatureBlockFileName += "DSA";
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported certificate public key type (not RSA or DSA)");
             }
 
             result.Add(signatureBlockFileName);
@@ -336,17 +338,20 @@ namespace SigningServer.Android.Apk
             var signatureBlock = GenerateSignatureBlock(signerConfig, sfBytes);
             signatureJarEntries.Add(Tuple.Create("META-INF/" + signerName + ".SF", sfBytes));
 
-            var publicKey = signerConfig.Certificate.PublicKey;
             var signatureBlockFileName =
                 "META-INF/" + signerName + ".";
 
-            if (publicKey.Key is RSACryptoServiceProvider)
+            if (signerConfig.Certificate.GetRSAPublicKey() != null)
             {
                 signatureBlockFileName += "RSA";
-            }
-            else if (publicKey.Key is DSACryptoServiceProvider)
+            } 
+            else if(signerConfig.Certificate.GetDSAPublicKey() != null)
             {
                 signatureBlockFileName += "DSA";
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported certificate public key type (not RSA or DSA)");
             }
 
             signatureJarEntries.Add(

@@ -38,7 +38,7 @@ namespace SigningServer.Server.SigningTool
             return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, ISigningCertificate certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
@@ -69,7 +69,7 @@ namespace SigningServer.Server.SigningTool
                     (digestAlgorithm == null || !digestAlgorithm.Equals(DigestAlgorithm.SHA1)) // v2 signing requires SHA256 or SHA512
                 ;
 
-                var apkSigner = new ApkSigner(certificate, inputFileName, outputFileName)
+                var apkSigner = new ApkSigner(certificate.ToX509(), inputFileName, outputFileName)
                 {
                     V1SigningEnabled = true,
                     V2SigningEnabled = isV2SigningEnabled,

@@ -10,7 +10,7 @@ namespace SigningServer.Test
 {
     public class UnitTestBase
     {
-        private static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        protected static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
         public static string CertificatePath = Path.Combine(ExecutionDirectory, "Certificates", "SigningServer.Test.pfx");
         public static string CertificatePassword = "SigningServer";
         protected static string TimestampServer = "http://timestamp.globalsign.com/tsa/r6advanced1";

@@ -26,7 +26,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new SigningCertificateFromPfxFile(CertificatePath, CertificatePassword)
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"

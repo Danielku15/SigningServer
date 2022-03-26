@@ -109,7 +109,7 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        public void SignFile(string inputFileName, ISigningCertificate certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             var successResult = SignFileResponseResult.FileSigned;
@@ -151,27 +151,8 @@ namespace SigningServer.Server.SigningTool
                 algId = PeSupportedHashAlgorithms["SHA256"];
             }
 
-            var cspParameters = GetPrivateKeyInfo(certificate.ToX509());
-            var signerProviderInfo = new MsSign32.SIGNER_PROVIDER_INFO
-            {
-                cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_PROVIDER_INFO>(),
-                pwszProviderName = cspParameters.ProviderName,
-                dwProviderType = (uint)cspParameters.ProviderType,
-                dwPvkChoice = MsSign32.PVK_TYPE_KEYCONTAINER,
-                union =
-                {
-                    pwszKeyContainer = cspParameters.KeyContainerName
-                }
-            };
-
-            if (certificate is SigningCertificateFromPfxFile file)
-            {
-                signerProviderInfo.pwszProviderName = null;
-                signerProviderInfo.dwProviderType = 0;
-                signerProviderInfo.dwPvkChoice = MsSign32.PVK_TYPE_FILE_NAME;
-                signerProviderInfo.union.pwszPvkFileName = file.FileName;
-            }
-                
+            var cspParameters = GetPrivateKeyInfo(certificate);
+            
             using (var signerFileInfo = new UnmanagedStruct<MsSign32.SIGNER_FILE_INFO>(new MsSign32.SIGNER_FILE_INFO
                    {
                        cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_FILE_INFO>(),
@@ -222,13 +203,23 @@ namespace SigningServer.Server.SigningTool
                            psAuthenticated = IntPtr.Zero,
                            psUnauthenticated = IntPtr.Zero
                        }))
-            using (var unmanagedSignerProviderInfo = new UnmanagedStruct<MsSign32.SIGNER_PROVIDER_INFO>(signerProviderInfo))
+            using (var signerProviderInfo = new UnmanagedStruct<MsSign32.SIGNER_PROVIDER_INFO>( new MsSign32.SIGNER_PROVIDER_INFO
+                   {
+                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_PROVIDER_INFO>(),
+                       pwszProviderName = cspParameters.ProviderName,
+                       dwProviderType = (uint)cspParameters.ProviderType,
+                       dwPvkChoice = MsSign32.PVK_TYPE_KEYCONTAINER,
+                       union =
+                       {
+                           pwszKeyContainer = cspParameters.KeyContainerName
+                       }
+                   }))
             {
                 var (hr, tshr) = SignAndTimestamp(
                     algId.algOid,
                     inputFileName, timestampServer, signerSubjectInfo.Pointer,
                     signerCert.Pointer,
-                    signerSignatureInfo.Pointer, unmanagedSignerProviderInfo.Pointer);
+                    signerSignatureInfo.Pointer, signerProviderInfo.Pointer);
 
                 if (pCertContext != IntPtr.Zero)
                 {

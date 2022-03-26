@@ -27,7 +27,7 @@ namespace SigningServer.Server.SigningTool
             return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, ISigningCertificate certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
@@ -46,7 +46,7 @@ namespace SigningServer.Server.SigningTool
                 }
             }
 
-            SecurityUtilities.SignFile(certificate.ToX509(), string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
+            SecurityUtilities.SignFile(certificate, string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
 
             signFileResponse.Result = successResult;
             signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);

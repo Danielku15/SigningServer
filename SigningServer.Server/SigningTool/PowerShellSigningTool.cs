@@ -29,7 +29,7 @@ namespace SigningServer.Server.SigningTool
             return PowerShellSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, ISigningCertificate certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             var successResult = SignFileResponseResult.FileSigned;
@@ -49,7 +49,7 @@ namespace SigningServer.Server.SigningTool
             }
 
 
-            SignatureHelper.SignFile(SigningOption.Default, inputFileName, certificate.ToX509(), timestampServer, signFileRequest.HashAlgorithm);
+            SignatureHelper.SignFile(SigningOption.Default, inputFileName, certificate, timestampServer, signFileRequest.HashAlgorithm);
 
             signFileResponse.Result = successResult;
             signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);

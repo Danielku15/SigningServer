@@ -23,7 +23,7 @@ namespace SigningServer.Server.Configuration
         public string Thumbprint { get; set; }
         public string TokenPin { get; set; }
 
-        [JsonIgnore] public ISigningCertificate Certificate { get; set; }
+        [JsonIgnore] public X509Certificate2 Certificate { get; set; }
 
         [JsonIgnore] public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
@@ -84,7 +84,7 @@ namespace SigningServer.Server.Configuration
                     unlocker?.RegisterForUpdate(this);
                 }
                 
-                Certificate = new SigningCertificateFromStore(certificate);
+                Certificate = certificate;
             }
         }
 

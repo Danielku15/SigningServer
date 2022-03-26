@@ -9,6 +9,7 @@ namespace SigningServer.Test
     public class AssemblyEvents
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private static X509Certificate2 _certificate;
         
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext context)
@@ -20,14 +21,32 @@ namespace SigningServer.Test
                 using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
                 {
                     store.Open(OpenFlags.ReadWrite);
-                    var certificate = new X509Certificate2(UnitTestBase.CertificatePath, UnitTestBase.CertificatePassword);
-                    store.Add(certificate);
-                    store.Remove(certificate);
+                    _certificate = new X509Certificate2(UnitTestBase.CertificatePath, UnitTestBase.CertificatePassword);
+                    store.Add(_certificate);
+                    store.Close();
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Failed to import certificate to store");
+            }
+        }
+        
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
+        {
+            try
+            {
+                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadWrite);
+                    store.Remove(_certificate);
+                    store.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Failed to cleanup certificate from store");
             }
         }
         

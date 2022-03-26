@@ -13,12 +13,14 @@ namespace SigningServer.Server
 {
     public partial class SigningServerService : ServiceBase
     {
+        private readonly SigningServerConfiguration _serverConfiguration;
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         private ServiceHost _serviceHost;
 
-        public SigningServerService()
+        public SigningServerService(SigningServerConfiguration serverConfiguration = null)
         {
+            _serverConfiguration = serverConfiguration;
             InitializeComponent();
         }
 
@@ -59,7 +61,8 @@ namespace SigningServer.Server
             try
             {
                 Log.Info("Loading configuration");
-                var configuration = JsonConvert.DeserializeObject<SigningServerConfiguration>(File.ReadAllText(configFile));
+                var configuration = _serverConfiguration ?? 
+                                    JsonConvert.DeserializeObject<SigningServerConfiguration>(File.ReadAllText(configFile));
                 Log.Info("Starting server");
 
                 SigningServer = new SigningServer(configuration, new DefaultSigningToolProvider());

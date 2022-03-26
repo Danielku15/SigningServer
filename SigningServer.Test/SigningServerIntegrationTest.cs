@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
@@ -13,33 +12,27 @@ namespace SigningServer.Test
     [TestClass]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private static CertificateStoreHelper _certificateHelper;
         private static SigningServerService _service;
 
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.LocalMachine);
-
             var configuration = new SigningServerConfiguration
             {
                 Port = 4711,
-                TimestampServer = ConfigurationManager.AppSettings["TimestampServer"],
+                TimestampServer = TimestampServer,
+                Sha1TimestampServer = Sha1TimestampServer,
                 Certificates = new[]
                 {
                     new CertificateConfiguration
                     {
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
             };
-            File.WriteAllText("config.json", JsonConvert.SerializeObject(configuration));
 
-            _service = new SigningServerService();
+            _service = new SigningServerService(configuration);
             _service.ConsoleStart();
         }
 
@@ -47,7 +40,6 @@ namespace SigningServer.Test
         public static void TearDown()
         {
             _service.ConsoleStop();
-            _certificateHelper?.Dispose();
         }
 
         [TestMethod]

@@ -46,7 +46,7 @@ namespace SigningServer.Server.SigningTool
                 }
             }
 
-            SecurityUtilities.SignFile(certificate, new Uri(timestampServer), inputFileName);
+            SecurityUtilities.SignFile(certificate, string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
 
             signFileResponse.Result = successResult;
             signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);

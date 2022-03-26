@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
+using SigningServer.Server;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 
@@ -13,7 +14,7 @@ namespace SigningServer.Test
     [TestClass]
     public class SigningServerSigningTest : UnitTestBase
     {
-        private static CertificateStoreHelper _certificateHelper;
+        private static X509Certificate2 _signingCertificate;
         private static SigningServerConfiguration _configuration;
         private static ISigningToolProvider _emptySigningToolProvider;
         private static ISigningToolProvider _simultateSigningToolProvider;
@@ -21,18 +22,14 @@ namespace SigningServer.Test
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _certificateHelper = new CertificateStoreHelper(CertificatePath, CertificatePassword, StoreName.My,
-                StoreLocation.LocalMachine);
-
+            _signingCertificate = new X509Certificate2(CertificatePath, CertificatePassword);
             _configuration = new SigningServerConfiguration
             {
                 Certificates = new[]
                 {
                     new CertificateConfiguration
                     {
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = _signingCertificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -55,12 +52,6 @@ namespace SigningServer.Test
                 });
 
             _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
-        }
-
-        [ClassCleanup]
-        public static void TearDown()
-        {
-            _certificateHelper.Dispose();
         }
 
         [TestMethod]
@@ -104,9 +95,7 @@ namespace SigningServer.Test
                     {
                         Username = "SignUser",
                         Password = "SignPass",
-                        Thumbprint = _certificateHelper.Certificate.Thumbprint,
-                        StoreName = (StoreName) Enum.Parse(typeof (StoreName), _certificateHelper.Store.Name),
-                        StoreLocation = _certificateHelper.Store.Location
+                        Certificate = _signingCertificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"

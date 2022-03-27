@@ -26,7 +26,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"

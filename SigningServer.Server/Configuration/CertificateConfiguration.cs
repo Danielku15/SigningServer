@@ -3,9 +3,13 @@ using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Azure.Core;
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using SigningServer.Contracts;
+using RSAKeyVaultProvider;
+using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Server.Configuration
 {
@@ -14,14 +18,19 @@ namespace SigningServer.Server.Configuration
         public string Username { get; set; }
         public string Password { get; set; }
 
+        public string Thumbprint { get; set; }
+
+
+        // Local Certificate
         [JsonConverter(typeof(StringEnumConverter))]
         public StoreName StoreName { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public StoreLocation StoreLocation { get; set; }
 
-        public string Thumbprint { get; set; }
         public string TokenPin { get; set; }
+
+        public AzureKeyVaultConfiguration Azure { get; set; }
 
         [JsonIgnore] public X509Certificate2 Certificate { get; set; }
 
@@ -34,8 +43,35 @@ namespace SigningServer.Server.Configuration
             {
                 return;
             }
+
             Certificate?.Dispose();
 
+            if (!string.IsNullOrEmpty(Azure?.KeyVaultUrl))
+            {
+                LoadCertificateFromAzure();
+            }
+            else
+            {
+                LoadCertificateFromLocalMachine(unlocker);
+            }
+        }
+
+        private void LoadCertificateFromAzure()
+        {
+            var credentials = Azure.ManagedIdentity
+                ? (TokenCredential)new DefaultAzureCredential()
+                : new ClientSecretCredential(Azure.TenantId, Azure.ClientId, Azure.ClientSecret);
+
+            var client = new CertificateClient(new Uri(Azure.KeyVaultUrl), credentials);
+            var azureCertificate = client.GetCertificate(Azure.CertificateName).Value;
+            var certificate = new AzureX509Certificate2(azureCertificate.Cer);
+            certificate.ReplacePrivateKey(RSAFactory.Create(credentials, azureCertificate.KeyId, certificate));
+
+            Certificate = certificate;
+        }
+
+        private void LoadCertificateFromLocalMachine(HardwareCertificateUnlocker unlocker)
+        {
             using (var store = new X509Store(StoreName, StoreLocation))
             {
                 store.Open(OpenFlags.ReadOnly);
@@ -56,7 +92,7 @@ namespace SigningServer.Server.Configuration
                         $"Certificate with thumbprint '{Thumbprint}' has no private key");
                 }
 
-
+                // TODO: check Hash Support 
                 // For SmartCards/Hardware dongles we create a new RSACryptoServiceProvider with the corresponding pin
                 // TODO: Cng support
                 if (!string.IsNullOrEmpty(TokenPin)
@@ -83,7 +119,7 @@ namespace SigningServer.Server.Configuration
                     oldCert.Dispose();
                     unlocker?.RegisterForUpdate(this);
                 }
-                
+
                 Certificate = certificate;
             }
         }

@@ -10,6 +10,9 @@ namespace SigningServer.Server.SigningTool
 {
     internal static class MsSign32
     {
+        public const uint SPC_EXC_PE_PAGE_HASHES_FLAG = 0x010;
+        public const uint SIGN_CALLBACK_UNDOCUMENTED = 0x400;
+        
         public const string OID_OIWSEC_SHA1 = "1.3.14.3.2.26";
         public const string OID_RSA_MD5 = "1.2.840.113549.2.5";
         public const string OID_OIWSEC_SHA256 = "2.16.840.1.101.3.4.2.1";
@@ -25,12 +28,14 @@ namespace SigningServer.Server.SigningTool
         public const uint PVK_TYPE_KEYCONTAINER = 0x2;
 
         public const uint SIGNER_NO_ATTR = 0;
+        public const uint SIGNER_AUTHCODE_ATTR = 1;
 
         public const uint SIGNER_CERT_STORE = 2;
 
         public const uint SIGNER_CERT_POLICY_CHAIN = 2;
 
         public const uint SIGNER_SUBJECT_FILE = 1;
+        public const int E_INVALIDARG = unchecked((int)0x80070057);
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct CERT_CONTEXT
@@ -218,6 +223,33 @@ namespace SigningServer.Server.SigningTool
         );
 
         [DllImport("mssign32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int SignerSignEx3(
+            [In] uint dwFlags,
+            [In] /*PSIGNER_SUBJECT_INFO*/ IntPtr pSubjectInfo,
+            [In] /*PSIGNER_CERT*/ IntPtr pSignerCert,
+            [In] /*PSIGNER_SIGNATURE_INFO*/ IntPtr pSignatureInfo,
+            [In, Optional] /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo,
+            [In, Optional] uint dwTimestampFlags,
+            [In, Optional, MarshalAs(UnmanagedType.LPStr)]
+            string pszAlgorithmOid,
+            [In, Optional] string pwszTimestampURL,
+            [In, Optional] /*PCRYPT_ATTRIBUTES*/ IntPtr psRequest,
+            [In, Optional] IntPtr pSipData,
+            [Out] /*PPSIGNER_CONTEXT*/IntPtr ppSignerContext,
+            [In, Optional] IntPtr pCryptoPolicy,
+            [In] /*SIGN_INFO*/IntPtr pSignInfo,
+            [Optional] IntPtr pReserved
+        );
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SIGN_INFO
+        {
+            public uint cbSize;
+            public IntPtr callback;
+            public IntPtr pvOpaque;
+        }
+
+        [DllImport("mssign32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int SignerFreeSignerContext(
             [In] /*PSIGNER_CONTEXT*/ IntPtr pSignerContext
         );
@@ -231,7 +263,7 @@ namespace SigningServer.Server.SigningTool
         );
 
         [DllImport("mssign32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern int SignerTimeStampEx2 (
+        public static extern int SignerTimeStampEx2(
             [In] uint dwFlags,
             [In] /*PSIGNER_SUBJECT_INFO*/ IntPtr pSubjectInfo,
             [In] string pwszHttpTimeStamp,
@@ -388,20 +420,56 @@ namespace SigningServer.Server.SigningTool
             public /*PSIGNER_SIGNATURE_INFO*/ IntPtr pSignatureInfo;
             public /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo;
             public uint dwTimestampFlags;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string pszTimestampAlgorithmOid;
+            [MarshalAs(UnmanagedType.LPStr)] public string pszTimestampAlgorithmOid;
             [MarshalAs(UnmanagedType.LPWStr)] public string pwszTimestampURL;
-            public /*PCRYPT_ATTRIBUTES*/ IntPtr pCryptAttrs;
+            public /*PCRYPT_ATTRIBUTES*/ IntPtr psRequest;
             public IntPtr pSipData;
             public /*PPSIGNER_CONTEXT*/ IntPtr pSignerContext;
             public IntPtr pCryptoPolicy;
             public IntPtr pReserved;
         }
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct SIGNER_SIGN_EX3_PARAMS
+        {
+            public uint dwFlags;
+            public /*PSIGNER_SUBJECT_INFO*/ IntPtr pSubjectInfo;
+            public /*PSIGNER_CERT*/ IntPtr pSigningCert;
+            public /*PSIGNER_SIGNATURE_INFO*/ IntPtr pSignatureInfo;
+            public /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo;
+            public uint dwTimestampFlags;
+            [MarshalAs(UnmanagedType.LPStr)] public string pszTimestampAlgorithmOid;
+            [MarshalAs(UnmanagedType.LPWStr)] public string pwszTimestampURL;
+            public IntPtr psRequest;
+            public /*PSIGN_INFO*/ IntPtr pSignCallback;
+            public /*PPSIGNER_CONTEXT*/ IntPtr pSignerContext;
+            public IntPtr pCryptoPolicy;
+            public IntPtr pReserved;
+        }
+        
+        
+        [UnmanagedFunctionPointer(CallingConvention.Winapi)]
+        public delegate int SignCallback(
+            [In, MarshalAs(UnmanagedType.SysInt)] IntPtr pCertContext,
+            [In, MarshalAs(UnmanagedType.SysInt)] IntPtr pvExtra,
+            [In, MarshalAs(UnmanagedType.U4)] uint algId,
+            [In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 4)] byte[] pDigestToSign,
+            [In, MarshalAs(UnmanagedType.U4)] uint dwDigestToSign,
+            [In, Out] ref CRYPTOAPI_BLOB blob
+        );
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct CRYPTOAPI_BLOB
+        {
+            public uint cbData;
+            public IntPtr pbData;
+        }
+
+
         [StructLayout(LayoutKind.Sequential)]
         public struct APPX_SIP_CLIENT_DATA
         {
-            public /*PSIGNER_SIGN_EX2_PARAMS*/ IntPtr pSignerParams;
+            public /*PSIGNER_SIGN_EX2_PARAMS or PSIGNER_SIGN_EX3_PARAMS*/ IntPtr pSignerParams;
             public /*LPVOID*/ IntPtr pAppxSipState;
         }
 

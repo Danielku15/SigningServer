@@ -38,7 +38,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "T:\\NotExisting"
@@ -57,7 +57,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -76,7 +76,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -102,7 +102,7 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = new X509Certificate2(CertificatePath, CertificatePassword)
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = temp

@@ -3,73 +3,92 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using NLog;
 
 namespace SigningServer.Server.SigningTool
 {
     public class AppxSigningTool : PortableExecutableSigningTool
     {
-        private static readonly HashSet<string> PeSupportedExtensions =
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private static readonly HashSet<string> AppxSupportedExtensions =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                ".appx", ".appxbundle"
+                ".appx", ".appxbundle", ".eappx", ".eappxbundle",
+                ".msix", ".emsix", ".msixbundle", ".emsixbundle"
             };
 
-        private static readonly Dictionary<string, uint> PeSupportedHashAlgorithms =
-            new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["SHA256"] = MsSign32.CALG_SHA_256,
-                ["SHA384"] = MsSign32.CALG_SHA_384,
-                ["SHA512"] = MsSign32.CALG_SHA_512,
-            };
-
-
-        public override string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
-        public override string[] SupportedHashAlgorithms => PeSupportedHashAlgorithms.Keys.ToArray();
-
+        public override string[] SupportedFileExtensions => AppxSupportedExtensions.ToArray();
         public override bool IsFileSupported(string fileName)
         {
-            return PeSupportedExtensions.Contains(Path.GetExtension(fileName));
+            return AppxSupportedExtensions.Contains(Path.GetExtension(fileName));
         }
 
         private protected override (int hr, int tshr) SignAndTimestamp(
+            HashAlgorithmName hashAlgorithmName,
             string timestampHashOid,
-            string inputFileName, string timestampServer,
-            /*PSIGNER_SUBJECT_INFO*/ IntPtr signerSubjectInfo,
-            /*PSIGNER_CERT*/ IntPtr signerCert,
+            string inputFileName,
+            string timestampServer,
+            /*PSIGNER_SUBJECT_INFO*/IntPtr signerSubjectInfo,
+            /*PSIGNER_CERT*/IntPtr signerCert,
             /*PSIGNER_SIGNATURE_INFO*/ IntPtr signerSignatureInfo,
-            /*PSIGNER_PROVIDER_INFO*/ IntPtr signerProviderInfo)
+            X509Certificate2 certificate)
         {
-            timestampServer = timestampServer ?? "";
+            Log.Trace($"Call signing of  {inputFileName}");
 
-            using (var unmangedSipClientData = new UnmanagedStruct<MsSign32.APPX_SIP_CLIENT_DATA>())
-            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX2_PARAMS>())
+            int SignCallback(IntPtr pCertContext, IntPtr pvExtra, uint algId, byte[] pDigestToSign, uint dwDigestToSign,
+                ref MsSign32.CRYPTOAPI_BLOB blob)
             {
-                var signerParams = new MsSign32.SIGNER_SIGN_EX2_PARAMS
+                byte[] digest;
+                switch (certificate.PrivateKey)
                 {
+                    case RSA rsa:
+                        digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                        break;
+                    default:
+                        return MsSign32.E_INVALIDARG;
+                }
+
+                var resultPtr = Marshal.AllocHGlobal(digest.Length);
+                Marshal.Copy(digest, 0, resultPtr, digest.Length);
+                blob.pbData = resultPtr;
+                blob.cbData = (uint)digest.Length;
+                return 0;
+            }
+
+            MsSign32.SignCallback callbackDelegate = SignCallback;
+
+            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX3_PARAMS>())
+            using (var unmanagedSignInfo = new UnmanagedStruct<MsSign32.SIGN_INFO>(new MsSign32.SIGN_INFO
+                   {
+                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGN_INFO>(),
+                       callback = Marshal.GetFunctionPointerForDelegate(callbackDelegate),
+                       pvOpaque = IntPtr.Zero
+                   }))
+            using (var unmanagedSipData = new UnmanagedStruct<MsSign32.APPX_SIP_CLIENT_DATA>(new MsSign32.APPX_SIP_CLIENT_DATA
+                   {
+                       pSignerParams = unmanagedSignerParams.Pointer,
+                       pAppxSipState = IntPtr.Zero
+                   }))
+            {
+                var signerParams = new MsSign32.SIGNER_SIGN_EX3_PARAMS
+                {
+                    dwFlags = MsSign32.SIGN_CALLBACK_UNDOCUMENTED,
                     pSubjectInfo = signerSubjectInfo,
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
-                    pProviderInfo = signerProviderInfo,
-                    pCryptAttrs = IntPtr.Zero, // no additional crypto attributes for signing
-                    pSipData = unmangedSipClientData.Pointer
+                    pProviderInfo = IntPtr.Zero,
+                    psRequest = IntPtr.Zero,
+                    pCryptoPolicy = IntPtr.Zero,
+                    pSignCallback = unmanagedSignInfo.Pointer,
+                    pwszTimestampURL = timestampServer,
+                    dwTimestampFlags = MsSign32.SIGNER_TIMESTAMP_RFC3161,
+                    pszTimestampAlgorithmOid = timestampHashOid
                 };
-
-                if (!string.IsNullOrWhiteSpace(timestampServer))
-                {
-                    signerParams.pszTimestampAlgorithmOid = timestampHashOid;
-                    signerParams.dwTimestampFlags = MsSign32.SIGNER_TIMESTAMP_RFC3161;
-                    signerParams.pwszTimestampURL = timestampServer;
-                }
-                
                 unmanagedSignerParams.Fill(signerParams);
 
-                unmangedSipClientData.Fill(new MsSign32.APPX_SIP_CLIENT_DATA
-                {
-                    pSignerParams = unmanagedSignerParams.Pointer,
-                    pAppxSipState = IntPtr.Zero
-                });
-
-                var hr = MsSign32.SignerSignEx2(
+                var hr = MsSign32.SignerSignEx3(
                     signerParams.dwFlags,
                     signerParams.pSubjectInfo,
                     signerParams.pSigningCert,
@@ -78,10 +97,11 @@ namespace SigningServer.Server.SigningTool
                     signerParams.dwTimestampFlags,
                     signerParams.pszTimestampAlgorithmOid,
                     signerParams.pwszTimestampURL,
-                    signerParams.pCryptAttrs,
-                    signerParams.pSipData,
+                    signerParams.psRequest,
+                    unmanagedSipData.Pointer,
                     signerParams.pSignerContext,
                     signerParams.pCryptoPolicy,
+                    signerParams.pSignCallback,
                     signerParams.pReserved
                 );
 
@@ -92,6 +112,12 @@ namespace SigningServer.Server.SigningTool
                     MsSign32.SignerFreeSignerContext(signerContext);
                 }
 
+                var appxSip = Marshal.PtrToStructure<MsSign32.APPX_SIP_CLIENT_DATA>(unmanagedSipData.Pointer);
+                if (appxSip.pAppxSipState != IntPtr.Zero)
+                {
+                    Marshal.Release(appxSip.pAppxSipState);
+                }
+                
                 return (hr, MsSign32.S_OK);
             }
         }

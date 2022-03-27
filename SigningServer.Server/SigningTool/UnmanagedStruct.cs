@@ -6,6 +6,8 @@ namespace SigningServer.Server.SigningTool
     public sealed class UnmanagedStruct<T> : IDisposable
         where T : struct
     {
+        public static readonly UnmanagedStruct<T> Null = new UnmanagedStruct<T>(IntPtr.Zero);
+
         public IntPtr Pointer { get; private set; }
 
         public UnmanagedStruct()
@@ -13,20 +15,28 @@ namespace SigningServer.Server.SigningTool
             Pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
         }
 
+        private UnmanagedStruct(IntPtr pointer)
+        {
+            Pointer = pointer;
+        }
+
         public void Fill(T value)
         {
             Marshal.StructureToPtr(value, Pointer, false);
         }
 
-        public UnmanagedStruct(T v)
+        public UnmanagedStruct(T v) : this()
         {
-            Pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
             Marshal.StructureToPtr(v, Pointer, false);
         }
 
         public void Dispose()
         {
-            Marshal.FreeHGlobal(Pointer);
+            if (Pointer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(Pointer);
+                Pointer = IntPtr.Zero;
+            }
         }
     }
 }

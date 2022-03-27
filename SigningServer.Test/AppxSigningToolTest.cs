@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
-using SigningServer.Server;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Test
@@ -32,8 +30,7 @@ namespace SigningServer.Test
         public void SignFile_Unsigned_Works()
         {
             var signingTool = new AppxSigningTool();
-            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx");
         }
 
         [TestMethod]
@@ -42,7 +39,6 @@ namespace SigningServer.Test
         {
             var signingTool = new AppxSigningTool();
             var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
-            var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
             var response = new SignFileResponse();
             var request = new SignFileRequest
@@ -50,7 +46,7 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = true
             };
-            signingTool.SignFile(fileName, certificate, TimestampServer, request,
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request,
                 response);
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
@@ -65,8 +61,7 @@ namespace SigningServer.Test
         public void SignFile_Signed_NoResign_Fails()
         {
             var signingTool = new AppxSigningTool();
-            CannotResign(signingTool, "NoResign_Fails/signed/signed.appx", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.appx");
         }
 
         [TestMethod]
@@ -75,7 +70,6 @@ namespace SigningServer.Test
         {
             var signingTool = new AppxSigningTool();
             var fileName = "NoResign_Works/signed/signed.appx";
-            var certificate = new X509Certificate2("Certificates/SigningServer.Test.pfx", CertificatePassword);
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
             var response = new SignFileResponse();
             var request = new SignFileRequest
@@ -83,12 +77,12 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = true
             };
-            signingTool.SignFile(fileName, certificate, TimestampServer, request,
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request,
                 response);
             Trace.WriteLine(response);
             Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));
             Assert.IsInstanceOfType(response.FileContent, typeof(FileStream));
-        }
+        } 
     }
 }

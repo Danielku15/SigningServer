@@ -16,21 +16,24 @@ namespace SigningServer.Server.SigningTool
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
+
         private static readonly HashSet<string> PeSupportedExtensions =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".exe", ".dll", ".sys", ".msi", ".cab", ".cat"
             };
 
-        private static readonly Dictionary<string, (uint algId, string algOid)> PeSupportedHashAlgorithms =
-            new Dictionary<string, (uint algId, string algOid)>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["SHA1"] = (MsSign32.CALG_SHA1, MsSign32.OID_OIWSEC_SHA1),
-                ["MD5"] = (MsSign32.CALG_MD5, MsSign32.OID_RSA_MD5),
-                ["SHA256"] = (MsSign32.CALG_SHA_256, MsSign32.OID_OIWSEC_SHA256),
-                ["SHA384"] = (MsSign32.CALG_SHA_384, MsSign32.OID_OIWSEC_SHA384),
-                ["SHA512"] = (MsSign32.CALG_SHA_512, MsSign32.OID_OIWSEC_SHA512),
-            };
+        private static readonly Dictionary<string, (uint algId, string algOid, HashAlgorithmName algName)>
+            PeSupportedHashAlgorithms =
+                new Dictionary<string, (uint algId, string algOid, HashAlgorithmName algName)>(StringComparer
+                    .OrdinalIgnoreCase)
+                {
+                    ["SHA1"] = (MsSign32.CALG_SHA1, MsSign32.OID_OIWSEC_SHA1, HashAlgorithmName.SHA1),
+                    ["MD5"] = (MsSign32.CALG_MD5, MsSign32.OID_RSA_MD5, HashAlgorithmName.MD5),
+                    ["SHA256"] = (MsSign32.CALG_SHA_256, MsSign32.OID_OIWSEC_SHA256, HashAlgorithmName.SHA256),
+                    ["SHA384"] = (MsSign32.CALG_SHA_384, MsSign32.OID_OIWSEC_SHA384, HashAlgorithmName.SHA384),
+                    ["SHA512"] = (MsSign32.CALG_SHA_512, MsSign32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512),
+                };
 
         public virtual string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
         public virtual string[] SupportedHashAlgorithms => PeSupportedHashAlgorithms.Keys.ToArray();
@@ -130,29 +133,14 @@ namespace SigningServer.Server.SigningTool
                 }
             }
 
-            var rawCertData = certificate.GetRawCertData();
-            Log.Trace("Creating certificate context");
-            var pCertContext = MsSign32.CertCreateCertificateContext(
-                MsSign32.X509_ASN_ENCODING | MsSign32.PKCS_7_ASN_ENCODING,
-                rawCertData,
-                (uint)rawCertData.Length
-            );
-            if (pCertContext == IntPtr.Zero)
-            {
-                signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
-                signFileResponse.ErrorMessage =
-                    $"could not create certificate context from certificate (0x{Marshal.GetLastWin32Error():X})";
-                return;
-            }
-
             if (!PeSupportedHashAlgorithms.TryGetValue(
                     signFileRequest.HashAlgorithm ?? "", out var algId))
             {
                 algId = PeSupportedHashAlgorithms["SHA256"];
             }
 
-            var cspParameters = GetPrivateKeyInfo(certificate);
-            
+            // var cspParameters = GetPrivateKeyInfo(certificate);
+
             using (var signerFileInfo = new UnmanagedStruct<MsSign32.SIGNER_FILE_INFO>(new MsSign32.SIGNER_FILE_INFO
                    {
                        cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_FILE_INFO>(),
@@ -175,7 +163,7 @@ namespace SigningServer.Server.SigningTool
                        new MsSign32.SIGNER_CERT_STORE_INFO
                        {
                            cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_CERT_STORE_INFO>(),
-                           pSigningCert = pCertContext,
+                           pSigningCert = certificate.Handle,
                            dwCertPolicy = MsSign32.SIGNER_CERT_POLICY_CHAIN,
                            hCertStore = IntPtr.Zero
                        }))
@@ -203,28 +191,14 @@ namespace SigningServer.Server.SigningTool
                            psAuthenticated = IntPtr.Zero,
                            psUnauthenticated = IntPtr.Zero
                        }))
-            using (var signerProviderInfo = new UnmanagedStruct<MsSign32.SIGNER_PROVIDER_INFO>( new MsSign32.SIGNER_PROVIDER_INFO
-                   {
-                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_PROVIDER_INFO>(),
-                       pwszProviderName = cspParameters.ProviderName,
-                       dwProviderType = (uint)cspParameters.ProviderType,
-                       dwPvkChoice = MsSign32.PVK_TYPE_KEYCONTAINER,
-                       union =
-                       {
-                           pwszKeyContainer = cspParameters.KeyContainerName
-                       }
-                   }))
             {
                 var (hr, tshr) = SignAndTimestamp(
+                    algId.algName,
                     algId.algOid,
                     inputFileName, timestampServer, signerSubjectInfo.Pointer,
                     signerCert.Pointer,
-                    signerSignatureInfo.Pointer, signerProviderInfo.Pointer);
-
-                if (pCertContext != IntPtr.Zero)
-                {
-                    MsSign32.CertFreeCertificateContext(pCertContext);
-                }
+                    signerSignatureInfo.Pointer, certificate
+                );
 
                 if (hr == MsSign32.S_OK && tshr == MsSign32.S_OK)
                 {
@@ -264,78 +238,62 @@ namespace SigningServer.Server.SigningTool
             }
         }
 
-        private CspParameters GetPrivateKeyInfo(X509Certificate2 certificate)
-        {
-            var ptr = IntPtr.Zero;
-            uint cbData = 0;
-
-            if (!MsSign32.CertGetCertificateContextProperty(certificate.Handle,
-                    MsSign32.CERT_KEY_PROV_INFO_PROP_ID,
-                    ptr,
-                    ref cbData))
-            {
-                var dwErrorCode = Marshal.GetLastWin32Error();
-                if (dwErrorCode == MsSign32.CRYPT_E_NOT_FOUND)
-                {
-                    throw new InvalidOperationException("Could not load Private key information from Certificate");
-                }
-
-                throw new CryptographicException(Marshal.GetLastWin32Error());
-            }
-
-            ptr = MsSign32.LocalAlloc(MsSign32.LocalMemoryFlags.LMEM_FIXED, new UIntPtr(cbData));
-            if (!MsSign32.CertGetCertificateContextProperty(certificate.Handle,
-                    MsSign32.CERT_KEY_PROV_INFO_PROP_ID,
-                    ptr,
-                    ref cbData))
-            {
-                var dwErrorCode = Marshal.GetLastWin32Error();
-                if (dwErrorCode == MsSign32.CRYPT_E_NOT_FOUND)
-                {
-                    throw new InvalidOperationException("Could not load Private key information from Certificate");
-                }
-
-                throw new CryptographicException(Marshal.GetLastWin32Error());
-            }
-
-            var pKeyProvInfo =
-                (MsSign32.CRYPT_KEY_PROV_INFO)Marshal.PtrToStructure(ptr, typeof(MsSign32.CRYPT_KEY_PROV_INFO));
-
-            var parameters = new CspParameters
-            {
-                ProviderName = pKeyProvInfo.pwszProvName,
-                KeyContainerName = pKeyProvInfo.pwszContainerName,
-                ProviderType = (int)pKeyProvInfo.dwProvType,
-                KeyNumber = (int)pKeyProvInfo.dwKeySpec
-            };
-
-            MsSign32.LocalFree(ptr);
-            return parameters;
-        }
-
         private protected virtual (int hr, int tshr) SignAndTimestamp(
+            HashAlgorithmName hashAlgorithmName,
             string timestampHashOid,
             string inputFileName,
             string timestampServer,
             /*PSIGNER_SUBJECT_INFO*/IntPtr signerSubjectInfo,
             /*PSIGNER_CERT*/IntPtr signerCert,
             /*PSIGNER_SIGNATURE_INFO*/ IntPtr signerSignatureInfo,
-            /*PSIGNER_PROVIDER_INFO*/ IntPtr signerProviderInfo)
+            X509Certificate2 certificate)
         {
             Log.Trace($"Call signing of  {inputFileName}");
-            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX2_PARAMS>())
+
+            int SignCallback(IntPtr pCertContext, IntPtr pvExtra, uint algId, byte[] pDigestToSign, uint dwDigestToSign,
+                ref MsSign32.CRYPTOAPI_BLOB blob)
             {
-                var signerParams = new MsSign32.SIGNER_SIGN_EX2_PARAMS
+                byte[] digest;
+                switch (certificate.PrivateKey)
                 {
+                    case RSA rsa:
+                        digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                        break;
+                    default:
+                        return MsSign32.E_INVALIDARG;
+                }
+
+                var resultPtr = Marshal.AllocHGlobal(digest.Length);
+                Marshal.Copy(digest, 0, resultPtr, digest.Length);
+                blob.pbData = resultPtr;
+                blob.cbData = (uint)digest.Length;
+                return 0;
+            }
+
+            MsSign32.SignCallback callbackDelegate = SignCallback;
+
+            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX3_PARAMS>())
+            using (var unmanagedSignInfo = new UnmanagedStruct<MsSign32.SIGN_INFO>(new MsSign32.SIGN_INFO
+                   {
+                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGN_INFO>(),
+                       callback = Marshal.GetFunctionPointerForDelegate(callbackDelegate),
+                       pvOpaque = IntPtr.Zero
+                   }))
+            {
+                var signerParams = new MsSign32.SIGNER_SIGN_EX3_PARAMS
+                {
+                    dwFlags = MsSign32.SIGN_CALLBACK_UNDOCUMENTED,
                     pSubjectInfo = signerSubjectInfo,
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
-                    pProviderInfo = signerProviderInfo,
-                    pCryptAttrs = IntPtr.Zero, // no additional crypto attributes for signing,
+                    pProviderInfo = IntPtr.Zero,
+                    psRequest = IntPtr.Zero,
+                    pCryptoPolicy = IntPtr.Zero,
+                    pSignCallback = unmanagedSignInfo.Pointer
                 };
                 unmanagedSignerParams.Fill(signerParams);
 
-                var hr = MsSign32.SignerSignEx2(
+                var hr = MsSign32.SignerSignEx3(
                     signerParams.dwFlags,
                     signerParams.pSubjectInfo,
                     signerParams.pSigningCert,
@@ -344,10 +302,11 @@ namespace SigningServer.Server.SigningTool
                     signerParams.dwTimestampFlags,
                     signerParams.pszTimestampAlgorithmOid,
                     signerParams.pwszTimestampURL,
-                    signerParams.pCryptAttrs,
-                    signerParams.pSipData,
+                    signerParams.psRequest,
+                    IntPtr.Zero, 
                     signerParams.pSignerContext,
                     signerParams.pCryptoPolicy,
+                    signerParams.pSignCallback,
                     signerParams.pReserved
                 );
 
@@ -391,6 +350,8 @@ namespace SigningServer.Server.SigningTool
                 return (hr, tshr);
             }
         }
+
+    
 
         public void UnsignFile(string fileName)
         {

@@ -71,14 +71,10 @@ namespace SigningServer.Android.Apk
             if (signerConfig.Certificate.GetRSAPublicKey() != null)
             {
                 signatureBlockFileName += "RSA";
-            } 
-            else if(signerConfig.Certificate.GetDSAPublicKey() != null)
-            {
-                signatureBlockFileName += "DSA";
             }
             else
             {
-                throw new InvalidOperationException("Unsupported certificate public key type (not RSA or DSA)");
+                throw new InvalidOperationException("Unsupported certificate public key type (not RSA)");
             }
 
             result.Add(signatureBlockFileName);
@@ -148,16 +144,6 @@ namespace SigningServer.Android.Apk
                 case RSA _ when minSdkVersion < 18:
                     return DigestAlgorithm.SHA1;
                 case RSA _:
-                    return DigestAlgorithm.SHA256;
-                // Prior to API Level 21, only SHA-1 can be used with DSA
-                case DSA _ when minSdkVersion < 21:
-                    return DigestAlgorithm.SHA1;
-                case DSA _:
-                    return DigestAlgorithm.SHA256;
-                case ECDsa _ when minSdkVersion < 18:
-                    throw new CryptographicException(
-                        "ECDSA signatures only supported for minSdkVersion 18 and higher");
-                case ECDsa _:
                     return DigestAlgorithm.SHA256;
                 default:
                     throw new CryptographicException("Unsupported key algorithm: " +
@@ -344,14 +330,10 @@ namespace SigningServer.Android.Apk
             if (signerConfig.Certificate.GetRSAPublicKey() != null)
             {
                 signatureBlockFileName += "RSA";
-            } 
-            else if(signerConfig.Certificate.GetDSAPublicKey() != null)
-            {
-                signatureBlockFileName += "DSA";
             }
             else
             {
-                throw new InvalidOperationException("Unsupported certificate public key type (not RSA or DSA)");
+                throw new InvalidOperationException("Unsupported certificate public key type (not RSA)");
             }
 
             signatureJarEntries.Add(

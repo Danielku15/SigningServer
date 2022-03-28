@@ -33,13 +33,6 @@ namespace SigningServer.Android.Crypto
             "RSA",
             DigestAlgorithm.SHA512);
 
-        /** DSA with SHA2-256 digest, content digested using SHA2-256 in 1 MB chunks. */
-        public static readonly SignatureAlgorithm DSA_WITH_SHA256 = new SignatureAlgorithm(
-            0x0301,
-            ContentDigestAlgorithm.CHUNKED_SHA256,
-            "DSA",
-            DigestAlgorithm.SHA256);
-
         public int Id { get; set; }
         public string JcaKeyAlgorithm { get; set; }
         public ContentDigestAlgorithm ContentDigestAlgorithm { get; set; }

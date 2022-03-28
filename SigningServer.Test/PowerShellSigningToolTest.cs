@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SigningServer.Server.SigningTool;
+using SigningServer.MsSign;
 
 namespace SigningServer.Test
 {
@@ -40,8 +40,7 @@ namespace SigningServer.Test
         public void SignFile_Unsigned_Works()
         {
             var signingTool = new PowerShellSigningTool();
-            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.ps1", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.ps1");
         }
 
 
@@ -50,8 +49,7 @@ namespace SigningServer.Test
         public void SignFile_Signed_NoResign_Fails()
         {
             var signingTool = new PowerShellSigningTool();
-            CannotResign(signingTool, "NoResign_Fails/signed/signed.ps1", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.ps1");
         }
 
         [TestMethod]
@@ -59,8 +57,7 @@ namespace SigningServer.Test
         public void SignFile_Signed_Resign_Works()
         {
             var signingTool = new PowerShellSigningTool();
-            CanResign(signingTool, "Resign_Works/signed/signed.ps1", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanResign(signingTool, "Resign_Works/signed/signed.ps1");
         }
     }
 }

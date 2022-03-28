@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
-using SigningServer.Server;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 
@@ -14,7 +12,6 @@ namespace SigningServer.Test
     [TestClass]
     public class SigningServerSigningTest : UnitTestBase
     {
-        private static X509Certificate2 _signingCertificate;
         private static SigningServerConfiguration _configuration;
         private static ISigningToolProvider _emptySigningToolProvider;
         private static ISigningToolProvider _simultateSigningToolProvider;
@@ -22,14 +19,13 @@ namespace SigningServer.Test
         [ClassInitialize]
         public static void Setup(TestContext _)
         {
-            _signingCertificate = new X509Certificate2(CertificatePath, CertificatePassword);
             _configuration = new SigningServerConfiguration
             {
                 Certificates = new[]
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = _signingCertificate
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -95,7 +91,7 @@ namespace SigningServer.Test
                     {
                         Username = "SignUser",
                         Password = "SignPass",
-                        Certificate = _signingCertificate
+                        Certificate = AssemblyEvents.Certificate
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"

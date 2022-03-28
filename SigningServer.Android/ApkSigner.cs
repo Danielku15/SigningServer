@@ -32,7 +32,7 @@ namespace SigningServer.Android
     /// order of APK entries and preserves their contents, including compressed form and alignment of
     /// data.
     /// </summary>
-    public class ApkSigner
+    internal class ApkSigner
     {
         public const string V1ManifestEntryName = V1SchemeSigner.ManifestEntryName;
 

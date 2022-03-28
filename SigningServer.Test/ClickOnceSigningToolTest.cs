@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SigningServer.Server.SigningTool;
+using SigningServer.ClickOnce;
 
 namespace SigningServer.Test
 {
@@ -42,8 +42,7 @@ namespace SigningServer.Test
         public void Application_SignFile_Unsigned_Works_Application()
         {
             var signingTool = new ClickOnceSigningTool();
-            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.application", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.application");
         }
 
         [TestMethod]
@@ -51,8 +50,7 @@ namespace SigningServer.Test
         public void Application_SignFile_Signed_NoResign_Fails_Application()
         {
             var signingTool = new ClickOnceSigningTool();
-            CannotResign(signingTool, "NoResign_Fails/signed/signed.application", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.application");
         }
 
         [TestMethod]
@@ -60,8 +58,7 @@ namespace SigningServer.Test
         public void Application_SignFile_Signed_Resign_Works_Application()
         {
             var signingTool = new ClickOnceSigningTool();
-            CanResign(signingTool, "Resign_Works/signed/signed.application", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanResign(signingTool, "Resign_Works/signed/signed.application");
         }
 
         #endregion
@@ -101,8 +98,7 @@ namespace SigningServer.Test
         public void Manifest_SignFile_Unsigned_Works_Manifest()
         {
             var signingTool = new ClickOnceSigningTool();
-            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe.manifest", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanSign(signingTool, "SignFile_Works/unsigned/unsigned.exe.manifest");
         }
 
 
@@ -111,8 +107,7 @@ namespace SigningServer.Test
         public void Manifest_SignFile_Signed_NoResign_Fails_Manifest()
         {
             var signingTool = new ClickOnceSigningTool();
-            CannotResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest",
-                "Certificates/SigningServer.Test.pfx", CertificatePassword);
+            CannotResign(signingTool, "NoResign_Fails/signed/signed.exe.manifest");
         }
 
 
@@ -121,8 +116,7 @@ namespace SigningServer.Test
         public void Manifest_SignFile_Signed_Resign_Works_Manifest()
         {
             var signingTool = new ClickOnceSigningTool();
-            CanResign(signingTool, "Resign_Fails/signed/signed.exe.manifest", "Certificates/SigningServer.Test.pfx",
-                CertificatePassword);
+            CanResign(signingTool, "Resign_Fails/signed/signed.exe.manifest");
         }
 
         #endregion

@@ -1,4 +1,7 @@
-﻿using SigningServer.Contracts;
+﻿using SigningServer.Android;
+using SigningServer.ClickOnce;
+using SigningServer.Contracts;
+using SigningServer.MsSign;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Server
@@ -8,9 +11,9 @@ namespace SigningServer.Server
         private static readonly ISigningTool[] SigningTools =
         {
             new PortableExecutableSigningTool(),
+            new AppxSigningTool(),
             new AndroidApkSigningTool(),
             new ClickOnceSigningTool(),
-            new AppxSigningTool(),
             new PowerShellSigningTool()
         };
 

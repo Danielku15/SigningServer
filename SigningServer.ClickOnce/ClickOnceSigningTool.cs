@@ -8,19 +8,20 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 using NLog;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.ClickOnce
 {
     public class ClickOnceSigningTool : ISigningTool
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static readonly HashSet<string> ClickOnceSupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            ".application",
-            ".manifest"
-        };
-        private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
+        private static readonly HashSet<string> ClickOnceSupportedExtension =
+            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            {
+                ".application",
+                ".manifest"
+            };
 
+        private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
 
         public bool IsFileSupported(string fileName)
         {
@@ -46,11 +47,20 @@ namespace SigningServer.Server.SigningTool
                 }
             }
 
-            SecurityUtilities.SignFile(certificate, string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
-
-            signFileResponse.Result = successResult;
-            signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-            signFileResponse.FileSize = signFileResponse.FileContent.Length;
+            try
+            {
+                SecurityUtilities.SignFile(certificate,
+                    string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
+                signFileResponse.Result = successResult;
+                signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
+                signFileResponse.FileSize = signFileResponse.FileContent.Length;
+            }
+            catch (Exception ex)
+            {
+                signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
+                signFileResponse.ErrorMessage = ex.Message;
+                Log.Error($"{inputFileName} signing failed {signFileResponse.ErrorMessage}");
+            }
         }
 
         public bool IsFileSigned(string inputFileName)
@@ -62,6 +72,7 @@ namespace SigningServer.Server.SigningTool
                 {
                     return false;
                 }
+
                 if (xml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
                 {
                     return true;
@@ -81,13 +92,17 @@ namespace SigningServer.Server.SigningTool
             var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
             if (xml.Root != null)
             {
-                xml.Root.Elements().Where(e=> e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature").Remove();
+                xml.Root.Elements()
+                    .Where(e => e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature")
+                    .Remove();
             }
+
             File.WriteAllText(inputFileName, xml.ToString(SaveOptions.DisableFormatting));
         }
 
         /// <inheritdoc />
         public string[] SupportedFileExtensions => ClickOnceSupportedExtension.ToArray();
+
         public string[] SupportedHashAlgorithms => ClickOnceSupportedHashAlgorithms;
     }
 }

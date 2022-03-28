@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
-    public sealed class UnmanagedStruct<T> : IDisposable
+    internal sealed class UnmanagedStruct<T> : IDisposable
         where T : struct
     {
         public IntPtr Pointer { get; private set; }
@@ -13,20 +13,28 @@ namespace SigningServer.Server.SigningTool
             Pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
         }
 
+        private UnmanagedStruct(IntPtr pointer)
+        {
+            Pointer = pointer;
+        }
+
         public void Fill(T value)
         {
             Marshal.StructureToPtr(value, Pointer, false);
         }
 
-        public UnmanagedStruct(T v)
+        public UnmanagedStruct(T v) : this()
         {
-            Pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
             Marshal.StructureToPtr(v, Pointer, false);
         }
 
         public void Dispose()
         {
-            Marshal.FreeHGlobal(Pointer);
+            if (Pointer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(Pointer);
+                Pointer = IntPtr.Zero;
+            }
         }
     }
 }

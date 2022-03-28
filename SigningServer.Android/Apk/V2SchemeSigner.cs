@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -380,43 +379,19 @@ namespace SigningServer.Android.Apk
                 var digestAlgorithm = signatureAlgorithm.DigestAlgorithm;
                 byte[] signatureBytes;
 
-                var x509Key = new X509AsymmetricSecurityKey(signerConfig.Certificates);
-
-                if (signerConfig.Certificates.GetRSAPrivateKey() != null)
+                if (signerConfig.Certificates.PrivateKey is RSA rsa)
                 {
                     if (digestAlgorithm.Oid == DigestAlgorithm.SHA1.Oid)
                     {
-                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm(SecurityAlgorithms.RsaSha1Signature, true);
                         signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
                     }
                     else if (digestAlgorithm.Oid == DigestAlgorithm.SHA256.Oid)
                     {
-                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm(SecurityAlgorithms.RsaSha256Signature, true);
                         signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                     }
                     else if (digestAlgorithm.Oid == DigestAlgorithm.SHA512.Oid)
                     {
-                        var rsa = (RSA)x509Key.GetAsymmetricAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", true);
                         signatureBytes = rsa.SignData(signer.SignedData, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
-                    }
-                    else
-                    {
-                        throw new CryptographicException($"Failed to sign using {digestAlgorithm.Name} unsupproted digest");
-                    }
-                }
-                else if (signerConfig.Certificates.GetDSAPrivateKey() is DSA dsa)
-                {
-                    if (digestAlgorithm.Oid == DigestAlgorithm.SHA1.Oid)
-                    {
-                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA1);
-                    }
-                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA256.Oid)
-                    {
-                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA256);
-                    }
-                    else if (digestAlgorithm.Oid == DigestAlgorithm.SHA512.Oid)
-                    {
-                        signatureBytes = dsa.SignData(signer.SignedData, HashAlgorithmName.SHA512);
                     }
                     else
                     {
@@ -437,17 +412,6 @@ namespace SigningServer.Android.Apk
                         {
                             rsa2.ImportParameters(rsaPub.ExportParameters(false));
                             if (!rsa2.VerifyData(signer.SignedData, hash, signatureBytes))
-                            {
-                                throw new CryptographicException("Signature did not verify");
-                            }
-                        }
-
-                        break;
-                    case DSA dsaPub:
-                        using (var dsa2 = new DSACryptoServiceProvider())
-                        {
-                            dsa2.ImportParameters(dsaPub.ExportParameters(false));
-                            if (!dsa2.VerifyData(signer.SignedData, signatureBytes))
                             {
                                 throw new CryptographicException("Signature did not verify");
                             }
@@ -556,7 +520,7 @@ namespace SigningServer.Android.Apk
         {
             switch (certificatePublicKey.Key)
             {
-                case RSACryptoServiceProvider rsa:
+                case RSA rsa:
 
                     if (digestAlgorithm != null)
                     {
@@ -584,17 +548,6 @@ namespace SigningServer.Android.Apk
                         // digest being the weak link. SHA-512 is the next strongest supported digest.
                         return SignatureAlgorithm.RSA_PKCS1_V1_5_WITH_SHA512;
                     }
-                case DSACryptoServiceProvider _:
-                    if (digestAlgorithm != null)
-                    {
-                        if (DigestAlgorithm.SHA256.Equals(digestAlgorithm))
-                        {
-                            return SignatureAlgorithm.DSA_WITH_SHA256;
-                        }
-                        throw new CryptographicException("Cannot use " + digestAlgorithm.Name + " with v2 apk signing");
-                    }
-
-                    return SignatureAlgorithm.DSA_WITH_SHA256;
             }
 
             throw new CryptographicException(

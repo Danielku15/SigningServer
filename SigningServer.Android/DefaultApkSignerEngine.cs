@@ -41,7 +41,7 @@ namespace SigningServer.Android
     /// 3. If APK Signature Scheme v2 (v2 signing) is enabled, the engine emits an APK Signing Block
     ///    from outputZipSections() and asks its client to insert this block into the output.
     /// </remarks>
-    public class DefaultApkSignerEngine
+    internal class DefaultApkSignerEngine
     {
         private readonly bool _v1SigningEnabled;
         private readonly bool _v2SigningEnabled;

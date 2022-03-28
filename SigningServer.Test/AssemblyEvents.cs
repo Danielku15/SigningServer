@@ -23,20 +23,25 @@ namespace SigningServer.Test
             // otherwise it seems the CSP is not active on the system
             try
             {
+                var certificatePath = Path.Combine(UnitTestBase.ExecutionDirectory, "Certificates",
+                    "SigningServer.Test.pfx");
+                var certificatePassword = "SigningServer";
+
                 Log.Info("Installing Certificate for testing to store");
                 using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
                 {
                     store.Open(OpenFlags.ReadWrite);
-                    var certificatePath = Path.Combine(UnitTestBase.ExecutionDirectory, "Certificates",
-                        "SigningServer.Test.pfx");
-                    var certificatePassword = "SigningServer";
                     Certificate = new X509Certificate2(certificatePath, certificatePassword);
-                    PatchHashSupport(Certificate);
                     store.Add(Certificate);
                     store.Close();
                 }
-
                 Log.Info("Certificate installed");
+                
+                Log.Info("Reload Certificate and check private key");
+                Certificate = new X509Certificate2(certificatePath, certificatePassword);
+                PatchHashSupport(Certificate);
+                Log.Info("Certificate installed");
+                
             }
             catch (Exception e)
             {

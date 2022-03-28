@@ -23,7 +23,6 @@ namespace SigningServer.ClickOnce
 
         private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
 
-
         public bool IsFileSupported(string fileName)
         {
             return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
@@ -50,8 +49,8 @@ namespace SigningServer.ClickOnce
 
             try
             {
-                SecurityUtilities.SignFile(certificate, string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
-
+                SecurityUtilities.SignFile(certificate,
+                    string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
                 signFileResponse.Result = successResult;
                 signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
                 signFileResponse.FileSize = signFileResponse.FileContent.Length;
@@ -94,7 +93,8 @@ namespace SigningServer.ClickOnce
             if (xml.Root != null)
             {
                 xml.Root.Elements()
-                    .Where(e => e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature").Remove();
+                    .Where(e => e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature")
+                    .Remove();
             }
 
             File.WriteAllText(inputFileName, xml.ToString(SaveOptions.DisableFormatting));

@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NLog;
+using NLog.Config;
 
 namespace SigningServer.Test
 {
@@ -16,6 +17,8 @@ namespace SigningServer.Test
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext context)
         {
+            LogManager.Configuration = new XmlLoggingConfiguration("NLog.config");
+            
             // attempt to import certificate once into the certificate store
             // otherwise it seems the CSP is not active on the system
             try

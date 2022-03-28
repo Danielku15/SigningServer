@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 using NLog;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.ClickOnce
 {
     public class ClickOnceSigningTool : ISigningTool
     {
@@ -53,19 +50,7 @@ namespace SigningServer.Server.SigningTool
 
             try
             {
-                // var manifestDom = new XmlDocument
-                // {
-                //     PreserveWhitespace = true
-                // };
-                // manifestDom.Load(inputFileName);
-                
                 SecurityUtilities.SignFile(certificate, string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
-
-                // // https://github.com/dotnet/msbuild/blob/main/src/Tasks/ManifestUtil/SecurityUtil.cs
-                // var signedCmiManifest2 = new SignedCmiManifest2(manifestDom);
-                // signedCmiManifest2.Sign(certificate.PrivateKey, certificate, timestampServer);
-                //
-                // manifestDom.Save(inputFileName);
 
                 signFileResponse.Result = successResult;
                 signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);

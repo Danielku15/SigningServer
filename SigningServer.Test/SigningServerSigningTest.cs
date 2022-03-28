@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
-using SigningServer.Server;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 

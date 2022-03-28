@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NLog;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
     public class AppxSigningTool : PortableExecutableSigningTool
     {
@@ -38,7 +38,7 @@ namespace SigningServer.Server.SigningTool
             Log.Trace($"Call signing of  {inputFileName}");
 
             int SignCallback(IntPtr pCertContext, IntPtr pvExtra, uint algId, byte[] pDigestToSign, uint dwDigestToSign,
-                ref MsSign32.CRYPTOAPI_BLOB blob)
+                ref Win32.CRYPTOAPI_BLOB blob)
             {
                 byte[] digest;
                 switch (certificate.PrivateKey)
@@ -47,7 +47,7 @@ namespace SigningServer.Server.SigningTool
                         digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
                         break;
                     default:
-                        return MsSign32.E_INVALIDARG;
+                        return Win32.E_INVALIDARG;
                 }
 
                 var resultPtr = Marshal.AllocHGlobal(digest.Length);
@@ -57,24 +57,24 @@ namespace SigningServer.Server.SigningTool
                 return 0;
             }
 
-            MsSign32.SignCallback callbackDelegate = SignCallback;
+            Win32.SignCallback callbackDelegate = SignCallback;
 
-            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX3_PARAMS>())
-            using (var unmanagedSignInfo = new UnmanagedStruct<MsSign32.SIGN_INFO>(new MsSign32.SIGN_INFO
+            using (var unmanagedSignerParams = new UnmanagedStruct<Win32.SIGNER_SIGN_EX3_PARAMS>())
+            using (var unmanagedSignInfo = new UnmanagedStruct<Win32.SIGN_INFO>(new Win32.SIGN_INFO
                    {
-                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGN_INFO>(),
+                       cbSize = (uint)Marshal.SizeOf<Win32.SIGN_INFO>(),
                        callback = Marshal.GetFunctionPointerForDelegate(callbackDelegate),
                        pvOpaque = IntPtr.Zero
                    }))
-            using (var unmanagedSipData = new UnmanagedStruct<MsSign32.APPX_SIP_CLIENT_DATA>(new MsSign32.APPX_SIP_CLIENT_DATA
+            using (var unmanagedSipData = new UnmanagedStruct<Win32.APPX_SIP_CLIENT_DATA>(new Win32.APPX_SIP_CLIENT_DATA
                    {
                        pSignerParams = unmanagedSignerParams.Pointer,
                        pAppxSipState = IntPtr.Zero
                    }))
             {
-                var signerParams = new MsSign32.SIGNER_SIGN_EX3_PARAMS
+                var signerParams = new Win32.SIGNER_SIGN_EX3_PARAMS
                 {
-                    dwFlags = MsSign32.SIGN_CALLBACK_UNDOCUMENTED,
+                    dwFlags = Win32.SIGN_CALLBACK_UNDOCUMENTED,
                     pSubjectInfo = signerSubjectInfo,
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
@@ -83,12 +83,12 @@ namespace SigningServer.Server.SigningTool
                     pCryptoPolicy = IntPtr.Zero,
                     pSignCallback = unmanagedSignInfo.Pointer,
                     pwszTimestampURL = timestampServer,
-                    dwTimestampFlags = MsSign32.SIGNER_TIMESTAMP_RFC3161,
+                    dwTimestampFlags = Win32.SIGNER_TIMESTAMP_RFC3161,
                     pszTimestampAlgorithmOid = timestampHashOid
                 };
                 unmanagedSignerParams.Fill(signerParams);
 
-                var hr = MsSign32.SignerSignEx3(
+                var hr = Win32.SignerSignEx3(
                     signerParams.dwFlags,
                     signerParams.pSubjectInfo,
                     signerParams.pSigningCert,
@@ -109,16 +109,16 @@ namespace SigningServer.Server.SigningTool
                 {
                     var signerContext = new IntPtr();
                     Marshal.PtrToStructure(signerParams.pSignerContext, signerContext);
-                    MsSign32.SignerFreeSignerContext(signerContext);
+                    Win32.SignerFreeSignerContext(signerContext);
                 }
 
-                var appxSip = Marshal.PtrToStructure<MsSign32.APPX_SIP_CLIENT_DATA>(unmanagedSipData.Pointer);
+                var appxSip = Marshal.PtrToStructure<Win32.APPX_SIP_CLIENT_DATA>(unmanagedSipData.Pointer);
                 if (appxSip.pAppxSipState != IntPtr.Zero)
                 {
                     Marshal.Release(appxSip.pAppxSipState);
                 }
                 
-                return (hr, MsSign32.S_OK);
+                return (hr, Win32.S_OK);
             }
         }
     }

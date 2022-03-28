@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Server;

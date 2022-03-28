@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
-using SigningServer.Server.SigningTool;
+using SigningServer.MsSign;
 
 namespace SigningServer.Test
 {

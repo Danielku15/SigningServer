@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
-    public sealed class UnmanagedStruct<T> : IDisposable
+    internal sealed class UnmanagedStruct<T> : IDisposable
         where T : struct
     {
-        public static readonly UnmanagedStruct<T> Null = new UnmanagedStruct<T>(IntPtr.Zero);
-
         public IntPtr Pointer { get; private set; }
 
         public UnmanagedStruct()

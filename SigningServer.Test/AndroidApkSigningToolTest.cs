@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SigningServer.Server.SigningTool;
+using SigningServer.Android;
 
 namespace SigningServer.Test
 {

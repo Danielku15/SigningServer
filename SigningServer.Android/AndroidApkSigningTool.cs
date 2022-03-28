@@ -4,12 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
-using NLog;
-using SigningServer.Android;
 using SigningServer.Android.Crypto;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.Android
 {
     // "A signed JAR file is exactly the same as the original JAR file, except that its manifest is updated 
     // and two additional files are added to the META-INF directory: a signature file and a signature block file."
@@ -19,8 +17,6 @@ namespace SigningServer.Server.SigningTool
 
     public class AndroidApkSigningTool : ISigningTool
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
         private static readonly HashSet<string> ApkSupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
         {
             ".jar",  ".apk"

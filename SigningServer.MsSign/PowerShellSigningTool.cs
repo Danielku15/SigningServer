@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
     public class PowerShellSigningTool : PortableExecutableSigningTool
     {

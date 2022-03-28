@@ -1,4 +1,7 @@
-﻿using SigningServer.Contracts;
+﻿using SigningServer.Android;
+using SigningServer.ClickOnce;
+using SigningServer.Contracts;
+using SigningServer.MsSign;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Server

@@ -18,6 +18,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Contracts", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android", "SigningServer.Android\SigningServer.Android.csproj", "{A5A936B4-AF08-4231-A3FB-9D3421701C48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.MsSign", "SigningServer.MsSign\SigningServer.MsSign.csproj", "{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.ClickOnce", "SigningServer.ClickOnce\SigningServer.ClickOnce.csproj", "{275D85F8-C149-415F-8260-7288AE33333F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +48,14 @@ Global
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{275D85F8-C149-415F-8260-7288AE33333F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{275D85F8-C149-415F-8260-7288AE33333F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{275D85F8-C149-415F-8260-7288AE33333F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{275D85F8-C149-415F-8260-7288AE33333F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

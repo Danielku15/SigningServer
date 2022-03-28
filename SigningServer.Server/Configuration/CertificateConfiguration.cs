@@ -8,7 +8,6 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using RSAKeyVaultProvider;
 using SigningServer.Server.SigningTool;
 
 namespace SigningServer.Server.Configuration

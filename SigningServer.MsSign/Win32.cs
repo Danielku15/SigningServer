@@ -6,9 +6,9 @@ using Microsoft.Win32.SafeHandles;
 // ReSharper disable InconsistentNaming
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
-    internal static class MsSign32
+    internal static class Win32
     {
         public const uint SIGN_CALLBACK_UNDOCUMENTED = 0x400;
         

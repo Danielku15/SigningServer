@@ -10,12 +10,11 @@ using System.Threading;
 using NLog;
 using SigningServer.Contracts;
 
-namespace SigningServer.Server.SigningTool
+namespace SigningServer.MsSign
 {
     public class PortableExecutableSigningTool : ISigningTool
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
 
         private static readonly HashSet<string> PeSupportedExtensions =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -28,11 +27,11 @@ namespace SigningServer.Server.SigningTool
                 new Dictionary<string, (uint algId, string algOid, HashAlgorithmName algName)>(StringComparer
                     .OrdinalIgnoreCase)
                 {
-                    ["SHA1"] = (MsSign32.CALG_SHA1, MsSign32.OID_OIWSEC_SHA1, HashAlgorithmName.SHA1),
-                    ["MD5"] = (MsSign32.CALG_MD5, MsSign32.OID_RSA_MD5, HashAlgorithmName.MD5),
-                    ["SHA256"] = (MsSign32.CALG_SHA_256, MsSign32.OID_OIWSEC_SHA256, HashAlgorithmName.SHA256),
-                    ["SHA384"] = (MsSign32.CALG_SHA_384, MsSign32.OID_OIWSEC_SHA384, HashAlgorithmName.SHA384),
-                    ["SHA512"] = (MsSign32.CALG_SHA_512, MsSign32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512),
+                    ["SHA1"] = (Win32.CALG_SHA1, Win32.OID_OIWSEC_SHA1, HashAlgorithmName.SHA1),
+                    ["MD5"] = (Win32.CALG_MD5, Win32.OID_RSA_MD5, HashAlgorithmName.MD5),
+                    ["SHA256"] = (Win32.CALG_SHA_256, Win32.OID_OIWSEC_SHA256, HashAlgorithmName.SHA256),
+                    ["SHA384"] = (Win32.CALG_SHA_384, Win32.OID_OIWSEC_SHA384, HashAlgorithmName.SHA384),
+                    ["SHA512"] = (Win32.CALG_SHA_512, Win32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512),
                 };
 
         public virtual string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
@@ -45,24 +44,24 @@ namespace SigningServer.Server.SigningTool
 
         public bool IsFileSigned(string inputFileName)
         {
-            using (var winTrustFileInfo = new UnmanagedStruct<MsSign32.WINTRUST_FILE_INFO>(
-                       new MsSign32.WINTRUST_FILE_INFO
+            using (var winTrustFileInfo = new UnmanagedStruct<Win32.WINTRUST_FILE_INFO>(
+                       new Win32.WINTRUST_FILE_INFO
                        {
-                           cbStruct = (uint)Marshal.SizeOf<MsSign32.WINTRUST_FILE_INFO>(),
+                           cbStruct = (uint)Marshal.SizeOf<Win32.WINTRUST_FILE_INFO>(),
                            pcwszFilePath = inputFileName,
                            hFile = IntPtr.Zero,
                            pgKnownSubject = IntPtr.Zero
                        }))
             {
-                var winTrustData = new MsSign32.WINTRUST_DATA
+                var winTrustData = new Win32.WINTRUST_DATA
                 {
-                    cbStruct = (uint)Marshal.SizeOf<MsSign32.WINTRUST_DATA>(),
+                    cbStruct = (uint)Marshal.SizeOf<Win32.WINTRUST_DATA>(),
                     pPolicyCallbackData = IntPtr.Zero,
                     pSIPClientData = IntPtr.Zero,
-                    dwUIChoice = MsSign32.WinTrustDataUIChoice.None,
-                    fdwRevocationChecks = MsSign32.WinTrustDataRevocationChecks.None,
-                    dwUnionChoice = MsSign32.WinTrustDataUnionChoice.File,
-                    dwStateAction = MsSign32.WinTrustDataStateAction.Verify,
+                    dwUIChoice = Win32.WinTrustDataUIChoice.None,
+                    fdwRevocationChecks = Win32.WinTrustDataRevocationChecks.None,
+                    dwUnionChoice = Win32.WinTrustDataUnionChoice.File,
+                    dwStateAction = Win32.WinTrustDataStateAction.Verify,
                     hWVTStateData = IntPtr.Zero,
                     pwszURLReference = IntPtr.Zero,
                     dwUIContext = 0,
@@ -72,38 +71,38 @@ namespace SigningServer.Server.SigningTool
                     }
                 };
 
-                var actionId = new Guid(MsSign32.WINTRUST_ACTION_GENERIC_VERIFY_V2);
-                var result = MsSign32.WinVerifyTrust(IntPtr.Zero, actionId, winTrustData);
+                var actionId = new Guid(Win32.WINTRUST_ACTION_GENERIC_VERIFY_V2);
+                var result = Win32.WinVerifyTrust(IntPtr.Zero, actionId, winTrustData);
                 Log.Trace($"WinVerifyTrust returned {result}");
 
                 switch (result)
                 {
-                    case MsSign32.WinVerifyTrustResult.Success:
+                    case Win32.WinVerifyTrustResult.Success:
                         return true;
-                    case MsSign32.WinVerifyTrustResult.FileNotSigned:
+                    case Win32.WinVerifyTrustResult.FileNotSigned:
                         var dwLastError = (uint)Marshal.GetLastWin32Error();
                         switch (dwLastError)
                         {
-                            case (uint)MsSign32.WinVerifyTrustResult.FileNotSigned:
+                            case (uint)Win32.WinVerifyTrustResult.FileNotSigned:
                                 return false;
-                            case (uint)MsSign32.WinVerifyTrustResult.SubjectFormUnknown:
+                            case (uint)Win32.WinVerifyTrustResult.SubjectFormUnknown:
                                 return true;
-                            case (uint)MsSign32.WinVerifyTrustResult.ProviderUnknown:
+                            case (uint)Win32.WinVerifyTrustResult.ProviderUnknown:
                                 return true;
                             default:
                                 return false;
                         }
 
-                    case MsSign32.WinVerifyTrustResult.UntrustedRoot:
+                    case Win32.WinVerifyTrustResult.UntrustedRoot:
                         return true;
 
-                    case MsSign32.WinVerifyTrustResult.SubjectExplicitlyDistrusted:
+                    case Win32.WinVerifyTrustResult.SubjectExplicitlyDistrusted:
                         return true;
 
-                    case MsSign32.WinVerifyTrustResult.SubjectNotTrusted:
+                    case Win32.WinVerifyTrustResult.SubjectNotTrusted:
                         return true;
 
-                    case MsSign32.WinVerifyTrustResult.LocalSecurityOption:
+                    case Win32.WinVerifyTrustResult.LocalSecurityOption:
                         return true;
 
                     default:
@@ -141,49 +140,49 @@ namespace SigningServer.Server.SigningTool
 
             // var cspParameters = GetPrivateKeyInfo(certificate);
 
-            using (var signerFileInfo = new UnmanagedStruct<MsSign32.SIGNER_FILE_INFO>(new MsSign32.SIGNER_FILE_INFO
+            using (var signerFileInfo = new UnmanagedStruct<Win32.SIGNER_FILE_INFO>(new Win32.SIGNER_FILE_INFO
                    {
-                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_FILE_INFO>(),
+                       cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_FILE_INFO>(),
                        pwszFileName = inputFileName,
                        hFile = IntPtr.Zero
                    }))
             using (var dwIndex = new UnmanagedStruct<uint>(0))
-            using (var signerSubjectInfo = new UnmanagedStruct<MsSign32.SIGNER_SUBJECT_INFO>(
-                       new MsSign32.SIGNER_SUBJECT_INFO
+            using (var signerSubjectInfo = new UnmanagedStruct<Win32.SIGNER_SUBJECT_INFO>(
+                       new Win32.SIGNER_SUBJECT_INFO
                        {
-                           cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_SUBJECT_INFO>(),
+                           cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_SUBJECT_INFO>(),
                            pdwIndex = dwIndex.Pointer,
-                           dwSubjectChoice = MsSign32.SIGNER_SUBJECT_FILE,
+                           dwSubjectChoice = Win32.SIGNER_SUBJECT_FILE,
                            union =
                            {
                                pSignerFileInfo = signerFileInfo.Pointer
                            }
                        }))
-            using (var signerCertStoreInfo = new UnmanagedStruct<MsSign32.SIGNER_CERT_STORE_INFO>(
-                       new MsSign32.SIGNER_CERT_STORE_INFO
+            using (var signerCertStoreInfo = new UnmanagedStruct<Win32.SIGNER_CERT_STORE_INFO>(
+                       new Win32.SIGNER_CERT_STORE_INFO
                        {
-                           cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_CERT_STORE_INFO>(),
+                           cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_CERT_STORE_INFO>(),
                            pSigningCert = certificate.Handle,
-                           dwCertPolicy = MsSign32.SIGNER_CERT_POLICY_CHAIN,
+                           dwCertPolicy = Win32.SIGNER_CERT_POLICY_CHAIN,
                            hCertStore = IntPtr.Zero
                        }))
-            using (var signerCert = new UnmanagedStruct<MsSign32.SIGNER_CERT>(
-                       new MsSign32.SIGNER_CERT
+            using (var signerCert = new UnmanagedStruct<Win32.SIGNER_CERT>(
+                       new Win32.SIGNER_CERT
                        {
-                           cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_CERT>(),
-                           dwCertChoice = MsSign32.SIGNER_CERT_STORE,
+                           cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_CERT>(),
+                           dwCertChoice = Win32.SIGNER_CERT_STORE,
                            union =
                            {
                                pSpcChainInfo = signerCertStoreInfo.Pointer
                            },
                            hwnd = IntPtr.Zero
                        }))
-            using (var signerSignatureInfo = new UnmanagedStruct<MsSign32.SIGNER_SIGNATURE_INFO>(
-                       new MsSign32.SIGNER_SIGNATURE_INFO
+            using (var signerSignatureInfo = new UnmanagedStruct<Win32.SIGNER_SIGNATURE_INFO>(
+                       new Win32.SIGNER_SIGNATURE_INFO
                        {
-                           cbSize = (uint)Marshal.SizeOf<MsSign32.SIGNER_SIGNATURE_INFO>(),
+                           cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_SIGNATURE_INFO>(),
                            algidHash = algId.algId,
-                           dwAttrChoice = MsSign32.SIGNER_NO_ATTR,
+                           dwAttrChoice = Win32.SIGNER_NO_ATTR,
                            union =
                            {
                                pAttrAuthcode = IntPtr.Zero
@@ -200,7 +199,7 @@ namespace SigningServer.Server.SigningTool
                     signerSignatureInfo.Pointer, certificate
                 );
 
-                if (hr == MsSign32.S_OK && tshr == MsSign32.S_OK)
+                if (hr == Win32.S_OK && tshr == Win32.S_OK)
                 {
                     Log.Trace($"{inputFileName} successfully signed");
                     signFileResponse.Result = successResult;
@@ -209,7 +208,7 @@ namespace SigningServer.Server.SigningTool
                         FileAccess.Read);
                     signFileResponse.FileSize = signFileResponse.FileContent.Length;
                 }
-                else if (hr != MsSign32.S_OK)
+                else if (hr != Win32.S_OK)
                 {
                     var exception = new Win32Exception(hr);
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
@@ -251,7 +250,7 @@ namespace SigningServer.Server.SigningTool
             Log.Trace($"Call signing of  {inputFileName}");
 
             int SignCallback(IntPtr pCertContext, IntPtr pvExtra, uint algId, byte[] pDigestToSign, uint dwDigestToSign,
-                ref MsSign32.CRYPTOAPI_BLOB blob)
+                ref Win32.CRYPTOAPI_BLOB blob)
             {
                 byte[] digest;
                 switch (certificate.PrivateKey)
@@ -260,7 +259,7 @@ namespace SigningServer.Server.SigningTool
                         digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
                         break;
                     default:
-                        return MsSign32.E_INVALIDARG;
+                        return Win32.E_INVALIDARG;
                 }
 
                 var resultPtr = Marshal.AllocHGlobal(digest.Length);
@@ -270,19 +269,19 @@ namespace SigningServer.Server.SigningTool
                 return 0;
             }
 
-            MsSign32.SignCallback callbackDelegate = SignCallback;
+            Win32.SignCallback callbackDelegate = SignCallback;
 
-            using (var unmanagedSignerParams = new UnmanagedStruct<MsSign32.SIGNER_SIGN_EX3_PARAMS>())
-            using (var unmanagedSignInfo = new UnmanagedStruct<MsSign32.SIGN_INFO>(new MsSign32.SIGN_INFO
+            using (var unmanagedSignerParams = new UnmanagedStruct<Win32.SIGNER_SIGN_EX3_PARAMS>())
+            using (var unmanagedSignInfo = new UnmanagedStruct<Win32.SIGN_INFO>(new Win32.SIGN_INFO
                    {
-                       cbSize = (uint)Marshal.SizeOf<MsSign32.SIGN_INFO>(),
+                       cbSize = (uint)Marshal.SizeOf<Win32.SIGN_INFO>(),
                        callback = Marshal.GetFunctionPointerForDelegate(callbackDelegate),
                        pvOpaque = IntPtr.Zero
                    }))
             {
-                var signerParams = new MsSign32.SIGNER_SIGN_EX3_PARAMS
+                var signerParams = new Win32.SIGNER_SIGN_EX3_PARAMS
                 {
-                    dwFlags = MsSign32.SIGN_CALLBACK_UNDOCUMENTED,
+                    dwFlags = Win32.SIGN_CALLBACK_UNDOCUMENTED,
                     pSubjectInfo = signerSubjectInfo,
                     pSigningCert = signerCert,
                     pSignatureInfo = signerSignatureInfo,
@@ -293,7 +292,7 @@ namespace SigningServer.Server.SigningTool
                 };
                 unmanagedSignerParams.Fill(signerParams);
 
-                var hr = MsSign32.SignerSignEx3(
+                var hr = Win32.SignerSignEx3(
                     signerParams.dwFlags,
                     signerParams.pSubjectInfo,
                     signerParams.pSigningCert,
@@ -314,20 +313,20 @@ namespace SigningServer.Server.SigningTool
                 {
                     var signerContext = new IntPtr();
                     Marshal.PtrToStructure(signerParams.pSignerContext, signerContext);
-                    MsSign32.SignerFreeSignerContext(signerContext);
+                    Win32.SignerFreeSignerContext(signerContext);
                 }
 
-                var tshr = MsSign32.S_OK;
-                if (hr == MsSign32.S_OK && !string.IsNullOrWhiteSpace(timestampServer))
+                var tshr = Win32.S_OK;
+                if (hr == Win32.S_OK && !string.IsNullOrWhiteSpace(timestampServer))
                 {
                     Log.Trace($"Timestamping with url {timestampServer}");
                     var timestampRetries = 5;
                     do
                     {
-                        tshr = timestampHashOid == MsSign32.OID_OIWSEC_SHA1
-                            ? MsSign32.SignerTimeStamp(signerSubjectInfo, timestampServer)
-                            : MsSign32.SignerTimeStampEx2(
-                                MsSign32.SIGNER_TIMESTAMP_RFC3161,
+                        tshr = timestampHashOid == Win32.OID_OIWSEC_SHA1
+                            ? Win32.SignerTimeStamp(signerSubjectInfo, timestampServer)
+                            : Win32.SignerTimeStampEx2(
+                                Win32.SIGNER_TIMESTAMP_RFC3161,
                                 signerSubjectInfo,
                                 timestampServer,
                                 timestampHashOid,
@@ -335,7 +334,7 @@ namespace SigningServer.Server.SigningTool
                                 IntPtr.Zero,
                                 IntPtr.Zero
                             );
-                        if (tshr == MsSign32.S_OK)
+                        if (tshr == Win32.S_OK)
                         {
                             Log.Trace("Timestamping succeeded");
                         }
@@ -344,7 +343,7 @@ namespace SigningServer.Server.SigningTool
                             Log.Trace($"Timestamping failed with {tshr}, retries: {timestampRetries}");
                             Thread.Sleep(1000);
                         }
-                    } while (tshr != MsSign32.S_OK && (timestampRetries--) > 0);
+                    } while (tshr != Win32.S_OK && (timestampRetries--) > 0);
                 }
 
                 return (hr, tshr);
@@ -358,11 +357,11 @@ namespace SigningServer.Server.SigningTool
             using (var file = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read))
             {
                 // TODO: remove multiple certificates here?
-                if (MsSign32.ImageEnumerateCertificates(file.SafeFileHandle, MsSign32.CERT_SECTION_TYPE_ANY,
+                if (Win32.ImageEnumerateCertificates(file.SafeFileHandle, Win32.CERT_SECTION_TYPE_ANY,
                         out var dwNumCerts) &&
                     dwNumCerts == 1)
                 {
-                    MsSign32.ImageRemoveCertificate(file.SafeFileHandle, 0);
+                    Win32.ImageRemoveCertificate(file.SafeFileHandle, 0);
                 }
             }
         }

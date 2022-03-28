@@ -18,88 +18,68 @@ namespace SigningServer.Test
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext context)
         {
-            LogManager.Configuration = new XmlLoggingConfiguration("NLog.config");
-            
-            // attempt to import certificate once into the certificate store
-            // otherwise it seems the CSP is not active on the system
-            try
-            {
-                var certificatePath = Path.Combine(UnitTestBase.ExecutionDirectory, "Certificates",
-                    "SigningServer.Test.pfx");
-                var certificatePassword = "SigningServer";
+            // Enforce certificate.PrivateKey raw access, GetRSAPrivateKey would clone it but for azure certs we cannot clone the CSP params into a new RSACryptoServiceProvider
+            AppContext.SetSwitch("Switch.System.Security.Cryptography.X509Certificates.RSACertificateExtensions.DontReliablyClonePrivateKey", true);
 
-                Log.Info("Installing Certificate for testing to store");
-                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-                {
-                    store.Open(OpenFlags.ReadWrite);
-                    Certificate = new X509Certificate2(certificatePath, certificatePassword);
-                    store.Add(Certificate);
-                    store.Close();
-                }
-                Log.Info("Certificate installed");
-                
-                Log.Info("Reload Certificate and check private key");
-                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-                {
-                    store.Open(OpenFlags.ReadOnly);
-                    Certificate = store.Certificates.OfType<X509Certificate2>()
-                        .First(c => c.Thumbprint == Certificate.Thumbprint);
-                    PatchHashSupport(Certificate);
-                    store.Close();
-                }
-                Log.Info("Certificate loaded");
-                
-            }
-            catch (Exception e)
+            LogManager.Configuration = new XmlLoggingConfiguration("NLog.config");
+
+            var certificatePath = Path.Combine(UnitTestBase.ExecutionDirectory, "Certificates",
+                "SigningServer.Test.pfx");
+            var certificatePassword = "SigningServer";
+            
+            Log.Info("Loading certificate");
+
+            Certificate = new X509Certificate2(certificatePath, certificatePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet | X509KeyStorageFlags.PersistKeySet);
+            if (Certificate.PrivateKey is RSACryptoServiceProvider rsaCsp)
             {
-                Log.Error(e, "Failed to import certificate to store");
+                Certificate.PrivateKey = PatchHashSupport(rsaCsp);
             }
+
+            Log.Info("Certificate loaded");
         }
 
-        private static void PatchHashSupport(X509Certificate2 certificate)
+        private static RSACryptoServiceProvider PatchHashSupport(RSACryptoServiceProvider orgKey)
         {
-            if (certificate.PrivateKey is RSACryptoServiceProvider orgKey)
+            var newKey = orgKey;
+            try
             {
-                try
+                const int PROV_RSA_AES = 24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
+
+                // ProviderType == 1(PROV_RSA_FULL) and providerType == 12(PROV_RSA_SCHANNEL) are provider types that only support SHA1.
+                // Change them to PROV_RSA_AES=24 that supports SHA2 also. Only levels up if the associated key is not a hardware key.
+                // Another provider type related to rsa, PROV_RSA_SIG == 2 that only supports Sha1 is no longer supported
+                if ((orgKey.CspKeyContainerInfo.ProviderType == 1 ||
+                     orgKey.CspKeyContainerInfo.ProviderType == 12) && !orgKey.CspKeyContainerInfo.HardwareDevice)
                 {
-                    const int
-                        PROV_RSA_AES =
-                            24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
-
-                    // ProviderType == 1(PROV_RSA_FULL) and providerType == 12(PROV_RSA_SCHANNEL) are provider types that only support SHA1.
-                    // Change them to PROV_RSA_AES=24 that supports SHA2 also. Only levels up if the associated key is not a hardware key.
-                    // Another provider type related to rsa, PROV_RSA_SIG == 2 that only supports Sha1 is no longer supported
-                    if ((orgKey.CspKeyContainerInfo.ProviderType == 1 ||
-                         orgKey.CspKeyContainerInfo.ProviderType == 12) && !orgKey.CspKeyContainerInfo.HardwareDevice)
+                    CspParameters csp = new CspParameters
                     {
-                        CspParameters csp = new CspParameters
-                        {
-                            ProviderType = PROV_RSA_AES,
-                            KeyContainerName = orgKey.CspKeyContainerInfo.KeyContainerName,
-                            KeyNumber = (int)orgKey.CspKeyContainerInfo.KeyNumber
-                        };
+                        ProviderType = PROV_RSA_AES,
+                        KeyContainerName = orgKey.CspKeyContainerInfo.KeyContainerName,
+                        KeyNumber = (int)orgKey.CspKeyContainerInfo.KeyNumber
+                    };
 
-                        if (orgKey.CspKeyContainerInfo.MachineKeyStore)
-                        {
-                            csp.Flags = CspProviderFlags.UseMachineKeyStore;
-                        }
-
-                        //
-                        // If UseExistingKey is not specified, the CLR will generate a key for a non-existent group.
-                        // With this flag, a CryptographicException is thrown instead.
-                        //
-                        csp.Flags |= CspProviderFlags.UseExistingKey;
-                        certificate.PrivateKey = new RSACryptoServiceProvider(csp);
-                    }
-                }
-                finally
-                {
-                    if (!ReferenceEquals(orgKey, certificate.PrivateKey))
+                    if (orgKey.CspKeyContainerInfo.MachineKeyStore)
                     {
-                        orgKey.Dispose();
+                        csp.Flags = CspProviderFlags.UseMachineKeyStore;
                     }
+
+                    //
+                    // If UseExistingKey is not specified, the CLR will generate a key for a non-existent group.
+                    // With this flag, a CryptographicException is thrown instead.
+                    //
+                    csp.Flags |= CspProviderFlags.UseExistingKey;
+                    return new RSACryptoServiceProvider(csp);
                 }
             }
+            finally
+            {
+                if (!ReferenceEquals(orgKey, newKey))
+                {
+                    orgKey.Dispose();
+                }
+            }
+
+            return newKey;
         }
 
         [AssemblyCleanup]

@@ -9,7 +9,7 @@ namespace SigningServer.Server
     {
         public static void Main(string[] args)
         {
-            // Enforce certificate.PrivateKey raw access
+            // Enforce certificate.PrivateKey raw access, GetRSAPrivateKey would clone it but for azure certs we cannot clone the CSP params into a new RSACryptoServiceProvider
             AppContext.SetSwitch("Switch.System.Security.Cryptography.X509Certificates.RSACertificateExtensions.DontReliablyClonePrivateKey", true);
             
             var server = new SigningServerService();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -38,9 +39,15 @@ namespace SigningServer.Test
                 Log.Info("Certificate installed");
                 
                 Log.Info("Reload Certificate and check private key");
-                Certificate = new X509Certificate2(certificatePath, certificatePassword);
-                PatchHashSupport(Certificate);
-                Log.Info("Certificate installed");
+                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadOnly);
+                    Certificate = store.Certificates.OfType<X509Certificate2>()
+                        .First(c => c.Thumbprint == Certificate.Thumbprint);
+                    PatchHashSupport(Certificate);
+                    store.Close();
+                }
+                Log.Info("Certificate loaded");
                 
             }
             catch (Exception e)

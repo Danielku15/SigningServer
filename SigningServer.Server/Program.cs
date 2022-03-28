@@ -9,6 +9,9 @@ namespace SigningServer.Server
     {
         public static void Main(string[] args)
         {
+            // Enforce certificate.PrivateKey raw access
+            AppContext.SetSwitch("Switch.System.Security.Cryptography.X509Certificates.RSACertificateExtensions.DontReliablyClonePrivateKey", true);
+            
             var server = new SigningServerService();
             if (Environment.UserInteractive)
             {

@@ -65,7 +65,7 @@ namespace SigningServer.Server.Configuration
             var client = new CertificateClient(new Uri(Azure.KeyVaultUrl), credentials);
             var azureCertificate = client.GetCertificate(Azure.CertificateName).Value;
             var certificate = new AzureX509Certificate2(azureCertificate.Cer);
-            certificate.ReplacePrivateKey(RSAFactory.Create(credentials, azureCertificate.KeyId, certificate));
+            certificate.SetAzurePrivateKey(credentials, azureCertificate.KeyId);
 
             Certificate = certificate;
         }

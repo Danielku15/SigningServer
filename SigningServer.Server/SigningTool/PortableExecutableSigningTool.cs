@@ -20,7 +20,7 @@ namespace SigningServer.Server.SigningTool
         private static readonly HashSet<string> PeSupportedExtensions =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                ".exe", ".dll", ".sys", ".msi", ".cab", ".cat"
+                ".exe", ".dll", ".sys", ".msi", ".cab", ".cat", ".ps1"
             };
 
         private static readonly Dictionary<string, (uint algId, string algOid, HashAlgorithmName algName)>
@@ -353,7 +353,7 @@ namespace SigningServer.Server.SigningTool
 
     
 
-        public void UnsignFile(string fileName)
+        public virtual void UnsignFile(string fileName)
         {
             using (var file = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read))
             {

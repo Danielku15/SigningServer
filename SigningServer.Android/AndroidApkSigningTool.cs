@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
-using SigningServer.Android.Crypto;
+using SigningServer.Android.ApkSig;
+using SigningServer.Android.ApkSig.Internal.Crypto;
 using SigningServer.Contracts;
 
 namespace SigningServer.Android

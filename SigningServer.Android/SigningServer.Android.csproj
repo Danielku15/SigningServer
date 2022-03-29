@@ -16,4 +16,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="ApkSig\Internal\X509" />
+	</ItemGroup>
 </Project>

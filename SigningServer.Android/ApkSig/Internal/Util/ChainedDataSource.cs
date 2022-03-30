@@ -16,11 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Org.BouncyCastle.Utilities;
-using SigningServer.Android;
-using SigningServer.Android.ApkSig.Internal.Util;
 using SigningServer.Android.ApkSig.Util;
 
 namespace SigningServer.Android.ApkSig.Internal.Util

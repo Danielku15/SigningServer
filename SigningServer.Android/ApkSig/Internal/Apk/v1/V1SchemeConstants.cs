@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (C) 2019 The Android Open Source Project
+/*
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-namespace SigningServer.Android.ApkSig.Util
+using System;
+
+namespace SigningServer.Android.ApkSig.Internal.Apk.v1
 {
-    public delegate Runnable RunnablesProvider();
+    /** Constants used by the Jar Signing / V1 Signature Scheme signing and verification. */
+    public static class V1SchemeConstants
+    {
+        public static readonly String MANIFEST_ENTRY_NAME = "META-INF/MANIFEST.MF";
+
+        public static readonly String SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME_STR =
+            "X-Android-APK-Signed";
+    }
 }

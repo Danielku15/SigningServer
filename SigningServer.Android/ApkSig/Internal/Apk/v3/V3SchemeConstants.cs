@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (C) 2019 The Android Open Source Project
+/*
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-namespace SigningServer.Android.ApkSig.Util
+namespace SigningServer.Android.ApkSig.Internal.Apk.v3
 {
-    public delegate Runnable RunnablesProvider();
+    /** Constants used by the V3 Signature Scheme signing and verification. */
+    public class V3SchemeConstants
+    {
+        private V3SchemeConstants()
+        {
+        }
+
+        public static readonly int APK_SIGNATURE_SCHEME_V3_BLOCK_ID = unchecked((int)0xf05368c0);
+        public static readonly int PROOF_OF_ROTATION_ATTR_ID = 0x3ba06f8c;
+    }
 }

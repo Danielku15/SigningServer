@@ -16,7 +16,7 @@
 
 using System;
 using System.Security.Cryptography;
-using Org.BouncyCastle.Security;
+using SigningServer.Android.ApkSig.Internal.Zip;
 using SigningServer.Android.ApkSig.Util;
 using SigningServer.Android.ApkSig.Zip;
 

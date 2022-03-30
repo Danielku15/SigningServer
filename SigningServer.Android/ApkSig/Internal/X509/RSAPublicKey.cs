@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-namespace SigningServer.Android.ApkSig.Util
+using System.Numerics;
+using SigningServer.Android.ApkSig.Internal.Asn1;
+
+namespace SigningServer.Android.ApkSig.Internal.X509
 {
-    public delegate Runnable RunnablesProvider();
+    /**
+     * {@code RSAPublicKey} as specified in RFC 3279.
+     */
+    [Asn1Class(Type = Asn1Type.SEQUENCE)]
+    public class RSAPublicKey
+    {
+        [Asn1Field(Index = 0, Type = Asn1Type.INTEGER)]
+        public BigInteger modulus;
+
+        [Asn1Field(Index = 1, Type = Asn1Type.INTEGER)]
+        public BigInteger publicExponent;
+    }
 }

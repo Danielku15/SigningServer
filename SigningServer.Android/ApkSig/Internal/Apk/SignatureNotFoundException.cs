@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (C) 2019 The Android Open Source Project
+/*
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-namespace SigningServer.Android.ApkSig.Util
+using System;
+
+namespace SigningServer.Android.ApkSig.Internal.Apk
 {
-    public delegate Runnable RunnablesProvider();
+    /**
+     * Base exception that is thrown when the APK is not signed with the requested signature scheme.
+     */
+    public class SignatureNotFoundException : Exception
+    {
+        public SignatureNotFoundException(string message) : base(message)
+        {
+        }
+
+        public SignatureNotFoundException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }

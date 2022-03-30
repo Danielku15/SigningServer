@@ -8,7 +8,7 @@
 
     public class ByteBuffer
     {
-        public void order(ByteOrder byteOrder)
+        public ByteBuffer order(ByteOrder byteOrder)
         {
             throw new System.NotImplementedException();
         }
@@ -194,6 +194,26 @@
         }
 
         public int get(int mInputBuffer)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void mark()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void reset()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public long getLong()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void putLong(long size)
         {
             throw new System.NotImplementedException();
         }

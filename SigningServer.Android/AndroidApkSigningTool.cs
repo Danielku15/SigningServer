@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.ApkSig;
+using SigningServer.Android.ApkSig.Internal.Apk.v1;
 using SigningServer.Android.ApkSig.Internal.Crypto;
 using SigningServer.Contracts;
 
@@ -26,8 +27,7 @@ namespace SigningServer.Android
         private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms = new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
         {
             ["SHA1"] = DigestAlgorithm.SHA1,
-            ["SHA256"] = DigestAlgorithm.SHA256,
-            ["SHA512"] = DigestAlgorithm.SHA512
+            ["SHA256"] = DigestAlgorithm.SHA256
         };
 
         public bool IsFileSupported(string fileName)

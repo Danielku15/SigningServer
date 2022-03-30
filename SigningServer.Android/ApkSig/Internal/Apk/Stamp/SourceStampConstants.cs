@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (C) 2017 The Android Open Source Project
+/*
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 
-namespace SigningServer.Android.ApkSig.Internal.Asn1
+namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class Asn1ClassAttribute : Attribute
+    /** Constants used for source stamp signing and verification. */
+    public static class SourceStampConstants
     {
-        public Asn1Type Type { get; set; }
+        public static readonly int V1_SOURCE_STAMP_BLOCK_ID = 0x2b09189e;
+        public static readonly int V2_SOURCE_STAMP_BLOCK_ID = 0x6dff800d;
+        public static readonly String SOURCE_STAMP_CERTIFICATE_HASH_ZIP_ENTRY_NAME = "stamp-cert-sha256";
+        public static readonly int PROOF_OF_ROTATION_ATTR_ID = unchecked((int)0x9d6303f7);
     }
 }

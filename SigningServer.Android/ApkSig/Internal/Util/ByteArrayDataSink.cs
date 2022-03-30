@@ -16,8 +16,6 @@
 
 using System;
 using System.IO;
-using Org.BouncyCastle.Utilities;
-using SigningServer.Android;
 using SigningServer.Android.ApkSig.Util;
 
 namespace SigningServer.Android.ApkSig.Internal.Util

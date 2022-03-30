@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (C) 2019 The Android Open Source Project
+/*
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-namespace SigningServer.Android.ApkSig.Util
+using SigningServer.Android.ApkSig.Internal.Asn1;
+
+namespace SigningServer.Android.ApkSig.Internal.X509
 {
-    public delegate Runnable RunnablesProvider();
+    /**
+     * {@code Validity} as specified in RFC 5280.
+     */
+    [Asn1Class(Type = Asn1Type.SEQUENCE)]
+    public class Validity {
+
+        [Asn1Field(Index = 0, Type = Asn1Type.CHOICE)]
+        public Time notBefore;
+
+        [Asn1Field(Index = 1, Type = Asn1Type.CHOICE)]
+        public Time notAfter;
+    }
+
 }

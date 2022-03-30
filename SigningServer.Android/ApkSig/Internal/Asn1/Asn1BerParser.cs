@@ -26,6 +26,8 @@ using SigningServer.Android.ApkSig.Internal.Util;
 
 namespace SigningServer.Android.ApkSig.Internal.Asn1
 {
+    // TODO: ensure generic collections are created
+    
     /**
      * Parser of ASN.1 BER-encoded structures.
      *
@@ -35,22 +37,22 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
     public static class Asn1BerParser
     {
         /**
-     * Returns the ASN.1 structure contained in the BER encoded input.
-     *
-     * @param encoded encoded input. If the decoding operation succeeds, the position of this buffer
-     *        is advanced to the first position following the end of the consumed structure.
-     * @param containerClass class describing the structure of the input. The class must meet the
-     *        following requirements:
-     *        <ul>
-     *        <li>The class must be annotated with {@link Asn1Class}.</li>
-     *        <li>The class must expose a public no-arg constructor.</li>
-     *        <li>Member fields of the class which are populated with parsed input must be
-     *            annotated with {@link Asn1Field} and be public and non-final.</li>
-     *        </ul>
-     *
-     * @throws Asn1DecodingException if the input could not be decoded into the specified Java
-     *         object
-     */
+         * Returns the ASN.1 structure contained in the BER encoded input.
+         *
+         * @param encoded encoded input. If the decoding operation succeeds, the position of this buffer
+         *        is advanced to the first position following the end of the consumed structure.
+         * @param containerClass class describing the structure of the input. The class must meet the
+         *        following requirements:
+         *        <ul>
+         *        <li>The class must be annotated with {@link Asn1Class}.</li>
+         *        <li>The class must expose a public no-arg constructor.</li>
+         *        <li>Member fields of the class which are populated with parsed input must be
+         *            annotated with {@link Asn1Field} and be public and non-final.</li>
+         *        </ul>
+         *
+         * @throws Asn1DecodingException if the input could not be decoded into the specified Java
+         *         object
+         */
         public static object parse(ByteBuffer encoded, Type containerClass)
         {
             BerDataValue containerDataValue;

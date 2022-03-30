@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+using SigningServer.Android.ApkSig.Internal.Apk.Stamp;
+using SigningServer.Android.ApkSig.Internal.Apk.v1;
+using SigningServer.Android.ApkSig.Internal.Apk.v2;
+using SigningServer.Android.ApkSig.Internal.Apk.v3;
+
 namespace SigningServer.Android.ApkSig
 {
     /**

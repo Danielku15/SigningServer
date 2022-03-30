@@ -16,10 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Org.BouncyCastle.Security;
 using SigningServer.Android.ApkSig.Internal.Zip;
 using SigningServer.Android.ApkSig.Util;
 

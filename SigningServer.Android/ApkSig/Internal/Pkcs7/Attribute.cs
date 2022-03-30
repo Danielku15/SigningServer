@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
 
-namespace SigningServer.Android.ApkSig.Internal.Asn1
+using System;
+using System.Collections.Generic;
+using SigningServer.Android.ApkSig.Internal.Asn1;
+
+namespace SigningServer.Android.ApkSig.Internal.Pkcs7
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class Asn1ClassAttribute : Attribute
+    /**
+     * PKCS #7 {@code Attribute} as specified in RFC 5652.
+     */
+    [Asn1Class(Type = Asn1Type.SEQUENCE)]
+    public class Attribute
     {
-        public Asn1Type Type { get; set; }
+        [Asn1Field(Index = 0, Type = Asn1Type.OBJECT_IDENTIFIER)]
+        public String attrType;
+
+        [Asn1Field(Index = 1, Type = Asn1Type.SET_OF)]
+        public List<Asn1OpaqueObject> attrValues;
     }
 }

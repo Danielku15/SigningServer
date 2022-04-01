@@ -15,8 +15,23 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using SigningServer.Android.ApkSig.Apk;
+using SigningServer.Android.ApkSig.Internal.Apk;
+using SigningServer.Android.ApkSig.Internal.Apk.Stamp;
+using SigningServer.Android.ApkSig.Internal.Apk.v1;
+using SigningServer.Android.ApkSig.Internal.Apk.v2;
+using SigningServer.Android.ApkSig.Internal.Apk.v3;
+using SigningServer.Android.ApkSig.Internal.Apk.v4;
+using SigningServer.Android.ApkSig.Internal.Util;
+using SigningServer.Android.ApkSig.Internal.Zip;
+using SigningServer.Android.ApkSig.Util;
+using SigningServer.Android.ApkSig.Zip;
 
 namespace SigningServer.Android.ApkSig
 {
@@ -33,49 +48,2009 @@ namespace SigningServer.Android.ApkSig
      */
     public class ApkVerifier
     {
-        // TODO:
+        private static readonly Dictionary<int, String> SUPPORTED_APK_SIG_SCHEME_NAMES =
+            loadSupportedApkSigSchemeNames();
+
+        private static Dictionary<int, String> loadSupportedApkSigSchemeNames()
+        {
+            Dictionary<int, String> supportedMap = new Dictionary<int, string>(2);
+            supportedMap.Add(
+                ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2, "APK Signature Scheme v2");
+            supportedMap.Add(
+                ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3, "APK Signature Scheme v3");
+            return supportedMap;
+        }
+
+        private readonly FileInfo mApkFile;
+        private readonly DataSource mApkDataSource;
+        private readonly FileInfo mV4SignatureFile;
+
+        private readonly int? mMinSdkVersion;
+        private readonly int mMaxSdkVersion;
+
+        private ApkVerifier(
+            FileInfo apkFile,
+            DataSource apkDataSource,
+            FileInfo v4SignatureFile,
+            int? minSdkVersion,
+            int maxSdkVersion)
+        {
+            mApkFile = apkFile;
+            mApkDataSource = apkDataSource;
+            mV4SignatureFile = v4SignatureFile;
+            mMinSdkVersion = minSdkVersion;
+            mMaxSdkVersion = maxSdkVersion;
+        }
 
         /**
-         * {@link Issue} with associated parameters. {@link #toString()} produces a readable formatted
-         * form.
-         */
-        public class IssueWithParams : ApkVerificationIssue
+     * Verifies the APK's signatures and returns the result of verification. The APK can be
+     * considered verified iff the result's {@link Result#isVerified()} returns {@code true}.
+     * The verification result also includes errors, warnings, and information about signers such
+     * as their signing certificates.
+     *
+     * <p>Verification succeeds iff the APK's signature is expected to verify on all Android
+     * platform versions specified via the {@link Builder}. If the APK's signature is expected to
+     * not verify on any of the specified platform versions, this method returns a result with one
+     * or more errors and whose {@link Result#isVerified()} returns {@code false}, or this method
+     * throws an exception.
+     *
+     * @throws IOException              if an I/O error is encountered while reading the APK
+     * @throws ApkFormatException       if the APK is malformed
+     * @throws NoSuchAlgorithmException if the APK's signatures cannot be verified because a
+     *                                  required cryptographic algorithm implementation is missing
+     * @throws InvalidOperationException    if this verifier's configuration is missing required
+     *                                  information.
+     */
+        public Result verify()
         {
-            private readonly Issue mIssue;
-            private readonly Object[] mParams;
+            IDisposable @in = null;
+            try
+            {
+                DataSource apk;
+                if (mApkDataSource != null)
+                {
+                    apk = mApkDataSource;
+                }
+                else if (mApkFile != null)
+                {
+                    RandomAccessFile f = new RandomAccessFile(mApkFile, "r");
+                    @in = f;
+                    apk = DataSources.asDataSource(f, 0, f.length());
+                }
+                else
+                {
+                    throw new InvalidOperationException("APK not provided");
+                }
+
+                return verify(apk);
+            }
+            finally
+            {
+                if (@in != null)
+                {
+                    @in.Dispose();
+                }
+            }
+        }
+
+        /**
+     * Verifies the APK's signatures and returns the result of verification. The APK can be
+     * considered verified iff the result's {@link Result#isVerified()} returns {@code true}.
+     * The verification result also includes errors, warnings, and information about signers.
+     *
+     * @param apk APK file contents
+     * @throws IOException              if an I/O error is encountered while reading the APK
+     * @throws ApkFormatException       if the APK is malformed
+     * @throws NoSuchAlgorithmException if the APK's signatures cannot be verified because a
+     *                                  required cryptographic algorithm implementation is missing
+     */
+        private Result verify(DataSource apk)
+        {
+            int maxSdkVersion = mMaxSdkVersion;
+
+            ZipSections zipSections;
+            try
+            {
+                zipSections = ApkUtils.findZipSections(apk);
+            }
+            catch (ZipFormatException e)
+            {
+                throw new ApkFormatException("Malformed APK: not a ZIP archive", e);
+            }
+
+            ByteBuffer androidManifest = null;
+
+            int? minSdkVersion = verifyAndGetMinSdkVersion(apk, zipSections);
+
+            Result result = new Result();
+            Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests =
+                new Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>>();
+
+            // The SUPPORTED_APK_SIG_SCHEME_NAMES contains the mapping from version number to scheme
+            // name, but the verifiers use this parameter as the schemes supported by the target SDK
+            // range. Since the code below skips signature verification based on max SDK the mapping of
+            // supported schemes needs to be modified to ensure the verifiers do not report a stripped
+            // signature for an SDK range that does not support that signature version. For instance an
+            // APK with V1, V2, and V3 signatures and a max SDK of O would skip the V3 signature
+            // verification, but the SUPPORTED_APK_SIG_SCHEME_NAMES contains version 3, so when the V2
+            // verification is performed it would see the stripping protection attribute, see that V3
+            // is in the list of supported signatures, and report a stripped signature.
+            Dictionary<int, String> supportedSchemeNames = getSupportedSchemeNames(maxSdkVersion);
+
+            // Android N and newer attempts to verify APKs using the APK Signing Block, which can
+            // include v2 and/or v3 signatures.  If none is found, it falls back to JAR signature
+            // verification. If the signature is found but does not verify, the APK is rejected.
+            ISet<int> foundApkSigSchemeIds = new HashSet<int>(2);
+            if (maxSdkVersion >= AndroidSdkVersion.N)
+            {
+                RunnablesExecutor executor = RunnablesExecutors.SINGLE_THREADED;
+                // Android P and newer attempts to verify APKs using APK Signature Scheme v3
+                if (maxSdkVersion >= AndroidSdkVersion.P)
+                {
+                    try
+                    {
+                        ApkSigningBlockUtils.Result v3Result =
+                            V3SchemeVerifier.verify(
+                                executor,
+                                apk,
+                                zipSections,
+                                Math.Max(minSdkVersion.GetValueOrDefault(), AndroidSdkVersion.P),
+                                maxSdkVersion);
+                        foundApkSigSchemeIds.Add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
+                        result.mergeFrom(v3Result);
+                        signatureSchemeApkContentDigests.Add(
+                            ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3,
+                            getApkContentDigestsFromSigningSchemeResult(v3Result));
+                    }
+                    catch (ApkSigningBlockUtils.SignatureNotFoundException ignored)
+                    {
+                        // v3 signature not required
+                    }
+
+                    if (result.containsErrors())
+                    {
+                        return result;
+                    }
+                }
+
+                // Attempt to verify the APK using v2 signing if necessary. Platforms prior to Android P
+                // ignore APK Signature Scheme v3 signatures and always attempt to verify either JAR or
+                // APK Signature Scheme v2 signatures.  Android P onwards verifies v2 signatures only if
+                // no APK Signature Scheme v3 (or newer scheme) signatures were found.
+                if (minSdkVersion < AndroidSdkVersion.P || foundApkSigSchemeIds.Count == 0)
+                {
+                    try
+                    {
+                        ApkSigningBlockUtils.Result v2Result =
+                            V2SchemeVerifier.verify(
+                                executor,
+                                apk,
+                                zipSections,
+                                supportedSchemeNames,
+                                foundApkSigSchemeIds,
+                                Math.Max(minSdkVersion.GetValueOrDefault(), AndroidSdkVersion.N),
+                                maxSdkVersion);
+                        foundApkSigSchemeIds.Add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2);
+                        result.mergeFrom(v2Result);
+                        signatureSchemeApkContentDigests.Add(
+                            ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2,
+                            getApkContentDigestsFromSigningSchemeResult(v2Result));
+                    }
+                    catch (ApkSigningBlockUtils.SignatureNotFoundException ignored)
+                    {
+                        // v2 signature not required
+                    }
+
+                    if (result.containsErrors())
+                    {
+                        return result;
+                    }
+                }
+
+                // If v4 file is specified, use additional verification on it
+                if (mV4SignatureFile != null)
+                {
+                    ApkSigningBlockUtils.Result v4Result =
+                        V4SchemeVerifier.verify(apk, mV4SignatureFile);
+                    foundApkSigSchemeIds.Add(
+                        ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V4);
+                    result.mergeFrom(v4Result);
+                    if (result.containsErrors())
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            // Android O and newer requires that APKs targeting security sandbox version 2 and higher
+            // are signed using APK Signature Scheme v2 or newer.
+            if (maxSdkVersion >= AndroidSdkVersion.O)
+            {
+                if (androidManifest == null)
+                {
+                    androidManifest = getAndroidManifestFromApk(apk, zipSections);
+                }
+
+                int targetSandboxVersion =
+                    ApkUtils.getTargetSandboxVersionFromBinaryAndroidManifest(androidManifest.slice());
+                if (targetSandboxVersion > 1)
+                {
+                    if (foundApkSigSchemeIds.Count == 0)
+                    {
+                        result.addError(
+                            Issue.NO_SIG_FOR_TARGET_SANDBOX_VERSION,
+                            targetSandboxVersion);
+                    }
+                }
+            }
+
+            List<CentralDirectoryRecord> cdRecords =
+                V1SchemeVerifier.parseZipCentralDirectory(apk, zipSections);
+
+            // Attempt to verify the APK using JAR signing if necessary. Platforms prior to Android N
+            // ignore APK Signature Scheme v2 signatures and always attempt to verify JAR signatures.
+            // Android N onwards verifies JAR signatures only if no APK Signature Scheme v2 (or newer
+            // scheme) signatures were found.
+            if ((minSdkVersion < AndroidSdkVersion.N) || (foundApkSigSchemeIds.Count == 0))
+            {
+                V1SchemeVerifier.Result v1Result =
+                    V1SchemeVerifier.verify(
+                        apk,
+                        zipSections,
+                        supportedSchemeNames,
+                        foundApkSigSchemeIds,
+                        minSdkVersion.GetValueOrDefault(),
+                        maxSdkVersion);
+                result.mergeFrom(v1Result);
+                signatureSchemeApkContentDigests.Add(
+                    ApkSigningBlockUtils.VERSION_JAR_SIGNATURE_SCHEME,
+                    getApkContentDigestFromV1SigningScheme(cdRecords, apk, zipSections));
+            }
+
+            if (result.containsErrors())
+            {
+                return result;
+            }
+
+            // Verify the SourceStamp, if found in the APK.
+            try
+            {
+                CentralDirectoryRecord sourceStampCdRecord = null;
+                foreach (CentralDirectoryRecord cdRecord in cdRecords)
+                {
+                    if (ApkUtils.SOURCE_STAMP_CERTIFICATE_HASH_ZIP_ENTRY_NAME.Equals(
+                            cdRecord.getName()))
+                    {
+                        sourceStampCdRecord = cdRecord;
+                        break;
+                    }
+                }
+
+                // If SourceStamp file is found inside the APK, there must be a SourceStamp
+                // block in the APK signing block as well.
+                if (sourceStampCdRecord != null)
+                {
+                    byte[] sourceStampCertificateDigest =
+                        LocalFileRecord.getUncompressedData(
+                            apk,
+                            sourceStampCdRecord,
+                            zipSections.getZipCentralDirectoryOffset());
+                    ApkSigResult sourceStampResult =
+                        V2SourceStampVerifier.verify(
+                            apk,
+                            zipSections,
+                            sourceStampCertificateDigest,
+                            signatureSchemeApkContentDigests,
+                            Math.Max(minSdkVersion.GetValueOrDefault(), AndroidSdkVersion.R),
+                            maxSdkVersion);
+                    result.mergeFrom(sourceStampResult);
+                }
+            }
+            catch (SignatureNotFoundException ignored)
+            {
+                result.addWarning(Issue.SOURCE_STAMP_SIG_MISSING);
+            }
+            catch (ZipFormatException e)
+            {
+                throw new ApkFormatException("Failed to read APK", e);
+            }
+
+            if (result.containsErrors())
+            {
+                return result;
+            }
+
+            // Check whether v1 and v2 scheme signer identifies match, provided both v1 and v2
+            // signatures verified.
+            if ((result.isVerifiedUsingV1Scheme()) && (result.isVerifiedUsingV2Scheme()))
+            {
+                List<Result.V1SchemeSignerInfo> v1Signers =
+                    new List<Result.V1SchemeSignerInfo>(result.getV1SchemeSigners());
+                List<Result.V2SchemeSignerInfo> v2Signers =
+                    new List<Result.V2SchemeSignerInfo>(result.getV2SchemeSigners());
+                List<ByteArray> v1SignerCerts = new List<ByteArray>();
+                List<ByteArray> v2SignerCerts = new List<ByteArray>();
+                foreach (Result.V1SchemeSignerInfo signer in v1Signers)
+                {
+                    try
+                    {
+                        v1SignerCerts.Add(new ByteArray(signer.getCertificate().getEncoded()));
+                    }
+                    catch (CryptographicException e)
+                    {
+                        throw new InvalidOperationException(
+                            "Failed to encode JAR signer " + signer.getName() + " certs", e);
+                    }
+                }
+
+                foreach (Result.V2SchemeSignerInfo signer in v2Signers)
+                {
+                    try
+                    {
+                        v2SignerCerts.Add(new ByteArray(signer.getCertificate().getEncoded()));
+                    }
+                    catch (CryptographicException e)
+                    {
+                        throw new InvalidOperationException(
+                            "Failed to encode APK Signature Scheme v2 signer (index: "
+                            + signer.getIndex() + ") certs",
+                            e);
+                    }
+                }
+
+                for (int i = 0; i < v1SignerCerts.Count; i++)
+                {
+                    ByteArray v1Cert = v1SignerCerts[i];
+                    if (!v2SignerCerts.Contains(v1Cert))
+                    {
+                        Result.V1SchemeSignerInfo v1Signer = v1Signers[i];
+                        v1Signer.addError(Issue.V2_SIG_MISSING);
+                        break;
+                    }
+                }
+
+                for (int i = 0; i < v2SignerCerts.Count; i++)
+                {
+                    ByteArray v2Cert = v2SignerCerts[i];
+                    if (!v1SignerCerts.Contains(v2Cert))
+                    {
+                        Result.V2SchemeSignerInfo v2Signer = v2Signers[i];
+                        v2Signer.addError(Issue.JAR_SIG_MISSING);
+                        break;
+                    }
+                }
+            }
+
+            // If there is a v3 scheme signer and an earlier scheme signer, make sure that there is a
+            // match, or in the event of signing certificate rotation, that the v1/v2 scheme signer
+            // matches the oldest signing certificate in the provided SigningCertificateLineage
+            if (result.isVerifiedUsingV3Scheme()
+                && (result.isVerifiedUsingV1Scheme() || result.isVerifiedUsingV2Scheme()))
+            {
+                SigningCertificateLineage lineage = result.getSigningCertificateLineage();
+                X509Certificate oldSignerCert;
+                if (result.isVerifiedUsingV1Scheme())
+                {
+                    List<Result.V1SchemeSignerInfo> v1Signers = result.getV1SchemeSigners();
+                    if (v1Signers.Count != 1)
+                    {
+                        // APK Signature Scheme v3 only supports single-signers, error to sign with
+                        // multiple and then only one
+                        result.addError(Issue.V3_SIG_MULTIPLE_PAST_SIGNERS);
+                    }
+
+                    oldSignerCert = v1Signers[0].mCertChain[0];
+                }
+                else
+                {
+                    List<Result.V2SchemeSignerInfo> v2Signers = result.getV2SchemeSigners();
+                    if (v2Signers.Count != 1)
+                    {
+                        // APK Signature Scheme v3 only supports single-signers, error to sign with
+                        // multiple and then only one
+                        result.addError(Issue.V3_SIG_MULTIPLE_PAST_SIGNERS);
+                    }
+
+                    oldSignerCert = v2Signers[0].mCerts[0];
+                }
+
+                if (lineage == null)
+                {
+                    // no signing certificate history with which to contend, just make sure that v3
+                    // matches previous versions
+                    List<Result.V3SchemeSignerInfo> v3Signers = result.getV3SchemeSigners();
+                    if (v3Signers.Count != 1)
+                    {
+                        // multiple v3 signers should never exist without rotation history, since
+                        // multiple signers implies a different signer for different platform versions
+                        result.addError(Issue.V3_SIG_MULTIPLE_SIGNERS);
+                    }
+
+                    try
+                    {
+                        if (!oldSignerCert.getEncoded().SequenceEqual(v3Signers[0].mCerts[0].getEncoded()))
+                        {
+                            result.addError(Issue.V3_SIG_PAST_SIGNERS_MISMATCH);
+                        }
+                    }
+                    catch (CryptographicException e)
+                    {
+                        // we just go the encoding for the v1/v2 certs above, so must be v3
+                        throw new ApplicationException(
+                            "Failed to encode APK Signature Scheme v3 signer cert", e);
+                    }
+                }
+                else
+                {
+                    // we have some signing history, make sure that the root of the history is the same
+                    // as our v1/v2 signer
+                    try
+                    {
+                        lineage = lineage.getSubLineage(oldSignerCert);
+                        if (lineage.size() != 1)
+                        {
+                            // the v1/v2 signer was found, but not at the root of the lineage
+                            result.addError(Issue.V3_SIG_PAST_SIGNERS_MISMATCH);
+                        }
+                    }
+                    catch (ArgumentException e)
+                    {
+                        // the v1/v2 signer was not found in the lineage
+                        result.addError(Issue.V3_SIG_PAST_SIGNERS_MISMATCH);
+                    }
+                }
+            }
+
+
+            // If there is a v4 scheme signer, make sure that their certificates match.
+            // The apkDigest field in the v4 signature should match the selected v2/v3.
+            if (result.isVerifiedUsingV4Scheme())
+            {
+                List<Result.V4SchemeSignerInfo> v4Signers = result.getV4SchemeSigners();
+                if (v4Signers.Count != 1)
+                {
+                    result.addError(Issue.V4_SIG_MULTIPLE_SIGNERS);
+                }
+
+                List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> digestsFromV4 =
+                    v4Signers[0].getContentDigests();
+                if (digestsFromV4.Count != 1)
+                {
+                    result.addError(Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
+                }
+
+                byte[] digestFromV4 = digestsFromV4[0].getValue();
+
+                if (result.isVerifiedUsingV3Scheme())
+                {
+                    List<Result.V3SchemeSignerInfo> v3Signers = result.getV3SchemeSigners();
+                    if (v3Signers.Count != 1)
+                    {
+                        result.addError(Issue.V4_SIG_MULTIPLE_SIGNERS);
+                    }
+
+                    // Compare certificates.
+                    checkV4Certificate(v4Signers[0].mCerts, v3Signers[0].mCerts, result);
+
+                    // Compare digests.
+                    byte[] digestFromV3 =
+                        pickBestDigestForV4(
+                            v3Signers[0].getContentDigests());
+                    if (!digestFromV4.SequenceEqual(digestFromV3))
+                    {
+                        result.addError(Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
+                    }
+                }
+                else if (result.isVerifiedUsingV2Scheme())
+                {
+                    List<Result.V2SchemeSignerInfo> v2Signers = result.getV2SchemeSigners();
+                    if (v2Signers.Count != 1)
+                    {
+                        result.addError(Issue.V4_SIG_MULTIPLE_SIGNERS);
+                    }
+
+                    // Compare certificates.
+                    checkV4Certificate(v4Signers[0].mCerts, v2Signers[0].mCerts, result);
+
+                    // Compare digests.
+                    byte[] digestFromV2 =
+                        pickBestDigestForV4(
+                            v2Signers[0].getContentDigests());
+                    if (!digestFromV4.SequenceEqual(digestFromV2))
+                    {
+                        result.addError(Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
+                    }
+                }
+                else
+                {
+                    throw new ApplicationException("V4 signature must be also verified with V2/V3");
+                }
+            }
+
+            // If the targetSdkVersion has a minimum required signature scheme version then verify
+            // that the APK was signed with at least that version.
+            try
+            {
+                if (androidManifest == null)
+                {
+                    androidManifest = getAndroidManifestFromApk(apk, zipSections);
+                }
+            }
+            catch (ApkFormatException e)
+            {
+                // If the manifest is not available then skip the minimum signature scheme requirement
+                // to support bundle verification.
+            }
+
+            if (androidManifest != null)
+            {
+                int targetSdkVersion = ApkUtils.getTargetSdkVersionFromBinaryAndroidManifest(
+                    androidManifest.slice());
+                int minSchemeVersion = getMinimumSignatureSchemeVersionForTargetSdk(targetSdkVersion);
+                // The platform currently only enforces a single minimum signature scheme version, but
+                // when later platform versions support another minimum version this will need to be
+                // expanded to verify the minimum based on the target and maximum SDK version.
+                if (minSchemeVersion > ApkSigningBlockUtils.VERSION_JAR_SIGNATURE_SCHEME
+                    && maxSdkVersion >= targetSdkVersion)
+                {
+                    switch (minSchemeVersion)
+                    {
+                        case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2:
+                            if (result.isVerifiedUsingV2Scheme())
+                            {
+                                break;
+                            }
+
+                            goto case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3;
+
+                        // Allow this case to fall through to the next as a signature satisfying a
+                        // later scheme version will also satisfy this requirement.
+                        case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3:
+                            if (result.isVerifiedUsingV3Scheme())
+                            {
+                                break;
+                            }
+
+                            result.addError(Issue.MIN_SIG_SCHEME_FOR_TARGET_SDK_NOT_MET,
+                                targetSdkVersion,
+                                minSchemeVersion);
+                            break;
+                    }
+                }
+            }
+
+            if (result.containsErrors())
+            {
+                return result;
+            }
+
+            // Verified
+            result.setVerified();
+            if (result.isVerifiedUsingV3Scheme())
+            {
+                List<Result.V3SchemeSignerInfo> v3Signers = result.getV3SchemeSigners();
+                result.addSignerCertificate(v3Signers.Last().getCertificate());
+            }
+            else if (result.isVerifiedUsingV2Scheme())
+            {
+                foreach (Result.V2SchemeSignerInfo signerInfo in result.getV2SchemeSigners())
+                {
+                    result.addSignerCertificate(signerInfo.getCertificate());
+                }
+            }
+            else if (result.isVerifiedUsingV1Scheme())
+            {
+                foreach (Result.V1SchemeSignerInfo signerInfo in result.getV1SchemeSigners())
+                {
+                    result.addSignerCertificate(signerInfo.getCertificate());
+                }
+            }
+            else
+            {
+                throw new ApplicationException(
+                    "APK verified, but has not verified using any of v1, v2 or v3 schemes");
+            }
+
+            return result;
+        }
+
+        /**
+     * Verifies and returns the minimum SDK version, either as provided to the builder or as read
+     * from the {@code apk}'s AndroidManifest.xml.
+     */
+        private int? verifyAndGetMinSdkVersion(DataSource apk, ZipSections zipSections)
+        {
+            if (mMinSdkVersion != null)
+            {
+                if (mMinSdkVersion < 0)
+                {
+                    throw new ArgumentException(
+                        "minSdkVersion must not be negative: " + mMinSdkVersion);
+                }
+
+                if ((mMinSdkVersion != null) && (mMinSdkVersion > mMaxSdkVersion))
+                {
+                    throw new ArgumentException(
+                        "minSdkVersion (" + mMinSdkVersion + ") > maxSdkVersion (" + mMaxSdkVersion
+                        + ")");
+                }
+
+                return mMinSdkVersion;
+            }
+
+            ByteBuffer androidManifest = null;
+            // Need to obtain minSdkVersion from the APK's AndroidManifest.xml
+            if (androidManifest == null)
+            {
+                androidManifest = getAndroidManifestFromApk(apk, zipSections);
+            }
+
+            int minSdkVersion =
+                ApkUtils.getMinSdkVersionFromBinaryAndroidManifest(androidManifest.slice());
+            if (minSdkVersion > mMaxSdkVersion)
+            {
+                throw new ArgumentException(
+                    "minSdkVersion from APK (" + minSdkVersion + ") > maxSdkVersion ("
+                    + mMaxSdkVersion + ")");
+            }
+
+            return minSdkVersion;
+        }
+
+        /**
+     * Returns the mapping of signature scheme version to signature scheme name for all signature
+     * schemes starting from V2 supported by the {@code maxSdkVersion}.
+     */
+        private static Dictionary<int, String> getSupportedSchemeNames(int maxSdkVersion)
+        {
+            Dictionary<int, String> supportedSchemeNames;
+            if (maxSdkVersion >= AndroidSdkVersion.P)
+            {
+                supportedSchemeNames = SUPPORTED_APK_SIG_SCHEME_NAMES;
+            }
+            else if (maxSdkVersion >= AndroidSdkVersion.N)
+            {
+                supportedSchemeNames = new Dictionary<int, string>(1);
+                supportedSchemeNames.Add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2,
+                    SUPPORTED_APK_SIG_SCHEME_NAMES[ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2]);
+            }
+            else
+            {
+                supportedSchemeNames = new Dictionary<int, string>();
+            }
+
+            return supportedSchemeNames;
+        }
+
+        /**
+     * Verifies the APK's source stamp signature and returns the result of the verification.
+     *
+     * <p>The APK's source stamp can be considered verified if the result's {@link
+     * Result#isVerified} returns {@code true}. The details of the source stamp verification can
+     * be obtained from the result's {@link Result#getSourceStampInfo()}} including the success or
+     * failure cause from {@link Result.SourceStampInfo#getSourceStampVerificationStatus()}. If the
+     * verification fails additional details regarding the failure can be obtained from {@link
+     * Result#getAllErrors()}}.
+     */
+        public Result verifySourceStamp()
+        {
+            return verifySourceStamp(null);
+        }
+
+        /**
+     * Verifies the APK's source stamp signature, including verification that the SHA-256 digest of
+     * the stamp signing certificate matches the {@code expectedCertDigest}, and returns the result
+     * of the verification.
+     *
+     * <p>A value of {@code null} for the {@code expectedCertDigest} will verify the source stamp,
+     * if present, without verifying the actual source stamp certificate used to sign the source
+     * stamp. This can be used to verify an APK contains a properly signed source stamp without
+     * verifying a particular signer.
+     *
+     * @see #verifySourceStamp()
+     */
+        public Result verifySourceStamp(String expectedCertDigest)
+        {
+            IDisposable @in = null;
+            try
+            {
+                DataSource apk;
+                if (mApkDataSource != null)
+                {
+                    apk = mApkDataSource;
+                }
+                else if (mApkFile != null)
+                {
+                    RandomAccessFile f = new RandomAccessFile(mApkFile, "r");
+                    @in = f;
+                    apk = DataSources.asDataSource(f, 0, f.length());
+                }
+                else
+                {
+                    throw new InvalidOperationException("APK not provided");
+                }
+
+                return verifySourceStamp(apk, expectedCertDigest);
+            }
+            catch (IOException e)
+            {
+                return createSourceStampResultWithError(
+                    Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR,
+                    Issue.UNEXPECTED_EXCEPTION, e);
+            }
+
+            finally
+            {
+                if (@in != null)
+                {
+                    try
+                    {
+                        @in.Dispose();
+                    }
+                    catch (IOException ignored)
+                    {
+                    }
+                }
+            }
+        }
+
+        /**
+     * Verifies the provided {@code apk}'s source stamp signature, including verification of the
+     * SHA-256 digest of the stamp signing certificate matches the {@code expectedCertDigest}, and
+     * returns the result of the verification.
+     *
+     * @see #verifySourceStamp(String)
+     */
+        private Result verifySourceStamp(DataSource apk, String expectedCertDigest)
+        {
+            try
+            {
+                ZipSections zipSections = ApkUtils.findZipSections(apk);
+                int? minSdkVersion = verifyAndGetMinSdkVersion(apk, zipSections);
+
+                // Attempt to obtain the source stamp's certificate digest from the APK.
+                List<CentralDirectoryRecord> cdRecords =
+                    V1SchemeVerifier.parseZipCentralDirectory(apk, zipSections);
+                CentralDirectoryRecord sourceStampCdRecord = null;
+                foreach (CentralDirectoryRecord cdRecord in cdRecords)
+                {
+                    if (ApkUtils.SOURCE_STAMP_CERTIFICATE_HASH_ZIP_ENTRY_NAME.Equals(cdRecord.getName()))
+                    {
+                        sourceStampCdRecord = cdRecord;
+                        break;
+                    }
+                }
+
+                // If the source stamp's certificate digest is not available within the APK then the
+                // source stamp cannot be verified; check if a source stamp signing block is in the
+                // APK's signature block to determine the appropriate status to return.
+                if (sourceStampCdRecord == null)
+                {
+                    bool stampSigningBlockFound;
+                    try
+                    {
+                        ApkSigningBlockUtils.Result stampResult = new ApkSigningBlockUtils.Result(
+                            ApkSigningBlockUtils.VERSION_SOURCE_STAMP);
+                        ApkSigningBlockUtils.findSignature(apk, zipSections,
+                            SourceStampConstants.V2_SOURCE_STAMP_BLOCK_ID, stampResult);
+                        stampSigningBlockFound = true;
+                    }
+                    catch (ApkSigningBlockUtils.SignatureNotFoundException e)
+                    {
+                        stampSigningBlockFound = false;
+                    }
+
+                    if (stampSigningBlockFound)
+                    {
+                        return createSourceStampResultWithError(
+                            Result.SourceStampInfo.SourceStampVerificationStatus.STAMP_NOT_VERIFIED,
+                            Issue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST);
+                    }
+                    else
+                    {
+                        return createSourceStampResultWithError(
+                            Result.SourceStampInfo.SourceStampVerificationStatus.STAMP_MISSING,
+                            Issue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING);
+                    }
+                }
+
+                // Verify that the contents of the source stamp certificate digest match the expected
+                // value, if provided.
+                byte[] sourceStampCertificateDigest =
+                    LocalFileRecord.getUncompressedData(
+                        apk,
+                        sourceStampCdRecord,
+                        zipSections.getZipCentralDirectoryOffset());
+                if (expectedCertDigest != null)
+                {
+                    String actualCertDigest = ApkSigningBlockUtils.toHex(sourceStampCertificateDigest);
+                    if (!expectedCertDigest.Equals(actualCertDigest, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return createSourceStampResultWithError(
+                            Result.SourceStampInfo.SourceStampVerificationStatus
+                                .CERT_DIGEST_MISMATCH,
+                            Issue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH, actualCertDigest,
+                            expectedCertDigest);
+                    }
+                }
+
+                Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests =
+                    new Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>>();
+                Dictionary<int, String> supportedSchemeNames = getSupportedSchemeNames(mMaxSdkVersion);
+                ISet<int> foundApkSigSchemeIds = new HashSet<int>(2);
+
+                Result result = new Result();
+                ApkSigningBlockUtils.Result v3Result = null;
+                if (mMaxSdkVersion >= AndroidSdkVersion.P)
+                {
+                    v3Result = getApkContentDigests(apk, zipSections, foundApkSigSchemeIds,
+                        supportedSchemeNames, signatureSchemeApkContentDigests,
+                        ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3,
+                        Math.Max(minSdkVersion.GetValueOrDefault(), AndroidSdkVersion.P));
+                    if (v3Result != null && v3Result.containsErrors())
+                    {
+                        result.mergeFrom(v3Result);
+                        return mergeSourceStampResult(
+                            Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR,
+                            result);
+                    }
+                }
+
+                ApkSigningBlockUtils.Result v2Result = null;
+                if (mMaxSdkVersion >= AndroidSdkVersion.N && (minSdkVersion < AndroidSdkVersion.P
+                                                              || foundApkSigSchemeIds.Count == 0))
+                {
+                    v2Result = getApkContentDigests(apk, zipSections, foundApkSigSchemeIds,
+                        supportedSchemeNames, signatureSchemeApkContentDigests,
+                        ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2,
+                        Math.Max(minSdkVersion.GetValueOrDefault(), AndroidSdkVersion.N));
+                    if (v2Result != null && v2Result.containsErrors())
+                    {
+                        result.mergeFrom(v2Result);
+                        return mergeSourceStampResult(
+                            Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR,
+                            result);
+                    }
+                }
+
+                if (minSdkVersion < AndroidSdkVersion.N || foundApkSigSchemeIds.Count == 0)
+                {
+                    signatureSchemeApkContentDigests.Add(ApkSigningBlockUtils.VERSION_JAR_SIGNATURE_SCHEME,
+                        getApkContentDigestFromV1SigningScheme(cdRecords, apk, zipSections));
+                }
+
+                ApkSigResult sourceStampResult =
+                    V2SourceStampVerifier.verify(
+                        apk,
+                        zipSections,
+                        sourceStampCertificateDigest,
+                        signatureSchemeApkContentDigests,
+                        minSdkVersion,
+                        mMaxSdkVersion);
+                result.mergeFrom(sourceStampResult);
+                // Since the caller is only seeking to verify the source stamp the Result can be marked
+                // as verified if the source stamp verification was successful.
+                if (sourceStampResult.verified)
+                {
+                    result.setVerified();
+                }
+                else
+                {
+                    // To prevent APK signature verification with a failed / missing source stamp the
+                    // source stamp verification will only log warnings; to allow the caller to capture
+                    // the failure reason treat all warnings as errors.
+                    result.setWarningsAsErrors(true);
+                }
+
+                return result;
+            }
+            catch (Exception e) when (e is ApkFormatException || e is IOException | e is ZipFormatException)
+            {
+                return createSourceStampResultWithError(
+                    Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR,
+                    Issue.MALFORMED_APK, e);
+            }
+            catch (CryptographicException e)
+            {
+                return createSourceStampResultWithError(
+                    Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR,
+                    Issue.UNEXPECTED_EXCEPTION, e);
+            }
+            catch (SignatureNotFoundException e)
+            {
+                return createSourceStampResultWithError(
+                    Result.SourceStampInfo.SourceStampVerificationStatus.STAMP_NOT_VERIFIED,
+                    Issue.SOURCE_STAMP_SIG_MISSING);
+            }
+        }
+
+        /**
+     * Creates and returns a {@code Result} that can be returned for source stamp verification
+     * with the provided source stamp {@code verificationStatus}, and logs an error for the
+     * specified {@code issue} and {@code params}.
+     */
+        private static Result createSourceStampResultWithError(
+            Result.SourceStampInfo.SourceStampVerificationStatus verificationStatus, Issue issue,
+            params Object[] parameters)
+        {
+            Result result = new Result();
+            result.addError(issue, parameters);
+            return mergeSourceStampResult(verificationStatus, result);
+        }
+
+        /**
+     * Creates a new {@link Result.SourceStampInfo} under the provided {@code result} and sets the
+     * source stamp status to the provided {@code verificationStatus}.
+     */
+        private static Result mergeSourceStampResult(
+            Result.SourceStampInfo.SourceStampVerificationStatus verificationStatus,
+            Result result)
+        {
+            result.mSourceStampInfo = new Result.SourceStampInfo(verificationStatus);
+            return result;
+        }
+
+        /**
+     * Obtains the APK content digest(s) and adds them to the provided {@code
+     * sigSchemeApkContentDigests}, returning an {@code ApkSigningBlockUtils.Result} that can be
+     * merged with a {@code Result} to notify the client of any errors.
+     *
+     * <p>Note, this method currently only supports signature scheme V2 and V3; to obtain the
+     * content digests for V1 signatures use {@link
+     * #getApkContentDigestFromV1SigningScheme(List, DataSource, ZipSections)}. If a
+     * signature scheme version other than V2 or V3 is provided a {@code null} value will be
+     * returned.
+     */
+        private ApkSigningBlockUtils.Result getApkContentDigests(DataSource apk,
+            ZipSections zipSections, ISet<int> foundApkSigSchemeIds,
+            Dictionary<int, String> supportedSchemeNames,
+            Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> sigSchemeApkContentDigests,
+            int apkSigSchemeVersion, int minSdkVersion)
+        {
+            if (!(apkSigSchemeVersion == ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2
+                  || apkSigSchemeVersion == ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3))
+            {
+                return null;
+            }
+
+            ApkSigningBlockUtils.Result result = new ApkSigningBlockUtils.Result(apkSigSchemeVersion);
+            SignatureInfo signatureInfo;
+            try
+            {
+                int sigSchemeBlockId = apkSigSchemeVersion == ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3
+                    ? V3SchemeConstants.APK_SIGNATURE_SCHEME_V3_BLOCK_ID
+                    : V2SchemeConstants.APK_SIGNATURE_SCHEME_V2_BLOCK_ID;
+                signatureInfo = ApkSigningBlockUtils.findSignature(apk, zipSections,
+                    sigSchemeBlockId, result);
+            }
+            catch (ApkSigningBlockUtils.SignatureNotFoundException e)
+            {
+                return null;
+            }
+
+            foundApkSigSchemeIds.Add(apkSigSchemeVersion);
+
+            ISet<ContentDigestAlgorithm> contentDigestsToVerify = new HashSet<ContentDigestAlgorithm>(1);
+            if (apkSigSchemeVersion == ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2)
+            {
+                V2SchemeVerifier.parseSigners(signatureInfo.signatureBlock,
+                    contentDigestsToVerify, supportedSchemeNames,
+                    foundApkSigSchemeIds, minSdkVersion, mMaxSdkVersion, result);
+            }
+            else
+            {
+                V3SchemeVerifier.parseSigners(signatureInfo.signatureBlock,
+                    contentDigestsToVerify, result);
+            }
+
+            Dictionary<ContentDigestAlgorithm, byte[]> apkContentDigests =
+                new Dictionary<ContentDigestAlgorithm, byte[]>();
+            foreach (ApkSigningBlockUtils.Result.SignerInfo signerInfo in result.signers)
+            {
+                foreach (ApkSigningBlockUtils.Result.SignerInfo.ContentDigest contentDigest in
+                         signerInfo.contentDigests)
+                {
+                    SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.findById(
+                        contentDigest.getSignatureAlgorithmId());
+                    if (signatureAlgorithm == null)
+                    {
+                        continue;
+                    }
+
+                    apkContentDigests.Add(signatureAlgorithm.getContentDigestAlgorithm(),
+                        contentDigest.getValue());
+                }
+            }
+
+            sigSchemeApkContentDigests.Add(apkSigSchemeVersion, apkContentDigests);
+            return result;
+        }
+
+        private static void checkV4Certificate(List<X509Certificate> v4Certs,
+            List<X509Certificate> v2v3Certs, Result result)
+        {
+            try
+            {
+                byte[] v4Cert = v4Certs[0].getEncoded();
+                byte[] cert = v2v3Certs[0].getEncoded();
+                if (!cert.SequenceEqual(v4Cert))
+                {
+                    result.addError(Issue.V4_SIG_V2_V3_SIGNERS_MISMATCH);
+                }
+            }
+            catch (CryptographicException e)
+            {
+                throw new ApplicationException("Failed to encode APK signer cert", e);
+            }
+        }
+
+        private static byte[] pickBestDigestForV4(
+            List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests)
+        {
+            Dictionary<ContentDigestAlgorithm, byte[]> apkContentDigests =
+                new Dictionary<ContentDigestAlgorithm, byte[]>();
+            collectApkContentDigests(contentDigests, apkContentDigests);
+            return ApkSigningBlockUtils.pickBestDigestForV4(apkContentDigests);
+        }
+
+        private static Dictionary<ContentDigestAlgorithm, byte[]> getApkContentDigestsFromSigningSchemeResult(
+            ApkSigningBlockUtils.Result apkSigningSchemeResult)
+        {
+            Dictionary<ContentDigestAlgorithm, byte[]> apkContentDigests =
+                new Dictionary<ContentDigestAlgorithm, byte[]>();
+            foreach (ApkSigningBlockUtils.Result.SignerInfo signerInfo in apkSigningSchemeResult.signers)
+            {
+                collectApkContentDigests(signerInfo.contentDigests, apkContentDigests);
+            }
+
+            return apkContentDigests;
+        }
+
+        private static Dictionary<ContentDigestAlgorithm, byte[]> getApkContentDigestFromV1SigningScheme(
+            List<CentralDirectoryRecord> cdRecords,
+            DataSource apk,
+            ZipSections zipSections)
+        {
+            CentralDirectoryRecord manifestCdRecord = null;
+            Dictionary<ContentDigestAlgorithm, byte[]> v1ContentDigest =
+                new Dictionary<ContentDigestAlgorithm, byte[]>();
+            foreach (CentralDirectoryRecord cdRecord in cdRecords)
+            {
+                if (V1SchemeConstants.MANIFEST_ENTRY_NAME.Equals(cdRecord.getName()))
+                {
+                    manifestCdRecord = cdRecord;
+                    break;
+                }
+            }
+
+            if (manifestCdRecord == null)
+            {
+                // No JAR signing manifest file found. For SourceStamp verification, returning an empty
+                // digest is enough since this would affect the readonly digest signed by the stamp, and
+                // thus an empty digest will invalidate that signature.
+                return v1ContentDigest;
+            }
+
+            try
+            {
+                byte[] manifestBytes =
+                    LocalFileRecord.getUncompressedData(
+                        apk, manifestCdRecord, zipSections.getZipCentralDirectoryOffset());
+                v1ContentDigest.Add(
+                    ContentDigestAlgorithm.SHA256, ApkUtils.computeSha256DigestBytes(manifestBytes));
+                return v1ContentDigest;
+            }
+            catch (ZipFormatException e)
+            {
+                throw new ApkFormatException("Failed to read APK", e);
+            }
+        }
+
+        private static void collectApkContentDigests(
+            List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests,
+            Dictionary<ContentDigestAlgorithm, byte[]> apkContentDigests)
+        {
+            foreach (ApkSigningBlockUtils.Result.SignerInfo.ContentDigest contentDigest in contentDigests)
+            {
+                SignatureAlgorithm signatureAlgorithm =
+                    SignatureAlgorithm.findById(contentDigest.getSignatureAlgorithmId());
+                if (signatureAlgorithm == null)
+                {
+                    continue;
+                }
+
+                ContentDigestAlgorithm contentDigestAlgorithm =
+                    signatureAlgorithm.getContentDigestAlgorithm();
+                apkContentDigests.Add(contentDigestAlgorithm, contentDigest.getValue());
+            }
+        }
+
+        private static ByteBuffer getAndroidManifestFromApk(
+            DataSource apk, ZipSections zipSections)
+        {
+            List<CentralDirectoryRecord> cdRecords =
+                V1SchemeVerifier.parseZipCentralDirectory(apk, zipSections);
+            try
+            {
+                return ApkSigner.getAndroidManifestFromApk(
+                    cdRecords,
+                    apk.slice(0, zipSections.getZipCentralDirectoryOffset()));
+            }
+            catch (ZipFormatException e)
+            {
+                throw new ApkFormatException("Failed to read AndroidManifest.xml", e);
+            }
+        }
+
+        private static int getMinimumSignatureSchemeVersionForTargetSdk(int targetSdkVersion)
+        {
+            if (targetSdkVersion >= AndroidSdkVersion.R)
+            {
+                return ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2;
+            }
+
+            return ApkSigningBlockUtils.VERSION_JAR_SIGNATURE_SCHEME;
+        }
+
+        /**
+     * Result of verifying an APKs signatures. The APK can be considered verified iff
+     * {@link #isVerified()} returns {@code true}.
+     */
+        public class Result
+        {
+            private readonly List<IssueWithParams> mErrors = new List<IssueWithParams>();
+            private readonly List<IssueWithParams> mWarnings = new List<IssueWithParams>();
+            private readonly List<X509Certificate> mSignerCerts = new List<X509Certificate>();
+            private readonly List<V1SchemeSignerInfo> mV1SchemeSigners = new List<V1SchemeSignerInfo>();
+            private readonly List<V1SchemeSignerInfo> mV1SchemeIgnoredSigners = new List<V1SchemeSignerInfo>();
+            private readonly List<V2SchemeSignerInfo> mV2SchemeSigners = new List<V2SchemeSignerInfo>();
+            private readonly List<V3SchemeSignerInfo> mV3SchemeSigners = new List<V3SchemeSignerInfo>();
+            private readonly List<V4SchemeSignerInfo> mV4SchemeSigners = new List<V4SchemeSignerInfo>();
+            public SourceStampInfo mSourceStampInfo;
+
+            private bool mVerified;
+            private bool mVerifiedUsingV1Scheme;
+            private bool mVerifiedUsingV2Scheme;
+            private bool mVerifiedUsingV3Scheme;
+            private bool mVerifiedUsingV4Scheme;
+            private bool mSourceStampVerified;
+            private bool mWarningsAsErrors;
+            private SigningCertificateLineage mSigningCertificateLineage;
 
             /**
-          * Constructs a new {@code IssueWithParams} of the specified type and with provided
-          * parameters.
-          */
-            public IssueWithParams(Issue issue, Object[] parameters) : base(issue.getFormat(), parameters)
+         * Returns {@code true} if the APK's signatures verified.
+         */
+            public bool isVerified()
             {
-                mIssue = issue;
-                mParams = parameters;
+                return mVerified;
+            }
+
+            public void setVerified()
+            {
+                mVerified = true;
             }
 
             /**
-             * Returns the type of this issue.
-             */
-            public Issue getIssue()
+         * Returns {@code true} if the APK's JAR signatures verified.
+         */
+            public bool isVerifiedUsingV1Scheme()
             {
-                return mIssue;
+                return mVerifiedUsingV1Scheme;
             }
 
             /**
-             * Returns the parameters of this issue.
-             */
-            public Object[] getParams()
+         * Returns {@code true} if the APK's APK Signature Scheme v2 signatures verified.
+         */
+            public bool isVerifiedUsingV2Scheme()
             {
-                return (object[])mParams.Clone();
+                return mVerifiedUsingV2Scheme;
             }
 
             /**
-             * Returns a readable form of this issue.
-             */
-            public String toString()
+         * Returns {@code true} if the APK's APK Signature Scheme v3 signature verified.
+         */
+            public bool isVerifiedUsingV3Scheme()
             {
-                return String.Format(mIssue.getFormat(), mParams);
+                return mVerifiedUsingV3Scheme;
+            }
+
+            /**
+         * Returns {@code true} if the APK's APK Signature Scheme v4 signature verified.
+         */
+            public bool isVerifiedUsingV4Scheme()
+            {
+                return mVerifiedUsingV4Scheme;
+            }
+
+            /**
+         * Returns {@code true} if the APK's SourceStamp signature verified.
+         */
+            public bool isSourceStampVerified()
+            {
+                return mSourceStampVerified;
+            }
+
+            /**
+         * Returns the verified signers' certificates, one per signer.
+         */
+            public List<X509Certificate> getSignerCertificates()
+            {
+                return mSignerCerts;
+            }
+
+            public void addSignerCertificate(X509Certificate cert)
+            {
+                mSignerCerts.Add(cert);
+            }
+
+            /**
+         * Returns information about JAR signers associated with the APK's signature. These are the
+         * signers used by Android.
+         *
+         * @see #getV1SchemeIgnoredSigners()
+         */
+            public List<V1SchemeSignerInfo> getV1SchemeSigners()
+            {
+                return mV1SchemeSigners;
+            }
+
+            /**
+         * Returns information about JAR signers ignored by the APK's signature verification
+         * process. These signers are ignored by Android. However, each signer's errors or warnings
+         * will contain information about why they are ignored.
+         *
+         * @see #getV1SchemeSigners()
+         */
+            public List<V1SchemeSignerInfo> getV1SchemeIgnoredSigners()
+            {
+                return mV1SchemeIgnoredSigners;
+            }
+
+            /**
+         * Returns information about APK Signature Scheme v2 signers associated with the APK's
+         * signature.
+         */
+            public List<V2SchemeSignerInfo> getV2SchemeSigners()
+            {
+                return mV2SchemeSigners;
+            }
+
+            /**
+         * Returns information about APK Signature Scheme v3 signers associated with the APK's
+         * signature.
+         *
+         * <note> Multiple signers represent different targeted platform versions, not
+         * a signing identity of multiple signers.  APK Signature Scheme v3 only supports single
+         * signer identities.</note>
+         */
+            public List<V3SchemeSignerInfo> getV3SchemeSigners()
+            {
+                return mV3SchemeSigners;
+            }
+
+            public List<V4SchemeSignerInfo> getV4SchemeSigners()
+            {
+                return mV4SchemeSigners;
+            }
+
+            /**
+         * Returns information about SourceStamp associated with the APK's signature.
+         */
+            public SourceStampInfo getSourceStampInfo()
+            {
+                return mSourceStampInfo;
+            }
+
+            /**
+         * Returns the combined SigningCertificateLineage associated with this APK's APK Signature
+         * Scheme v3 signing block.
+         */
+            public SigningCertificateLineage getSigningCertificateLineage()
+            {
+                return mSigningCertificateLineage;
+            }
+
+            public void addError(Issue msg, params Object[] parameters)
+            {
+                mErrors.Add(new IssueWithParams(msg, parameters));
+            }
+
+            public void addWarning(Issue msg, params Object[] parameters)
+            {
+                mWarnings.Add(new IssueWithParams(msg, parameters));
+            }
+
+            /**
+         * Sets whether warnings should be treated as errors.
+         */
+            public void setWarningsAsErrors(bool value)
+            {
+                mWarningsAsErrors = value;
+            }
+
+            /**
+         * Returns errors encountered while verifying the APK's signatures.
+         */
+            public List<IssueWithParams> getErrors()
+            {
+                if (!mWarningsAsErrors)
+                {
+                    return mErrors;
+                }
+                else
+                {
+                    List<IssueWithParams> allErrors = new List<IssueWithParams>();
+                    allErrors.AddRange(mErrors);
+                    allErrors.AddRange(mWarnings);
+                    return allErrors;
+                }
+            }
+
+            /**
+         * Returns warnings encountered while verifying the APK's signatures.
+         */
+            public List<IssueWithParams> getWarnings()
+            {
+                return mWarnings;
+            }
+
+            public void mergeFrom(V1SchemeVerifier.Result source)
+            {
+                mVerifiedUsingV1Scheme = source.verified;
+                mErrors.AddRange(source.getErrors());
+                mWarnings.AddRange(source.getWarnings());
+                foreach (V1SchemeVerifier.Result.SignerInfo signer in source.signers)
+                {
+                    mV1SchemeSigners.Add(new V1SchemeSignerInfo(signer));
+                }
+
+                foreach (V1SchemeVerifier.Result.SignerInfo signer in source.ignoredSigners)
+                {
+                    mV1SchemeIgnoredSigners.Add(new V1SchemeSignerInfo(signer));
+                }
+            }
+
+            public void mergeFrom(ApkSigResult source)
+            {
+                switch (source.signatureSchemeVersion)
+                {
+                    case ApkSigningBlockUtils.VERSION_SOURCE_STAMP:
+                        mSourceStampVerified = source.verified;
+                        if (source.mSigners.Count != 0)
+                        {
+                            mSourceStampInfo = new SourceStampInfo(source.mSigners[0]);
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentException(
+                            "Unknown ApkSigResult Signing Block Scheme Id "
+                            + source.signatureSchemeVersion);
+                }
+            }
+
+            public void mergeFrom(ApkSigningBlockUtils.Result source)
+            {
+                switch (source.signatureSchemeVersion)
+                {
+                    case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2:
+                        mVerifiedUsingV2Scheme = source.verified;
+                        foreach (ApkSigningBlockUtils.Result.SignerInfo signer in source.signers)
+                        {
+                            mV2SchemeSigners.Add(new V2SchemeSignerInfo(signer));
+                        }
+
+                        break;
+                    case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3:
+                        mVerifiedUsingV3Scheme = source.verified;
+                        foreach (ApkSigningBlockUtils.Result.SignerInfo signer in source.signers)
+                        {
+                            mV3SchemeSigners.Add(new V3SchemeSignerInfo(signer));
+                        }
+
+                        mSigningCertificateLineage = source.signingCertificateLineage;
+                        break;
+                    case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V4:
+                        mVerifiedUsingV4Scheme = source.verified;
+                        foreach (ApkSigningBlockUtils.Result.SignerInfo signer in source.signers)
+                        {
+                            mV4SchemeSigners.Add(new V4SchemeSignerInfo(signer));
+                        }
+
+                        break;
+                    case ApkSigningBlockUtils.VERSION_SOURCE_STAMP:
+                        mSourceStampVerified = source.verified;
+                        if (source.signers.Count == 0)
+                        {
+                            mSourceStampInfo = new SourceStampInfo(source.signers[0]);
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentException("Unknown Signing Block Scheme Id");
+                }
+            }
+
+            /**
+         * Returns {@code true} if an error was encountered while verifying the APK. Any error
+         * prevents the APK from being considered verified.
+         */
+            public bool containsErrors()
+            {
+                if (mErrors.Count != 0)
+                {
+                    return true;
+                }
+
+                if (mWarningsAsErrors && mWarnings.Count != 0)
+                {
+                    return true;
+                }
+
+                if (mV1SchemeSigners.Count != 0)
+                {
+                    foreach (V1SchemeSignerInfo signer in mV1SchemeSigners)
+                    {
+                        if (signer.containsErrors())
+                        {
+                            return true;
+                        }
+
+                        if (mWarningsAsErrors && signer.getWarnings().Count != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (mV2SchemeSigners.Count != 0)
+                {
+                    foreach (V2SchemeSignerInfo signer in mV2SchemeSigners)
+                    {
+                        if (signer.containsErrors())
+                        {
+                            return true;
+                        }
+
+                        if (mWarningsAsErrors && signer.getWarnings().Count != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (mV3SchemeSigners.Count != 0)
+                {
+                    foreach (V3SchemeSignerInfo signer in mV3SchemeSigners)
+                    {
+                        if (signer.containsErrors())
+                        {
+                            return true;
+                        }
+
+                        if (mWarningsAsErrors && signer.getWarnings().Count != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (mSourceStampInfo != null)
+                {
+                    if (mSourceStampInfo.containsErrors())
+                    {
+                        return true;
+                    }
+
+                    if (mWarningsAsErrors && mSourceStampInfo.getWarnings().Count != 0)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            /**
+         * Returns all errors for this result, including any errors from signature scheme signers
+         * and the source stamp.
+         */
+            public List<IssueWithParams> getAllErrors()
+            {
+                List<IssueWithParams> errors = new List<IssueWithParams>();
+                errors.AddRange(mErrors);
+                if (mWarningsAsErrors)
+                {
+                    errors.AddRange(mWarnings);
+                }
+
+                if (mV1SchemeSigners.Count != 0)
+                {
+                    foreach (V1SchemeSignerInfo signer in mV1SchemeSigners)
+                    {
+                        errors.AddRange(signer.mErrors);
+                        if (mWarningsAsErrors)
+                        {
+                            errors.AddRange(signer.getWarnings());
+                        }
+                    }
+                }
+
+                if (mV2SchemeSigners.Count != 0)
+                {
+                    foreach (V2SchemeSignerInfo signer in mV2SchemeSigners)
+                    {
+                        errors.AddRange(signer.mErrors);
+                        if (mWarningsAsErrors)
+                        {
+                            errors.AddRange(signer.getWarnings());
+                        }
+                    }
+                }
+
+                if (mV3SchemeSigners.Count != 0)
+                {
+                    foreach (V3SchemeSignerInfo signer in mV3SchemeSigners)
+                    {
+                        errors.AddRange(signer.mErrors);
+                        if (mWarningsAsErrors)
+                        {
+                            errors.AddRange(signer.getWarnings());
+                        }
+                    }
+                }
+
+                if (mSourceStampInfo != null)
+                {
+                    errors.AddRange(mSourceStampInfo.getErrors());
+                    if (mWarningsAsErrors)
+                    {
+                        errors.AddRange(mSourceStampInfo.getWarnings());
+                    }
+                }
+
+                return errors;
+            }
+
+            /**
+         * Information about a JAR signer associated with the APK's signature.
+         */
+            public class V1SchemeSignerInfo
+            {
+                private readonly String mName;
+                public readonly List<X509Certificate> mCertChain;
+                private readonly String mSignatureBlockFileName;
+                private readonly String mSignatureFileName;
+
+                public readonly List<IssueWithParams> mErrors;
+                private readonly List<IssueWithParams> mWarnings;
+
+                public V1SchemeSignerInfo(V1SchemeVerifier.Result.SignerInfo result)
+                {
+                    mName = result.name;
+                    mCertChain = result.certChain;
+                    mSignatureBlockFileName = result.signatureBlockFileName;
+                    mSignatureFileName = result.signatureFileName;
+                    mErrors = result.getErrors();
+                    mWarnings = result.getWarnings();
+                }
+
+                /**
+             * Returns a user-friendly name of the signer.
+             */
+                public String getName()
+                {
+                    return mName;
+                }
+
+                /**
+             * Returns the name of the JAR entry containing this signer's JAR signature block file.
+             */
+                public String getSignatureBlockFileName()
+                {
+                    return mSignatureBlockFileName;
+                }
+
+                /**
+             * Returns the name of the JAR entry containing this signer's JAR signature file.
+             */
+                public String getSignatureFileName()
+                {
+                    return mSignatureFileName;
+                }
+
+                /**
+             * Returns this signer's signing certificate or {@code null} if not available. The
+             * certificate is guaranteed to be available if no errors were encountered during
+             * verification (see {@link #containsErrors()}.
+             *
+             * <p>This certificate contains the signer's public key.
+             */
+                public X509Certificate getCertificate()
+                {
+                    return mCertChain.Count == 0 ? null : mCertChain[0];
+                }
+
+                /**
+             * Returns the certificate chain for the signer's public key. The certificate containing
+             * the public key is first, followed by the certificate (if any) which issued the
+             * signing certificate, and so forth. An empty list may be returned if an error was
+             * encountered during verification (see {@link #containsErrors()}).
+             */
+                public List<X509Certificate> getCertificateChain()
+                {
+                    return mCertChain;
+                }
+
+                /**
+             * Returns {@code true} if an error was encountered while verifying this signer's JAR
+             * signature. Any error prevents the signer's signature from being considered verified.
+             */
+                public bool containsErrors()
+                {
+                    return mErrors.Count != 0;
+                }
+
+                /**
+             * Returns errors encountered while verifying this signer's JAR signature. Any error
+             * prevents the signer's signature from being considered verified.
+             */
+                public List<IssueWithParams> getErrors()
+                {
+                    return mErrors;
+                }
+
+                /**
+             * Returns warnings encountered while verifying this signer's JAR signature. Warnings
+             * do not prevent the signer's signature from being considered verified.
+             */
+                public List<IssueWithParams> getWarnings()
+                {
+                    return mWarnings;
+                }
+
+                public void addError(Issue msg, params Object[] parameters)
+                {
+                    mErrors.Add(new IssueWithParams(msg, parameters));
+                }
+            }
+
+            /**
+         * Information about an APK Signature Scheme v2 signer associated with the APK's signature.
+         */
+            public class V2SchemeSignerInfo
+            {
+                private readonly int mIndex;
+                public readonly List<X509Certificate> mCerts;
+
+                public readonly List<IssueWithParams> mErrors;
+                private readonly List<IssueWithParams> mWarnings;
+
+                private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
+                    mContentDigests;
+
+                public V2SchemeSignerInfo(ApkSigningBlockUtils.Result.SignerInfo result)
+                {
+                    mIndex = result.index;
+                    mCerts = result.certs;
+                    mErrors = result.getErrors();
+                    mWarnings = result.getWarnings();
+                    mContentDigests = result.contentDigests;
+                }
+
+                /**
+             * Returns this signer's {@code 0}-based index in the list of signers contained in the
+             * APK's APK Signature Scheme v2 signature.
+             */
+                public int getIndex()
+                {
+                    return mIndex;
+                }
+
+                /**
+             * Returns this signer's signing certificate or {@code null} if not available. The
+             * certificate is guaranteed to be available if no errors were encountered during
+             * verification (see {@link #containsErrors()}.
+             *
+             * <p>This certificate contains the signer's public key.
+             */
+                public X509Certificate getCertificate()
+                {
+                    return mCerts.Count == 0 ? null : mCerts[0];
+                }
+
+                /**
+             * Returns this signer's certificates. The first certificate is for the signer's public
+             * key. An empty list may be returned if an error was encountered during verification
+             * (see {@link #containsErrors()}).
+             */
+                public List<X509Certificate> getCertificates()
+                {
+                    return mCerts;
+                }
+
+                public void addError(Issue msg, params Object[] parameters)
+                {
+                    mErrors.Add(new IssueWithParams(msg, parameters));
+                }
+
+                public bool containsErrors()
+                {
+                    return mErrors.Count != 0;
+                }
+
+                public List<IssueWithParams> getErrors()
+                {
+                    return mErrors;
+                }
+
+                public List<IssueWithParams> getWarnings()
+                {
+                    return mWarnings;
+                }
+
+                public List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> getContentDigests()
+                {
+                    return mContentDigests;
+                }
+            }
+
+            /**
+         * Information about an APK Signature Scheme v3 signer associated with the APK's signature.
+         */
+            public class V3SchemeSignerInfo
+            {
+                private readonly int mIndex;
+                public readonly List<X509Certificate> mCerts;
+
+                public readonly List<IssueWithParams> mErrors;
+                private readonly List<IssueWithParams> mWarnings;
+
+                private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
+                    mContentDigests;
+
+                public V3SchemeSignerInfo(ApkSigningBlockUtils.Result.SignerInfo result)
+                {
+                    mIndex = result.index;
+                    mCerts = result.certs;
+                    mErrors = result.getErrors();
+                    mWarnings = result.getWarnings();
+                    mContentDigests = result.contentDigests;
+                }
+
+                /**
+             * Returns this signer's {@code 0}-based index in the list of signers contained in the
+             * APK's APK Signature Scheme v3 signature.
+             */
+                public int getIndex()
+                {
+                    return mIndex;
+                }
+
+                /**
+             * Returns this signer's signing certificate or {@code null} if not available. The
+             * certificate is guaranteed to be available if no errors were encountered during
+             * verification (see {@link #containsErrors()}.
+             *
+             * <p>This certificate contains the signer's public key.
+             */
+                public X509Certificate getCertificate()
+                {
+                    return mCerts.Count == 0 ? null : mCerts[0];
+                }
+
+                /**
+             * Returns this signer's certificates. The first certificate is for the signer's public
+             * key. An empty list may be returned if an error was encountered during verification
+             * (see {@link #containsErrors()}).
+             */
+                public List<X509Certificate> getCertificates()
+                {
+                    return mCerts;
+                }
+
+                public bool containsErrors()
+                {
+                    return mErrors.Count == 0;
+                }
+
+                public List<IssueWithParams> getErrors()
+                {
+                    return mErrors;
+                }
+
+                public List<IssueWithParams> getWarnings()
+                {
+                    return mWarnings;
+                }
+
+                public List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> getContentDigests()
+                {
+                    return mContentDigests;
+                }
+            }
+
+            /**
+         * Information about an APK Signature Scheme V4 signer associated with the APK's
+         * signature.
+         */
+            public class V4SchemeSignerInfo
+            {
+                private readonly int mIndex;
+                public readonly List<X509Certificate> mCerts;
+
+                private readonly List<IssueWithParams> mErrors;
+                private readonly List<IssueWithParams> mWarnings;
+
+                private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
+                    mContentDigests;
+
+                public V4SchemeSignerInfo(ApkSigningBlockUtils.Result.SignerInfo result)
+                {
+                    mIndex = result.index;
+                    mCerts = result.certs;
+                    mErrors = result.getErrors();
+                    mWarnings = result.getWarnings();
+                    mContentDigests = result.contentDigests;
+                }
+
+                /**
+             * Returns this signer's {@code 0}-based index in the list of signers contained in the
+             * APK's APK Signature Scheme v3 signature.
+             */
+                public int getIndex()
+                {
+                    return mIndex;
+                }
+
+                /**
+             * Returns this signer's signing certificate or {@code null} if not available. The
+             * certificate is guaranteed to be available if no errors were encountered during
+             * verification (see {@link #containsErrors()}.
+             *
+             * <p>This certificate contains the signer's public key.
+             */
+                public X509Certificate getCertificate()
+                {
+                    return mCerts.Count == 0 ? null : mCerts[0];
+                }
+
+                /**
+             * Returns this signer's certificates. The first certificate is for the signer's public
+             * key. An empty list may be returned if an error was encountered during verification
+             * (see {@link #containsErrors()}).
+             */
+                public List<X509Certificate> getCertificates()
+                {
+                    return mCerts;
+                }
+
+                public bool containsErrors()
+                {
+                    return mErrors.Count != 0;
+                }
+
+                public List<IssueWithParams> getErrors()
+                {
+                    return mErrors;
+                }
+
+                public List<IssueWithParams> getWarnings()
+                {
+                    return mWarnings;
+                }
+
+                public List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> getContentDigests()
+                {
+                    return mContentDigests;
+                }
+            }
+
+            /**
+         * Information about SourceStamp associated with the APK's signature.
+         */
+            public class SourceStampInfo
+            {
+                public enum SourceStampVerificationStatus
+                {
+                    /** The stamp is present and was successfully verified. */
+                    STAMP_VERIFIED,
+
+                    /** The stamp is present but failed verification. */
+                    STAMP_VERIFICATION_FAILED,
+
+                    /** The expected cert digest did not match the digest in the APK. */
+                    CERT_DIGEST_MISMATCH,
+
+                    /** The stamp is not present at all. */
+                    STAMP_MISSING,
+
+                    /** The stamp is at least partially present, but was not able to be verified. */
+                    STAMP_NOT_VERIFIED,
+
+                    /** The stamp was not able to be verified due to an unexpected error. */
+                    VERIFICATION_ERROR
+                }
+
+                private readonly List<X509Certificate> mCertificates;
+                private readonly List<X509Certificate> mCertificateLineage;
+
+                private readonly List<IssueWithParams> mErrors;
+                private readonly List<IssueWithParams> mWarnings;
+
+                private readonly SourceStampVerificationStatus mSourceStampVerificationStatus;
+
+                public SourceStampInfo(ApkSignerInfo result)
+                {
+                    mCertificates = result.certs;
+                    mCertificateLineage = result.certificateLineage;
+                    mErrors = ApkVerificationIssueAdapter.getIssuesFromVerificationIssues(
+                        result.getErrors());
+                    mWarnings = ApkVerificationIssueAdapter.getIssuesFromVerificationIssues(
+                        result.getWarnings());
+                    if (mErrors.Count == 0 && mWarnings.Count == 0)
+                    {
+                        mSourceStampVerificationStatus = SourceStampVerificationStatus.STAMP_VERIFIED;
+                    }
+                    else
+                    {
+                        mSourceStampVerificationStatus =
+                            SourceStampVerificationStatus.STAMP_VERIFICATION_FAILED;
+                    }
+                }
+
+                public SourceStampInfo(SourceStampVerificationStatus sourceStampVerificationStatus)
+                {
+                    mCertificates = new List<X509Certificate>();
+                    mCertificateLineage = new List<X509Certificate>();
+                    mErrors = new List<IssueWithParams>();
+                    mWarnings = new List<IssueWithParams>();
+                    mSourceStampVerificationStatus = sourceStampVerificationStatus;
+                }
+
+                /**
+             * Returns the SourceStamp's signing certificate or {@code null} if not available. The
+             * certificate is guaranteed to be available if no errors were encountered during
+             * verification (see {@link #containsErrors()}.
+             *
+             * <p>This certificate contains the SourceStamp's public key.
+             */
+                public X509Certificate getCertificate()
+                {
+                    return mCertificates.Count == 0 ? null : mCertificates[0];
+                }
+
+                /**
+             * Returns a list containing all of the certificates in the stamp certificate lineage.
+             */
+                public List<X509Certificate> getCertificatesInLineage()
+                {
+                    return mCertificateLineage;
+                }
+
+                public bool containsErrors()
+                {
+                    return mErrors.Count != 0;
+                }
+
+                public List<IssueWithParams> getErrors()
+                {
+                    return mErrors;
+                }
+
+                public List<IssueWithParams> getWarnings()
+                {
+                    return mWarnings;
+                }
+
+                /**
+             * Returns the reason for any source stamp verification failures, or {@code
+             * STAMP_VERIFIED} if the source stamp was successfully verified.
+             */
+                public SourceStampVerificationStatus getSourceStampVerificationStatus()
+                {
+                    return mSourceStampVerificationStatus;
+                }
             }
         }
 
@@ -118,7 +2093,7 @@ namespace SigningServer.Android.ApkSig
              * JAR manifest contains a section without a name.
              *
              * <ul>
-             * <li>Parameter 1: section index (1-based) ({@code Integer})</li>
+             * <li>Parameter 1: section index (1-based) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed META-INF/MANIFEST.MF: invidual section #{0} does not have a name")]
@@ -129,7 +2104,7 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: signature file name ({@code String})</li>
-             * <li>Parameter 2: section index (1-based) ({@code Integer})</li>
+             * <li>Parameter 2: section index (1-based) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed {0}: invidual section #{1} does not have a name")]
@@ -380,7 +2355,7 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: name of the signature file ({@code String})</li>
-             * <li>Parameter 2: unknown APK signature scheme ID ({@code} Integer)</li>
+             * <li>Parameter 2: unknown APK signature scheme ID ({@code} int)</li>
              * </ul>
              */
             [Description("JAR signature {0} references unknown APK signature scheme ID: {1}")]
@@ -393,7 +2368,7 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: name of the signature file ({@code String})</li>
-             * <li>Parameter 2: APK signature scheme ID ({@code} Integer)</li>
+             * <li>Parameter 2: APK signature scheme ID ({@code} int)</li>
              * <li>Parameter 3: APK signature scheme English name ({@code} String)</li>
              * </ul>
              */
@@ -426,7 +2401,7 @@ namespace SigningServer.Android.ApkSig
              * no such signature was found.
              *
              * <ul>
-             * <li>Parameter 1: target sandbox version ({@code Integer})</li>
+             * <li>Parameter 1: target sandbox version ({@code int})</li>
              * </ul>
              */
             [Description("Missing APK Signature Scheme v2 signature required for target sandbox version"
@@ -438,8 +2413,8 @@ namespace SigningServer.Android.ApkSig
              * APK is not signed with that version or later.
              *
              * <ul>
-             *     <li>Parameter 1: target SDK Version (@code Integer})</li>
-             *     <li>Parameter 2: minimum signature scheme version ((@code Integer})</li>
+             *     <li>Parameter 1: target SDK Version (@code int})</li>
+             *     <li>Parameter 2: minimum signature scheme version ((@code int})</li>
              * </ul>
              */
             [Description("Target SDK version {0} requires a minimum of signature scheme v{1}; the APK is"
@@ -483,9 +2458,9 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: index ({@code 0}-based) of the certificate in the signer's list of
-             *     certificates ({@code Integer})</li>
+             *     certificates ({@code int})</li>
              * <li>Parameter 2: sequence number ({@code 1}-based) of the certificate in the signer's
-             *     list of certificates ({@code Integer})</li>
+             *     list of certificates ({@code int})</li>
              * <li>Parameter 3: error details ({@code Throwable})</li>
              * </ul>
              */
@@ -497,7 +2472,7 @@ namespace SigningServer.Android.ApkSig
              * signature.
              *
              * <ul>
-             * <li>Parameter 1: record number (first record is {@code 1}) ({@code Integer})</li>
+             * <li>Parameter 1: record number (first record is {@code 1}) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed APK Signature Scheme v2 signature record #{0}")]
@@ -508,7 +2483,7 @@ namespace SigningServer.Android.ApkSig
              * signature.
              *
              * <ul>
-             * <li>Parameter 1: record number (first record is {@code 1}) ({@code Integer})</li>
+             * <li>Parameter 1: record number (first record is {@code 1}) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed APK Signature Scheme v2 digest record #{0}")]
@@ -518,7 +2493,7 @@ namespace SigningServer.Android.ApkSig
              * This APK Signature Scheme v2 signer contains a malformed additional attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code Integer})</li>
+             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code int})</li>
              * </ul>
              */
             [Description("Malformed additional attribute #{0}")]
@@ -528,8 +2503,8 @@ namespace SigningServer.Android.ApkSig
              * APK Signature Scheme v2 signature references an unknown APK signature scheme ID.
              *
              * <ul>
-             * <li>Parameter 1: signer index ({@code Integer})</li>
-             * <li>Parameter 2: unknown APK signature scheme ID ({@code} Integer)</li>
+             * <li>Parameter 1: signer index ({@code int})</li>
+             * <li>Parameter 2: unknown APK signature scheme ID ({@code} int)</li>
              * </ul>
              */
             [Description("APK Signature Scheme v2 signer: {0} references unknown APK signature scheme ID: "
@@ -542,7 +2517,7 @@ namespace SigningServer.Android.ApkSig
              * was found in the APK.
              *
              * <ul>
-             * <li>Parameter 1: signer index ({@code Integer})</li>
+             * <li>Parameter 1: signer index ({@code int})</li>
              * <li>Parameter 2: APK signature scheme English name ({@code} String)</li>
              * </ul>
              */
@@ -561,7 +2536,7 @@ namespace SigningServer.Android.ApkSig
              * algorithm.
              *
              * <ul>
-             * <li>Parameter 1: algorithm ID ({@code Integer})</li>
+             * <li>Parameter 1: algorithm ID ({@code int})</li>
              * </ul>
              */
             [Description("Unknown signature algorithm: %1$#x")]
@@ -571,7 +2546,7 @@ namespace SigningServer.Android.ApkSig
              * This APK Signature Scheme v2 signer contains an unknown additional attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute ID ({@code Integer})</li>
+             * <li>Parameter 1: attribute ID ({@code int})</li>
              * </ul>
              */
             [Description("Unknown additional attribute: ID %1$#x")]
@@ -632,8 +2607,8 @@ namespace SigningServer.Android.ApkSig
              * record do not match the signature algorithms listed in the signatures record.
              *
              * <ul>
-             * <li>Parameter 1: signature algorithms from signatures record ({@code List<Integer>})</li>
-             * <li>Parameter 2: signature algorithms from digests record ({@code List<Integer>})</li>
+             * <li>Parameter 1: signature algorithms from signatures record ({@code List<int>})</li>
+             * <li>Parameter 2: signature algorithms from digests record ({@code List<int>})</li>
              * </ul>
              */
             [Description("Signature algorithms mismatch between signatures and digests records"
@@ -683,9 +2658,9 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: index ({@code 0}-based) of the certificate in the signer's list of
-             *     certificates ({@code Integer})</li>
+             *     certificates ({@code int})</li>
              * <li>Parameter 2: sequence number ({@code 1}-based) of the certificate in the signer's
-             *     list of certificates ({@code Integer})</li>
+             *     list of certificates ({@code int})</li>
              * <li>Parameter 3: error details ({@code Throwable})</li>
              * </ul>
              */
@@ -697,7 +2672,7 @@ namespace SigningServer.Android.ApkSig
              * signature.
              *
              * <ul>
-             * <li>Parameter 1: record number (first record is {@code 1}) ({@code Integer})</li>
+             * <li>Parameter 1: record number (first record is {@code 1}) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed APK Signature Scheme v3 signature record #{0}")]
@@ -708,7 +2683,7 @@ namespace SigningServer.Android.ApkSig
              * signature.
              *
              * <ul>
-             * <li>Parameter 1: record number (first record is {@code 1}) ({@code Integer})</li>
+             * <li>Parameter 1: record number (first record is {@code 1}) ({@code int})</li>
              * </ul>
              */
             [Description("Malformed APK Signature Scheme v3 digest record #{0}")]
@@ -718,7 +2693,7 @@ namespace SigningServer.Android.ApkSig
              * This APK Signature Scheme v3 signer contains a malformed additional attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code Integer})</li>
+             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code int})</li>
              * </ul>
              */
             [Description("Malformed additional attribute #{0}")]
@@ -758,7 +2733,7 @@ namespace SigningServer.Android.ApkSig
              * algorithm.
              *
              * <ul>
-             * <li>Parameter 1: algorithm ID ({@code Integer})</li>
+             * <li>Parameter 1: algorithm ID ({@code int})</li>
              * </ul>
              */
             [Description("Unknown signature algorithm: %1$#x")]
@@ -768,7 +2743,7 @@ namespace SigningServer.Android.ApkSig
              * This APK Signature Scheme v3 signer contains an unknown additional attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute ID ({@code Integer})</li>
+             * <li>Parameter 1: attribute ID ({@code int})</li>
              * </ul>
              */
             [Description("Unknown additional attribute: ID %1$#x")]
@@ -791,8 +2766,8 @@ namespace SigningServer.Android.ApkSig
              * versions.
              *
              * <ul>
-             * <li>Parameter 1: minSdkVersion ({@code Integer})
-             * <li>Parameter 2: maxSdkVersion ({@code Integer})
+             * <li>Parameter 1: minSdkVersion ({@code int})
+             * <li>Parameter 2: maxSdkVersion ({@code int})
              * </ul>
              */
             [Description("Invalid SDK Version parameter(s) encountered in APK Signature "
@@ -830,8 +2805,8 @@ namespace SigningServer.Android.ApkSig
              * does not match the minSdkVersion listed in the signatures record.
              *
              * <ul>
-             * <li>Parameter 1: minSdkVersion in signature record ({@code Integer}) </li>
-             * <li>Parameter 2: minSdkVersion in signed data ({@code Integer}) </li>
+             * <li>Parameter 1: minSdkVersion in signature record ({@code int}) </li>
+             * <li>Parameter 2: minSdkVersion in signed data ({@code int}) </li>
              * </ul>
              */
             [Description("minSdkVersion mismatch between signed data and signature record:"
@@ -843,8 +2818,8 @@ namespace SigningServer.Android.ApkSig
              * does not match the maxSdkVersion listed in the signatures record.
              *
              * <ul>
-             * <li>Parameter 1: maxSdkVersion in signature record ({@code Integer}) </li>
-             * <li>Parameter 2: maxSdkVersion in signed data ({@code Integer}) </li>
+             * <li>Parameter 1: maxSdkVersion in signature record ({@code int}) </li>
+             * <li>Parameter 2: maxSdkVersion in signed data ({@code int}) </li>
              * </ul>
              */
             [Description("maxSdkVersion mismatch between signed data and signature record:"
@@ -868,8 +2843,8 @@ namespace SigningServer.Android.ApkSig
              * record do not match the signature algorithms listed in the signatures record.
              *
              * <ul>
-             * <li>Parameter 1: signature algorithms from signatures record ({@code List<Integer>})</li>
-             * <li>Parameter 2: signature algorithms from digests record ({@code List<Integer>})</li>
+             * <li>Parameter 1: signature algorithms from signatures record ({@code List<int>})</li>
+             * <li>Parameter 2: signature algorithms from digests record ({@code List<int>})</li>
              * </ul>
              */
             [Description("Signature algorithms mismatch between signatures and digests records"
@@ -928,8 +2903,8 @@ namespace SigningServer.Android.ApkSig
              * The APK Signature Scheme v3 signers don't cover all requested SDK versions.
              *
              *  <ul>
-             * <li>Parameter 1: minSdkVersion ({@code Integer})
-             * <li>Parameter 2: maxSdkVersion ({@code Integer})
+             * <li>Parameter 1: minSdkVersion ({@code int})
+             * <li>Parameter 2: maxSdkVersion ({@code int})
              * </ul>
              */
             [Description("APK Signature Scheme v3 signers supported min/max SDK "
@@ -949,7 +2924,7 @@ namespace SigningServer.Android.ApkSig
              * APK Signing Block contains an unknown entry.
              *
              * <ul>
-             * <li>Parameter 1: entry ID ({@code Integer})</li>
+             * <li>Parameter 1: entry ID ({@code int})</li>
              * </ul>
              */
             [Description("APK Signing Block contains unknown entry: ID %1$#x")]
@@ -960,7 +2935,7 @@ namespace SigningServer.Android.ApkSig
              * V4 signature.
              *
              * <ul>
-             * <li>Parameter 1: record number (first record is {@code 1}) ({@code Integer})</li>
+             * <li>Parameter 1: record number (first record is {@code 1}) ({@code int})</li>
              * </ul>
              */
             [Description("V4 signature has malformed signer block")]
@@ -971,7 +2946,7 @@ namespace SigningServer.Android.ApkSig
              * unknown algorithm.
              *
              * <ul>
-             * <li>Parameter 1: algorithm ID ({@code Integer})</li>
+             * <li>Parameter 1: algorithm ID ({@code int})</li>
              * </ul>
              */
             [Description("V4 signature has unknown signing algorithm: %1$#x")]
@@ -1028,9 +3003,9 @@ namespace SigningServer.Android.ApkSig
              *
              * <ul>
              * <li>Parameter 1: index ({@code 0}-based) of the certificate in the signer's list of
-             *     certificates ({@code Integer})</li>
+             *     certificates ({@code int})</li>
              * <li>Parameter 2: sequence number ({@code 1}-based) of the certificate in the signer's
-             *     list of certificates ({@code Integer})</li>
+             *     list of certificates ({@code int})</li>
              * <li>Parameter 3: error details ({@code Throwable})</li>
              * </ul>
              */
@@ -1135,7 +3110,7 @@ namespace SigningServer.Android.ApkSig
              * SourceStamp contains a signature produced using an unknown algorithm.
              *
              * <ul>
-             *   <li>Parameter 1: algorithm ID ({@code Integer})
+             *   <li>Parameter 1: algorithm ID ({@code int})
              * </ul>
              */
             [Description("Unknown signature algorithm: %1$#x")]
@@ -1216,7 +3191,7 @@ namespace SigningServer.Android.ApkSig
              * Source stamp block contains a malformed attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code Integer})</li>
+             * <li>Parameter 1: attribute number (first attribute is {@code 1}) {@code int})</li>
              * </ul>
              */
             [Description("Malformed stamp attribute #{0}")]
@@ -1226,7 +3201,7 @@ namespace SigningServer.Android.ApkSig
              * Source stamp block contains an unknown attribute.
              *
              * <ul>
-             * <li>Parameter 1: attribute ID ({@code Integer})</li>
+             * <li>Parameter 1: attribute ID ({@code int})</li>
              * </ul>
              */
             [Description("Unknown stamp attribute: ID %1$#x")]
@@ -1275,6 +3250,281 @@ namespace SigningServer.Android.ApkSig
              */
             [Description("An unexpected exception was caught when verifying the signature: {0}")]
             UNEXPECTED_EXCEPTION
+        }
+
+        /**
+         * {@link Issue} with associated parameters. {@link #toString()} produces a readable formatted
+         * form.
+         */
+        public class IssueWithParams : ApkVerificationIssue
+        {
+            private readonly Issue mIssue;
+            private readonly Object[] mParams;
+
+            /**
+          * Constructs a new {@code IssueWithParams} of the specified type and with provided
+          * parameters.
+          */
+            public IssueWithParams(Issue issue, Object[] parameters) : base(issue.getFormat(), parameters)
+            {
+                mIssue = issue;
+                mParams = parameters;
+            }
+
+            /**
+             * Returns the type of this issue.
+             */
+            public Issue getIssue()
+            {
+                return mIssue;
+            }
+
+            /**
+             * Returns the parameters of this issue.
+             */
+            public Object[] getParams()
+            {
+                return (object[])mParams.Clone();
+            }
+
+            /**
+             * Returns a readable form of this issue.
+             */
+            public String toString()
+            {
+                return String.Format(mIssue.getFormat(), mParams);
+            }
+        }
+
+        /**
+     * Wrapped around {@code byte[]} which ensures that {@code equals} and {@code hashCode} operate
+     * on the contents of the arrays rather than on references.
+     */
+        private class ByteArray
+        {
+            private readonly byte[] mArray;
+            private readonly int mHashCode;
+
+            public ByteArray(byte[] arr)
+            {
+                mArray = arr;
+                mHashCode = mArray.GetHashCode();
+            }
+
+            public int hashCode()
+            {
+                return mHashCode;
+            }
+
+            public bool equals(Object obj)
+            {
+                if (this == obj)
+                {
+                    return true;
+                }
+
+                if (!(obj is ByteArray))
+                {
+                    return false;
+                }
+
+                ByteArray other = (ByteArray)obj;
+                if (hashCode() != other.hashCode())
+                {
+                    return false;
+                }
+
+                if (!mArray.SequenceEqual(other.mArray))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        /**
+     * Builder of {@link ApkVerifier} instances.
+     *
+     * <p>The resulting verifier by default checks whether the APK will verify on all platform
+     * versions supported by the APK, as specified by {@code android:minSdkVersion} attributes in
+     * the APK's {@code AndroidManifest.xml}. The range of platform versions can be customized using
+     * {@link #setMinCheckedPlatformVersion(int)} and {@link #setMaxCheckedPlatformVersion(int)}.
+     */
+        public class Builder
+        {
+            private readonly FileInfo mApkFile;
+            private readonly DataSource mApkDataSource;
+            private FileInfo mV4SignatureFile;
+
+            private int mMinSdkVersion;
+            private int mMaxSdkVersion = int.MaxValue;
+
+            /**
+         * Constructs a new {@code Builder} for verifying the provided APK file.
+         */
+            public Builder(FileInfo apk)
+            {
+                if (apk == null)
+                {
+                    throw new ArgumentNullException(nameof(apk));
+                }
+
+                mApkFile = apk;
+                mApkDataSource = null;
+            }
+
+            /**
+         * Constructs a new {@code Builder} for verifying the provided APK.
+         */
+            public Builder(DataSource apk)
+            {
+                if (apk == null)
+                {
+                    throw new ArgumentNullException(nameof(apk));
+                }
+
+                mApkDataSource = apk;
+                mApkFile = null;
+            }
+
+            /**
+         * Sets the oldest Android platform version for which the APK is verified. APK verification
+         * will confirm that the APK is expected to install successfully on all known Android
+         * platforms starting from the platform version with the provided API Level. The upper end
+         * of the platform versions range can be modified via
+         * {@link #setMaxCheckedPlatformVersion(int)}.
+         *
+         * <p>This method is useful for overriding the default behavior which checks that the APK
+         * will verify on all platform versions supported by the APK, as specified by
+         * {@code android:minSdkVersion} attributes in the APK's {@code AndroidManifest.xml}.
+         *
+         * @param minSdkVersion API Level of the oldest platform for which to verify the APK
+         * @see #setMinCheckedPlatformVersion(int)
+         */
+            public Builder setMinCheckedPlatformVersion(int minSdkVersion)
+            {
+                mMinSdkVersion = minSdkVersion;
+                return this;
+            }
+
+            /**
+         * Sets the newest Android platform version for which the APK is verified. APK verification
+         * will confirm that the APK is expected to install successfully on all platform versions
+         * supported by the APK up until and including the provided version. The lower end
+         * of the platform versions range can be modified via
+         * {@link #setMinCheckedPlatformVersion(int)}.
+         *
+         * @param maxSdkVersion API Level of the newest platform for which to verify the APK
+         * @see #setMinCheckedPlatformVersion(int)
+         */
+            public Builder setMaxCheckedPlatformVersion(int maxSdkVersion)
+            {
+                mMaxSdkVersion = maxSdkVersion;
+                return this;
+            }
+
+            public Builder setV4SignatureFile(FileInfo v4SignatureFile)
+            {
+                mV4SignatureFile = v4SignatureFile;
+                return this;
+            }
+
+            /**
+         * Returns an {@link ApkVerifier} initialized according to the configuration of this
+         * builder.
+         */
+            public ApkVerifier build()
+            {
+                return new ApkVerifier(
+                    mApkFile,
+                    mApkDataSource,
+                    mV4SignatureFile,
+                    mMinSdkVersion,
+                    mMaxSdkVersion);
+            }
+        }
+
+        /**
+     * Adapter for converting base {@link ApkVerificationIssue} instances to their {@link
+     * IssueWithParams} equivalent.
+     */
+        public class ApkVerificationIssueAdapter
+        {
+            private ApkVerificationIssueAdapter()
+            {
+            }
+
+            // This field is visible for testing
+            private static readonly Dictionary<int, Issue> sVerificationIssueIdToIssue = new Dictionary<int, Issue>
+            {
+                [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNERS] = Issue.V2_SIG_MALFORMED_SIGNERS,
+                [ApkVerificationIssue.V2_SIG_NO_SIGNERS] = Issue.V2_SIG_NO_SIGNERS,
+                [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNER] = Issue.V2_SIG_MALFORMED_SIGNER,
+                [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNATURE] = Issue.V2_SIG_MALFORMED_SIGNATURE,
+                [ApkVerificationIssue.V2_SIG_NO_SIGNATURES] = Issue.V2_SIG_NO_SIGNATURES,
+                [ApkVerificationIssue.V2_SIG_MALFORMED_CERTIFICATE] = Issue.V2_SIG_MALFORMED_CERTIFICATE,
+                [ApkVerificationIssue.V2_SIG_NO_CERTIFICATES] = Issue.V2_SIG_NO_CERTIFICATES,
+                [ApkVerificationIssue.V2_SIG_MALFORMED_DIGEST] = Issue.V2_SIG_MALFORMED_DIGEST,
+                [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNERS] = Issue.V3_SIG_MALFORMED_SIGNERS,
+                [ApkVerificationIssue.V3_SIG_NO_SIGNERS] = Issue.V3_SIG_NO_SIGNERS,
+                [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNER] = Issue.V3_SIG_MALFORMED_SIGNER,
+                [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNATURE] = Issue.V3_SIG_MALFORMED_SIGNATURE,
+                [ApkVerificationIssue.V3_SIG_NO_SIGNATURES] = Issue.V3_SIG_NO_SIGNATURES,
+                [ApkVerificationIssue.V3_SIG_MALFORMED_CERTIFICATE] = Issue.V3_SIG_MALFORMED_CERTIFICATE,
+                [ApkVerificationIssue.V3_SIG_NO_CERTIFICATES] = Issue.V3_SIG_NO_CERTIFICATES,
+                [ApkVerificationIssue.V3_SIG_MALFORMED_DIGEST] = Issue.V3_SIG_MALFORMED_DIGEST,
+                [ApkVerificationIssue.SOURCE_STAMP_NO_SIGNATURE] = Issue.SOURCE_STAMP_NO_SIGNATURE,
+                [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_CERTIFICATE] = Issue.SOURCE_STAMP_MALFORMED_CERTIFICATE,
+                [ApkVerificationIssue.SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM] = Issue.SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM,
+                [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_SIGNATURE] = Issue.SOURCE_STAMP_MALFORMED_SIGNATURE,
+                [ApkVerificationIssue.SOURCE_STAMP_DID_NOT_VERIFY] = Issue.SOURCE_STAMP_DID_NOT_VERIFY,
+                [ApkVerificationIssue.SOURCE_STAMP_VERIFY_EXCEPTION] = Issue.SOURCE_STAMP_VERIFY_EXCEPTION,
+                [ApkVerificationIssue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH] =
+                    Issue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH,
+                [ApkVerificationIssue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST] =
+                    Issue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST,
+                [ApkVerificationIssue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING] =
+                    Issue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING,
+                [ApkVerificationIssue.SOURCE_STAMP_NO_SUPPORTED_SIGNATURE] = Issue.SOURCE_STAMP_NO_SUPPORTED_SIGNATURE,
+                [ApkVerificationIssue.SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK] =
+                    Issue.SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK,
+                [ApkVerificationIssue.MALFORMED_APK] = Issue.MALFORMED_APK,
+                [ApkVerificationIssue.UNEXPECTED_EXCEPTION] = Issue.UNEXPECTED_EXCEPTION,
+                [ApkVerificationIssue.SOURCE_STAMP_SIG_MISSING] = Issue.SOURCE_STAMP_SIG_MISSING,
+                [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_ATTRIBUTE] = Issue.SOURCE_STAMP_MALFORMED_ATTRIBUTE,
+                [ApkVerificationIssue.SOURCE_STAMP_UNKNOWN_ATTRIBUTE] = Issue.SOURCE_STAMP_UNKNOWN_ATTRIBUTE,
+                [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_LINEAGE] = Issue.SOURCE_STAMP_MALFORMED_LINEAGE,
+                [ApkVerificationIssue.SOURCE_STAMP_POR_CERT_MISMATCH] = Issue.SOURCE_STAMP_POR_CERT_MISMATCH,
+                [ApkVerificationIssue.SOURCE_STAMP_POR_DID_NOT_VERIFY] = Issue.SOURCE_STAMP_POR_DID_NOT_VERIFY,
+                [ApkVerificationIssue.JAR_SIG_NO_SIGNATURES] = Issue.JAR_SIG_NO_SIGNATURES,
+                [ApkVerificationIssue.JAR_SIG_PARSE_EXCEPTION] = Issue.JAR_SIG_PARSE_EXCEPTION,
+            };
+
+            /**
+             * Converts the provided {@code verificationIssues} to a {@code List} of corresponding
+             * {@link IssueWithParams} instances.
+             */
+            public static List<IssueWithParams> getIssuesFromVerificationIssues(
+                List<ApkVerificationIssue> verificationIssues)
+            {
+                List<IssueWithParams> result = new List<IssueWithParams>(verificationIssues.Count);
+                foreach (ApkVerificationIssue issue in verificationIssues)
+                {
+                    if (issue is IssueWithParams)
+                    {
+                        result.Add((IssueWithParams)issue);
+                    }
+                    else
+                    {
+                        result.Add(
+                            new IssueWithParams(sVerificationIssueIdToIssue[issue.getIssueId()],
+                                issue.getParams()));
+                    }
+                }
+
+                return result;
+            }
         }
     }
 

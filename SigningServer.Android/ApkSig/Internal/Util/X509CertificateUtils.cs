@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using SigningServer.Android;
 using SigningServer.Android.ApkSig.Internal.Asn1;
@@ -48,7 +48,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
          * @throws CertificateException if the {@code InputStream} cannot be decoded to a valid
          *                              certificate.
          */
-        public static X509Certificate2 generateCertificate(Stream @in)
+        public static X509Certificate generateCertificate(Stream @in)
         {
             byte[] encodedForm;
             try
@@ -68,13 +68,13 @@ namespace SigningServer.Android.ApkSig.Internal.Util
          *
          * @throws CertificateException if the encodedForm cannot be decoded to a valid certificate.
          */
-        public static X509Certificate2 generateCertificate(byte[] encodedForm)
+        public static X509Certificate generateCertificate(byte[] encodedForm)
         {
-            X509Certificate2 certificate;
+            X509Certificate certificate;
             try
 
             {
-                certificate = new X509Certificate2(encodedForm);
+                certificate = new X509Certificate(encodedForm);
                 return certificate;
             }
             catch (CryptographicException e)
@@ -100,17 +100,17 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                 ByteBuffer encodedCertBuffer = getNextDEREncodedCertificateBlock(
                     ByteBuffer.wrap(encodedForm));
                 int startingPos = encodedCertBuffer.position();
-                Certificate reencodedCert = (Certificate)Asn1BerParser.parse(encodedCertBuffer, typeof(Certificate));
+                Certificate reencodedCert = Asn1BerParser.parse<Certificate>(encodedCertBuffer);
                 byte[] reencodedForm = Asn1DerEncoder.encode(reencodedCert);
-                certificate = new X509Certificate2(reencodedForm);
+                certificate = new X509Certificate(reencodedForm);
                 // If the reencodedForm is successfully accepted by the CertificateFactory then copy the
                 // original encoding from the ByteBuffer and use that encoding in the Guaranteed object.
                 byte[] originalEncoding = new byte[encodedCertBuffer.position() - startingPos];
                 encodedCertBuffer.position(startingPos);
                 encodedCertBuffer.get(originalEncoding);
-                // GuaranteedEncodedFormX509Certificate guaranteedEncodedCert =
-                //     new GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
-                return certificate;
+                GuaranteedEncodedFormX509Certificate guaranteedEncodedCert =
+                    new GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
+                return guaranteedEncodedCert;
             }
             catch (Exception e) when (e is Asn1DecodingException || e is Asn1EncodingException ||
                                       e is CryptographicException)
@@ -126,9 +126,9 @@ namespace SigningServer.Android.ApkSig.Internal.Util
          * @throws CertificateException if the InputStream cannot be decoded to zero or more valid
          *                              {@code Certificate} objects.
          */
-        public static X509Certificate2Collection generateCertificates(Stream @in)
+        public static List<X509Certificate> generateCertificates(Stream @in)
         {
-            var certificates = new X509Certificate2Collection();
+            var certificates = new List<X509Certificate>();
 
             // Since the InputStream is not guaranteed to support mark / reset operations first read it
             // into a byte array to allow using the BER parser / DER encoder if it cannot be read by
@@ -147,7 +147,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
             try
             {
                 // TODO: support multiple certificates (seems API was only added in .net 5)
-                var certificate = new X509Certificate2(encodedCerts);
+                var certificate = new X509Certificate(encodedCerts);
                 certificates.Add(certificate);
                 return certificates;
             }
@@ -166,16 +166,15 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                 {
                     ByteBuffer certBuffer = getNextDEREncodedCertificateBlock(encodedCertsBuffer);
                     int startingPos = certBuffer.position();
-                    Certificate reencodedCert = (Certificate)Asn1BerParser.parse(certBuffer, typeof(Certificate));
+                    Certificate reencodedCert = Asn1BerParser.parse<Certificate>(certBuffer);
                     byte[] reencodedForm = Asn1DerEncoder.encode(reencodedCert);
-                    X509Certificate certificate = new X509Certificate2(reencodedForm);
+                    X509Certificate certificate = new X509Certificate(reencodedForm);
                     byte[] originalEncoding = new byte[certBuffer.position() - startingPos];
                     certBuffer.position(startingPos);
                     certBuffer.get(originalEncoding);
-                    // TODO: check how GuaranteedEncodedFormX509Certificate might be used differently
-                    // GuaranteedEncodedFormX509Certificate guaranteedEncodedCert =
-                    //     new GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
-                    certificates.Add(certificate);
+                    GuaranteedEncodedFormX509Certificate guaranteedEncodedCert =
+                        new GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
+                    certificates.Add(guaranteedEncodedCert);
                 }
 
                 return certificates;

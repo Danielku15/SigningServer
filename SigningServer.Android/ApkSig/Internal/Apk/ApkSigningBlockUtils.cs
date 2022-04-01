@@ -56,11 +56,11 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             ContentDigestAlgorithm.CHUNKED_SHA256
         };
 
-        public static readonly int VERSION_SOURCE_STAMP = 0;
-        public static readonly int VERSION_JAR_SIGNATURE_SCHEME = 1;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V2 = 2;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V3 = 3;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V4 = 4;
+        public const int VERSION_SOURCE_STAMP = 0;
+        public const int VERSION_JAR_SIGNATURE_SCHEME = 1;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V2 = 2;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V3 = 3;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V4 = 4;
 
         /**
      * Returns positive number if {@code alg1} is preferred over {@code alg2}, {@code -1} if
@@ -728,25 +728,24 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
 
         public static byte[] encodePublicKey(PublicKey publicKey)
         {
-            byte[] encodedPublicKey = publicKey.EncodedKeyValue.RawData;
+            byte[] encodedPublicKey = publicKey.getEncoded();
             // if the key is an RSA key check for a negative modulus
-            if (publicKey.Key is RSA)
+            if ("RSA".Equals(publicKey.getAlgorithm()))
             {
                 try
                 {
                     // Parse the encoded public key into the separate elements of the
                     // SubjectPublicKeyInfo to obtain the SubjectPublicKey.
                     ByteBuffer encodedPublicKeyBuffer = ByteBuffer.wrap(encodedPublicKey);
-                    SubjectPublicKeyInfo subjectPublicKeyInfo = (SubjectPublicKeyInfo)Asn1BerParser.parse(
-                        encodedPublicKeyBuffer, typeof(SubjectPublicKeyInfo));
+                    SubjectPublicKeyInfo subjectPublicKeyInfo = Asn1BerParser.parse<SubjectPublicKeyInfo>(
+                        encodedPublicKeyBuffer);
                     // The SubjectPublicKey is encoded as a bit string within the
                     // SubjectPublicKeyInfo. The first byte of the encoding is the number of padding
                     // bits; store this and decode the rest of the bit string into the RSA modulus
                     // and exponent.
                     ByteBuffer subjectPublicKeyBuffer = subjectPublicKeyInfo.subjectPublicKey;
                     byte padding = subjectPublicKeyBuffer.get();
-                    RSAPublicKey rsaPublicKey = (RSAPublicKey)Asn1BerParser.parse(subjectPublicKeyBuffer,
-                        typeof(RSAPublicKey));
+                    RSAPublicKey rsaPublicKey = Asn1BerParser.parse<RSAPublicKey>(subjectPublicKeyBuffer);
                     // if the modulus is negative then attempt to reencode it with a leading 0 sign
                     // byte.
                     if (rsaPublicKey.modulus.CompareTo(BigInteger.Zero) < 0)
@@ -784,13 +783,12 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             return encodedPublicKey;
         }
 
-        public static List<byte[]> encodeCertificates(List<X509Certificate2> certificates)
+        public static List<byte[]> encodeCertificates(List<X509Certificate> certificates)
         {
             List<byte[]> result = new List<byte[]>(certificates.Count);
             foreach (var certificate in certificates)
             {
-                // TODO: check for right encoding
-                result.Add(certificate.Export(X509ContentType.Cert));
+                result.Add(certificate.getEncoded());
             }
 
             return result;
@@ -1055,14 +1053,14 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
      * @throws CertificateException if the signing certificate(s) within an individual signer block
      * cannot be parsed
      */
-        public static List<Tuple<List<X509Certificate2>, byte[]>> getApkSignatureBlockSigners(
+        public static List<Tuple<List<X509Certificate>, byte[]>> getApkSignatureBlockSigners(
             byte[] signatureBlock)
 
         {
             ByteBuffer signatureBlockBuffer = ByteBuffer.wrap(signatureBlock);
             signatureBlockBuffer.order(ByteOrder.LITTLE_ENDIAN);
             ByteBuffer signersBuffer = getLengthPrefixedSlice(signatureBlockBuffer);
-            List<Tuple<List<X509Certificate2>, byte[]>> signers = new List<Tuple<List<X509Certificate2>, byte[]>>();
+            List<Tuple<List<X509Certificate>, byte[]>> signers = new List<Tuple<List<X509Certificate>, byte[]>>();
             while (signersBuffer.hasRemaining())
             {
                 // Parse the next signer block, save all of its bytes for the resulting List, and
@@ -1077,7 +1075,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 // when obtaining the signing certificate(s).
                 getLengthPrefixedSlice(signedData);
                 ByteBuffer certificatesBuffer = getLengthPrefixedSlice(signedData);
-                List<X509Certificate2> certificates = new List<X509Certificate2>();
+                List<X509Certificate> certificates = new List<X509Certificate>();
                 while (certificatesBuffer.hasRemaining())
                 {
                     int certLength = certificatesBuffer.getInt();
@@ -1090,11 +1088,10 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                     }
 
                     certificatesBuffer.get(certBytes);
-                    // TODO GuaranteedEncodedFormX509Certificate
-                    // GuaranteedEncodedFormX509Certificate signerCert =
-                    //     new GuaranteedEncodedFormX509Certificate(
-                    //         X509CertificateUtils.generateCertificate(certBytes), certBytes);
-                    certificates.Add(X509CertificateUtils.generateCertificate(certBytes));
+                    GuaranteedEncodedFormX509Certificate signerCert =
+                        new GuaranteedEncodedFormX509Certificate(
+                            X509CertificateUtils.generateCertificate(certBytes), certBytes);
+                    certificates.Add(signerCert);
                 }
 
                 signers.Add(Tuple.Create(certificates, signerBytes));
@@ -1247,7 +1244,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         {
             List<Tuple<int, byte[]>> signatures =
                 new List<Tuple<int, byte[]>>(signerConfig.signatureAlgorithms.Count);
-            PublicKey publicKey = signerConfig.certificates[0].PublicKey;
+            PublicKey publicKey = signerConfig.certificates[0].getPublicKey();
             foreach (SignatureAlgorithm signatureAlgorithm in signerConfig.signatureAlgorithms)
             {
                 Tuple<String, AlgorithmParameterSpec> sigAlgAndParams =
@@ -1257,17 +1254,15 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 byte[] signatureBytes;
                 try
                 {
-                    // TODO: correct signing. 
-                    // Signature signature = Signature.getInstance(jcaSignatureAlgorithm);
-                    // signature.initSign(signerConfig.privateKey);
-                    // if (jcaSignatureAlgorithmParams != null)
-                    // {
-                    //     signature.setParameter(jcaSignatureAlgorithmParams);
-                    // }
-                    //
-                    // signature.update(data);
-                    // signatureBytes = signature.sign();
-                    signatureBytes = Array.Empty<byte>();
+                    Signature signature = Signature.getInstance(jcaSignatureAlgorithm);
+                    signature.initSign(signerConfig.privateKey);
+                    if (jcaSignatureAlgorithmParams != null)
+                    {
+                        signature.setParameter(jcaSignatureAlgorithmParams);
+                    }
+                    
+                    signature.update(data);
+                    signatureBytes = signature.sign();
                 }
                 catch (CryptographicException e)
                 {
@@ -1276,21 +1271,20 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
 
                 try
                 {
-                    // TODO: correct verifiying. 
-                    // Signature signature = Signature.getInstance(jcaSignatureAlgorithm);
-                    // signature.initVerify(publicKey);
-                    // if (jcaSignatureAlgorithmParams != null)
-                    // {
-                    //     signature.setParameter(jcaSignatureAlgorithmParams);
-                    // }
-                    //
-                    // signature.update(data);
-                    // if (!signature.verify(signatureBytes))
-                    // {
-                    //     throw new SignatureException("Failed to verify generated "
-                    //                                  + jcaSignatureAlgorithm
-                    //                                  + " signature using public key from certificate");
-                    // }
+                    Signature signature = Signature.getInstance(jcaSignatureAlgorithm);
+                    signature.initVerify(publicKey);
+                    if (jcaSignatureAlgorithmParams != null)
+                    {
+                        signature.setParameter(jcaSignatureAlgorithmParams);
+                    }
+
+                    signature.update(data);
+                    if (!signature.verify(signatureBytes))
+                    {
+                        throw new CryptographicException("Failed to verify generated "
+                                                     + jcaSignatureAlgorithm
+                                                     + " signature using public key from certificate");
+                    }
                 }
                 catch (CryptographicException e)
                 {
@@ -1321,19 +1315,19 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
      * @throws Asn1EncodingException if the ASN.1 structure could not be encoded
      */
         public static byte[] generatePkcs7DerEncodedMessage(
-            byte[] signatureBytes, ByteBuffer data, List<X509Certificate2> signerCerts,
+            byte[] signatureBytes, ByteBuffer data, List<X509Certificate> signerCerts,
             AlgorithmIdentifier digestAlgorithmId, AlgorithmIdentifier signatureAlgorithmId)
 
         {
             SignerInfo signerInfo = new SignerInfo();
             signerInfo.version = 1;
-            X509Certificate2 signingCert = signerCerts[0];
-            var signerCertIssuer = signingCert.IssuerName;
+            X509Certificate signingCert = signerCerts[0];
+            var signerCertIssuer = signingCert.getIssuerX500Principal();
             signerInfo.sid =
                 new SignerIdentifier(
                     new IssuerAndSerialNumber(
-                        new Asn1OpaqueObject(signerCertIssuer.RawData),
-                        new BigInteger(signingCert.GetSerialNumber())));
+                        new Asn1OpaqueObject(signerCertIssuer.getEncoded()),
+                        signingCert.getSerialNumber()));
 
             signerInfo.digestAlgorithm = digestAlgorithmId;
             signerInfo.signatureAlgorithm = signatureAlgorithmId;
@@ -1341,10 +1335,9 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
 
             SignedData signedData = new SignedData();
             signedData.certificates = new List<Asn1OpaqueObject>(signerCerts.Count);
-            foreach (X509Certificate2 cert in signerCerts)
+            foreach (X509Certificate cert in signerCerts)
             {
-                // TODO: Check encoding
-                signedData.certificates.Add(new Asn1OpaqueObject(cert.Export(X509ContentType.Cert)));
+                signedData.certificates.Add(new Asn1OpaqueObject(cert.getEncoded()));
             }
 
             signedData.version = 1;
@@ -1389,13 +1382,13 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         public class SignerConfig
         {
             /** Private key. */
-            public AsymmetricAlgorithm privateKey;
+            public PrivateKey privateKey;
 
             /**
          * Certificates, with the first certificate containing the public key corresponding to
          * {@link #privateKey}.
          */
-            public List<X509Certificate2> certificates;
+            public List<X509Certificate> certificates;
 
             /**
          * List of signature algorithms with which to sign.

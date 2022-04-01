@@ -15,7 +15,9 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
@@ -26,8 +28,6 @@ using SigningServer.Android.ApkSig.Internal.Util;
 
 namespace SigningServer.Android.ApkSig.Internal.Asn1
 {
-    // TODO: ensure generic collections are created
-    
     /**
      * Parser of ASN.1 BER-encoded structures.
      *
@@ -53,7 +53,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
          * @throws Asn1DecodingException if the input could not be decoded into the specified Java
          *         object
          */
-        public static object parse(ByteBuffer encoded, Type containerClass)
+        public static T parse<T>(ByteBuffer encoded)
         {
             BerDataValue containerDataValue;
             try
@@ -70,7 +70,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 throw new Asn1DecodingException("Empty input");
             }
 
-            return parse(containerDataValue, containerClass);
+            return parse<T>(containerDataValue);
         }
 
         /**
@@ -95,7 +95,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
          * @throws Asn1DecodingException if the input could not be decoded into the specified Java
          *         object
          */
-        public static List<object> parseImplicitSetOf(ByteBuffer encoded, Type elementClass)
+        public static List<T> parseImplicitSetOf<T>(ByteBuffer encoded)
         {
             BerDataValue containerDataValue;
             try
@@ -113,21 +113,21 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 throw new Asn1DecodingException("Empty input");
             }
 
-            return parseSetOf(containerDataValue, elementClass);
+            return parseSetOf<T>(containerDataValue);
         }
 
-        private static object parse(BerDataValue container, Type containerClass)
+        private static T parse<T>(BerDataValue container)
         {
             if (container == null)
             {
                 throw new ArgumentNullException(nameof(container));
             }
 
-            Asn1Type dataType = getContainerAsn1Type(containerClass);
+            Asn1Type dataType = getContainerAsn1Type<T>();
             switch (dataType)
             {
                 case Asn1Type.CHOICE:
-                    return parseChoice(container, containerClass);
+                    return parseChoice<T>(container);
 
                 case Asn1Type.SEQUENCE:
                 {
@@ -137,30 +137,40 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                         || (container.getTagNumber() != expectedTagNumber))
                     {
                         throw new Asn1UnexpectedTagException(
-                            "Unexpected data value read as " + containerClass.FullName
+                            "Unexpected data value read as " + typeof(T).FullName
                                                              + ". Expected " + BerEncoding.tagClassAndNumberToString(
                                                                  expectedTagClass, expectedTagNumber)
                                                              + ", but read: " + BerEncoding.tagClassAndNumberToString(
                                                                  container.getTagClass(), container.getTagNumber()));
                     }
 
-                    return parseSequence(container, containerClass);
+                    return parseSequence<T>(container);
                 }
                 case Asn1Type.UNENCODED_CONTAINER:
-                    return parseSequence(container, containerClass, true);
+                    return parseSequence<T>(container, true);
                 default:
                     throw new Asn1DecodingException("Parsing container " + dataType + " not supported");
             }
         }
 
-        private static object parseChoice(BerDataValue dataValue, Type containerType)
+        private static object parseChoice(BerDataValue dataValue, Type containerClass)
         {
-            List<AnnotatedField> fields = getAnnotatedFields(containerType);
+            return ParseChoiceMethodInfo.MakeGenericMethod(containerClass)
+                .Invoke(null, new object[] { dataValue });
+        }
+
+        private static readonly MethodInfo ParseChoiceMethodInfo = typeof(Asn1BerParser)
+            .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+            .Single(m => m.Name == nameof(parseChoice) && m.IsGenericMethodDefinition && m.GetParameters().Length == 1);
+
+        private static T parseChoice<T>(BerDataValue dataValue)
+        {
+            List<AnnotatedField> fields = getAnnotatedFields<T>();
             if (fields.Count == 0)
             {
                 throw new Asn1DecodingException(
                     "No fields annotated with " + typeof(Asn1FieldAttribute).FullName
-                                                + " in CHOICE class " + containerType.FullName);
+                                                + " in CHOICE class " + typeof(T).FullName);
             }
 
             // Check that class + tagNumber don't clash between the choices
@@ -178,7 +188,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                     {
                         throw new Asn1DecodingException(
                             "CHOICE fields are indistinguishable because they have the same tag"
-                            + " class and number: " + containerType.FullName
+                            + " class and number: " + typeof(T).FullName
                             + "." + f1.getField().Name
                             + " and ." + f2.getField().Name);
                     }
@@ -186,14 +196,14 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             }
 
             // Instantiate the container object / result
-            object obj;
+            T obj;
             try
             {
-                obj = Activator.CreateInstance(containerType);
+                obj = Activator.CreateInstance<T>();
             }
             catch (Exception e)
             {
-                throw new Asn1DecodingException("Failed to instantiate " + containerType.FullName, e);
+                throw new Asn1DecodingException("Failed to instantiate " + typeof(T).FullName, e);
             }
 
             // Set the matching field's value from the data value
@@ -211,17 +221,27 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             }
 
             throw new Asn1DecodingException(
-                "No options of CHOICE " + containerType.FullName + " matched");
+                "No options of CHOICE " + typeof(T).FullName + " matched");
         }
 
-        private static object parseSequence(BerDataValue container, Type containerClass)
+        private static object parseSequence(BerDataValue container, Type type)
         {
-            return parseSequence(container, containerClass, false);
+            return parseSequenceMethodInfo.MakeGenericMethod(type).Invoke(null, new object[] { container });
         }
 
-        private static object parseSequence(BerDataValue container, Type containerClass, bool isUnencodedContainer)
+        private static readonly MethodInfo parseSequenceMethodInfo = typeof(Asn1BerParser)
+            .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+            .Single(m =>
+                m.Name == nameof(parseSequence) && m.IsGenericMethodDefinition && m.GetParameters().Length == 1);
+
+        private static T parseSequence<T>(BerDataValue container)
         {
-            List<AnnotatedField> fields = getAnnotatedFields(containerClass);
+            return parseSequence<T>(container, false);
+        }
+
+        private static T parseSequence<T>(BerDataValue container, bool isUnencodedContainer)
+        {
+            List<AnnotatedField> fields = getAnnotatedFields<T>();
             fields.Sort((f1, f2) => f1.getAnnotation().Index - f2.getAnnotation().Index);
             // Check that there are no fields with the same index
             if (fields.Count > 1)
@@ -233,7 +253,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                         && (lastField.getAnnotation().Index == field.getAnnotation().Index))
                     {
                         throw new Asn1DecodingException(
-                            "Fields have the same index: " + containerClass.FullName
+                            "Fields have the same index: " + typeof(T).FullName
                                                            + "." + lastField.getField().Name
                                                            + " and ." + field.getField().Name);
                     }
@@ -243,15 +263,15 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             }
 
             // Instantiate the container object / result
-            object t;
+            T t;
             try
 
             {
-                t = Activator.CreateInstance(containerClass);
+                t = Activator.CreateInstance<T>();
             }
             catch (Exception e)
             {
-                throw new Asn1DecodingException("Failed to instantiate " + containerClass.FullName, e);
+                throw new Asn1DecodingException("Failed to instantiate " + typeof(T).FullName, e);
             }
 
             // Parse fields one by one. A complication is that there may be optional fields.
@@ -317,7 +337,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                     catch (Asn1DecodingException e)
                     {
                         throw new Asn1DecodingException(
-                            "Failed to parse " + containerClass.FullName
+                            "Failed to parse " + typeof(T).FullName
                                                + "." + field.getField().Name,
                             e);
                     }
@@ -329,9 +349,19 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
 
         // NOTE: This method returns List rather than Set because ASN.1 SET_OF does require uniqueness
         // of elements -- it's an unordered collection.
-        private static List<object> parseSetOf(BerDataValue container, Type elementClass)
+        private static readonly MethodInfo ParseSetOfGenericMethod = typeof(Asn1BerParser)
+            .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+            .Single(m => m.Name == nameof(parseSetOf) && m.IsGenericMethodDefinition && m.GetParameters().Length == 1);
+
+        private static IList parseSetOf(BerDataValue container, Type type)
         {
-            var result = new List<object>();
+            return (IList)ParseSetOfGenericMethod.MakeGenericMethod(type)
+                .Invoke(null, new[] { container });
+        }
+
+        private static List<T> parseSetOf<T>(BerDataValue container)
+        {
+            var result = new List<T>();
 
             BerDataValueReader elementsReader = container.contentsReader();
             while (true)
@@ -351,18 +381,18 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                     break;
                 }
 
-                object element;
-                if (typeof(ByteBuffer) == elementClass)
+                T element;
+                if (typeof(ByteBuffer) == typeof(T))
                 {
-                    element = dataValue.getEncodedContents();
+                    element = (T)(object)dataValue.getEncodedContents();
                 }
-                else if (typeof(Asn1OpaqueObject) == elementClass)
+                else if (typeof(Asn1OpaqueObject) == typeof(T))
                 {
-                    element = new Asn1OpaqueObject(dataValue.getEncoded());
+                    element = (T)(object)new Asn1OpaqueObject(dataValue.getEncoded());
                 }
                 else
                 {
-                    element = parse(dataValue, elementClass);
+                    element = parse<T>(dataValue);
                 }
 
                 result.Add(element);
@@ -371,8 +401,9 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             return result;
         }
 
-        private static Asn1Type getContainerAsn1Type(Type containerClass)
+        private static Asn1Type getContainerAsn1Type<T>()
         {
+            var containerClass = typeof(T);
             var containerAnnotation = containerClass.GetCustomAttribute<Asn1ClassAttribute>();
             if (containerAnnotation == null)
             {
@@ -401,7 +432,6 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 throw new Asn1DecodingException("Not a container type: " + field.FieldType.FullName);
             }
 
-            // TODO: check for correctness
             return field.FieldType.GenericTypeArguments[0];
         }
 
@@ -579,8 +609,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             long result = 0;
             while (encoded.hasRemaining())
             {
-                // TODO: Check shift
-                if (result > long.MaxValue >> /*>*/ 7)
+                if (result > long.MaxValue >> 7)
                 {
                     throw new Asn1DecodingException("Base-128 number too large");
                 }
@@ -635,9 +664,9 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
             return (long)value;
         }
 
-        private static List<AnnotatedField> getAnnotatedFields(Type containerType)
+        private static List<AnnotatedField> getAnnotatedFields<T>()
         {
-            FieldInfo[] declaredFields = containerType.GetFields();
+            FieldInfo[] declaredFields = typeof(T).GetFields();
 
             List<AnnotatedField> result = new List<AnnotatedField>(declaredFields.Length);
             foreach (var field in declaredFields)
@@ -652,7 +681,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 {
                     throw new Asn1DecodingException(
                         typeof(Asn1FieldAttribute).FullName + " used on a static field: "
-                                                            + containerType.FullName + "." + field.Name);
+                                                            + typeof(T).FullName + "." + field.Name);
                 }
 
                 AnnotatedField annotatedField;
@@ -664,7 +693,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 {
                     throw new Asn1DecodingException(
                         "Invalid ASN.1 annotation on "
-                        + containerType.FullName + "." + field.Name,
+                        + typeof(T).FullName + "." + field.Name,
                         e);
                 }
 

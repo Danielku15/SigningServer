@@ -1,59 +1,50 @@
-﻿using System;
-using System.IO;
+using System.Security.Cryptography;
 
 namespace SigningServer.Android
 {
-    public class RandomAccessFile : IDisposable
+    public class Signature
     {
-        public RandomAccessFile(FileInfo file, string s)
+        public static Signature getInstance(string jcaSignatureAlgorithm)
         {
             throw new System.NotImplementedException();
         }
 
-        public FileChannel getChannel()
+        public void initVerify(PublicKey publicKey)
         {
             throw new System.NotImplementedException();
         }
 
-        public void seek(long mPosition)
+        public void setParameter(AlgorithmParameterSpec jcaSignatureAlgorithmParams)
         {
             throw new System.NotImplementedException();
         }
 
-        public void write(byte[] buf, int offset, int length)
+        public void update(ByteBuffer signedData)
         {
             throw new System.NotImplementedException();
         }
 
-        public long length()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void setLength(int i)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class FileChannel
-    {
-        public long size()
+        public bool verify(byte[] signature)
         {
             throw new System.NotImplementedException();
         }
 
-        public void position(long chunkOffsetInFile)
+        public void update(byte[] signedData)
         {
             throw new System.NotImplementedException();
         }
 
-        public int read(ByteBuffer buf)
+        public void initSign(PrivateKey signerConfigPrivateKey)
         {
             throw new System.NotImplementedException();
         }
 
-        public void write(ByteBuffer buf)
+        public byte[] sign()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void update(byte b)
         {
             throw new System.NotImplementedException();
         }

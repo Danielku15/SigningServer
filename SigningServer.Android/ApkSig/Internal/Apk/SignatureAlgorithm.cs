@@ -29,9 +29,9 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
     {
         // TODO reserve the 0x0000 ID to mean null
         /**
-     * RSASSA-PSS with SHA2-256 digest, SHA2-256 MGF1, 32 bytes of salt, trailer: 0xbc, content
-     * digested using SHA2-256 in 1 MB chunks.
-     */
+         * RSASSA-PSS with SHA2-256 digest, SHA2-256 MGF1, 32 bytes of salt, trailer: 0xbc, content
+         * digested using SHA2-256 in 1 MB chunks.
+         */
         public static readonly SignatureAlgorithm RSA_PSS_WITH_SHA256 = new SignatureAlgorithm(
             0x0101,
             ContentDigestAlgorithm.CHUNKED_SHA256,

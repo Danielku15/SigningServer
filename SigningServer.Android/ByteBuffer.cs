@@ -138,7 +138,7 @@
             throw new System.NotImplementedException();
         }
 
-        public void putInt(int value)
+        public ByteBuffer putInt(int value)
         {
             throw new System.NotImplementedException();
         }
@@ -214,6 +214,11 @@
         }
 
         public void putLong(long size)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void put(byte log2BlockSize)
         {
             throw new System.NotImplementedException();
         }

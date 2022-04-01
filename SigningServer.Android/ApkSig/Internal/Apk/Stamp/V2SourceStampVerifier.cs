@@ -54,7 +54,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             ZipSections zipSections,
             byte[] sourceStampCertificateDigest,
             Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests,
-            int minSdkVersion,
+            int? minSdkVersion,
             int maxSdkVersion)
         {
             ApkSigResult result =
@@ -83,7 +83,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             ByteBuffer sourceStampBlock,
             byte[] sourceStampCertificateDigest,
             Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests,
-            int minSdkVersion,
+            int? minSdkVersion,
             int maxSdkVersion,
             ApkSigResult result)
         {

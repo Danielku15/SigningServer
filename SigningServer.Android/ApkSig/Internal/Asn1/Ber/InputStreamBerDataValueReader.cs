@@ -141,7 +141,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
                     throw new BerDataValueFormatException("Truncated tag number");
                 }
 
-                if (result > int.MaxValue >> /*>*/ 7)
+                if (result > ((uint)int.MaxValue >> 7))
                 {
                     throw new BerDataValueFormatException("Tag number too large");
                 }
@@ -177,7 +177,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
                     throw new BerDataValueFormatException("Truncated length");
                 }
 
-                if (result > int.MaxValue >> /*>*/ 8)
+                if (result > ((uint)int.MaxValue >> 8))
                 {
                     throw new BerDataValueFormatException("Length too large");
                 }

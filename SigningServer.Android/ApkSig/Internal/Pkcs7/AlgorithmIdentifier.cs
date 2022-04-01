@@ -16,7 +16,6 @@
 
 using System;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using SigningServer.Android.ApkSig.Internal.Apk.v1;
 using SigningServer.Android.ApkSig.Internal.Asn1;
 using static SigningServer.Android.ApkSig.Internal.Oid.OidConstants;
@@ -70,6 +69,7 @@ namespace SigningServer.Android.ApkSig.Internal.Pkcs7
         public static Tuple<String, AlgorithmIdentifier> getSignerInfoSignatureAlgorithm(
             PublicKey publicKey, DigestAlgorithm digestAlgorithm, bool deterministicDsaSigning)
         {
+            String keyAlgorithm = publicKey.getAlgorithm();
             String jcaDigestPrefixForSigAlg;
             switch (digestAlgorithm)
             {
@@ -84,14 +84,13 @@ namespace SigningServer.Android.ApkSig.Internal.Pkcs7
                         "Unexpected digest algorithm: " + digestAlgorithm);
             }
 
-            if (publicKey.Key is RSA)
+            if ("RSA".Equals(keyAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 return Tuple.Create(
                     jcaDigestPrefixForSigAlg + "withRSA",
                     new AlgorithmIdentifier(OID_SIG_RSA, Asn1DerEncoder.ASN1_DER_NULL));
             }
-
-            else if (publicKey.Key is DSA)
+            else if ("DSA".Equals(keyAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 AlgorithmIdentifier sigAlgId;
                 switch (digestAlgorithm)
@@ -118,7 +117,7 @@ namespace SigningServer.Android.ApkSig.Internal.Pkcs7
                     jcaDigestPrefixForSigAlg + (deterministicDsaSigning ? "withDetDSA" : "withDSA");
                 return Tuple.Create(signingAlgorithmName, sigAlgId);
             }
-            else if (publicKey.Key is ECDsa)
+            else if ("EC".Equals(keyAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 return Tuple.Create(
                     jcaDigestPrefixForSigAlg + "withECDSA",
@@ -126,7 +125,7 @@ namespace SigningServer.Android.ApkSig.Internal.Pkcs7
             }
             else
             {
-                throw new CryptographicException("Unsupported key algorithm: " + publicKey.Key.GetType().FullName);
+                throw new CryptographicException("Unsupported key algorithm: " + keyAlgorithm);
             }
         }
 

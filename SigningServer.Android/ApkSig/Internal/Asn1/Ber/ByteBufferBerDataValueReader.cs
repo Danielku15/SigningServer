@@ -137,7 +137,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
                 }
 
                 b = mBuf.get();
-                if (result > int.MaxValue >> /*>*/ 7)
+                if (result > ((uint)int.MaxValue >> 7))
                 {
                     throw new BerDataValueFormatException("Tag number too large");
                 }
@@ -175,7 +175,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
                 }
 
                 int b = mBuf.get();
-                if (result > int.MaxValue >> /*>*/ 8)
+                if (result > ((uint)int.MaxValue >> 8))
                 {
                     throw new BerDataValueFormatException("Length too large");
                 }

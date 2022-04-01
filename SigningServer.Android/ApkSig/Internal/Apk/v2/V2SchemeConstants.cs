@@ -23,7 +23,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v2
         {
         }
 
-        public static readonly int APK_SIGNATURE_SCHEME_V2_BLOCK_ID = 0x7109871a;
-        public static readonly int STRIPPING_PROTECTION_ATTR_ID = unchecked((int)0xbeeff00d);
+        public const int APK_SIGNATURE_SCHEME_V2_BLOCK_ID = 0x7109871a;
+        public const int STRIPPING_PROTECTION_ATTR_ID = unchecked((int)0xbeeff00d);
     }
 }

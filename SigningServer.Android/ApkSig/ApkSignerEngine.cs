@@ -107,7 +107,7 @@ namespace SigningServer.Android.ApkSig
      *
      * @see <a href="https://source.android.com/security/apksigning/index.html">Application Signing</a>
      */
-    internal interface ApkSignerEngine : IDisposable
+    public interface ApkSignerEngine : IDisposable
     {
         void setExecutor(RunnablesExecutor executor);
 
@@ -320,7 +320,7 @@ namespace SigningServer.Android.ApkSig
      * which case the request must be fulfilled before {@link ApkSignerEngine#outputJarEntries()} is
      * invoked.
      */
-    internal class InputJarEntryInstructions
+    public class InputJarEntryInstructions
     {
         private readonly OutputPolicy mOutputPolicy;
         private readonly InspectJarEntryRequest mInspectJarEntryRequest;
@@ -389,7 +389,7 @@ namespace SigningServer.Android.ApkSig
      * {@link #getDataSink()}. Once the entry's data has been provided to the sink, {@link #done()}
      * must be invoked.
      */
-    internal interface InspectJarEntryRequest
+    public interface InspectJarEntryRequest
     {
         /**
          * Returns the data sink into which the entry's uncompressed data should be sent.
@@ -413,7 +413,7 @@ namespace SigningServer.Android.ApkSig
      * <p>Entries listed in {@link #getAdditionalJarEntries()} must be added to the output APK after
      * which {@link #done()} must be invoked.
      */
-    interface OutputJarSignatureRequest
+    public interface OutputJarSignatureRequest
     {
         /**
          * Returns JAR entries that must be added to the output APK.
@@ -478,7 +478,7 @@ namespace SigningServer.Android.ApkSig
      * @deprecated This is now superseded by {@link OutputApkSigningBlockRequest2}.
      */
     [Obsolete]
-    interface OutputApkSigningBlockRequest
+    public interface OutputApkSigningBlockRequest
     {
         /**
          * Returns the APK Signing Block.
@@ -505,7 +505,7 @@ namespace SigningServer.Android.ApkSig
      * <p>If the output contains an APK Signing Block, that block must be replaced by the block
      * contained in this request.
      */
-    interface OutputApkSigningBlockRequest2
+    public interface OutputApkSigningBlockRequest2
     {
         /**
          * Returns the APK Signing Block.

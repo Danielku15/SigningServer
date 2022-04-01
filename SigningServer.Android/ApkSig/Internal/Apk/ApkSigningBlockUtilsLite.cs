@@ -172,7 +172,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
          *         found for an Android platform version in the range.
          */
         public static List<T> getSignaturesToVerify<T>(
-            List<T> signatures, int minSdkVersion, int maxSdkVersion,
+            List<T> signatures, int? minSdkVersion, int maxSdkVersion,
             bool onlyRequireJcaSupport) where T : ApkSupportedSignature
         {
             // Pick the signature with the strongest algorithm at all required SDK versions, to mimic
@@ -390,7 +390,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             int len = value.Length;
             for (int i = 0; i < len; i++)
             {
-                int hi = (value[i] & 0xff) >> /*>*/ 4;
+                int hi = (value[i] & 0xff) >> 4;
                 int lo = value[i] & 0x0f;
                 sb.Append(HEX_DIGITS[hi]).Append(HEX_DIGITS[lo]);
             }

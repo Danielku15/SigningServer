@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using SigningServer.Android.ApkSig.Internal.Util;
 
 namespace SigningServer.Android.ApkSig.Internal.Oid
@@ -50,8 +51,8 @@ namespace SigningServer.Android.ApkSig.Internal.Oid
         public static readonly string OID_SIG_SHA384_WITH_ECDSA = "1.2.840.10045.4.3.3";
         public static readonly string OID_SIG_SHA512_WITH_ECDSA = "1.2.840.10045.4.3.4";
 
-        public static readonly Dictionary<string, IList<InclusiveIntRange>> SUPPORTED_SIG_ALG_OIDS =
-            new Dictionary<string, IList<InclusiveIntRange>>();
+        public static readonly Dictionary<string, List<InclusiveIntRange>> SUPPORTED_SIG_ALG_OIDS =
+            new Dictionary<string, List<InclusiveIntRange>>();
 
         static OidConstants()
         {
@@ -376,10 +377,10 @@ namespace SigningServer.Android.ApkSig.Internal.Oid
         {
             SUPPORTED_SIG_ALG_OIDS.Add(
                 digestAlgorithmOid + "with" + signatureAlgorithmOid,
-                supportedApiLevels);
+                supportedApiLevels.ToList());
         }
 
-        public static IList<InclusiveIntRange> getSigAlgSupportedApiLevels(
+        public static List<InclusiveIntRange> getSigAlgSupportedApiLevels(
             string digestAlgorithmOid,
             string signatureAlgorithmOid)
         {

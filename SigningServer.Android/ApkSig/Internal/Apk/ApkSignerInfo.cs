@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 
 namespace SigningServer.Android.ApkSig.Internal.Apk
 {
@@ -26,8 +25,8 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
     public class ApkSignerInfo
     {
         public int index;
-        public List<X509Certificate2> certs = new List<X509Certificate2>();
-        public List<X509Certificate2> certificateLineage = new List<X509Certificate2>();
+        public List<X509Certificate> certs = new List<X509Certificate>();
+        public List<X509Certificate> certificateLineage = new List<X509Certificate>();
 
         private readonly List<ApkVerificationIssue> mWarnings = new List<ApkVerificationIssue>();
         private readonly List<ApkVerificationIssue> mErrors = new List<ApkVerificationIssue>();

@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using static SigningServer.Android.ApkSig.Internal.Apk.ApkSigningBlockUtils;
 
 namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
@@ -65,9 +64,8 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
 
             try
             {
-                // TODO: Check for encoding (maybe rawdata is better)
                 sourceStampBlock.stampCertificate =
-                    sourceStampSignerConfig.certificates[0].Export(X509ContentType.Cert);
+                    sourceStampSignerConfig.certificates[0].getEncoded();
             }
             catch (CryptographicException e)
             {

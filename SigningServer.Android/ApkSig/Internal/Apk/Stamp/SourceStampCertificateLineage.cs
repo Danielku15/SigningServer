@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using SigningServer.Android.ApkSig.Apk;
 using SigningServer.Android.ApkSig.Internal.Apk;
 using static SigningServer.Android.ApkSig.Internal.Apk.ApkSigningBlockUtilsLite;
@@ -60,7 +59,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             //   * uint32: signature algorithm id (used by to sign next cert in lineage)
             //   * length-prefixed bytes: signature over above signed data
 
-            X509Certificate2 lastCert = null;
+            X509Certificate lastCert = null;
             int lastSigAlgorithmId = 0;
 
             try
@@ -73,7 +72,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                                                 + " different than any of which we are aware");
                 }
 
-                HashSet<X509Certificate2> certHistorySet = new HashSet<X509Certificate2>();
+                HashSet<X509Certificate> certHistorySet = new HashSet<X509Certificate>();
                 while (inputBytes.hasRemaining())
                 {
                     nodeCount++;
@@ -91,24 +90,23 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                             sigAlgorithm.getJcaSignatureAlgorithmAndParams().Item1;
                         AlgorithmParameterSpec jcaSignatureAlgorithmParams =
                             sigAlgorithm.getJcaSignatureAlgorithmAndParams().Item2;
-                        PublicKey publicKey = lastCert.PublicKey;
+                        PublicKey publicKey = lastCert.getPublicKey();
                         
-                        // TODO: Correct verify 
-                        // Signature sig = Signature.getInstance(jcaSignatureAlgorithm);
-                        // sig.initVerify(publicKey);
-                        // if (jcaSignatureAlgorithmParams != null)
-                        // {
-                        //     sig.setParameter(jcaSignatureAlgorithmParams);
-                        // }
-                        //
-                        // sig.update(signedData);
-                        // if (!sig.verify(signature))
-                        // {
-                        //     throw new SecurityException("Unable to verify signature of certificate #"
-                        //                                 + nodeCount + " using " + jcaSignatureAlgorithm +
-                        //                                 " when verifying"
-                        //                                 + " SourceStampCertificateLineage object");
-                        // }
+                        Signature sig = Signature.getInstance(jcaSignatureAlgorithm);
+                        sig.initVerify(publicKey);
+                        if (jcaSignatureAlgorithmParams != null)
+                        {
+                            sig.setParameter(jcaSignatureAlgorithmParams);
+                        }
+                        
+                        sig.update(signedData);
+                        if (!sig.verify(signature))
+                        {
+                            throw new SecurityException("Unable to verify signature of certificate #"
+                                                        + nodeCount + " using " + jcaSignatureAlgorithm +
+                                                        " when verifying"
+                                                        + " SourceStampCertificateLineage object");
+                        }
                     }
 
                     signedData.rewind();
@@ -121,8 +119,8 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                                                     " when verifying SourceStampCertificateLineage object");
                     }
 
-                    lastCert = new X509Certificate2(encodedCert);
-                    // lastCert = new GuaranteedEncodedFormX509Certificate(lastCert, encodedCert);
+                    lastCert = new X509Certificate(encodedCert);
+                    lastCert = new GuaranteedEncodedFormX509Certificate(lastCert, encodedCert);
                     if (certHistorySet.Contains(lastCert))
                     {
                         throw new SecurityException("Encountered duplicate entries in "
@@ -165,7 +163,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
         public class SigningCertificateNode : IEquatable<SigningCertificateNode>
         {
             public SigningCertificateNode(
-                X509Certificate2 signingCert,
+                X509Certificate signingCert,
                 SignatureAlgorithm parentSigAlgorithm,
                 SignatureAlgorithm sigAlgorithm,
                 byte[] signature,
@@ -221,7 +219,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             /**
              * the signing cert for this node.  This is part of the data signed by the parent node.
              */
-            public readonly X509Certificate2 signingCert;
+            public readonly X509Certificate signingCert;
 
             /**
              * the algorithm used by this node's parent to bless this data.  Its ID value is part of

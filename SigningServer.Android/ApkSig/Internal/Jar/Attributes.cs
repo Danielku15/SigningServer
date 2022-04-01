@@ -31,5 +31,15 @@ namespace SigningServer.Android.ApkSig.Internal.Jar
 
             return null;
         }
+
+        public void putValue(string entryDigestAttributeName, string encodeToString)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void put(Name signatureVersion, string attributeValueSignatureVersion)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

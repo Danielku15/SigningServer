@@ -19,7 +19,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using SigningServer.Android.ApkSig.Internal.Asn1;
 using SigningServer.Android.ApkSig.Internal.Pkcs7;
 using SigningServer.Android.ApkSig.Internal.Util;
@@ -41,8 +40,8 @@ namespace SigningServer.Android.ApkSig.Internal.X509
         [Asn1Field(Index = 2, Type = Asn1Type.BIT_STRING)]
         public ByteBuffer signature;
 
-        public static X509Certificate2 findCertificate(
-            Collection<X509Certificate2> certs, SignerIdentifier id)
+        public static X509Certificate findCertificate(
+            IEnumerable<X509Certificate> certs, SignerIdentifier id)
         {
             foreach (var cert in certs)
             {
@@ -55,7 +54,7 @@ namespace SigningServer.Android.ApkSig.Internal.X509
             return null;
         }
 
-        private static bool isMatchingCerticicate(X509Certificate2 cert, SignerIdentifier id)
+        private static bool isMatchingCerticicate(X509Certificate cert, SignerIdentifier id)
         {
             if (id.issuerAndSerialNumber == null)
             {
@@ -66,27 +65,27 @@ namespace SigningServer.Android.ApkSig.Internal.X509
             IssuerAndSerialNumber issuerAndSerialNumber = id.issuerAndSerialNumber;
             byte[] encodedIssuer =
                 ByteBufferUtils.toByteArray(issuerAndSerialNumber.issuer.getEncoded());
+            X500Principal idIssuer = new X500Principal(encodedIssuer);
             BigInteger idSerialNumber = issuerAndSerialNumber.certificateSerialNumber;
-            // TODO: check whether this comparison is really correct.
-            return idSerialNumber.Equals(new BigInteger(cert.GetSerialNumber()))
-                   && encodedIssuer.SequenceEqual(cert.IssuerName.RawData);
+            return idSerialNumber.Equals(cert.getSerialNumber())
+                   && idIssuer.Equals(cert.getIssuerX500Principal());
         }
 
-        public static List<X509Certificate2> parseCertificates(
+        public static List<X509Certificate> parseCertificates(
             List<Asn1OpaqueObject> encodedCertificates)
         {
             if (encodedCertificates.Count == 0)
             {
-                return new List<X509Certificate2>();
+                return new List<X509Certificate>();
             }
 
-            var result = new List<X509Certificate2>(encodedCertificates.Count);
+            var result = new List<X509Certificate>(encodedCertificates.Count);
             for (int i = 0;
                  i < encodedCertificates.Count;
                  i++)
             {
                 Asn1OpaqueObject encodedCertificate = encodedCertificates[i];
-                X509Certificate2 certificate;
+                X509Certificate certificate;
                 byte[] encodedForm = ByteBufferUtils.toByteArray(encodedCertificate.getEncoded());
                 try
                 {
@@ -102,8 +101,7 @@ namespace SigningServer.Android.ApkSig.Internal.X509
                 // stored in the signature. This is because some X509Certificate(Factory)
                 // implementations re-encode certificates and/or some implementations of
                 // X509Certificate.getEncoded() re-encode certificates.
-                // TODO Check GuaranteedEncodedFormX509Certificate usage
-                // certificate = new GuaranteedEncodedFormX509Certificate(certificate, encodedForm);
+                certificate = new GuaranteedEncodedFormX509Certificate(certificate, encodedForm);
                 result.Add(certificate);
             }
 

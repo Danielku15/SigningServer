@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.ApkSig;
 using SigningServer.Android.ApkSig.Internal.Apk.v1;
@@ -35,7 +34,7 @@ namespace SigningServer.Android
             return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate certificate, string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
             SignFileResponseResult successResult = SignFileResponseResult.FileSigned;

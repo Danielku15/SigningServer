@@ -22,4 +22,18 @@ namespace SigningServer.Android.ApkSig.Util
         // TODO MULTI_THREADED
         void execute(RunnablesProvider provider);
     }
+
+    public class RunnablesExecutors
+    {
+        public static readonly RunnablesExecutor SINGLE_THREADED = new SingleThreadedRunnablesExecutor();
+        public static RunnablesExecutor MULTI_THREADED;
+
+        public class SingleThreadedRunnablesExecutor : RunnablesExecutor
+        {
+            public void execute(RunnablesProvider provider)
+            {
+                provider()();
+            }
+        }
+    }
 }

@@ -32,33 +32,33 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
     public class AndroidBinXmlParser
     {
         /** Event: start of document. */
-        public static readonly int EVENT_START_DOCUMENT = 1;
+        public const int EVENT_START_DOCUMENT = 1;
 
         /** Event: end of document. */
-        public static readonly int EVENT_END_DOCUMENT = 2;
+        public const int EVENT_END_DOCUMENT = 2;
 
         /** Event: start of an element. */
-        public static readonly int EVENT_START_ELEMENT = 3;
+        public const int EVENT_START_ELEMENT = 3;
 
         /** Event: end of an document. */
-        public static readonly int EVENT_END_ELEMENT = 4;
+        public const int EVENT_END_ELEMENT = 4;
 
         /** Attribute value type is not supported by this parser. */
-        public static readonly int VALUE_TYPE_UNSUPPORTED = 0;
+        public const int VALUE_TYPE_UNSUPPORTED = 0;
 
         /** Attribute value is a string. Use {@link #getAttributeStringValue(int)} to obtain it. */
-        public static readonly int VALUE_TYPE_STRING = 1;
+        public const int VALUE_TYPE_STRING = 1;
 
         /** Attribute value is an integer. Use {@link #getAttributeIntValue(int)} to obtain it. */
-        public static readonly int VALUE_TYPE_INT = 2;
+        public const int VALUE_TYPE_INT = 2;
 
         /**
          * Attribute value is a resource reference. Use {@link #getAttributeIntValue(int)} to obtain it.
          */
-        public static readonly int VALUE_TYPE_REFERENCE = 3;
+        public const int VALUE_TYPE_REFERENCE = 3;
 
         /** Attribute value is a bool. Use {@link #getAttributeboolValue(int)} to obtain it. */
-        public static readonly int VALUE_TYPE_bool = 4;
+        public const int VALUE_TYPE_BOOLEAN = 4;
 
         private static readonly long NO_NAMESPACE = 0xffffffffL;
 
@@ -226,8 +226,8 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                     return VALUE_TYPE_INT;
                 case Attribute.TYPE_REFERENCE:
                     return VALUE_TYPE_REFERENCE;
-                case Attribute.TYPE_INT_bool:
-                    return VALUE_TYPE_bool;
+                case Attribute.TYPE_INT_BOOLEAN:
+                    return VALUE_TYPE_BOOLEAN;
                 default:
                     return VALUE_TYPE_UNSUPPORTED;
             }
@@ -459,7 +459,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             public const int TYPE_STRING = 3;
             public const int TYPE_INT_DEC = 0x10;
             public const int TYPE_INT_HEX = 0x11;
-            public const int TYPE_INT_bool = 0x12;
+            public const int TYPE_INT_BOOLEAN = 0x12;
 
             private readonly long mNsId;
             private readonly long mNameId;
@@ -511,7 +511,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                     case TYPE_REFERENCE:
                     case TYPE_INT_DEC:
                     case TYPE_INT_HEX:
-                    case TYPE_INT_bool:
+                    case TYPE_INT_BOOLEAN:
                         return mValueData;
                     default:
                         throw new XmlParserException("Cannot coerce to int: value type " + mValueType);
@@ -522,7 +522,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             {
                 switch (mValueType)
                 {
-                    case TYPE_INT_bool:
+                    case TYPE_INT_BOOLEAN:
                         return mValueData != 0;
                     default:
                         throw new XmlParserException(
@@ -540,7 +540,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                         return mValueData.ToString();
                     case TYPE_INT_HEX:
                         return "0x" + mValueData.ToString("X");
-                    case TYPE_INT_bool:
+                    case TYPE_INT_BOOLEAN:
                         return (mValueData != 0).ToString().ToLowerInvariant();
                     case TYPE_REFERENCE:
                         return "@" + mValueData.ToString("X");
@@ -563,7 +563,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             public const int RES_XML_TYPE_END_ELEMENT = 0x0103;
             public const int RES_XML_TYPE_RESOURCE_MAP = 0x0180;
 
-            public static readonly int HEADER_MIN_SIZE_BYTES = 8;
+            public const int HEADER_MIN_SIZE_BYTES = 8;
 
             private readonly int mType;
             private readonly ByteBuffer mHeader;
@@ -652,7 +652,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
      */
         private class StringPool
         {
-            private static readonly int FLAG_UTF8 = 1 << 8;
+            private const int FLAG_UTF8 = 1 << 8;
 
             private readonly ByteBuffer mChunkContents;
             private readonly ByteBuffer mStringsSection;

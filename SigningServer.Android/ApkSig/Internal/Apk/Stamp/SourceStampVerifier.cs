@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using SigningServer.Android.ApkSig.Apk;
 using SigningServer.Android.ApkSig.Internal.Util;
@@ -61,7 +60,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             int minSdkVersion,
             int maxSdkVersion)
         {
-            X509Certificate2 sourceStampCertificate =
+            X509Certificate sourceStampCertificate =
                 verifySourceStampCertificate(
                     sourceStampBlockData, sourceStampCertificateDigest, result);
             if (result.containsWarnings() || result.containsErrors())
@@ -93,10 +92,10 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             ApkSignerInfo result,
             Dictionary<int, byte[]> signatureSchemeApkDigests,
             byte[] sourceStampCertificateDigest,
-            int minSdkVersion,
+            int? minSdkVersion,
             int maxSdkVersion)
         {
-            X509Certificate2 sourceStampCertificate =
+            X509Certificate sourceStampCertificate =
                 verifySourceStampCertificate(
                     sourceStampBlockData, sourceStampCertificateDigest, result);
             if (result.containsWarnings() || result.containsErrors())
@@ -157,17 +156,17 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             }
         }
 
-        private static X509Certificate2 verifySourceStampCertificate(
+        private static X509Certificate verifySourceStampCertificate(
             ByteBuffer sourceStampBlockData,
             byte[] sourceStampCertificateDigest,
             ApkSignerInfo result)
         {
             // Parse the SourceStamp certificate.
             byte[] sourceStampEncodedCertificate = readLengthPrefixedByteArray(sourceStampBlockData);
-            X509Certificate2 sourceStampCertificate;
+            X509Certificate sourceStampCertificate;
             try
             {
-                sourceStampCertificate = new X509Certificate2(sourceStampEncodedCertificate);
+                sourceStampCertificate = new X509Certificate(sourceStampEncodedCertificate);
             }
             catch (CryptographicException e)
             {
@@ -179,10 +178,9 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             // form. Without this, getEncoded may return a different form from what was stored in
             // the signature. This is because some X509Certificate(Factory) implementations
             // re-encode certificates.
-            // TODO: GuaranteedEncodedFormX509Certificate
-            // sourceStampCertificate =
-            //     new GuaranteedEncodedFormX509Certificate(
-            //         sourceStampCertificate, sourceStampEncodedCertificate);
+            sourceStampCertificate =
+                new GuaranteedEncodedFormX509Certificate(
+                    sourceStampCertificate, sourceStampEncodedCertificate);
             result.certs.Add(sourceStampCertificate);
             // Verify the SourceStamp certificate found in the signing block is the same as the
             // SourceStamp certificate found in the APK.
@@ -206,9 +204,9 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
 
         private static void verifySourceStampSignature(
             byte[] data,
-            int minSdkVersion,
+            int? minSdkVersion,
             int maxSdkVersion,
-            X509Certificate2 sourceStampCertificate,
+            X509Certificate sourceStampCertificate,
             ByteBuffer signatures,
             ApkSignerInfo result)
         {
@@ -284,25 +282,24 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                     signatureAlgorithm.getJcaSignatureAlgorithmAndParams().Item1;
                 AlgorithmParameterSpec jcaSignatureAlgorithmParams =
                     signatureAlgorithm.getJcaSignatureAlgorithmAndParams().Item2;
-                PublicKey publicKey = sourceStampCertificate.PublicKey;
+                PublicKey publicKey = sourceStampCertificate.getPublicKey();
                 try
                 {
-                    // TODO: Verify signature
-                    // Signature sig = Signature.getInstance(jcaSignatureAlgorithm);
-                    // sig.initVerify(publicKey);
-                    // if (jcaSignatureAlgorithmParams != null)
-                    // {
-                    //     sig.setParameter(jcaSignatureAlgorithmParams);
-                    // }
-                    //
-                    // sig.update(data);
-                    // byte[] sigBytes = signature.signature;
-                    // if (!sig.verify(sigBytes))
-                    // {
-                    //     result.addWarning(
-                    //         ApkVerificationIssue.SOURCE_STAMP_DID_NOT_VERIFY, signatureAlgorithm);
-                    //     return;
-                    // }
+                    Signature sig = Signature.getInstance(jcaSignatureAlgorithm);
+                    sig.initVerify(publicKey);
+                    if (jcaSignatureAlgorithmParams != null)
+                    {
+                        sig.setParameter(jcaSignatureAlgorithmParams);
+                    }
+                    
+                    sig.update(data);
+                    byte[] sigBytes = signature.signature;
+                    if (!sig.verify(sigBytes))
+                    {
+                        result.addWarning(
+                            ApkVerificationIssue.SOURCE_STAMP_DID_NOT_VERIFY, signatureAlgorithm);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -314,7 +311,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
         }
 
         private static void parseStampAttributes(ByteBuffer stampAttributeData,
-            X509Certificate2 sourceStampCertificate, ApkSignerInfo result)
+            X509Certificate sourceStampCertificate, ApkSignerInfo result)
         {
             ByteBuffer stampAttributes = getLengthPrefixedSlice(stampAttributeData);
 
@@ -346,7 +343,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
         }
 
         private static void readStampCertificateLineage(byte[] lineageBytes,
-            X509Certificate2 sourceStampCertificate, ApkSignerInfo result)
+            X509Certificate sourceStampCertificate, ApkSignerInfo result)
         {
             try
             {
@@ -360,7 +357,6 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                 }
 
                 // Make sure that the last cert in the chain matches this signer cert
-                // TODO: Check if certificate equals works
                 if (!sourceStampCertificate.Equals(
                         result.certificateLineage[result.certificateLineage.Count - 1]))
                 {

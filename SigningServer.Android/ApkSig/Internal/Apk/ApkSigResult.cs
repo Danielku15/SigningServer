@@ -41,7 +41,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns {@code true} if this result encountered errors during verification.
          */
-        public bool containsErrors()
+        public virtual bool containsErrors()
         {
             if (mErrors.Count != 0)
             {
@@ -65,7 +65,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns {@code true} if this result encountered warnings during verification.
          */
-        public bool containsWarnings()
+        public virtual bool containsWarnings()
         {
             if (mWarnings.Count != 0)
             {
@@ -90,7 +90,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
          * Adds a new {@link ApkVerificationIssue} as an error to this result using the provided {@code
          * issueId} and {@code params}.
          */
-        public void addError(int issueId, params Object[] parameters)
+        public virtual void addError(int issueId, params Object[] parameters)
         {
             mErrors.Add(new ApkVerificationIssue(issueId, parameters));
         }
@@ -99,7 +99,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
          * Adds a new {@link ApkVerificationIssue} as a warning to this result using the provided {@code
          * issueId} and {@code params}.
          */
-        public void AddWarning(int issueId, params Object[] parameters)
+        public virtual void AddWarning(int issueId, params Object[] parameters)
         {
             mWarnings.Add(new ApkVerificationIssue(issueId, parameters));
         }
@@ -107,7 +107,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns the errors encountered during verification.
          */
-        public List<ApkVerificationIssue> getErrors()
+        public virtual List<ApkVerificationIssue> getErrors()
         {
             return mErrors;
         }
@@ -115,7 +115,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns the warnings encountered during verification.
          */
-        public List<ApkVerificationIssue> getWarnings()
+        public virtual List<ApkVerificationIssue> getWarnings()
         {
             return mWarnings;
         }

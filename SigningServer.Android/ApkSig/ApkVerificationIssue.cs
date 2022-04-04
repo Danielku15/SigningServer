@@ -194,7 +194,7 @@ namespace SigningServer.Android
         /**
      * Returns the optional parameters for this issue.
      */
-        public object[] getParams()
+        public virtual object[] getParams()
         {
             return mParams;
         }

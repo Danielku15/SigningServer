@@ -39,6 +39,11 @@ namespace SigningServer.Android
             _stream.Write(buf, offset, length);
         }
 
+        public void write(byte[] buf)
+        {
+            _stream.Write(buf, 0, buf.Length);
+        }
+
         public long length()
         {
             return _stream.Length;
@@ -47,6 +52,11 @@ namespace SigningServer.Android
         public void setLength(int i)
         {
             _stream.SetLength(i);
+        }
+
+        public void readFully(byte[] contents)
+        {
+            _stream.Read(contents, 0, contents.Length);
         }
     }
 

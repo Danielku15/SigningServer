@@ -276,7 +276,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             return contentDigests;
         }
 
-        static void computeOneMbChunkContentDigests(
+        public static void computeOneMbChunkContentDigests(
             ISet<ContentDigestAlgorithm> digestAlgorithms,
             DataSource[] contents,
             Dictionary<ContentDigestAlgorithm, byte[]> outputContentDigests)
@@ -397,7 +397,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             }
         }
 
-        static void computeOneMbChunkContentDigests(
+        public static void computeOneMbChunkContentDigests(
             RunnablesExecutor executor,
             ISet<ContentDigestAlgorithm> digestAlgorithms,
             DataSource[] contents,
@@ -1222,8 +1222,6 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         public class SignatureNotFoundException
             : Exception
         {
-            private static readonly long serialVersionUID = 1L;
-
             public SignatureNotFoundException(String message) : base(message)
             {
             }
@@ -1404,14 +1402,14 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         {
             public SigningCertificateLineage signingCertificateLineage = null;
             public readonly List<Result.SignerInfo> signers = new List<Result.SignerInfo>();
-            private readonly List<ApkVerifier.IssueWithParams> mWarnings = new List<ApkVerifier.IssueWithParams>();
-            private readonly List<ApkVerifier.IssueWithParams> mErrors = new List<ApkVerifier.IssueWithParams>();
+            private readonly List<ApkVerificationIssue> mWarnings = new List<ApkVerificationIssue>();
+            private readonly List<ApkVerificationIssue> mErrors = new List<ApkVerificationIssue>();
 
             public Result(int signatureSchemeVersion) : base(signatureSchemeVersion)
             {
             }
 
-            public bool containsErrors()
+            public override bool containsErrors()
             {
                 if (mErrors.Count != 0)
                 {
@@ -1432,7 +1430,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 return false;
             }
 
-            public bool containsWarnings()
+            public override bool containsWarnings()
             {
                 if (mWarnings.Count != 0)
                 {
@@ -1464,13 +1462,13 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
             }
 
 
-            public List<ApkVerifier.IssueWithParams> getErrors()
+            public override List<ApkVerificationIssue> getErrors()
             {
                 return mErrors;
             }
 
 
-            public List<ApkVerifier.IssueWithParams> getWarnings()
+            public override List<ApkVerificationIssue> getWarnings()
             {
                 return mWarnings;
             }
@@ -1493,8 +1491,8 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 public int minSdkVersion;
                 public int maxSdkVersion;
                 public SigningCertificateLineage signingCertificateLineage;
-                private readonly List<ApkVerifier.IssueWithParams> mWarnings = new List<ApkVerifier.IssueWithParams>();
-                private readonly List<ApkVerifier.IssueWithParams> mErrors = new List<ApkVerifier.IssueWithParams>();
+                private readonly List<ApkVerificationIssue> mWarnings = new List<ApkVerificationIssue>();
+                private readonly List<ApkVerificationIssue> mErrors = new List<ApkVerificationIssue>();
 
                 public void addError(ApkVerifier.Issue msg, params Object[] parameters)
                 {
@@ -1506,22 +1504,22 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                     mWarnings.Add(new ApkVerifier.IssueWithParams(msg, parameters));
                 }
 
-                public bool containsErrors()
+                public override bool containsErrors()
                 {
                     return mErrors.Count != 0;
                 }
 
-                public bool containsWarnings()
+                public override bool containsWarnings()
                 {
                     return mWarnings.Count != 0;
                 }
 
-                public List<ApkVerifier.IssueWithParams> getErrors()
+                public override List<ApkVerificationIssue> getErrors()
                 {
                     return mErrors;
                 }
 
-                public List<ApkVerifier.IssueWithParams> getWarnings()
+                public override List<ApkVerificationIssue> getWarnings()
                 {
                     return mWarnings;
                 }

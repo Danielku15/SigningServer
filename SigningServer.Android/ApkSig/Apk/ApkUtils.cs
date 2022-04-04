@@ -324,7 +324,7 @@ namespace SigningServer.Android.ApkSig.Apk
      *
      * @throws CodenameMinSdkVersionException if the {@code codename} is not supported
      */
-        static int getMinSdkVersionForCodename(String codename)
+        public static int getMinSdkVersionForCodename(String codename)
         {
             char firstChar = codename.Length == 0 ? ' ' : codename[0];
             // Codenames are case-sensitive. Only codenames starting with A-Z are supported for now.

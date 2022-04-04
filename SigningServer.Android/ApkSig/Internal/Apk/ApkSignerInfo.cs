@@ -52,7 +52,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns {@code true} if any errors were encountered during verification for this signer.
          */
-        public bool containsErrors()
+        public virtual bool containsErrors()
         {
             return mErrors.Count != 0;
         }
@@ -60,7 +60,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns {@code true} if any warnings were encountered during verification for this signer.
          */
-        public bool containsWarnings()
+        public virtual bool containsWarnings()
         {
             return mErrors.Count != 0;
         }
@@ -68,7 +68,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns the errors encountered during verification for this signer.
          */
-        public List<ApkVerificationIssue> getErrors()
+        public virtual List<ApkVerificationIssue> getErrors()
         {
             return mErrors;
         }
@@ -76,7 +76,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         /**
          * Returns the warnings encountered during verification for this signer.
          */
-        public List<ApkVerificationIssue> getWarnings()
+        public virtual List<ApkVerificationIssue> getWarnings()
         {
             return mWarnings;
         }

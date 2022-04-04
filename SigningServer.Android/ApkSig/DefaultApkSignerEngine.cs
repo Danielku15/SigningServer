@@ -1511,7 +1511,9 @@ namespace SigningServer.Android.ApkSig
             }
         }
 
+#pragma warning disable CS0612
         private class OutputApkSigningBlockRequestImpl : OutputApkSigningBlockRequest, OutputApkSigningBlockRequest2
+#pragma warning restore CS0612
         {
             private readonly byte[] mApkSigningBlock;
             private readonly int mPaddingBeforeApkSigningBlock;

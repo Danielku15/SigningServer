@@ -69,8 +69,7 @@ namespace SigningServer.Android
                 var isAndroidSigningEnabled =
                         !".jar".Equals(Path.GetExtension(inputFileName),
                             StringComparison.InvariantCultureIgnoreCase) && // v2 only for APKs not for JARs
-                        (digestAlgorithm == null ||
-                         !digestAlgorithm.Equals(DigestAlgorithm.SHA1)) // v2 signing requires SHA256 or SHA512
+                        (!digestAlgorithm.Equals(DigestAlgorithm.SHA1)) // v2 signing requires SHA256 or SHA512
                     ;
 
                 var signerConfigs = new List<ApkSigner.SignerConfig>

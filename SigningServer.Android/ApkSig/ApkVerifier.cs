@@ -1555,9 +1555,9 @@ namespace SigningServer.Android.ApkSig
          * Returns all errors for this result, including any errors from signature scheme signers
          * and the source stamp.
          */
-            public List<IssueWithParams> getAllErrors()
+            public List<ApkVerificationIssue> getAllErrors()
             {
-                List<IssueWithParams> errors = new List<IssueWithParams>();
+                List<ApkVerificationIssue> errors = new List<ApkVerificationIssue>();
                 errors.AddRange(mErrors);
                 if (mWarningsAsErrors)
                 {
@@ -1723,8 +1723,8 @@ namespace SigningServer.Android.ApkSig
                 private readonly int mIndex;
                 public readonly List<X509Certificate> mCerts;
 
-                public readonly List<IssueWithParams> mErrors;
-                private readonly List<IssueWithParams> mWarnings;
+                public readonly List<ApkVerificationIssue> mErrors;
+                private readonly List<ApkVerificationIssue> mWarnings;
 
                 private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
                     mContentDigests;
@@ -1779,12 +1779,12 @@ namespace SigningServer.Android.ApkSig
                     return mErrors.Count != 0;
                 }
 
-                public List<IssueWithParams> getErrors()
+                public List<ApkVerificationIssue> getErrors()
                 {
                     return mErrors;
                 }
 
-                public List<IssueWithParams> getWarnings()
+                public List<ApkVerificationIssue> getWarnings()
                 {
                     return mWarnings;
                 }
@@ -1803,8 +1803,8 @@ namespace SigningServer.Android.ApkSig
                 private readonly int mIndex;
                 public readonly List<X509Certificate> mCerts;
 
-                public readonly List<IssueWithParams> mErrors;
-                private readonly List<IssueWithParams> mWarnings;
+                public readonly List<ApkVerificationIssue> mErrors;
+                private readonly List<ApkVerificationIssue> mWarnings;
 
                 private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
                     mContentDigests;
@@ -1854,12 +1854,12 @@ namespace SigningServer.Android.ApkSig
                     return mErrors.Count == 0;
                 }
 
-                public List<IssueWithParams> getErrors()
+                public List<ApkVerificationIssue> getErrors()
                 {
                     return mErrors;
                 }
 
-                public List<IssueWithParams> getWarnings()
+                public List<ApkVerificationIssue> getWarnings()
                 {
                     return mWarnings;
                 }
@@ -1879,8 +1879,8 @@ namespace SigningServer.Android.ApkSig
                 private readonly int mIndex;
                 public readonly List<X509Certificate> mCerts;
 
-                private readonly List<IssueWithParams> mErrors;
-                private readonly List<IssueWithParams> mWarnings;
+                private readonly List<ApkVerificationIssue> mErrors;
+                private readonly List<ApkVerificationIssue> mWarnings;
 
                 private readonly List<ApkSigningBlockUtils.Result.SignerInfo.ContentDigest>
                     mContentDigests;
@@ -1930,12 +1930,12 @@ namespace SigningServer.Android.ApkSig
                     return mErrors.Count != 0;
                 }
 
-                public List<IssueWithParams> getErrors()
+                public List<ApkVerificationIssue> getErrors()
                 {
                     return mErrors;
                 }
 
-                public List<IssueWithParams> getWarnings()
+                public List<ApkVerificationIssue> getWarnings()
                 {
                     return mWarnings;
                 }
@@ -3282,7 +3282,7 @@ namespace SigningServer.Android.ApkSig
             /**
              * Returns the parameters of this issue.
              */
-            public Object[] getParams()
+            public override Object[] getParams()
             {
                 return (object[])mParams.Clone();
             }
@@ -3290,7 +3290,7 @@ namespace SigningServer.Android.ApkSig
             /**
              * Returns a readable form of this issue.
              */
-            public String toString()
+            public override String ToString()
             {
                 return String.Format(mIssue.getFormat(), mParams);
             }
@@ -3456,7 +3456,7 @@ namespace SigningServer.Android.ApkSig
             }
 
             // This field is visible for testing
-            private static readonly Dictionary<int, Issue> sVerificationIssueIdToIssue = new Dictionary<int, Issue>
+            public static readonly Dictionary<int, Issue> sVerificationIssueIdToIssue = new Dictionary<int, Issue>
             {
                 [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNERS] = Issue.V2_SIG_MALFORMED_SIGNERS,
                 [ApkVerificationIssue.V2_SIG_NO_SIGNERS] = Issue.V2_SIG_NO_SIGNERS,

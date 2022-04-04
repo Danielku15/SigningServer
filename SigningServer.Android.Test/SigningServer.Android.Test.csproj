@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>SigningServer Android Test</Title>
+		<Description>This library contains a port of the official Android apksigner source code.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="6.6.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
+		<PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Resources\**\*.*" />
+	  <EmbeddedResource Include="Resources\**\*.*" />
+	</ItemGroup>
+</Project>

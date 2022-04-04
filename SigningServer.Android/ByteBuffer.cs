@@ -379,5 +379,38 @@ namespace SigningServer.Android
             _position = p + 1;
             return p;
         }
+
+        public int compareTo(ByteBuffer that)
+        {
+            int thisPos = this.position();
+            int thisRem = this.limit() - thisPos;
+            int thatPos = that.position();
+            int thatRem = that.limit() - thatPos;
+            int length = Math.Min(thisRem, thatRem);
+            if (length < 0)
+                return -1;
+            int i = mismatch(this, thisPos,
+                that, thatPos,
+                length);
+            if (i >= 0)
+            {
+                return this.get(thisPos + i).CompareTo(that.get(thatPos + i));
+            }
+
+            return thisRem - thatRem;
+        }
+
+        private int mismatch(ByteBuffer a, int aOff, ByteBuffer b, int bOff, int length)
+        {
+            for (int i = 0; i < length; i++)
+            {
+                if (a.get(aOff + i) != b.get(bOff + i))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
     }
 }

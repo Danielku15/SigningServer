@@ -159,6 +159,17 @@ namespace SigningServer.Android
             if (obj.GetType() != this.GetType()) return false;
             return Equals((X500Principal)obj);
         }
+
+        public override int GetHashCode()
+        {
+            return ((mCertificateIssuerName.Name != null ? mCertificateIssuerName.Name.GetHashCode() : 0) * 397) ^
+                   (mCertificateIssuerName.Oid != null ? mCertificateIssuerName.Oid.GetHashCode() : 0);
+        }
+
+        public string getName()
+        {
+            return mCertificateIssuerName.Name;
+        }
     }
 
     public class PrivateKey

@@ -166,7 +166,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
             X509Certificate sourceStampCertificate;
             try
             {
-                sourceStampCertificate = new X509Certificate(sourceStampEncodedCertificate);
+                sourceStampCertificate = new WrappedX509Certificate(sourceStampEncodedCertificate);
             }
             catch (CryptographicException e)
             {

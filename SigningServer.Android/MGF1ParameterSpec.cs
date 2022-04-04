@@ -18,6 +18,5 @@ namespace SigningServer.Android
         {
             return mDigestAlgorithm;
         }
-        
     }
 }

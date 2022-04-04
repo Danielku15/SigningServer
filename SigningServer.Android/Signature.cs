@@ -1,52 +1,66 @@
+using System.IO;
 using System.Security.Cryptography;
 
 namespace SigningServer.Android
 {
     public class Signature
     {
+        private readonly string mJcaSignatureAlgorithm;
+        private PublicKey mPublicKey;
+        private MemoryStream mData = new MemoryStream();
+        private AlgorithmParameterSpec mParameter;
+        private PrivateKey mPrivateKey;
+
+        private Signature(string jcaSignatureAlgorithm)
+        {
+            mJcaSignatureAlgorithm = jcaSignatureAlgorithm;
+        }
+
         public static Signature getInstance(string jcaSignatureAlgorithm)
         {
-            throw new System.NotImplementedException();
+            return new Signature(jcaSignatureAlgorithm);
         }
 
         public void initVerify(PublicKey publicKey)
         {
-            throw new System.NotImplementedException();
+            mPublicKey = publicKey;
         }
 
         public void setParameter(AlgorithmParameterSpec jcaSignatureAlgorithmParams)
         {
-            throw new System.NotImplementedException();
+            mParameter = jcaSignatureAlgorithmParams;
         }
 
         public void update(ByteBuffer signedData)
         {
-            throw new System.NotImplementedException();
+            var raw = new byte[signedData.remaining()];
+            signedData.get(raw);
+            update(raw);
         }
 
         public bool verify(byte[] signature)
         {
-            throw new System.NotImplementedException();
+            return mPublicKey.verify(mData.ToArray(), signature, mJcaSignatureAlgorithm);
         }
 
         public void update(byte[] signedData)
         {
-            throw new System.NotImplementedException();
+            mData.Write(signedData, 0, signedData.Length);
         }
 
-        public void initSign(PrivateKey signerConfigPrivateKey)
+        public void initSign(PrivateKey privateKey)
         {
-            throw new System.NotImplementedException();
+            mPrivateKey = privateKey;
         }
 
         public byte[] sign()
         {
-            throw new System.NotImplementedException();
+            return mPrivateKey.sign(mData.ToArray(), mJcaSignatureAlgorithm);
         }
 
         public void update(byte b)
         {
-            throw new System.NotImplementedException();
+            mData.WriteByte(b);
         }
     }
 }

@@ -32,14 +32,14 @@ namespace SigningServer.Android.ApkSig.Internal.Jar
             return null;
         }
 
-        public void putValue(string entryDigestAttributeName, string encodeToString)
+        public void putValue(string key, string value)
         {
-            throw new System.NotImplementedException();
+            this[key] = value;
         }
 
-        public void put(Name signatureVersion, string attributeValueSignatureVersion)
+        public void put(Name key, string value)
         {
-            throw new System.NotImplementedException();
+            this[key.ToString()] = value;
         }
     }
 }

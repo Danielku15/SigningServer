@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace SigningServer.Android.ApkSig.Util
 {
     public interface RunnablesExecutor
     {
-        // TODO SINGLE_THREADED
-        // TODO MULTI_THREADED
         void execute(RunnablesProvider provider);
     }
 
     public class RunnablesExecutors
     {
         public static readonly RunnablesExecutor SINGLE_THREADED = new SingleThreadedRunnablesExecutor();
-        public static RunnablesExecutor MULTI_THREADED;
+        public static RunnablesExecutor MULTI_THREADED = new MultiThreadedRunnablesExecutor();
 
         public class SingleThreadedRunnablesExecutor : RunnablesExecutor
         {
@@ -35,5 +37,19 @@ namespace SigningServer.Android.ApkSig.Util
                 provider()();
             }
         }
+        
+        
+        public class MultiThreadedRunnablesExecutor : RunnablesExecutor
+        {
+            private static readonly int PARALLELISM = Math.Min(32, System.Environment.ProcessorCount);
+            
+            public void execute(RunnablesProvider provider)
+            {
+                var tasks = Enumerable.Range(0, PARALLELISM)
+                    .Select(i => Task.Run(() => provider()()));
+                Task.WaitAll(tasks.ToArray());
+            }
+        }
     }
+
 }

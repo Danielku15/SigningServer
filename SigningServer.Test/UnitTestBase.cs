@@ -88,8 +88,6 @@ namespace SigningServer.Test
 
         protected void CannotResign(ISigningTool signingTool, string fileName)
         {
-            // TODO: for PE and Appx Signtool certificate currently needs to be imported to windows or tests will fail
-            // it cannot find the provider otherwise. 
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();

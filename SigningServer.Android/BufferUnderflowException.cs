@@ -8,7 +8,7 @@ namespace SigningServer.Android
         public BufferUnderflowException()
         {
         }
-        
+
         public BufferUnderflowException(string message) : base(message)
         {
         }
@@ -17,12 +17,13 @@ namespace SigningServer.Android
         {
         }
     }
+
     public class BufferOverflowException : IOException
     {
         public BufferOverflowException()
         {
         }
-        
+
         public BufferOverflowException(string message) : base(message)
         {
         }

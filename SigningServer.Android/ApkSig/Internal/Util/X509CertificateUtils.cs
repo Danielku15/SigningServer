@@ -74,7 +74,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
             try
 
             {
-                certificate = new X509Certificate(encodedForm);
+                certificate = new WrappedX509Certificate(encodedForm);
                 return certificate;
             }
             catch (CryptographicException e)
@@ -102,7 +102,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                 int startingPos = encodedCertBuffer.position();
                 Certificate reencodedCert = Asn1BerParser.parse<Certificate>(encodedCertBuffer);
                 byte[] reencodedForm = Asn1DerEncoder.encode(reencodedCert);
-                certificate = new X509Certificate(reencodedForm);
+                certificate = new WrappedX509Certificate(reencodedForm);
                 // If the reencodedForm is successfully accepted by the CertificateFactory then copy the
                 // original encoding from the ByteBuffer and use that encoding in the Guaranteed object.
                 byte[] originalEncoding = new byte[encodedCertBuffer.position() - startingPos];
@@ -146,10 +146,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
 
             try
             {
-                // TODO: support multiple certificates (seems API was only added in .net 5)
-                var certificate = new X509Certificate(encodedCerts);
-                certificates.Add(certificate);
-                return certificates;
+                return WrappedX509Certificate.generateCertificates(encodedCerts);
             }
             catch (CryptographicException e)
             {
@@ -168,7 +165,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                     int startingPos = certBuffer.position();
                     Certificate reencodedCert = Asn1BerParser.parse<Certificate>(certBuffer);
                     byte[] reencodedForm = Asn1DerEncoder.encode(reencodedCert);
-                    X509Certificate certificate = new X509Certificate(reencodedForm);
+                    X509Certificate certificate = new WrappedX509Certificate(reencodedForm);
                     byte[] originalEncoding = new byte[certBuffer.position() - startingPos];
                     certBuffer.position(startingPos);
                     certBuffer.get(originalEncoding);

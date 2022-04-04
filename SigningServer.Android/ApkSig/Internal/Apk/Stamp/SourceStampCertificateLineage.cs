@@ -119,7 +119,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.Stamp
                                                     " when verifying SourceStampCertificateLineage object");
                     }
 
-                    lastCert = new X509Certificate(encodedCert);
+                    lastCert = new WrappedX509Certificate(encodedCert);
                     lastCert = new GuaranteedEncodedFormX509Certificate(lastCert, encodedCert);
                     if (certHistorySet.Contains(lastCert))
                     {

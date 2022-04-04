@@ -5,57 +5,84 @@ namespace SigningServer.Android
 {
     public class RandomAccessFile : IDisposable
     {
-        public RandomAccessFile(FileInfo file, string s)
+        private readonly FileStream _stream;
+
+        public RandomAccessFile(FileInfo file, string mode)
         {
-            throw new System.NotImplementedException();
+            if (mode == "r")
+            {
+                _stream = file.OpenRead();
+            }
+            else if (mode == "rw")
+            {
+                _stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+            }
+        }
+
+        public void Dispose()
+        {
+            _stream.Dispose();
         }
 
         public FileChannel getChannel()
         {
-            throw new System.NotImplementedException();
+            return new FileChannel(_stream);
         }
 
-        public void seek(long mPosition)
+        public void seek(long position)
         {
-            throw new System.NotImplementedException();
+            _stream.Seek(position, SeekOrigin.Begin);
         }
 
         public void write(byte[] buf, int offset, int length)
         {
-            throw new System.NotImplementedException();
+            _stream.Write(buf, offset, length);
         }
 
         public long length()
         {
-            throw new NotImplementedException();
+            return _stream.Length;
         }
 
         public void setLength(int i)
         {
-            throw new NotImplementedException();
+            _stream.SetLength(i);
         }
     }
 
     public class FileChannel
     {
-        public long size()
+        private readonly FileStream mStream;
+
+        public FileChannel(FileStream stream)
         {
-            throw new System.NotImplementedException();
+            mStream = stream;
         }
 
-        public void position(long chunkOffsetInFile)
+        public long size()
         {
-            throw new System.NotImplementedException();
+            return mStream.Length;
+        }
+
+        public void position(long position)
+        {
+            mStream.Seek(position, SeekOrigin.Begin);
         }
 
         public int read(ByteBuffer buf)
         {
-            throw new System.NotImplementedException();
+            var rem = buf.remaining();
+            var x = new byte[rem];
+            var actual = mStream.Read(x, 0, rem);
+            buf.put(x, 0, actual);
+            return actual;
         }
 
         public void write(ByteBuffer buf)
         {
-            throw new System.NotImplementedException();
+            var x = new byte[buf.remaining()];
+            buf.get(x);
+            mStream.Write(x, 0, x.Length);
         }
     }
 }

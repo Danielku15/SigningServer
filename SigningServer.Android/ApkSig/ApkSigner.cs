@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SigningServer.Android.ApkSig.Apk;
+using SigningServer.Android.ApkSig.Internal.Apk.v1;
 using SigningServer.Android.ApkSig.Internal.Util;
 using SigningServer.Android.ApkSig.Internal.Zip;
 using SigningServer.Android.ApkSig.Util;
@@ -83,8 +84,9 @@ namespace SigningServer.Android.ApkSig
         private readonly FileInfo mOutputV4File;
 
         private readonly SigningCertificateLineage mSigningCertificateLineage;
+        private readonly DigestAlgorithm mDigestAlgorithm;
 
-        private ApkSigner(
+        public ApkSigner(
             List<SignerConfig> signerConfigs,
             SignerConfig sourceStampSignerConfig,
             SigningCertificateLineage sourceStampSigningCertificateLineage,
@@ -106,7 +108,8 @@ namespace SigningServer.Android.ApkSig
             DataSink outputApkDataSink,
             DataSource outputApkDataSource,
             FileInfo outputV4File,
-            SigningCertificateLineage signingCertificateLineage)
+            SigningCertificateLineage signingCertificateLineage,
+            DigestAlgorithm digestAlgorithm)
         {
             mSignerConfigs = signerConfigs;
             mSourceStampSignerConfig = sourceStampSignerConfig;
@@ -135,6 +138,7 @@ namespace SigningServer.Android.ApkSig
             mOutputV4File = outputV4File;
 
             mSigningCertificateLineage = signingCertificateLineage;
+            mDigestAlgorithm = digestAlgorithm;
         }
 
         /**
@@ -304,7 +308,8 @@ namespace SigningServer.Android.ApkSig
                         .setVerityEnabled(mVerityEnabled)
                         .setDebuggableApkPermitted(mDebuggableApkPermitted)
                         .setOtherSignersSignaturesPreserved(mOtherSignersSignaturesPreserved)
-                        .setSigningCertificateLineage(mSigningCertificateLineage);
+                        .setSigningCertificateLineage(mSigningCertificateLineage)
+                        .setDigestAlgorithm(mDigestAlgorithm);
                 if (mCreatedBy != null)
                 {
                     signerEngineBuilder.setCreatedBy(mCreatedBy);
@@ -1099,7 +1104,7 @@ namespace SigningServer.Android.ApkSig
             private readonly List<X509Certificate> mCertificates;
             private bool mDeterministicDsaSigning;
 
-            private SignerConfig(
+            public SignerConfig(
                 String name,
                 PrivateKey privateKey,
                 List<X509Certificate> certificates,
@@ -1232,6 +1237,7 @@ namespace SigningServer.Android.ApkSig
             private bool mV4ErrorReportingEnabled = false;
             private bool mDebuggableApkPermitted = true;
             private bool mOtherSignersSignaturesPreserved;
+            private DigestAlgorithm mDigestAlgorithm = DigestAlgorithm.SHA256;
             private String mCreatedBy;
             private int? mMinSdkVersion;
 
@@ -1311,9 +1317,9 @@ namespace SigningServer.Android.ApkSig
             }
 
             /**
-         * Sets the source stamp {@link SigningCertificateLineage}. This structure provides proof of
-         * signing certificate rotation for certificates previously used to sign source stamps.
-         */
+             * Sets the source stamp {@link SigningCertificateLineage}. This structure provides proof of
+             * signing certificate rotation for certificates previously used to sign source stamps.
+             */
             public Builder setSourceStampSigningCertificateLineage(
                 SigningCertificateLineage sourceStampSigningCertificateLineage)
             {
@@ -1322,13 +1328,19 @@ namespace SigningServer.Android.ApkSig
             }
 
             /**
-         * Sets whether the APK should overwrite existing source stamp, if found.
-         *
-         * @param force {@code true} to require the APK to be overwrite existing source stamp
-         */
+             * Sets whether the APK should overwrite existing source stamp, if found.
+             *
+             * @param force {@code true} to require the APK to be overwrite existing source stamp
+             */
             public Builder setForceSourceStampOverwrite(bool force)
             {
                 mForceSourceStampOverwrite = force;
+                return this;
+            }
+            
+            public Builder setDigestAlgorithm(DigestAlgorithm digestAlgorithm)
+            {
+                mDigestAlgorithm = digestAlgorithm;
                 return this;
             }
 
@@ -1608,17 +1620,17 @@ namespace SigningServer.Android.ApkSig
             }
 
             /**
-         * Sets whether the APK should be signed even if it is marked as debuggable ({@code
-         * android:debuggable="true"} in its {@code AndroidManifest.xml}). For backward
-         * compatibility reasons, the default value of this setting is {@code true}.
-         *
-         * <p>It is dangerous to sign debuggable APKs with production/release keys because Android
-         * platform loosens security checks for such APKs. For example, arbitrary unauthorized code
-         * may be executed in the context of such an app by anybody with ADB shell access.
-         *
-         * <p><em>Note:</em> This method may only be invoked when this builder is not initialized
-         * with an {@link ApkSignerEngine}.
-         */
+             * Sets whether the APK should be signed even if it is marked as debuggable ({@code
+             * android:debuggable="true"} in its {@code AndroidManifest.xml}). For backward
+             * compatibility reasons, the default value of this setting is {@code true}.
+             *
+             * <p>It is dangerous to sign debuggable APKs with production/release keys because Android
+             * platform loosens security checks for such APKs. For example, arbitrary unauthorized code
+             * may be executed in the context of such an app by anybody with ADB shell access.
+             *
+             * <p><em>Note:</em> This method may only be invoked when this builder is not initialized
+             * with an {@link ApkSignerEngine}.
+             */
             public Builder setDebuggableApkPermitted(bool permitted)
             {
                 checkInitializedWithoutEngine();
@@ -1755,7 +1767,8 @@ namespace SigningServer.Android.ApkSig
                     mOutputApkDataSink,
                     mOutputApkDataSource,
                     mOutputV4File,
-                    mSigningCertificateLineage);
+                    mSigningCertificateLineage,
+                    mDigestAlgorithm);
             }
         }
     }

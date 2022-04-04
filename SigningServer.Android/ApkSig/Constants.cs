@@ -27,11 +27,11 @@ namespace SigningServer.Android.ApkSig
      */
     public static class Constants
     {
-        public static readonly int VERSION_SOURCE_STAMP = 0;
-        public static readonly int VERSION_JAR_SIGNATURE_SCHEME = 1;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V2 = 2;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V3 = 3;
-        public static readonly int VERSION_APK_SIGNATURE_SCHEME_V4 = 4;
+        public const int VERSION_SOURCE_STAMP = 0;
+        public const int VERSION_JAR_SIGNATURE_SCHEME = 1;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V2 = 2;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V3 = 3;
+        public const int VERSION_APK_SIGNATURE_SCHEME_V4 = 4;
 
         public static readonly string MANIFEST_ENTRY_NAME = V1SchemeConstants.MANIFEST_ENTRY_NAME;
 

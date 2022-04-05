@@ -1,8 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Server;
 using SigningServer.Server.Configuration;
+using Task = System.Threading.Tasks.Task;
 
 namespace SigningServer.Test
 {
@@ -43,11 +48,13 @@ namespace SigningServer.Test
         [DeploymentItem("TestFiles", "IntegrationTestFiles")]
         public void ValidTestRun()
         {
-            var client = new SigningClient(new SigningClientConfiguration
+            using (var client = new SigningClient(new SigningClientConfiguration
+                   {
+                       SigningServer = "localhost:4711"
+                   }))
             {
-                SigningServer = "localhost:4711"
-            });
-            client.SignFile(Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned"));
+                client.SignFile(Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned"));
+            }
 
             Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
 
@@ -61,8 +68,77 @@ namespace SigningServer.Test
 
                 Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
             }
-
         }
 
+        [TestMethod]
+        public void ConcurrentSigning()
+        {
+            var testDir = Path.Combine(ExecutionDirectory, "IntegrationTestFiles/large");
+            Directory.CreateDirectory(testDir);
+
+            var referenceTestFile = GenerateLargeTestFile(Path.Combine(testDir, "TestFile.reference"));
+            var testFiles = new string [4];
+            for (var i = 0; i < testFiles.Length; i++)
+            {
+                var file = Path.Combine(testDir, "TestFile" + i + ".ps1");
+                File.Copy(referenceTestFile, file, true);
+                testFiles[i] = file;
+            }
+
+            var tasks = testFiles.Select((f, i) => Task.Run(async () =>
+            {
+                await Task.Delay(i * 50); // slight delay to trigger not exactly the same time 
+                var sw = Stopwatch.StartNew();
+                using (var client = new SigningClient(new SigningClientConfiguration
+                       {
+                           SigningServer = "localhost:4711"
+                       }))
+                {
+                    client.SignFile(f);
+                }
+                return sw.Elapsed;
+            })).ToArray();
+
+            Task.WaitAll(tasks.ToArray<Task>());
+
+            // check for successful signing
+            var signedFiles = Directory.GetFiles(testDir, "*.ps1");
+            var signingTools = _service.SigningServer.SigningToolProvider;
+            foreach (var signedFile in signedFiles)
+            {
+                var tool = signingTools.GetSigningTool(signedFile);
+                Assert.IsNotNull(tool, "Could not find signing tool for file {0}", signedFile);
+
+                Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
+            }
+
+            var times = tasks.Select(t => t.Result).ToArray();
+            var average = times.Average(t => t.TotalMilliseconds);
+            var threshold = times.Min(t => t.TotalMilliseconds) * 2;
+            for (var i = 0; i < times.Length; i++)
+            {
+                if (times[i].TotalMilliseconds > threshold)
+                {
+                    Assert.Fail(
+                        $"Performance test failed, needed {times[i].TotalMilliseconds}ms for file {testFiles[i]} with average of {average} and threshold of {threshold}");
+                }
+            }
+        }
+
+        private string GenerateLargeTestFile(string path)
+        {
+            using (var writer = new FileStream(path, FileMode.Create, FileAccess.Write))
+            {
+                int size = 100 * 1024 * 1024;
+                var simpleLine = Encoding.UTF8.GetBytes("Write-Host Hello World" + Environment.NewLine);
+                while (size > 0)
+                {
+                    writer.Write(simpleLine, 0, simpleLine.Length);
+                    size -= simpleLine.Length;
+                }
+            }
+
+            return path;
+        }
     }
 }

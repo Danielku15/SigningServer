@@ -11,7 +11,7 @@ using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class SigningServer : ISigningServer
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();

@@ -1696,7 +1696,7 @@ namespace SigningServer.Android.ApkSig
                     }
 
                     mDone = true;
-                    mDigest = getMessageDigest().TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                    mDigest = getMessageDigest().ComputeHash(Array.Empty<byte>(), 0, 0);
                     mMessageDigest = null;
                     mDataSink = null;
                 }

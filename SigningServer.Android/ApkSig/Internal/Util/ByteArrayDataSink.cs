@@ -51,14 +51,14 @@ namespace SigningServer.Android.ApkSig.Internal.Util
             {
                 // Must perform this check because System.arraycopy below doesn't perform it when
                 // length == 0
-                throw new IndexOutOfRangeException("offset: " + offset);
+                throw new ArgumentOutOfRangeException("offset: " + offset);
             }
 
-            if (offset > buf.Length)
+            if (offset > buf.Length || offset + length > buf.Length)
             {
                 // Must perform this check because System.arraycopy below doesn't perform it when
                 // length == 0
-                throw new IndexOutOfRangeException(
+                throw new ArgumentOutOfRangeException(
                     "offset: " + offset + ", buf.length: " + buf.Length);
             }
 

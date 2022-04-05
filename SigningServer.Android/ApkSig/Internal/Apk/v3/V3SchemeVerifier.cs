@@ -511,7 +511,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v3
                 sigAlgsFromDigestsRecord.Add(digest.getSignatureAlgorithmId());
             }
 
-            if (!sigAlgsFromSignaturesRecord.Equals(sigAlgsFromDigestsRecord))
+            if (!sigAlgsFromSignaturesRecord.SequenceEqual(sigAlgsFromDigestsRecord))
             {
                 result.addError(
                     ApkVerifier.Issue.V3_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS,

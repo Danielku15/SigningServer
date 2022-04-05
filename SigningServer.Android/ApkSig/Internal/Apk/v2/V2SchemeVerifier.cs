@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using SigningServer.Android.ApkSig.Apk;
@@ -387,7 +388,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v2
                 certificatePublicKeyBytes = mainCertificate.getPublicKey().getEncoded();
             }
 
-            if (!publicKeyBytes.Equals(certificatePublicKeyBytes))
+            if (!publicKeyBytes.SequenceEqual(certificatePublicKeyBytes))
             {
                 result.addError(
                     ApkVerifier.Issue.V2_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD,
@@ -429,7 +430,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v2
                 sigAlgsFromDigestsRecord.Add(digest.getSignatureAlgorithmId());
             }
 
-            if (!sigAlgsFromSignaturesRecord.Equals(sigAlgsFromDigestsRecord))
+            if (!sigAlgsFromSignaturesRecord.SequenceEqual(sigAlgsFromDigestsRecord))
             {
                 result.addError(
                     ApkVerifier.Issue.V2_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS,
@@ -452,26 +453,24 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v2
                     byte[] value = ByteBufferUtils.toByteArray(attribute);
                     result.additionalAttributes.Add(
                         new ApkSigningBlockUtils.Result.SignerInfo.AdditionalAttribute(id, value));
-                    switch (id)
+                    if (id == V2SchemeConstants.STRIPPING_PROTECTION_ATTR_ID)
                     {
-                        case V2SchemeConstants.STRIPPING_PROTECTION_ATTR_ID:
-                            // stripping protection added when signing with a newer scheme
-                            int foundId = ByteBuffer.wrap(value).order(
-                                ByteOrder.LITTLE_ENDIAN).getInt();
-                            if (supportedApkSigSchemeNames.ContainsKey(foundId))
-                            {
-                                supportedExpectedApkSigSchemeIds.Add(foundId);
-                            }
-                            else
-                            {
-                                result.addWarning(
-                                    ApkVerifier.Issue.V2_SIG_UNKNOWN_APK_SIG_SCHEME_ID, result.index, foundId);
-                            }
-
-                            break;
-                        default:
-                            result.addWarning(ApkVerifier.Issue.V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE, id);
-                            break;
+                        // stripping protection added when signing with a newer scheme
+                        int foundId = ByteBuffer.wrap(value).order(
+                            ByteOrder.LITTLE_ENDIAN).getInt();
+                        if (supportedApkSigSchemeNames.ContainsKey(foundId))
+                        {
+                            supportedExpectedApkSigSchemeIds.Add(foundId);
+                        }
+                        else
+                        {
+                            result.addWarning(
+                                ApkVerifier.Issue.V2_SIG_UNKNOWN_APK_SIG_SCHEME_ID, result.index, foundId);
+                        }
+                    }
+                    else
+                    {
+                        result.addWarning(ApkVerifier.Issue.V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE, id);
                     }
                 }
                 catch (Exception e) when (e is ApkFormatException || e is BufferUnderflowException)

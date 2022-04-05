@@ -303,9 +303,11 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
 
         private static byte[] toInteger(BigInteger value)
         {
+            var raw = value.ToByteArray();
+            Array.Reverse(raw);
             return createTag(
                 BerEncoding.TAG_CLASS_UNIVERSAL, false, BerEncoding.TAG_NUMBER_INTEGER,
-                value.ToByteArray());
+                raw);
         }
 
         private static byte[] toBoolean(bool value)
@@ -329,7 +331,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
         {
             var encodedValue = new MemoryStream();
 
-            var nodes = oid.Split(new[] { "\\." }, StringSplitOptions.None);
+            var nodes = oid.Split(new[] { "." }, StringSplitOptions.None);
             if (nodes.Length < 2)
             {
                 throw new Asn1EncodingException(

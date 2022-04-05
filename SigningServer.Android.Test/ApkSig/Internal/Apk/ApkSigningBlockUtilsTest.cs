@@ -112,7 +112,7 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Apk
         private void assertEqualDigests(
             Dictionary<ContentDigestAlgorithm, byte[]> d1, Dictionary<ContentDigestAlgorithm, byte[]> d2)
         {
-            assertEquals(d1.Keys, d2.Keys);
+            assertEquals((IEnumerable<ContentDigestAlgorithm>)d1.Keys, d2.Keys);
             foreach (ContentDigestAlgorithm algo in d1.Keys)
             {
                 byte[] digest1 = d1[algo];

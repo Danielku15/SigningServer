@@ -194,7 +194,8 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
             long bytesRead = 0;
             while (len > 0)
             {
-                int skipped = (int)@in.Seek(len, SeekOrigin.Current);
+                var pos = @in.Position;
+                int skipped = (int)(@in.Seek(len, SeekOrigin.Current) - pos);
                 if (skipped <= 0)
                 {
                     throw new BerDataValueFormatException(
@@ -293,12 +294,13 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
             public override void Flush()
             {
             }
-
+            
             public override long Seek(long offset, SeekOrigin origin)
             {
                 if (origin == SeekOrigin.Current)
                 {
                     skip(offset);
+                    return Position;
                 }
 
                 throw new NotSupportedException();
@@ -323,7 +325,12 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1.Ber
             public override bool CanSeek => true;
             public override bool CanWrite => false;
             public override long Length => getReadByteCount();
-            public override long Position { get; set; }
+
+            public override long Position
+            {
+                get => mIn.Position;
+                set => mIn.Position = value;
+            }
 
             public byte[] getReadBytes()
             {

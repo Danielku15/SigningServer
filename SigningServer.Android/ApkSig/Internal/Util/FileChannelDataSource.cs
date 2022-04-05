@@ -123,7 +123,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                     while (chunkRemaining > 0)
                     {
                         int read = mChannel.read(buf);
-                        if (read < 0)
+                        if (read <= 0)
                         {
                             throw new IOException("Unexpected EOF encountered");
                         }
@@ -174,6 +174,11 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                         chunkSize = mChannel.read(dest);
                     }
 
+                    if (chunkSize <= 0)
+                    {
+                        throw new IOException("Unexpected EOF encountered");
+                    }
+                    
                     offsetInFile += chunkSize;
                     remaining -= chunkSize;
                 }

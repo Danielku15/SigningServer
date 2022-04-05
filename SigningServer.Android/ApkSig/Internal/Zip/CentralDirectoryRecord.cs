@@ -157,7 +157,7 @@ namespace SigningServer.Android.ApkSig.Internal.Zip
             {
                 throw new ZipFormatException(
                     "Not a Central Directory record. Signature: 0x"
-                    + (recordSignature & 0xffffffffL).ToString("X"));
+                    + (recordSignature & 0xffffffffL).ToString("X8"));
             }
 
             buf.position(originalPosition + GP_FLAGS_OFFSET);

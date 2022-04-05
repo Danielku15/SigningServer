@@ -34,7 +34,7 @@ namespace SigningServer.Android.Test.ApkSig.Apk
         public void testGetMinSdkVersionForValidCodename()
         {
             ApkUtils.getMinSdkVersionForCodename("AAAA").Should().Be(1);
-            ApkUtils.getMinSdkVersionForCodename("CUPCAKE").Should().Be(1);
+            ApkUtils.getMinSdkVersionForCodename("CUPCAKE").Should().Be(2);
             ApkUtils.getMinSdkVersionForCodename("FROYO").Should().Be(7);
             ApkUtils.getMinSdkVersionForCodename("N").Should().Be(23);
             ApkUtils.getMinSdkVersionForCodename("NMR1").Should().Be(23);
@@ -61,7 +61,7 @@ namespace SigningServer.Android.Test.ApkSig.Apk
         public void testGetMinSdkVersionFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("original.apk");
-            Assert.Equals(23, ApkUtils.getMinSdkVersionFromBinaryAndroidManifest(manifest));
+            ApkUtils.getMinSdkVersionFromBinaryAndroidManifest(manifest).Should().Be(23);
         }
 
         [TestMethod]
@@ -89,58 +89,56 @@ namespace SigningServer.Android.Test.ApkSig.Apk
         public void testGetPackageNameFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("original.apk");
-            Assert.Equals(
-                "android.appsecurity.cts.tinyapp",
-                ApkUtils.getPackageNameFromBinaryAndroidManifest(manifest));
+            ApkUtils.getPackageNameFromBinaryAndroidManifest(manifest).Should().Be("android.appsecurity.cts.tinyapp");
         }
 
         [TestMethod]
         public void testGetTargetSdkVersionFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("v3-ec-p256-targetSdk-30.apk");
-            Assert.Equals(30, ApkUtils.getTargetSdkVersionFromBinaryAndroidManifest(manifest));
+            ApkUtils.getTargetSdkVersionFromBinaryAndroidManifest(manifest).Should().Be(30);
         }
 
         [TestMethod]
         public void testGetTargetSdkVersion_noUsesSdkElement_returnsDefault()
         {
             ByteBuffer manifest = getAndroidManifest("v1-only-no-uses-sdk.apk");
-            Assert.Equals(1, ApkUtils.getTargetSdkVersionFromBinaryAndroidManifest(manifest));
+            ApkUtils.getTargetSdkVersionFromBinaryAndroidManifest(manifest).Should().Be(1);
         }
 
         [TestMethod]
         public void testGetTargetSandboxVersionFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("targetSandboxVersion-2.apk");
-            Assert.Equals(2, ApkUtils.getTargetSandboxVersionFromBinaryAndroidManifest(manifest));
+            ApkUtils.getTargetSandboxVersionFromBinaryAndroidManifest(manifest).Should().Be(2);
         }
 
         [TestMethod]
         public void testGetTargetSandboxVersion_noTargetSandboxAttribute_returnsDefault()
         {
             ByteBuffer manifest = getAndroidManifest("original.apk");
-            Assert.Equals(1, ApkUtils.getTargetSandboxVersionFromBinaryAndroidManifest(manifest));
+            ApkUtils.getTargetSandboxVersionFromBinaryAndroidManifest(manifest).Should().Be(1);
         }
 
         [TestMethod]
         public void testGetVersionCodeFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("original.apk");
-            Assert.Equals(10, ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest));
+            ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest).Should().Be(10);
         }
 
         [TestMethod]
         public void testGetVersionCode_withVersionCodeMajor_returnsOnlyVersionCode()
         {
             ByteBuffer manifest = getAndroidManifest("original-with-versionCodeMajor.apk");
-            Assert.Equals(25, ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest));
+            ApkUtils.getVersionCodeFromBinaryAndroidManifest(manifest).Should().Be(25);
         }
 
         [TestMethod]
         public void testGetLongVersionCodeFromBinaryAndroidManifest()
         {
             ByteBuffer manifest = getAndroidManifest("original-with-versionCodeMajor.apk");
-            Assert.Equals(4294967321L, ApkUtils.getLongVersionCodeFromBinaryAndroidManifest(manifest));
+            ApkUtils.getLongVersionCodeFromBinaryAndroidManifest(manifest).Should().Be(4294967321L);
         }
 
         [TestMethod]

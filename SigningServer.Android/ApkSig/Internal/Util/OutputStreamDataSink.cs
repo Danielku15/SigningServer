@@ -48,7 +48,14 @@ namespace SigningServer.Android.ApkSig.Internal.Util
 
         public void consume(byte[] buf, int offset, int length)
         {
-            mOut.Write(buf, offset, length);
+            try
+            {
+                mOut.Write(buf, offset, length);
+            }
+            catch(ArgumentException e) when (!(e is ArgumentNullException) && !(e is ArgumentOutOfRangeException))
+            {
+                throw new ArgumentOutOfRangeException(e.Message, e);
+            }
         }
 
         public void consume(ByteBuffer buf)

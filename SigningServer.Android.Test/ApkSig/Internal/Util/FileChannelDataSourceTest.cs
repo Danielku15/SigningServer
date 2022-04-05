@@ -40,7 +40,7 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Util
 
 
             byte[] expectedBytes = new byte[bytesToFeed];
-            Buffer.BlockCopy(fullFileContent, 0, expectedBytes, 0, bytesToFeed);
+            System.Buffer.BlockCopy(fullFileContent, 0, expectedBytes, 0, bytesToFeed);
 
             byte[] resultBytes = getDataSinkBytes(dataSink);
 
@@ -61,7 +61,7 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Util
             rafDataSource.feed(offset, bytesToFeed, dataSink);
 
             byte[] expectedBytes = new byte[bytesToFeed];
-            Buffer.BlockCopy(fullFileContent, offset, expectedBytes, 0, bytesToFeed);
+            System.Buffer.BlockCopy(fullFileContent, offset, expectedBytes, 0, bytesToFeed);
 
             byte[] resultBytes = getDataSinkBytes(dataSink);
 
@@ -82,7 +82,7 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Util
             rafDataSource.feed(offset, bytesToFeed, dataSink);
 
             byte[] expectedBytes = new byte[bytesToFeed];
-            Buffer.BlockCopy(fullFileContent, offset, expectedBytes, 0, bytesToFeed);
+            System.Buffer.BlockCopy(fullFileContent, offset, expectedBytes, 0, bytesToFeed);
 
             byte[] resultBytes = getDataSinkBytes(dataSink);
 

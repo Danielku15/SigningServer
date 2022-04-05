@@ -2,7 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.X509;
 using SigningServer.Android.ApkSig;
 using SigningServer.Android.ApkSig.Internal.Util;
 using SigningServer.Android.ApkSig.Internal.X509;
@@ -87,8 +93,79 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Util
         public static PrivateKey toPrivateKey(string resourceName, String keyAlgorithm)
         {
             byte[] encoded = toByteArray(resourceName);
-            return new PrivateKey(new X509Certificate2(encoded).PrivateKey);
+            var key = PrivateKeyFactory.CreateKey(encoded);
+
+            switch (keyAlgorithm)
+            {
+                case "RSA":
+                    return new PrivateKey(DotNetUtilities.ToRSA((RsaPrivateCrtKeyParameters)key));
+                case "DSA":
+                    var dsaKeyParameters = (DsaPrivateKeyParameters)key;
+                    DSACryptoServiceProvider dsa = new DSACryptoServiceProvider();
+                    dsa.ImportParameters(new DSAParameters
+                    {
+                        Counter = dsaKeyParameters.Parameters.ValidationParameters?.Counter ?? 0,
+                        P = dsaKeyParameters.Parameters.P.ToByteArray(),
+                        Q = dsaKeyParameters.Parameters.Q.ToByteArray(),
+                        G = dsaKeyParameters.Parameters.G.ToByteArray(),
+                        // J = dsaKeyParameters.,
+                        Seed = dsaKeyParameters.Parameters.ValidationParameters?.GetSeed(),
+                        X = dsaKeyParameters.X.ToByteArray(),
+                        // Y = dsaKeyParameters.
+                    });
+                    return new PrivateKey(dsa);
+                // case "EC":
+                //     var ecKeyParameters = (ECPrivateKeyParameters)factory;
+                //     var ecProvider = new ECDsaCng();
+                //     ecProvider.ImportParameters(new ECParameters
+                //     {
+                //         D = ecKeyParameters.D.ToByteArray(),
+                //         Curve = new ECCurve
+                //         {
+                //             A = ecKeyParameters.Parameters.Curve.A.GetEncoded(),
+                //             B = ecKeyParameters.Parameters.Curve.B.GetEncoded(),
+                //             Cofactor = ecKeyParameters.Parameters.Curve.Cofactor.ToByteArray(),
+                //             G = new ECPoint
+                //             {
+                //                 X = ecKeyParameters.Parameters.G.XCoord.GetEncoded(),
+                //                 Y = ecKeyParameters.Parameters.G.YCoord.GetEncoded()
+                //             },
+                //             Order = ecKeyParameters.Parameters.Curve.Order.ToByteArray(),
+                //             Polynomial = ecKeyParameters.Parameters.Curve..ToByteArray()
+                //         }
+                //     });
+                //     return new PrivateKey(ecProvider);
+            }
+            
+            throw new CryptographicException("Unsupported algorithm");
         }
+        
+        public static RSAParameters ToRSAParameters(RsaPrivateCrtKeyParameters privKey)
+        {
+            RSAParameters rp = new RSAParameters();
+            rp.Modulus = privKey.Modulus.ToByteArrayUnsigned();
+            rp.Exponent = privKey.PublicExponent.ToByteArrayUnsigned();
+            rp.P = privKey.P.ToByteArrayUnsigned();
+            rp.Q = privKey.Q.ToByteArrayUnsigned();
+            rp.D = ConvertRSAParametersField(privKey.Exponent, rp.Modulus.Length);
+            rp.DP = ConvertRSAParametersField(privKey.DP, rp.P.Length);
+            rp.DQ = ConvertRSAParametersField(privKey.DQ, rp.Q.Length);
+            rp.InverseQ = ConvertRSAParametersField(privKey.QInv, rp.Q.Length);
+            return rp;
+        }
+
+        private static byte[] ConvertRSAParametersField(Org.BouncyCastle.Math.BigInteger n, int size)
+        {
+            byte[] bs = n.ToByteArrayUnsigned();
+            if (bs.Length == size)
+                return bs;
+            if (bs.Length > size)
+                throw new ArgumentException("Specified size too small", "size");
+            byte[] padded = new byte[size];
+            Array.Copy(bs, 0, padded, size - bs.Length, bs.Length);
+            return padded;
+        }
+
 
         public static SigningCertificateLineage.SignerConfig toLineageSignerConfig(String resourcePrefix)
         {

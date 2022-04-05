@@ -10,27 +10,31 @@ namespace SigningServer.Android.Test.ApkSig.Util
     {
         public static void assertEquals<T>(string message, T a, T b)
         {
-            a.Should().Be(b, message);
+            b.Should().Be(a, message);
         }
 
         public static void assertNotEquals<T>(string message, T a, T b)
         {
-            a.Should().NotBe(b, message);
+            b.Should().NotBe(a, message);
         }
 
+        public static void assertEquals<T>(ICollection<T> a, ICollection<T> b)
+        {
+            b.Should().BeEquivalentTo(a);
+        }
         public static void assertEquals<T>(T a, T b)
         {
-            a.Should().Be(b);
+            b.Should().Be(a);
         }
 
         public static void assertEquals<T>(IEnumerable<T> a, IEnumerable<T> b)
         {
-            a.Should().Equal(b);
+            b.Should().Equal(a);
         }
 
         public static void assertSame<T>(T a, T b)
         {
-            a.Should().BeSameAs(b);
+            b.Should().BeSameAs(a);
         }
 
         public static void assertNull<T>(T a)
@@ -60,12 +64,12 @@ namespace SigningServer.Android.Test.ApkSig.Util
 
         public static void assertNotEquals<T>(T a, T b)
         {
-            a.Should().NotBe(b);
+            b.Should().NotBe(a);
         }
 
         public static void assertArrayEquals<T>(T[] a, T[] b)
         {
-            a.Should().Equal(b);
+            b.Should().Equal(a);
         }
 
         public static void fail()

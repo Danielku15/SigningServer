@@ -268,6 +268,7 @@ namespace SigningServer.Android.ApkSig.Internal.Util
                         ByteBuffer chunk = slice(buffer, offset, offset + CHUNK_SIZE);
                         hashes[chunkIndex] = saltedDigest(md, chunk);
                     }
+                    md.Dispose();
                 }));
 
                 startChunkIndex += bufferSizeChunks;

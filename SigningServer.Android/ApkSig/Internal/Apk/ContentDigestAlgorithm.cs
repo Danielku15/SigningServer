@@ -68,5 +68,34 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
         {
             return mChunkDigestOutputSizeBytes;
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(mId)}: {mId}, {nameof(mJcaMessageDigestAlgorithm)}: {mJcaMessageDigestAlgorithm}, {nameof(mChunkDigestOutputSizeBytes)}: {mChunkDigestOutputSizeBytes}";
+        }
+
+        protected bool Equals(ContentDigestAlgorithm other)
+        {
+            return mId == other.mId && mJcaMessageDigestAlgorithm == other.mJcaMessageDigestAlgorithm && mChunkDigestOutputSizeBytes == other.mChunkDigestOutputSizeBytes;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((ContentDigestAlgorithm)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = mId;
+                hashCode = (hashCode * 397) ^ (mJcaMessageDigestAlgorithm != null ? mJcaMessageDigestAlgorithm.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ mChunkDigestOutputSizeBytes;
+                return hashCode;
+            }
+        }
     }
 }

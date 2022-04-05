@@ -635,7 +635,9 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 return BigInteger.Zero;
             }
 
-            return new BigInteger(ByteBufferUtils.toByteArray(encoded));
+            var raw = ByteBufferUtils.toByteArray(encoded);
+            Array.Reverse(raw);
+            return new BigInteger(raw);
         }
 
         private static int integerToInt(ByteBuffer encoded)
@@ -769,13 +771,25 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                 switch (sourceType)
                 {
                     case Asn1Type.INTEGER:
-                        if ((typeof(int) == targetType))
+                        if ((typeof(int?) == targetType))
+                        {
+                            return (int?)integerToInt(encodedContents);
+                        }
+                        else if ((typeof(int) == targetType))
                         {
                             return integerToInt(encodedContents);
                         }
+                        else if (typeof(long?) == targetType)
+                        {
+                            return (long?)integerToLong(encodedContents);
+                        }
                         else if (typeof(long) == targetType)
                         {
-                            return encodedContents;
+                            return integerToLong(encodedContents);
+                        }
+                        else if (typeof(BigInteger?) == targetType)
+                        {
+                            return integerToBigInteger(encodedContents);
                         }
                         else if (typeof(BigInteger) == targetType)
                         {
@@ -801,7 +815,7 @@ namespace SigningServer.Android.ApkSig.Internal.Asn1
                     case Asn1Type.BOOLEAN:
                         // A boolean should be encoded in a single byte with a value of 0 for false and
                         // any non-zero value for true.
-                        if (typeof(bool) == targetType)
+                        if (typeof(bool) == targetType || typeof(bool?) == targetType)
                         {
                             if (encodedContents.remaining() != 1)
                             {

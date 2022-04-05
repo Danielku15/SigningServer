@@ -46,7 +46,7 @@ namespace SigningServer.Android.ApkSig
      */
     public class SigningCertificateLineage
     {
-        public const int MAGIC = 0x3eff39d1;
+        public static readonly int MAGIC = 0x3eff39d1;
 
         private const int FIRST_VERSION = 1;
 

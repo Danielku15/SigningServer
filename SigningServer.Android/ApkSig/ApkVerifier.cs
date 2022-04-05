@@ -2278,7 +2278,7 @@ namespace SigningServer.Android.ApkSig
              * <li>Parameter 6: user-friendly variant of signature algorithm ({@code String})</li>
              * </ul>
              */
-            [Description("JAR signature {0} uses digest algorithm {4} and signature algorithm %6$s which"
+            [Description("JAR signature {0} uses digest algorithm {4} and signature algorithm {5} which"
                          + " is not supported on API Level(s) {3} for which this APK is being"
                          + " verified")]
             JAR_SIG_UNSUPPORTED_SIG_ALG,

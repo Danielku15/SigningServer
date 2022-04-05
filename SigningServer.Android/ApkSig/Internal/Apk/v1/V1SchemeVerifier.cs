@@ -1556,7 +1556,9 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v1
                 for (int i = 0; i < expectedDigests.Count; i++)
                 {
                     NamedDigest expectedDigest = expectedDigests[i];
-                    byte[] actualDigest = mds[i].TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                    mds[i].TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                    byte[] actualDigest = mds[i].Hash;
+                    mds[i].Dispose();
                     if (!expectedDigest.digest.SequenceEqual(actualDigest))
                     {
                         result.addError(

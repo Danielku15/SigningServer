@@ -147,7 +147,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 throw new ApplicationException("Failed to compute content digests", e);
             }
 
-            if (!contentDigestAlgorithms.Equals(actualContentDigests.Keys))
+            if (!contentDigestAlgorithms.SequenceEqual(actualContentDigests.Keys))
             {
                 throw new ApplicationException(
                     "Mismatch between sets of requested and computed content digests"
@@ -371,6 +371,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                             concatenationOfChunkCountAndChunkDigests,
                             5 + chunkIndex * expectedDigestSizeBytes,
                             expectedDigestSizeBytes);
+                        md.Initialize();
                         int actualDigestSizeBytes = md.HashSize / 8;
                         if (actualDigestSizeBytes != expectedDigestSizeBytes)
                         {
@@ -391,8 +392,10 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                 ContentDigestAlgorithm digestAlgorithm = digestAlgorithmsArray[i];
                 byte[] concatenationOfChunkCountAndChunkDigests = digestsOfChunks[i];
                 HashAlgorithm md = mds[i];
-                byte[] digest = md.TransformFinalBlock(concatenationOfChunkCountAndChunkDigests, 0,
+                md.TransformFinalBlock(concatenationOfChunkCountAndChunkDigests, 0,
                     concatenationOfChunkCountAndChunkDigests.Length);
+                byte[] digest = md.Hash;
+                md.Dispose();
                 outputContentDigests.Add(digestAlgorithm, digest);
             }
         }
@@ -778,6 +781,11 @@ namespace SigningServer.Android.ApkSig.Internal.Apk
                     Console.WriteLine("Caught a exception encoding the public key: " + e);
                     encodedPublicKey = null;
                 }
+            }
+
+            if (encodedPublicKey == null)
+            {
+                encodedPublicKey = publicKey.getEncoded();
             }
 
             return encodedPublicKey;

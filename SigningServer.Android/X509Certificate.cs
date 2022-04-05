@@ -4,6 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 
 namespace SigningServer.Android
 {
@@ -27,6 +30,11 @@ namespace SigningServer.Android
 
         public WrappedX509Certificate(byte[] encoded)
         {
+            if (encoded.Length == 0)
+            {
+                throw new CryptographicException("Invalid certificate data");
+            }
+
             mEncoded = encoded;
             _certificate = new X509Certificate2(encoded);
         }
@@ -67,10 +75,10 @@ namespace SigningServer.Android
         {
             switch (_certificate.PublicKey.Key)
             {
-                case RSA _:
-                    return new RSAKey(_certificate);
+                case RSA rsa:
+                    return new RSAKey(null, _certificate.PublicKey, rsa);
                 case ECDsa _:
-                    return new RSAKey(_certificate);
+                    return new ECKey(_certificate);
             }
 
             throw new CryptographicException("Unsupported public key type");
@@ -143,7 +151,7 @@ namespace SigningServer.Android
         public ByteBuffer getEncoded()
         {
             var raw = mEncodedIssuer ?? mCertificateIssuerName.RawData;
-            return new ByteBuffer(raw, 0, raw.Length);
+            return ByteBuffer.wrap(raw, 0, raw.Length);
         }
 
         protected bool Equals(X500Principal other)
@@ -185,6 +193,8 @@ namespace SigningServer.Android
         {
             switch (jcaSignatureAlgorithm)
             {
+                case "SHA1withRSA":
+                    return ((RSA)mPrivateKey).SignData(data, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
                 case "SHA256withRSA/PSS":
                     return ((RSA)mPrivateKey).SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
                 case "SHA512withRSA/PSS":
@@ -200,7 +210,7 @@ namespace SigningServer.Android
                 case "SHA256withDSA":
                     return ((DSA)mPrivateKey).SignData(data, HashAlgorithmName.SHA256);
                 default:
-                    throw new ArgumentException("Unsupported signature algorithm");
+                    throw new ArgumentException("Unsupported signature algorithm: " + jcaSignatureAlgorithm);
             }
         }
     }
@@ -212,10 +222,15 @@ namespace SigningServer.Android
 
         public static PublicKey FromEncoded(string keyAlgorithm, byte[] publicKeyBytes)
         {
+            var key = PublicKeyFactory.CreateKey(publicKeyBytes);
+
             switch (keyAlgorithm)
             {
                 case "RSA":
-                    return new RSAKey(publicKeyBytes);
+                    var rsaKey = (RsaKeyParameters)key;
+                    return new RSAKey(publicKeyBytes,
+                        null,
+                        DotNetUtilities.ToRSA(rsaKey));
                 case "EC":
                     return new ECKey(publicKeyBytes);
             }
@@ -229,23 +244,38 @@ namespace SigningServer.Android
     public class RSAKey : PublicKey
     {
         private readonly byte[] mKeyBytes;
-        private readonly X509Certificate2 _certificate;
+        private readonly System.Security.Cryptography.X509Certificates.PublicKey mPublicKey;
+        private readonly RSA mRsa;
+        private readonly RSAParameters mParameters;
 
-        public RSAKey(byte[] keyBytes)
+        public RSAKey(byte[] keyBytes, System.Security.Cryptography.X509Certificates.PublicKey publicKey, RSA rsa)
         {
             mKeyBytes = keyBytes;
-            _certificate = new X509Certificate2(keyBytes);
-        }
-
-
-        public RSAKey(X509Certificate2 certificate)
-        {
-            _certificate = certificate;
+            mPublicKey = publicKey;
+            mRsa = rsa;
+            mParameters = rsa.ExportParameters(false);
         }
 
         public override byte[] getEncoded()
         {
-            return mKeyBytes ?? _certificate.Export(X509ContentType.Cert);
+            if (mKeyBytes != null)
+            {
+                return mKeyBytes;
+            }
+
+            if (mPublicKey != null)
+            {
+                var rawKey = mPublicKey.EncodedKeyValue.RawData;
+
+                var sequence = new DerSequence(
+                    new DerSequence(new DerObjectIdentifier(mPublicKey.Oid.Value), DerNull.Instance),
+                    new DerBitString(rawKey)
+                );
+
+                return sequence.GetEncoded();
+            }
+
+            return null;
         }
 
         public override string getAlgorithm()
@@ -255,8 +285,7 @@ namespace SigningServer.Android
 
         public BigInteger getModulus()
         {
-            var parameters = _certificate.GetRSAPublicKey().ExportParameters(false);
-            return new BigInteger(parameters.Modulus);
+            return new BigInteger(mParameters.Modulus);
         }
 
         public override bool verify(byte[] signedData, byte[] signature, string jcaSignatureAlgorithm)
@@ -265,6 +294,10 @@ namespace SigningServer.Android
             RSASignaturePadding padding;
             switch (jcaSignatureAlgorithm)
             {
+                case "SHA1withRSA":
+                    hashAlgorithmName = HashAlgorithmName.SHA1;
+                    padding = RSASignaturePadding.Pkcs1;
+                    break;
                 case "SHA256withRSA/PSS":
                     hashAlgorithmName = HashAlgorithmName.SHA256;
                     padding = RSASignaturePadding.Pss;
@@ -286,7 +319,7 @@ namespace SigningServer.Android
             }
 
 
-            return _certificate.GetRSAPublicKey().VerifyData(signedData, signature, hashAlgorithmName, padding);
+            return mRsa.VerifyData(signedData, signature, hashAlgorithmName, padding);
         }
     }
 

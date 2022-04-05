@@ -11,11 +11,11 @@ namespace SigningServer.Android
         {
             if (mode == "r")
             {
-                _stream = file.OpenRead();
+                _stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             }
             else if (mode == "rw")
             {
-                _stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+                _stream = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
         }
 
@@ -84,6 +84,7 @@ namespace SigningServer.Android
             var rem = buf.remaining();
             var x = new byte[rem];
             var actual = mStream.Read(x, 0, rem);
+            
             buf.put(x, 0, actual);
             return actual;
         }

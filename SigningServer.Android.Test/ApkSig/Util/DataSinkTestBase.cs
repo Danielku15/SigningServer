@@ -134,7 +134,7 @@ namespace SigningServer.Android.Test.ApkSig.Util
                 sink.consume(arr, offset, length);
                 fail();
             }
-            catch (IndexOutOfRangeException expected)
+            catch (ArgumentOutOfRangeException expected)
             {
             }
         }

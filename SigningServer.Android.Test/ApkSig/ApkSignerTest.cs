@@ -105,20 +105,20 @@ namespace SigningServer.Android.Test.ApkSig
                 Resources.toSigningCertificateLineage(LINEAGE_RSA_2048_2_SIGNERS_RESOURCE_NAME);
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -126,7 +126,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false)
                     .setV4SigningEnabled(false));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -134,7 +134,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false)
                     .setV4SigningEnabled(false));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -143,21 +143,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV4SigningEnabled(false));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
@@ -165,21 +165,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(false)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(false)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
@@ -187,7 +187,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -195,7 +195,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -203,7 +203,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -212,21 +212,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setSigningCertificateLineage(lineage));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -234,28 +234,28 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -263,7 +263,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -271,7 +271,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -280,28 +280,28 @@ namespace SigningServer.Android.Test.ApkSig
                     .setSigningCertificateLineage(lineage));
 
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2v3-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             signGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -309,7 +309,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -317,7 +317,7 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             signGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 new FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2v3-lineage-@out.apk")),
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -400,11 +400,11 @@ namespace SigningServer.Android.Test.ApkSig
             // ZIP Local FileInfo Header "extra" field declares that the entry's data must be aligned to
             // 4 kB boundary, but the data isn't actually aligned @in the file.
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v1-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -412,21 +412,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false)
                     .setV4SigningEnabled(false));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(false)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -434,21 +434,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v1v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -456,14 +456,14 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v1v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-unaligned-@in.apk",
+                "golden-unaligned-in.apk",
                 "golden-unaligned-v1v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -476,11 +476,11 @@ namespace SigningServer.Android.Test.ApkSig
             // archives whose "extra" field are not compliant with APPNOTE.TXT. Hence, this technique
             // was deprecated.
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v1-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -488,21 +488,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false)
                     .setV4SigningEnabled(false));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(false)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -510,21 +510,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v1v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -532,14 +532,14 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v1v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-legacy-aligned-@in.apk",
+                "golden-legacy-aligned-in.apk",
                 "golden-legacy-aligned-v1v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -551,11 +551,11 @@ namespace SigningServer.Android.Test.ApkSig
             // generated by signapk and apksigner. This padding technique produces "extra" fields which
             // are compliant with APPNOTE.TXT.
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v1-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
@@ -563,21 +563,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(false)
                     .setV4SigningEnabled(false));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(false)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -585,21 +585,21 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v1v2-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(false));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(false)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(false)
@@ -607,14 +607,14 @@ namespace SigningServer.Android.Test.ApkSig
                     .setV3SigningEnabled(true)
                     .setSigningCertificateLineage(lineage));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v1v2v3-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfig)
                     .setV1SigningEnabled(true)
                     .setV2SigningEnabled(true)
                     .setV3SigningEnabled(true));
             assertGolden(
-                "golden-aligned-@in.apk",
+                "golden-aligned-in.apk",
                 "golden-aligned-v1v2v3-lineage-@out.apk",
                 new ApkSigner.Builder(rsa2048SignerConfigWithLineage)
                     .setV1SigningEnabled(true)
@@ -796,17 +796,17 @@ namespace SigningServer.Android.Test.ApkSig
 
             assertThrows<ApkFormatException>(() =>
                 sign(
-                    "v1-only-with-cr-@in-entry-name.apk",
+                    "v1-only-with-cr-in-entry-name.apk",
                     new ApkSigner.Builder(signers).setV1SigningEnabled(true)));
             assertThrows<ApkFormatException>(
                 () =>
                     sign(
-                        "v1-only-with-lf-@in-entry-name.apk",
+                        "v1-only-with-lf-in-entry-name.apk",
                         new ApkSigner.Builder(signers).setV1SigningEnabled(true)));
             assertThrows<ApkFormatException>(
                 () =>
                     sign(
-                        "v1-only-with-nul-@in-entry-name.apk",
+                        "v1-only-with-nul-in-entry-name.apk",
                         new ApkSigner.Builder(signers).setV1SigningEnabled(true)));
         }
 
@@ -845,7 +845,7 @@ namespace SigningServer.Android.Test.ApkSig
         public void testDebuggableApk()
         {
             // APK which uses a bool value "true" @in its android:debuggable
-            String debuggableBooleanApk = "debuggable-bool.apk";
+            String debuggableBooleanApk = "debuggable-boolean.apk";
             ApkSigner.SignerConfig item = getDefaultSignerConfigFromResources(FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
             List<ApkSigner.SignerConfig> signers =
                 new List<ApkSigner.SignerConfig>

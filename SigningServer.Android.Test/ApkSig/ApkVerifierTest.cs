@@ -68,9 +68,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-md5-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-md5-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-md5-1.2.840.113549.1.1.4-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-md5-1.2.840.113549.1.1.4-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -78,9 +78,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha1-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha1-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha1-1.2.840.113549.1.1.5-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha1-1.2.840.113549.1.1.5-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -88,9 +88,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha224-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha224-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha224-1.2.840.113549.1.1.14-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha224-1.2.840.113549.1.1.14-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -98,9 +98,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha256-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha256-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha256-1.2.840.113549.1.1.11-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha256-1.2.840.113549.1.1.11-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -108,9 +108,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha384-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha384-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha384-1.2.840.113549.1.1.12-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha384-1.2.840.113549.1.1.12-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -118,49 +118,49 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v1 scheme only, one signer
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha512-1.2.840.113549.1.1.1-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha512-1.2.840.113549.1.1.1-{0}.apk", RSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-rsa-pkcs1-sha512-1.2.840.113549.1.1.13-%s.apk", RSA_KEY_NAMES);
+                "v1-only-with-rsa-pkcs1-sha512-1.2.840.113549.1.1.13-{0}.apk", RSA_KEY_NAMES);
         }
 
         [TestMethod]
         public void testV1OneSignerSHA1withECDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-ecdsa-sha1-1.2.840.10045.2.1-%s.apk", EC_KEY_NAMES);
-            assertVerifiedForEach("v1-only-with-ecdsa-sha1-1.2.840.10045.4.1-%s.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha1-1.2.840.10045.2.1-{0}.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha1-1.2.840.10045.4.1-{0}.apk", EC_KEY_NAMES);
         }
 
         [TestMethod]
         public void testV1OneSignerSHA224withECDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-ecdsa-sha224-1.2.840.10045.2.1-%s.apk", EC_KEY_NAMES);
-            assertVerifiedForEach("v1-only-with-ecdsa-sha224-1.2.840.10045.4.3.1-%s.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha224-1.2.840.10045.2.1-{0}.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha224-1.2.840.10045.4.3.1-{0}.apk", EC_KEY_NAMES);
         }
 
         [TestMethod]
         public void testV1OneSignerSHA256withECDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-ecdsa-sha256-1.2.840.10045.2.1-%s.apk", EC_KEY_NAMES);
-            assertVerifiedForEach("v1-only-with-ecdsa-sha256-1.2.840.10045.4.3.2-%s.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha256-1.2.840.10045.2.1-{0}.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha256-1.2.840.10045.4.3.2-{0}.apk", EC_KEY_NAMES);
         }
 
         [TestMethod]
         public void testV1OneSignerSHA384withECDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-ecdsa-sha384-1.2.840.10045.2.1-%s.apk", EC_KEY_NAMES);
-            assertVerifiedForEach("v1-only-with-ecdsa-sha384-1.2.840.10045.4.3.3-%s.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha384-1.2.840.10045.2.1-{0}.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha384-1.2.840.10045.4.3.3-{0}.apk", EC_KEY_NAMES);
         }
 
         [TestMethod]
         public void testV1OneSignerSHA512withECDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-ecdsa-sha512-1.2.840.10045.2.1-%s.apk", EC_KEY_NAMES);
-            assertVerifiedForEach("v1-only-with-ecdsa-sha512-1.2.840.10045.4.3.4-%s.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha512-1.2.840.10045.2.1-{0}.apk", EC_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-ecdsa-sha512-1.2.840.10045.4.3.4-{0}.apk", EC_KEY_NAMES);
         }
 
         [TestMethod]
@@ -170,9 +170,9 @@ namespace SigningServer.Android.Test.ApkSig
             // NOTE: This test is split into two because JCA Providers shipping with OpenJDK refuse to
             // verify DSA signatures with keys too long for the SHA-1 digest.
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha1-1.2.840.10040.4.1-%s.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
+                "v1-only-with-dsa-sha1-1.2.840.10040.4.1-{0}.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha1-1.2.840.10040.4.3-%s.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
+                "v1-only-with-dsa-sha1-1.2.840.10040.4.3-{0}.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
         }
 
         [TestMethod]
@@ -189,9 +189,9 @@ namespace SigningServer.Android.Test.ApkSig
             s.initVerify(publicKey);
 
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha1-1.2.840.10040.4.1-%s.apk", DSA_KEY_NAMES_2048_AND_LARGER);
+                "v1-only-with-dsa-sha1-1.2.840.10040.4.1-{0}.apk", DSA_KEY_NAMES_2048_AND_LARGER);
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha1-1.2.840.10040.4.3-%s.apk", DSA_KEY_NAMES_2048_AND_LARGER);
+                "v1-only-with-dsa-sha1-1.2.840.10040.4.3-{0}.apk", DSA_KEY_NAMES_2048_AND_LARGER);
         }
 
         [TestMethod]
@@ -201,9 +201,9 @@ namespace SigningServer.Android.Test.ApkSig
             // NOTE: This test is split into two because JCA Providers shipping with OpenJDK refuse to
             // verify DSA signatures with keys too long for the SHA-224 digest.
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha224-1.2.840.10040.4.1-%s.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
+                "v1-only-with-dsa-sha224-1.2.840.10040.4.1-{0}.apk", DSA_KEY_NAMES_1024_AND_SMALLER);
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha224-2.16.840.1.101.3.4.3.1-%s.apk",
+                "v1-only-with-dsa-sha224-2.16.840.1.101.3.4.3.1-{0}.apk",
                 DSA_KEY_NAMES_1024_AND_SMALLER);
         }
 
@@ -221,9 +221,9 @@ namespace SigningServer.Android.Test.ApkSig
             s.initVerify(publicKey);
 
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha224-1.2.840.10040.4.1-%s.apk", DSA_KEY_NAMES_2048_AND_LARGER);
+                "v1-only-with-dsa-sha224-1.2.840.10040.4.1-{0}.apk", DSA_KEY_NAMES_2048_AND_LARGER);
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha224-2.16.840.1.101.3.4.3.1-%s.apk",
+                "v1-only-with-dsa-sha224-2.16.840.1.101.3.4.3.1-{0}.apk",
                 DSA_KEY_NAMES_2048_AND_LARGER);
         }
 
@@ -231,9 +231,9 @@ namespace SigningServer.Android.Test.ApkSig
         public void testV1OneSignerSHA256withDSAAccepted()
         {
             // APK signed with v1 scheme only, one signer
-            assertVerifiedForEach("v1-only-with-dsa-sha256-1.2.840.10040.4.1-%s.apk", DSA_KEY_NAMES);
+            assertVerifiedForEach("v1-only-with-dsa-sha256-1.2.840.10040.4.1-{0}.apk", DSA_KEY_NAMES);
             assertVerifiedForEach(
-                "v1-only-with-dsa-sha256-2.16.840.1.101.3.4.3.2-%s.apk", DSA_KEY_NAMES);
+                "v1-only-with-dsa-sha256-2.16.840.1.101.3.4.3.2-{0}.apk", DSA_KEY_NAMES);
         }
 
         [TestMethod]
@@ -282,20 +282,20 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v2 scheme only, one signer, one signature
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-dsa-sha256-%s.apk", DSA_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-dsa-sha256-{0}.apk", DSA_KEY_NAMES, AndroidSdkVersion.N);
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-ecdsa-sha256-%s.apk", EC_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-ecdsa-sha256-{0}.apk", EC_KEY_NAMES, AndroidSdkVersion.N);
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-rsa-pkcs1-sha256-%s.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-rsa-pkcs1-sha256-{0}.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
             // RSA-PSS signatures tested in a separate test below
 
             // DSA with SHA-512 is not supported by Android platform and thus APK Signature Scheme v2
             // does not support that either
-            // assertInstallSucceedsForEach("v2-only-with-dsa-sha512-%s.apk", DSA_KEY_NAMES);
+            // assertInstallSucceedsForEach("v2-only-with-dsa-sha512-{0}.apk", DSA_KEY_NAMES);
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-ecdsa-sha512-%s.apk", EC_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-ecdsa-sha512-{0}.apk", EC_KEY_NAMES, AndroidSdkVersion.N);
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-rsa-pkcs1-sha512-%s.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-rsa-pkcs1-sha512-{0}.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
         }
 
         [TestMethod]
@@ -303,16 +303,16 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v3 scheme only, one signer, one signature
             assertVerifiedForEachForMinSdkVersion(
-                "v3-only-with-dsa-sha256-%s.apk", DSA_KEY_NAMES, AndroidSdkVersion.P);
+                "v3-only-with-dsa-sha256-{0}.apk", DSA_KEY_NAMES, AndroidSdkVersion.P);
             assertVerifiedForEachForMinSdkVersion(
-                "v3-only-with-ecdsa-sha256-%s.apk", EC_KEY_NAMES, AndroidSdkVersion.P);
+                "v3-only-with-ecdsa-sha256-{0}.apk", EC_KEY_NAMES, AndroidSdkVersion.P);
             assertVerifiedForEachForMinSdkVersion(
-                "v3-only-with-rsa-pkcs1-sha256-%s.apk", RSA_KEY_NAMES, AndroidSdkVersion.P);
+                "v3-only-with-rsa-pkcs1-sha256-{0}.apk", RSA_KEY_NAMES, AndroidSdkVersion.P);
 
             assertVerifiedForEachForMinSdkVersion(
-                "v3-only-with-ecdsa-sha512-%s.apk", EC_KEY_NAMES, AndroidSdkVersion.P);
+                "v3-only-with-ecdsa-sha512-{0}.apk", EC_KEY_NAMES, AndroidSdkVersion.P);
             assertVerifiedForEachForMinSdkVersion(
-                "v3-only-with-rsa-pkcs1-sha512-%s.apk", RSA_KEY_NAMES, AndroidSdkVersion.P);
+                "v3-only-with-rsa-pkcs1-sha512-{0}.apk", RSA_KEY_NAMES, AndroidSdkVersion.P);
         }
 
         [TestMethod]
@@ -320,9 +320,9 @@ namespace SigningServer.Android.Test.ApkSig
         {
             // APK signed with v2 scheme only, one signer, one signature
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-rsa-pss-sha256-%s.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
+                "v2-only-with-rsa-pss-sha256-{0}.apk", RSA_KEY_NAMES, AndroidSdkVersion.N);
             assertVerifiedForEachForMinSdkVersion(
-                "v2-only-with-rsa-pss-sha512-%s.apk",
+                "v2-only-with-rsa-pss-sha512-{0}.apk",
                 RSA_KEY_NAMES_2048_AND_LARGER, // 1024-bit key is too short for PSS with SHA-512
                 AndroidSdkVersion.N);
         }

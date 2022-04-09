@@ -137,7 +137,7 @@ namespace SigningServer.Android.Test.ApkSig.Internal.Util
                 //     return new PrivateKey(ecProvider);
             }
             
-            throw new CryptographicException("Unsupported algorithm");
+            throw new CryptographicException("Unsupported algorithm: " + keyAlgorithm);
         }
         
         public static RSAParameters ToRSAParameters(RsaPrivateCrtKeyParameters privKey)

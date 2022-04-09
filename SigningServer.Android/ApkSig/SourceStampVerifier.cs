@@ -524,7 +524,7 @@ namespace SigningServer.Android.ApkSig
                     {
                         byte[] signatureBlockBytes = LocalFileRecord.getUncompressedData(apk,
                             signatureBlockRecord, zipSections.getZipCentralDirectoryOffset());
-                        foreach (var certificate in WrappedX509Certificate.generateCertificates(signatureBlockBytes))
+                        foreach (var certificate in X509CertificateUtils.generateCertificates(new MemoryStream(signatureBlockBytes)))
                         {
                             // If multiple certificates are found within the signature block only the
                             // first is used as the signer of this block.

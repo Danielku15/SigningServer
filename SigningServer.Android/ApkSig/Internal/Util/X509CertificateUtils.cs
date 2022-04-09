@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Text;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.X509;
 using SigningServer.Android;
 using SigningServer.Android.ApkSig.Internal.Asn1;
 using SigningServer.Android.ApkSig.Internal.X509;
@@ -72,9 +75,10 @@ namespace SigningServer.Android.ApkSig.Internal.Util
         {
             X509Certificate certificate;
             try
-
             {
-                certificate = new WrappedX509Certificate(encodedForm);
+                var parser = new X509CertificateParser();
+                var bouncyCertificate = parser.ReadCertificate(encodedForm);
+                certificate = new WrappedX509Certificate(bouncyCertificate.GetEncoded());
                 return certificate;
             }
             catch (CryptographicException e)
@@ -146,9 +150,11 @@ namespace SigningServer.Android.ApkSig.Internal.Util
 
             try
             {
-                return WrappedX509Certificate.generateCertificates(encodedCerts);
+                var parser = new X509CertificateParser();
+                var bouncyCertificates = parser.ReadCertificates(encodedCerts).OfType<Org.BouncyCastle.X509.X509Certificate>();
+                return new List<X509Certificate>(bouncyCertificates.Select(c => new WrappedX509Certificate(c.GetEncoded())));
             }
-            catch (CryptographicException e)
+            catch (CryptoException e)
             {
                 // This could be expected if the certificates are encoded using a BER encoding that does
                 // not use the minimum number of bytes to represent the length of the contents; attempt

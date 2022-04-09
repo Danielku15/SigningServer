@@ -65,7 +65,7 @@ namespace SigningServer.Android.ApkSig.Internal.X509
             IssuerAndSerialNumber issuerAndSerialNumber = id.issuerAndSerialNumber;
             byte[] encodedIssuer =
                 ByteBufferUtils.toByteArray(issuerAndSerialNumber.issuer.getEncoded());
-            X500Principal idIssuer = new X500Principal(encodedIssuer);
+            X500Principal idIssuer = new WrappedX500Principal(encodedIssuer);
             BigInteger idSerialNumber = issuerAndSerialNumber.certificateSerialNumber;
             return idSerialNumber.Equals(cert.getSerialNumber())
                    && idIssuer.Equals(cert.getIssuerX500Principal());

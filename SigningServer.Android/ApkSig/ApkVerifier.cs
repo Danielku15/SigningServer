@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using SigningServer.Android.ApkSig.Apk;
@@ -161,6 +162,8 @@ namespace SigningServer.Android.ApkSig
             ByteBuffer androidManifest = null;
 
             int? minSdkVersion = verifyAndGetMinSdkVersion(apk, zipSections);
+            // TODO:      testSignApk_stampBlock_withStampLineage expects value 23 here, bug in verifyAndGetMinSdkVersion
+
 
             Result result = new Result();
             Dictionary<int, Dictionary<ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests =
@@ -1851,7 +1854,7 @@ namespace SigningServer.Android.ApkSig
 
                 public bool containsErrors()
                 {
-                    return mErrors.Count == 0;
+                    return mErrors.Count != 0;
                 }
 
                 public List<ApkVerificationIssue> getErrors()
@@ -3308,15 +3311,15 @@ namespace SigningServer.Android.ApkSig
             public ByteArray(byte[] arr)
             {
                 mArray = arr;
-                mHashCode = mArray.GetHashCode();
+                mHashCode = new BigInteger(mArray).GetHashCode();
             }
 
-            public int hashCode()
+            public override int GetHashCode()
             {
                 return mHashCode;
             }
 
-            public bool equals(Object obj)
+            public override bool Equals(Object obj)
             {
                 if (this == obj)
                 {
@@ -3329,7 +3332,7 @@ namespace SigningServer.Android.ApkSig
                 }
 
                 ByteArray other = (ByteArray)obj;
-                if (hashCode() != other.hashCode())
+                if (GetHashCode() != other.GetHashCode())
                 {
                     return false;
                 }
@@ -3357,7 +3360,7 @@ namespace SigningServer.Android.ApkSig
             private readonly DataSource mApkDataSource;
             private FileInfo mV4SignatureFile;
 
-            private int mMinSdkVersion;
+            private int? mMinSdkVersion;
             private int mMaxSdkVersion = int.MaxValue;
 
             /**

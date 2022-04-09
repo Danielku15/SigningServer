@@ -800,7 +800,7 @@ namespace SigningServer.Android.ApkSig
                 }
 
                 List<V3SigningCertificateLineage.SigningCertificateNode> underTest = lineages[i].mSigningLineage;
-                if (!underTest.Equals(largestList.GetRange(0, underTest.Count)))
+                if (!underTest.SequenceEqual(largestList.GetRange(0, underTest.Count)))
                 {
                     throw new ArgumentException("Inconsistent SigningCertificateLineages. "
                                                 + "Not all lineages are subsets of each other.");

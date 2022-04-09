@@ -1509,7 +1509,7 @@ namespace SigningServer.Android.ApkSig.Internal.Apk.v1
                     firstSignedEntrySigners = entrySigners;
                     firstSignedEntryName = entryName;
                 }
-                else if (!entrySigners.Equals(firstSignedEntrySigners))
+                else if (!entrySigners.SequenceEqual(firstSignedEntrySigners))
                 {
                     result.addError(
                         ApkVerifier.Issue.JAR_SIG_ZIP_ENTRY_SIGNERS_MISMATCH,

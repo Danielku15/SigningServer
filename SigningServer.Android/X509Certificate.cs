@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using Org.BouncyCastle.X509;
 
 namespace SigningServer.Android
 {
@@ -50,7 +51,7 @@ namespace SigningServer.Android
 
         public X500Principal getIssuerX500Principal()
         {
-            return new X500Principal(_certificate.IssuerName);
+            return new WrappedX500Principal(_certificate.IssuerName);
         }
 
 
@@ -75,10 +76,12 @@ namespace SigningServer.Android
         {
             switch (_certificate.PublicKey.Key)
             {
+                case DSA dsa:
+                    return new DSAKey(null, _certificate.PublicKey, dsa);
                 case RSA rsa:
                     return new RSAKey(null, _certificate.PublicKey, rsa);
-                case ECDsa _:
-                    return new ECKey(_certificate);
+                case ECDsa ec:
+                    return new ECKey(null, _certificate.PublicKey, ec);
             }
 
             throw new CryptographicException("Unsupported public key type");
@@ -94,7 +97,7 @@ namespace SigningServer.Android
             var keyUsage = _certificate.Extensions.OfType<X509KeyUsageExtension>().FirstOrDefault();
             if (keyUsage == null)
             {
-                throw new CryptographicException("Certificate has no key usage specified");
+                return null;
             }
 
             return new[]
@@ -113,37 +116,34 @@ namespace SigningServer.Android
 
         public X500Principal getSubjectDN()
         {
-            return new X500Principal(_certificate.SubjectName);
+            return new WrappedX500Principal(_certificate.SubjectName);
         }
 
         public X500Principal getIssuerDN()
         {
-            return new X500Principal(_certificate.IssuerName);
-        }
-
-        public static List<X509Certificate> generateCertificates(byte[] encodedCerts)
-        {
-            // TODO: support multiple certificates (seems API was only added in .net 5)
-            var certificate = new WrappedX509Certificate(encodedCerts);
-            return new List<X509Certificate>
-            {
-                certificate
-            };
+            return new WrappedX500Principal(_certificate.IssuerName);
         }
     }
 
-    public class X500Principal
+    public interface X500Principal : IEquatable<X500Principal>
+    {
+        ByteBuffer getEncoded();
+        string getName();
+        Oid getOid();
+    }
+
+    public class WrappedX500Principal : X500Principal
     {
         private readonly byte[] mEncodedIssuer;
         private readonly X500DistinguishedName mCertificateIssuerName;
 
-        public X500Principal(byte[] encodedIssuer)
+        public WrappedX500Principal(byte[] encodedIssuer)
         {
             mEncodedIssuer = encodedIssuer;
             mCertificateIssuerName = new X500DistinguishedName(encodedIssuer);
         }
 
-        public X500Principal(X500DistinguishedName certificateIssuerName)
+        public WrappedX500Principal(X500DistinguishedName certificateIssuerName)
         {
             mCertificateIssuerName = certificateIssuerName;
         }
@@ -154,18 +154,20 @@ namespace SigningServer.Android
             return ByteBuffer.wrap(raw, 0, raw.Length);
         }
 
-        protected bool Equals(X500Principal other)
+
+        public bool Equals(X500Principal other)
         {
-            return mCertificateIssuerName.Name.Equals(other.mCertificateIssuerName.Name)
-                   && mCertificateIssuerName.Oid.Equals(other.mCertificateIssuerName.Oid);
+            return mCertificateIssuerName.Name.Equals(other.getName())
+                   && (ReferenceEquals(mCertificateIssuerName.Oid.Value, other.getOid().Value) ||
+                       (mCertificateIssuerName.Oid.Value?.Equals(other.getOid().Value) ?? false));
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((X500Principal)obj);
+            if (!(obj is X500Principal p)) return false;
+            return Equals(p);
         }
 
         public override int GetHashCode()
@@ -177,6 +179,11 @@ namespace SigningServer.Android
         public string getName()
         {
             return mCertificateIssuerName.Name;
+        }
+
+        public Oid getOid()
+        {
+            return mCertificateIssuerName.Oid;
         }
     }
 
@@ -193,6 +200,8 @@ namespace SigningServer.Android
         {
             switch (jcaSignatureAlgorithm)
             {
+                case "MD5withRSA":
+                    return ((RSA)mPrivateKey).SignData(data, HashAlgorithmName.MD5, RSASignaturePadding.Pkcs1);
                 case "SHA1withRSA":
                     return ((RSA)mPrivateKey).SignData(data, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
                 case "SHA256withRSA/PSS":
@@ -232,10 +241,50 @@ namespace SigningServer.Android
                         null,
                         DotNetUtilities.ToRSA(rsaKey));
                 case "EC":
-                    return new ECKey(publicKeyBytes);
+                    var ecKey = (ECPublicKeyParameters)key;
+                    return new ECKey(publicKeyBytes,
+                        null,
+                        ToECDsa(ecKey));
             }
 
             throw new CryptographicException("Unsupported key algorithm : " + keyAlgorithm);
+        }
+
+        private static ECDsa ToECDsa(ECPublicKeyParameters ecKey)
+        {
+            var ecDsa = new ECDsaCng();
+            ecDsa.ImportParameters(new ECParameters
+            {
+                Q = new ECPoint
+                {
+                    X = ecKey.Q.XCoord.GetEncoded(),
+                    Y = ecKey.Q.XCoord.GetEncoded()
+                },
+                Curve = new ECCurve
+                {
+                    A = ecKey.Parameters.Curve.A.GetEncoded(),
+                    B = ecKey.Parameters.Curve.B.GetEncoded(),
+                    Cofactor = ecKey.Parameters.Curve.Cofactor.ToByteArray(),
+                    G = new ECPoint
+                    {
+                        X = ecKey.Parameters.G.XCoord.GetEncoded(),
+                        Y = ecKey.Parameters.G.YCoord.GetEncoded()
+                    },
+                    Order = ecKey.Parameters.Curve.Order.ToByteArray(),
+                    CurveType = ECCurve.ECCurveType.PrimeTwistedEdwards,
+                    // TODO 
+                    // Polynomial = ecKey.Parameters.Curve.Field.ToByteArray(),
+                    // Polynomial = ecKey.Parameters.Curve.CoordinateSystem.ToByteArray(),
+                    // Polynomial = ecKey.Parameters.Curve.FieldSize.ToByteArray(),
+                    // CurveType = ecKey.Parameters.Curve.,
+                    // Hash = ,
+                    // Oid = {  },
+                    // Prime = ecKey.Parameters.Curve.,
+                    Seed = ecKey.Parameters.GetSeed()
+                },
+                D = null
+            });
+            return ecDsa;
         }
 
         public abstract bool verify(byte[] signedData, byte[] signature, string jcaSignatureAlgorithm);
@@ -294,6 +343,10 @@ namespace SigningServer.Android
             RSASignaturePadding padding;
             switch (jcaSignatureAlgorithm)
             {
+                case "MD5withRSA":
+                    hashAlgorithmName = HashAlgorithmName.MD5;
+                    padding = RSASignaturePadding.Pkcs1;
+                    break;
                 case "SHA1withRSA":
                     hashAlgorithmName = HashAlgorithmName.SHA1;
                     padding = RSASignaturePadding.Pkcs1;
@@ -323,20 +376,87 @@ namespace SigningServer.Android
         }
     }
 
+    public class DSAKey : PublicKey
+    {
+        private readonly byte[] mKeyBytes;
+        private readonly System.Security.Cryptography.X509Certificates.PublicKey mPublicKey;
+        private readonly DSA mDsa;
+        private readonly DSAParameters mParameters;
+
+        public DSAKey(byte[] keyBytes, System.Security.Cryptography.X509Certificates.PublicKey publicKey, DSA dsa)
+        {
+            mKeyBytes = keyBytes;
+            mPublicKey = publicKey;
+            mDsa = dsa;
+            mParameters = dsa.ExportParameters(false);
+        }
+
+        public override byte[] getEncoded()
+        {
+            if (mKeyBytes != null)
+            {
+                return mKeyBytes;
+            }
+
+            if (mPublicKey != null)
+            {
+                var rawKey = mPublicKey.EncodedKeyValue.RawData;
+
+                var sequence = new DerSequence(
+                    new DerSequence(new DerObjectIdentifier(mPublicKey.Oid.Value), DerNull.Instance),
+                    new DerBitString(rawKey)
+                );
+
+                return sequence.GetEncoded();
+            }
+
+            return null;
+        }
+
+        public override string getAlgorithm()
+        {
+            return "RSA";
+        }
+
+        public override bool verify(byte[] signedData, byte[] signature, string jcaSignatureAlgorithm)
+        {
+            HashAlgorithmName hashAlgorithmName;
+            switch (jcaSignatureAlgorithm)
+            {
+                case "MD5withDSA":
+                    hashAlgorithmName = HashAlgorithmName.MD5;
+                    break;
+                case "SHA1withDSA":
+                    hashAlgorithmName = HashAlgorithmName.SHA1;
+                    break;
+                case "SHA256withDSA":
+                    hashAlgorithmName = HashAlgorithmName.SHA256;
+                    break;
+                case "SHA512withDSA":
+                    hashAlgorithmName = HashAlgorithmName.SHA512;
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported algorithm");
+            }
+
+
+            return mDsa.VerifyData(signedData, signature, hashAlgorithmName);
+        }
+    }
+
     public class ECKey : PublicKey
     {
         private readonly byte[] mKeyBytes;
-        private readonly X509Certificate2 _certificate;
+        private readonly System.Security.Cryptography.X509Certificates.PublicKey mPublicKey;
+        private readonly ECDsa mEC;
+        private readonly ECParameters mParameters;
 
-        public ECKey(byte[] keyBytes)
+        public ECKey(byte[] keyBytes, System.Security.Cryptography.X509Certificates.PublicKey publicKey, ECDsa ec)
         {
             mKeyBytes = keyBytes;
-            _certificate = new X509Certificate2(keyBytes);
-        }
-
-        public ECKey(X509Certificate2 certificate)
-        {
-            _certificate = certificate;
+            mPublicKey = publicKey;
+            mEC = ec;
+            mParameters = ec.ExportParameters(false);
         }
 
         public override string getAlgorithm()
@@ -346,13 +466,29 @@ namespace SigningServer.Android
 
         public override byte[] getEncoded()
         {
-            return mKeyBytes ?? _certificate.Export(X509ContentType.Cert);
+            if (mKeyBytes != null)
+            {
+                return mKeyBytes;
+            }
+
+            if (mPublicKey != null)
+            {
+                var rawKey = mPublicKey.EncodedKeyValue.RawData;
+
+                var sequence = new DerSequence(
+                    new DerSequence(new DerObjectIdentifier(mPublicKey.Oid.Value), DerNull.Instance),
+                    new DerBitString(rawKey)
+                );
+
+                return sequence.GetEncoded();
+            }
+
+            return null;
         }
 
         public ECParameterSpec getParams()
         {
-            var p = _certificate.GetECDsaPublicKey().ExportParameters(false);
-            return new ECParameterSpec(p);
+            return new ECParameterSpec(mParameters);
         }
 
         public override bool verify(byte[] signedData, byte[] signature, string jcaSignatureAlgorithm)
@@ -371,7 +507,7 @@ namespace SigningServer.Android
             }
 
 
-            return _certificate.GetECDsaPublicKey().VerifyData(signedData, signature, hashAlgorithmName);
+            return mEC.VerifyData(signedData, signature, hashAlgorithmName);
         }
     }
 

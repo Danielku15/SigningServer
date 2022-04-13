@@ -21,7 +21,7 @@ class JavaToCsharpTranspiler(
     private vararg val additionalSources: Path
 ) {
     fun transpile() {
-        Log.setAdapter(Log.StandardOutStandardErrorAdapter())
+//        Log.setAdapter(Log.StandardOutStandardErrorAdapter())
 
         val sourcesParsed = parseSources()
 
@@ -54,6 +54,7 @@ class JavaToCsharpTranspiler(
 
         println("Resolving types");
         context.resolveAllUnresolvedTypeNodes();
+        context.rewriteVisibilities();
 
         if (!context.hasErrors) {
             println("Writing Result");

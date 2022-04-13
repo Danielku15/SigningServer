@@ -4,9 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
-using SigningServer.Android.ApkSig;
-using SigningServer.Android.ApkSig.Apk;
-using SigningServer.Android.ApkSig.Internal.Apk.v1;
+using SigningServer.Android.Com.Android.Apksig;
+using SigningServer.Android.Com.Android.Apksig.Apk;
+using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
+using SigningServer.Android.Security;
 using SigningServer.Contracts;
 
 namespace SigningServer.Android
@@ -72,7 +73,7 @@ namespace SigningServer.Android
                         (!digestAlgorithm.Equals(DigestAlgorithm.SHA1)) // v2 signing requires SHA256 or SHA512
                     ;
 
-                var signerConfigs = new List<ApkSigner.SignerConfig>
+                var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(certificate.FriendlyName,
                         new PrivateKey(certificate.PrivateKey),
@@ -83,21 +84,21 @@ namespace SigningServer.Android
                 };
 
                 ApkSigner.Builder apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
-                    .setInputApk(new FileInfo(inputFileName))
-                    .setOutputApk(new FileInfo(outputFileName))
-                    .setOtherSignersSignaturesPreserved(true)
-                    .setV1SigningEnabled(true)
-                    .setV2SigningEnabled(isAndroidSigningEnabled)
-                    .setV3SigningEnabled(isAndroidSigningEnabled)
-                    .setV4SigningEnabled(isAndroidSigningEnabled)
-                    .setForceSourceStampOverwrite(false)
-                    .setVerityEnabled(false)
-                    .setV4ErrorReportingEnabled(isAndroidSigningEnabled)
-                    .setDebuggableApkPermitted(true)
-                    .setDigestAlgorithm(digestAlgorithm);
+                    .SetInputApk(new FileInfo(inputFileName))
+                    .SetOutputApk(new FileInfo(outputFileName))
+                    .SetOtherSignersSignaturesPreserved(true)
+                    .SetV1SigningEnabled(true)
+                    .SetV2SigningEnabled(isAndroidSigningEnabled)
+                    .SetV3SigningEnabled(isAndroidSigningEnabled)
+                    .SetV4SigningEnabled(isAndroidSigningEnabled)
+                    .SetForceSourceStampOverwrite(false)
+                    .SetVerityEnabled(false)
+                    .SetV4ErrorReportingEnabled(isAndroidSigningEnabled)
+                    .SetDebuggableApkPermitted(true)
+                    .SetDigestAlgorithm(digestAlgorithm);
 
-                ApkSigner apkSigner = apkSignerBuilder.build();
-                apkSigner.sign();
+                ApkSigner apkSigner = apkSignerBuilder.Build();
+                apkSigner.Sign();
 
                 File.Delete(inputFileName);
                 File.Move(outputFileName, inputFileName);

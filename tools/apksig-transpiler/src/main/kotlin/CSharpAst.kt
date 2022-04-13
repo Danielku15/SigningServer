@@ -22,9 +22,8 @@ enum class CsSyntaxKind {
     PrimitiveTypeNode,
     EnumMember,
     ArrayTypeNode,
-    MapTypeNode,
 
-    Lock,
+    LockStatement,
     Block,
     EmptyStatement,
     VariableStatement,
@@ -40,6 +39,7 @@ enum class CsSyntaxKind {
     SwitchStatement,
     ThrowStatement,
     TryStatement,
+    UsingStatement,
 
     VariableDeclarationList,
     VariableDeclaration,
@@ -56,6 +56,10 @@ enum class CsSyntaxKind {
     ThisLiteral,
     BaseLiteral,
     StringLiteral,
+    LongLiteral,
+    DoubleLiteral,
+    CharLiteral,
+    IntegerLiteral,
     BinaryExpression,
     ConditionalExpression,
     LambdaExpression,
@@ -159,7 +163,8 @@ class CsTypeParameterDeclaration : CsNodeBase(), CsNamedElement, CsNode, CsTypeR
     override var name: String = ""
 }
 
-interface CsNamedTypeDeclaration : CsNamedElement, CsDocumentedElement, CsNode, CsAttributedElement, CsClassMember, CsInterfaceMember,
+interface CsNamedTypeDeclaration : CsNamedElement, CsDocumentedElement, CsNode, CsAttributedElement, CsClassMember,
+    CsInterfaceMember,
     CsTypeReferenceType, CsNamespaceMember {
     var typeParameters: MutableList<CsTypeParameterDeclaration>
     var visibility: CsVisibility
@@ -237,6 +242,7 @@ class CsMethodDeclaration(
     override val nodeType: CsSyntaxKind = CsSyntaxKind.MethodDeclaration
     override var visibility: CsVisibility = CsVisibility.None
     var isVirtual: Boolean = false
+    var isSynchronized: Boolean = false
     var isOverride: Boolean = false
     var isAbstract: Boolean = false
     var partial: Boolean = false
@@ -246,9 +252,13 @@ class CsMethodDeclaration(
     override var body: CsExpressionOrBlockBody? = null
     override var documentation: String? = null
     override var attributes: MutableList<CsAttribute> = ArrayList()
+
+    init {
+        returnType.parent = this
+    }
 }
 
-class CsConstructorDeclaration : CsNodeBase(), CsMethodDeclarationBase, CsClassMember {
+class CsConstructorDeclaration : CsNodeBase(), CsMethodDeclarationBase, CsClassMember, CsAttributedElement {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.ConstructorDeclaration
     override var visibility: CsVisibility = CsVisibility.None
     var baseConstructorArguments: MutableList<CsExpression>? = null
@@ -257,11 +267,12 @@ class CsConstructorDeclaration : CsNodeBase(), CsMethodDeclarationBase, CsClassM
     override var isStatic: Boolean = false
     override var name: String = ""
     override var documentation: String? = null
+    override var attributes: MutableList<CsAttribute> = ArrayList()
 }
 
 class CsFieldDeclaration(
     var type: CsTypeNode
-) : CsNodeBase(), CsMemberDeclaration, CsClassMember {
+) : CsNodeBase(), CsMemberDeclaration, CsClassMember, CsAttributedElement {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.FieldDeclaration
     override var visibility: CsVisibility = CsVisibility.None
     var isReadonly: Boolean = false
@@ -269,6 +280,11 @@ class CsFieldDeclaration(
     override var isStatic: Boolean = false
     override var name: String = ""
     override var documentation: String? = null
+    override var attributes: MutableList<CsAttribute> = ArrayList()
+
+    init {
+        type.parent = this
+    }
 }
 
 class CsPropertyDeclaration(
@@ -316,7 +332,7 @@ class CsUnresolvedTypeNode : CsNodeBase(), CsTypeNode {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.UnresolvedTypeNode
     var jDeclaration: ResolvedDeclaration? = null
     var jType: ResolvedType? = null
-    var typeArguments: MutableList<CsUnresolvedTypeNode> = ArrayList()
+    var typeArguments: MutableList<CsTypeNode> = ArrayList()
     var resolved: CsTypeNode? = null
 
     override var isNullable: Boolean = false
@@ -341,18 +357,9 @@ class CsArrayTypeNode(var elementType: CsTypeNode) : CsNodeBase(), CsTypeNode {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.ArrayTypeNode
     override var isNullable: Boolean = false
     override var isOptional: Boolean = false
-}
-
-class CsMapTypeNode(
-    var keyType: CsTypeNode,
-    var keyIsValueType: Boolean,
-    var valueType: CsTypeNode,
-    var valueIsValueType: Boolean
-
-) : CsNodeBase(), CsTypeNode {
-    override val nodeType: CsSyntaxKind = CsSyntaxKind.MapTypeNode
-    override var isNullable: Boolean = false
-    override var isOptional: Boolean = false
+    init {
+        elementType.parent = this
+    }
 }
 
 enum class CsPrimitiveType {
@@ -363,7 +370,7 @@ enum class CsPrimitiveType {
     Long,
     Int,
     Short,
-    Byte,
+    SByte,
     Char,
     Void,
     Object,
@@ -422,6 +429,22 @@ class CsBaseLiteral : CsNodeBase(), CsExpression {
 
 class CsStringLiteral(var text: String) : CsNodeBase(), CsStringTemplateExpressionChunk, CsExpression {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.StringLiteral
+}
+
+class CsLongLiteral(var text: String) : CsNodeBase(), CsStringTemplateExpressionChunk, CsExpression {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.LongLiteral
+}
+
+class CsDoubleLiteral(var text: String) : CsNodeBase(), CsStringTemplateExpressionChunk, CsExpression {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.DoubleLiteral
+}
+
+class CsCharLiteral(var text: String) : CsNodeBase(), CsStringTemplateExpressionChunk, CsExpression {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.CharLiteral
+}
+
+class CsIntegerLiteral(var text: String) : CsNodeBase(), CsStringTemplateExpressionChunk, CsExpression {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.IntegerLiteral
 }
 
 class CsBinaryExpression(
@@ -503,7 +526,7 @@ class CsArrayCreationExpression : CsNodeBase(), CsExpression {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.ArrayCreationExpression
     var type: CsTypeNode? = null
     var values: MutableList<CsExpression>? = null
-    var sizeExpression: CsExpression? = null
+    var sizeExpressions: MutableList<CsExpression?> = ArrayList()
 }
 
 class CsArrayInitializerExpression : CsNodeBase(), CsExpression {
@@ -603,7 +626,8 @@ class CsLockStatement(
     var expression: CsExpression,
     var body: CsBlock
 ) : CsNodeBase(), CsStatement, CsExpressionOrBlockBody {
-    override val nodeType: CsSyntaxKind = CsSyntaxKind.Lock
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.LockStatement
+
     init {
         expression.parent = this
         body.parent = this
@@ -623,7 +647,7 @@ class CsVariableStatement(var declarationList: CsVariableDeclarationList) : CsNo
     override val nodeType: CsSyntaxKind = CsSyntaxKind.VariableStatement
 }
 
-class CsExpressionStatement(var expression: CsExpression) : CsNodeBase(), CsStatement {
+class CsExpressionStatement(var expression: CsExpression) : CsNodeBase(), CsStatement, CsExpressionOrBlockBody {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.ExpressionStatement
 
     init {
@@ -737,9 +761,13 @@ class CsContinueStatement : CsNodeBase(), CsStatement {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.ContinueStatement
 }
 
-class CsReturnStatement : CsNodeBase(), CsStatement {
-    override val nodeType: CsSyntaxKind = CsSyntaxKind.ReturnStatement
+class CsReturnStatement(
     var expression: CsExpression? = null
+) : CsNodeBase(), CsStatement {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.ReturnStatement
+    init {
+        expression?.parent = this
+    }
 }
 
 class CsSwitchStatement(var expression: CsExpression) : CsNodeBase(), CsStatement {
@@ -781,11 +809,22 @@ class CsTryStatement(var tryBlock: CsBlock) : CsNodeBase(), CsStatement {
     var finallyBlock: CsBlock? = null
 }
 
+class CsUsingStatement(var expressions: MutableList<CsExpression>, var body: CsBlock) : CsNodeBase(), CsStatement {
+    override val nodeType: CsSyntaxKind = CsSyntaxKind.UsingStatement
+
+    init {
+        for (e in expressions) {
+            e.parent = this
+        }
+    }
+}
+
 class CsCatchClause(
     var parameter: CsParameterDeclaration,
     var block: CsBlock
 ) : CsNodeBase() {
     override val nodeType: CsSyntaxKind = CsSyntaxKind.CatchClause
+    val whenTypeClauses: MutableList<CsTypeNode> = ArrayList()
 
     init {
         parameter.parent = this

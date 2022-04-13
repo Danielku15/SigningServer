@@ -2,40 +2,19 @@ import com.github.javaparser.ast.*
 import com.github.javaparser.ast.body.*
 import com.github.javaparser.ast.comments.JavadocComment
 import com.github.javaparser.ast.expr.*
-import com.github.javaparser.ast.stmt.AssertStmt
-import com.github.javaparser.ast.stmt.BlockStmt
-import com.github.javaparser.ast.stmt.BreakStmt
-import com.github.javaparser.ast.stmt.ContinueStmt
-import com.github.javaparser.ast.stmt.DoStmt
-import com.github.javaparser.ast.stmt.EmptyStmt
-import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt
-import com.github.javaparser.ast.stmt.ExpressionStmt
-import com.github.javaparser.ast.stmt.ForEachStmt
-import com.github.javaparser.ast.stmt.ForStmt
-import com.github.javaparser.ast.stmt.IfStmt
-import com.github.javaparser.ast.stmt.LabeledStmt
-import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt
-import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt
-import com.github.javaparser.ast.stmt.ReturnStmt
-import com.github.javaparser.ast.stmt.Statement
-import com.github.javaparser.ast.stmt.SwitchStmt
-import com.github.javaparser.ast.stmt.SynchronizedStmt
-import com.github.javaparser.ast.stmt.ThrowStmt
-import com.github.javaparser.ast.stmt.TryStmt
-import com.github.javaparser.ast.stmt.UnparsableStmt
-import com.github.javaparser.ast.stmt.WhileStmt
-import com.github.javaparser.ast.stmt.YieldStmt
+import com.github.javaparser.ast.stmt.*
 import com.github.javaparser.ast.type.Type
 import com.github.javaparser.ast.type.TypeParameter
-import com.github.javaparser.resolution.declarations.ResolvedAnnotationDeclaration
+import com.github.javaparser.ast.type.UnionType
 import com.github.javaparser.resolution.declarations.ResolvedDeclaration
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration
+import com.github.javaparser.resolution.types.ResolvedReferenceType
 import com.github.javaparser.resolution.types.ResolvedType
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.nameWithoutExtension
 
@@ -79,9 +58,9 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode, declaration: EnumDeclaration) {
-        val t:CsNamedTypeDeclaration
+        val t: CsNamedTypeDeclaration
         if (declaration.members.isNotEmpty()) {
-            val clz = CsInterfaceDeclaration()
+            val clz = CsClassDeclaration()
             t = clz
             clz.parent = parent
             clz.name = declaration.nameAsString
@@ -89,6 +68,56 @@ class CSharpAstTransformer(
             clz.documentation = visitDocumentation(declaration)
             clz.jSymbol = declaration.resolve()
             visitAnnotations(clz, declaration.annotations)
+
+            declaration.entries.forEach {
+                val f = CsFieldDeclaration(CsTypeReference(clz))
+                f.parent = clz
+                f.isStatic = true
+                f.isReadonly = true
+                f.visibility = CsVisibility.Public
+                f.name = it.nameAsString
+                f.initializer = CsNewExpression(CsTypeReference(clz)).apply {
+                    this.parent = f
+                    this.arguments = it.arguments.map { visit(this, it) }.toMutableList()
+                }
+                clz.members.add(f)
+            }
+
+            declaration.members.forEach {
+                visit(clz, it)
+            }
+
+            val valuesInstance = CsFieldDeclaration(
+                CsArrayTypeNode(CsTypeReference(clz))
+            )
+            valuesInstance.parent = clz
+            valuesInstance.name = "_values"
+            valuesInstance.visibility = CsVisibility.Private
+            valuesInstance.isStatic = true
+            valuesInstance.isReadonly = true
+            val valuesInstanceInitializer = CsArrayInitializerExpression()
+            valuesInstanceInitializer.parent = valuesInstance
+            valuesInstanceInitializer.values = declaration.entries.map {
+                CsIdentifier(it.nameAsString).apply {
+                    this.parent = valuesInstanceInitializer
+                }
+            }.toMutableList()
+            valuesInstance.initializer = valuesInstanceInitializer
+            clz.members.add(valuesInstance)
+
+            val valuesMethod = CsMethodDeclaration(CsArrayTypeNode(CsTypeReference(clz)), "Values")
+            valuesMethod.parent = clz
+            valuesMethod.isStatic = true
+            valuesMethod.visibility = CsVisibility.Public
+            val valuesMethodBody = CsBlock()
+            valuesMethodBody.parent = valuesMethod
+            valuesMethodBody.statements.add(
+                CsReturnStatement(
+                    CsIdentifier(valuesInstance.name)
+                )
+            )
+            valuesMethod.body = valuesMethodBody
+            clz.members.add(valuesMethod)
         } else {
             val enum = CsEnumDeclaration()
             t = enum
@@ -105,10 +134,13 @@ class CSharpAstTransformer(
         }
 
         if (parent is CsNamespaceDeclaration) {
+            t.parent = parent
             parent.declarations.add(t)
         } else if (parent is CsClassDeclaration) {
+            t.parent = parent
             parent.members.add(t)
         } else if (parent is CsInterfaceDeclaration) {
+            t.parent = parent
             parent.members.add(t)
         }
         context.registerSymbol(t)
@@ -197,19 +229,25 @@ class CSharpAstTransformer(
 
         clz.baseClass = CsTypeReference(CsStringTypeReference("System.Attribute"))
 
+        declaration.members.forEach {
+            visit(clz, it)
+        }
 
         if (parent is CsNamespaceDeclaration) {
+            clz.parent = parent
             parent.declarations.add(clz)
         } else if (parent is CsClassDeclaration) {
+            clz.parent = parent
             parent.members.add(clz)
         } else if (parent is CsInterfaceDeclaration) {
+            clz.parent = parent
             parent.members.add(clz)
         }
         context.registerSymbol(clz)
     }
 
     private fun visit(parent: CsNode, declaration: ClassOrInterfaceDeclaration) {
-        val t:CsNamedTypeDeclaration
+        val t: CsNamedTypeDeclaration
         if (declaration.isInterface) {
             val clz = CsInterfaceDeclaration()
             t = clz
@@ -218,9 +256,8 @@ class CSharpAstTransformer(
             clz.visibility = visit(declaration.accessSpecifier)
             clz.documentation = visitDocumentation(declaration)
             clz.jSymbol = declaration.resolve()
+            clz.typeParameters = declaration.typeParameters.map { visit(clz, it) }.toMutableList()
             visitAnnotations(clz, declaration.annotations)
-
-            clz.typeParameters = visit(clz, declaration.typeParameters)
 
             clz.interfaces = declaration.extendedTypes.map {
                 this.createUnresolvedTypeNode(clz, it)
@@ -238,6 +275,7 @@ class CSharpAstTransformer(
             clz.documentation = visitDocumentation(declaration)
             clz.isAbstract = declaration.isAbstract
             clz.jSymbol = declaration.resolve()
+            clz.typeParameters = declaration.typeParameters.map { visit(clz, it) }.toMutableList()
             visitAnnotations(clz, declaration.annotations)
 
             if (declaration.extendedTypes.isNonEmpty) {
@@ -254,10 +292,13 @@ class CSharpAstTransformer(
         }
 
         if (parent is CsNamespaceDeclaration) {
+            t.parent = parent
             parent.declarations.add(t)
         } else if (parent is CsClassDeclaration) {
+            t.parent = parent
             parent.members.add(t)
         } else if (parent is CsInterfaceDeclaration) {
+            t.parent = parent
             parent.members.add(t)
         }
         context.registerSymbol(t)
@@ -279,7 +320,7 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode, m: InitializerDeclaration) {
-        // TODO
+        // TODO collect all and put them as block into a static constructor
     }
 
     private fun visit(parent: CsNode, m: CompactConstructorDeclaration) {
@@ -287,30 +328,184 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode, m: FieldDeclaration) {
+        var isStatic = false
+        var visibility = CsVisibility.Public
+        var isReadonly = false
+
+        for (mod in m.modifiers) {
+            when (mod.keyword) {
+                Modifier.Keyword.PUBLIC -> visibility = CsVisibility.Public
+                Modifier.Keyword.PROTECTED -> visibility = CsVisibility.Protected
+                Modifier.Keyword.PRIVATE -> visibility = CsVisibility.Private
+                Modifier.Keyword.STATIC -> isStatic = true
+                Modifier.Keyword.FINAL -> isReadonly = true
+                else -> {}
+            }
+        }
+
+        for (f in m.variables) {
+            val csf = CsFieldDeclaration(this.createUnresolvedTypeNode(null, m.commonType))
+            csf.visibility = visibility
+            csf.name = context.toFieldName(f.nameAsString)
+            csf.isReadonly = isReadonly
+            csf.isStatic = isStatic
+            csf.documentation = visitDocumentation(m)
+            visitAnnotations(csf, m.annotations)
+            if (f.initializer.isPresent) {
+                csf.initializer = visit(csf, f.initializer.get())
+            }
+
+            if (parent is CsClassDeclaration) {
+                csf.parent = parent
+                parent.members.add(csf)
+            }
+        }
     }
 
     private fun visit(parent: CsNode, m: ConstructorDeclaration) {
+        val csm = CsConstructorDeclaration()
+        csm.parent = parent
+        csm.visibility = CsVisibility.Internal
+        csm.documentation = visitDocumentation(m)
+        visitAnnotations(csm, m.annotations)
+
+        for (mod in m.modifiers) {
+            when (mod.keyword) {
+                Modifier.Keyword.PUBLIC -> csm.visibility = CsVisibility.Public
+                Modifier.Keyword.PROTECTED -> csm.visibility = CsVisibility.Protected
+                Modifier.Keyword.PRIVATE -> {
+                    csm.visibility = CsVisibility.Private
+                }
+                Modifier.Keyword.STATIC -> {
+                    csm.isStatic = true
+                }
+                else -> {}
+            }
+        }
+
+        _baseConstructorCall = null
+        csm.body = visit(csm, m.body) as CsExpressionOrBlockBody
+        if (_baseConstructorCall != null) {
+            csm.baseConstructorArguments = _baseConstructorCall!!.arguments.map { visit(csm, it) }.toMutableList()
+        }
+        csm.parameters = m.parameters.map { visit(csm, it) }.toMutableList()
+
+        if (parent is CsClassDeclaration) {
+            csm.parent = parent
+            parent.members.add(csm)
+        }
     }
 
     private fun visit(parent: CsNode, m: MethodDeclaration) {
+        val csm = CsMethodDeclaration(this.createUnresolvedTypeNode(null, m.type), context.toMethodName(m.nameAsString))
+        csm.visibility = CsVisibility.Public
+        csm.isVirtual = parent is CsClassDeclaration
+        csm.documentation = visitDocumentation(m)
+        visitAnnotations(csm, m.annotations)
+
+        for (mod in m.modifiers) {
+            when (mod.keyword) {
+                Modifier.Keyword.PUBLIC -> csm.visibility = CsVisibility.Public
+                Modifier.Keyword.PROTECTED -> csm.visibility = CsVisibility.Protected
+                Modifier.Keyword.PRIVATE -> {
+                    csm.visibility = CsVisibility.Private
+                    csm.isVirtual = false
+                }
+                Modifier.Keyword.ABSTRACT -> csm.isAbstract = true
+                Modifier.Keyword.STATIC -> {
+                    csm.isStatic = true
+                    csm.isVirtual = false
+                }
+                Modifier.Keyword.FINAL -> csm.isVirtual = false
+                Modifier.Keyword.SYNCHRONIZED -> csm.isSynchronized = false
+                else -> {}
+            }
+        }
+
+        for (a in m.annotations) {
+            try {
+                val ar = a.resolve()
+                when (ar.qualifiedName) {
+                    "java.lang.Override" -> {
+                        csm.isVirtual = false
+                        csm.isOverride = true
+                    }
+                }
+            }
+            catch(_:Throwable) {
+            }
+        }
+
+        if (m.body.isPresent && !m.isDefault) {
+            csm.body = visit(csm, m.body.get()) as CsExpressionOrBlockBody
+        }
+        csm.parameters = m.parameters.map { visit(csm, it) }.toMutableList()
+        csm.typeParameters = visit(csm, m.typeParameters)
+
+        if (parent is CsClassDeclaration) {
+            csm.parent = parent
+            parent.members.add(csm)
+        } else if (parent is CsInterfaceDeclaration) {
+            if (!csm.isOverride) { // no override in interfaces
+                csm.parent = parent
+                parent.members.add(csm)
+            }
+        }
     }
 
+    private fun visit(parent: CsNode, it: Parameter): CsParameterDeclaration {
+        val p = CsParameterDeclaration()
+        p.type = this.createUnresolvedTypeNode(p, it.type)
+        p.name = context.toParameterName(it.nameAsString)
+        p.params = it.isVarArgs
+        p.parent = parent
+        return p
+    }
+
+
     private fun visit(parent: CsNode, m: AnnotationMemberDeclaration) {
+        val csf = CsPropertyDeclaration(this.createUnresolvedTypeNode(null, m.type))
+        for (mod in m.modifiers) {
+            when (mod.keyword) {
+                Modifier.Keyword.PUBLIC -> csf.visibility = CsVisibility.Public
+                Modifier.Keyword.PROTECTED -> csf.visibility = CsVisibility.Protected
+                Modifier.Keyword.PRIVATE -> csf.visibility = CsVisibility.Private
+                else -> {}
+            }
+        }
+
+        csf.name = context.toPropertyName(m.nameAsString)
+        csf.documentation = visitDocumentation(m)
+        if (m.defaultValue.isPresent) {
+            csf.initializer = visit(csf, m.defaultValue.get())
+        }
+        csf.getAccessor = CsPropertyAccessorDeclaration("get", null)
+        csf.getAccessor!!.parent = csf
+        csf.setAccessor = CsPropertyAccessorDeclaration("set", null)
+        csf.setAccessor!!.parent = csf
+
+        if (parent is CsClassDeclaration) {
+            csf.parent = parent
+            parent.members.add(csf)
+        }
     }
 
     private fun visit(
-        clz: CsInterfaceDeclaration,
+        clz: CsNode,
         typeParameters: NodeList<TypeParameter>
     ): MutableList<CsTypeParameterDeclaration> {
-        val cstp = ArrayList<CsTypeParameterDeclaration>()
-        for (t in typeParameters) {
-            val cst = CsTypeParameterDeclaration()
-            cst.name = t.nameAsString
-            cst.parent = clz
-            // TODO: constraints
-            cstp.add(cst)
-        }
-        return cstp
+        return typeParameters.map { visit(clz, it) }.toMutableList()
+    }
+
+    private fun visit(
+        parent: CsNode,
+        t: TypeParameter
+    ): CsTypeParameterDeclaration {
+        val cst = CsTypeParameterDeclaration()
+        cst.name = t.nameAsString
+        cst.parent = parent
+        // TODO: constraints
+        return cst
     }
 
     private fun visitAnnotations(clz: CsAttributedElement, annotations: NodeList<AnnotationExpr>?) {
@@ -324,13 +519,21 @@ class CSharpAstTransformer(
     }
 
     private fun visit(clz: CsAttributedElement, ann: AnnotationExpr) {
-        val resolved = ann.resolve()
-        if(resolved.qualifiedName == "java.lang.SuppressWarnings") {
-            return
+        val qualifiedName = try {
+            val resolved = ann.resolve()
+            resolved.qualifiedName
+        } catch (e: Throwable) {
+            ann.nameAsString
         }
-        val attribute = visit(clz as CsNode, ann) as CsAttribute
+        when (qualifiedName) {
+            "java.lang.SuppressWarnings" -> return
+            "java.lang.Override" -> return
+            else -> {
+                val attribute = visit(clz as CsNode, ann) as CsAttribute
 
-        clz.attributes.add(attribute)
+                clz.attributes.add(attribute)
+            }
+        }
     }
 
     private fun visit(parent: CsNode?, expr: Expression): CsExpression {
@@ -348,7 +551,12 @@ class CSharpAstTransformer(
             is SwitchExpr -> this.visit(parent, expr)
             is NullLiteralExpr -> this.visit(parent, expr)
             is BooleanLiteralExpr -> this.visit(parent, expr)
-            is LiteralStringValueExpr -> this.visit(parent, expr)
+            is TextBlockLiteralExpr -> this.visit(parent, expr)
+            is CharLiteralExpr -> this.visit(parent, expr)
+            is DoubleLiteralExpr -> this.visit(parent, expr)
+            is LongLiteralExpr -> this.visit(parent, expr)
+            is StringLiteralExpr -> this.visit(parent, expr)
+            is IntegerLiteralExpr -> this.visit(parent, expr)
             is ObjectCreationExpr -> this.visit(parent, expr)
             is SuperExpr -> this.visit(parent, expr)
             is BinaryExpr -> this.visit(parent, expr)
@@ -386,7 +594,8 @@ class CSharpAstTransformer(
 
     private fun visit(parent: CsNode?, expr: LambdaExpr): CsExpression {
         return CsLambdaExpression(
-            expr.parameters.map { visit(null, it) }.toMutableList(), visit(null, expr.body) as CsExpressionOrBlockBody
+            expr.parameters.map { visit(null, it, false) }.toMutableList(),
+            visit(null, expr.body) as CsExpressionOrBlockBody
         ).apply {
             this.parent = parent
         }
@@ -401,20 +610,44 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode?, ann: MarkerAnnotationExpr): CsExpression {
-        val attribute = CsAttribute(this.createUnresolvedTypeNode(null, ann.name, ann.resolve()))
+        val attribute = CsAttribute(
+            this.createUnresolvedTypeNode(
+                null, ann.name, try {
+                    ann.resolve()
+                } catch (e: Throwable) {
+                    null
+                }
+            )
+        )
         attribute.parent = parent
         return attribute
     }
 
     private fun visit(parent: CsNode?, ann: SingleMemberAnnotationExpr): CsExpression {
-        val attribute = CsAttribute(this.createUnresolvedTypeNode(null, ann.name, ann.resolve()))
+        val attribute = CsAttribute(
+            this.createUnresolvedTypeNode(
+                null, ann.name, try {
+                    ann.resolve()
+                } catch (e: Throwable) {
+                    null
+                }
+            )
+        )
         attribute.parent = parent
         attribute.indexedArguments.add(visit(attribute, ann.memberValue))
         return attribute
     }
 
     private fun visit(parent: CsNode?, ann: NormalAnnotationExpr): CsExpression {
-        val attribute = CsAttribute(this.createUnresolvedTypeNode(null, ann.name, ann.resolve()))
+        val attribute = CsAttribute(
+            this.createUnresolvedTypeNode(
+                null, ann.name, try {
+                    ann.resolve()
+                } catch (e: Throwable) {
+                    null
+                }
+            )
+        )
         attribute.parent = parent
         for (pair in ann.pairs) {
             attribute.namedArguments.add(
@@ -469,15 +702,146 @@ class CSharpAstTransformer(
         }
     }
 
-    private fun visit(parent: CsNode?, expr: LiteralStringValueExpr): CsExpression {
+    private fun visit(parent: CsNode?, expr: TextBlockLiteralExpr): CsExpression {
+        throw IllegalStateException("TextBlocks are not supported")
+    }
+
+    private fun visit(parent: CsNode?, expr: CharLiteralExpr): CsExpression {
+        return CsCharLiteral(expr.value).apply {
+            this.parent = parent
+        }
+    }
+
+    private fun visit(parent: CsNode?, expr: DoubleLiteralExpr): CsExpression {
+        return CsDoubleLiteral(expr.value).apply {
+            this.parent = parent
+        }
+    }
+
+    private fun visit(parent: CsNode?, expr: LongLiteralExpr): CsExpression {
+        return CsLongLiteral(expr.value).apply {
+            this.parent = parent
+        }
+    }
+
+    private fun visit(parent: CsNode?, expr: StringLiteralExpr): CsExpression {
         return CsStringLiteral(expr.value).apply {
             this.parent = parent
         }
     }
 
+    private fun visit(parent: CsNode?, expr: IntegerLiteralExpr): CsExpression {
+        return CsIntegerLiteral(expr.value).apply {
+            this.parent = parent
+        }
+    }
+
     private fun visit(parent: CsNode?, expr: ObjectCreationExpr): CsExpression {
-        throw IllegalStateException("Object creations expressions are not supported")
-        // TODO: generate a nested class and instanciate it here
+        val type = this.createUnresolvedTypeNode(null, expr.type).apply {
+            if (expr.typeArguments.isPresent) {
+                this.typeArguments = expr.typeArguments.get().map {
+                    createUnresolvedTypeNode(this, it)
+                }.toMutableList()
+            }
+        }
+
+        val newExpr = CsNewExpression(type)
+        newExpr.parent = parent
+        newExpr.arguments = expr.arguments.map { visit(newExpr, it) }.toMutableList()
+
+        // implicit type parameter resolving
+        if (type.jType is ResolvedReferenceType &&
+            (type.jType!! as ResolvedReferenceType).typeDeclaration.isPresent
+        ) {
+            val typeDeclaration = (type.jType!! as ResolvedReferenceType).typeDeclaration.get()
+            if (typeDeclaration.typeParameters.size != type.typeArguments.size) {
+                val parentResult: Optional<Node> = expr.findAncestor(
+                    { n: Node -> true },
+                    VariableDeclarator::class.java as Class<Node>,
+                    ObjectCreationExpr::class.java as Class<Node>,
+                    MethodCallExpr::class.java as Class<Node>,
+                    AssignExpr::class.java as Class<Node>,
+                    ReturnStmt::class.java as Class<Node>
+                )
+                if (parentResult.isPresent) {
+                    val parent = parentResult.get()
+                    // Case 1: Simple construction Map<String, String> x = new HashMap<>()
+                    // -> We're in a variable declarator and can take over the parameters from the variable
+                    if (parent is VariableDeclarator) {
+                        try {
+                            val actualType = parent.type.resolve()
+                            type.typeArguments = actualType.asReferenceType().typeParametersMap.map {
+                                this.createUnresolvedTypeNode(type, null, it.b)
+                            }.toMutableList()
+                        } catch (e: Throwable) {
+                            // TODO: workaround until https://github.com/javaparser/javaparser/issues/3550 is solved
+                            if (parent.type.isClassOrInterfaceType &&
+                                parent.type.asClassOrInterfaceType().typeArguments.isPresent
+                            ) {
+                                type.typeArguments = parent.type.asClassOrInterfaceType().typeArguments.get().map {
+                                    CsTypeReference(CsStringTypeReference(it.asString())).apply {
+                                        this.parent = type
+                                    }
+                                }.toMutableList()
+                            }
+                        }
+                    }
+                    // Case 2: We are a parameter in a constructor new Other(new HashMap<>())
+                    // -> We resolve the type from the constructor definition
+                    else if (parent is ObjectCreationExpr) {
+                        val argIndex = parent.arguments.indexOf(expr)
+                        if (argIndex == -1) {
+                            throw IllegalStateException("Could not determine arg index")
+                        }
+                        val actualType = parent.resolve().getParam(argIndex).type
+                        type.typeArguments = actualType.asReferenceType().typeParametersMap.map {
+                            this.createUnresolvedTypeNode(type, null, it.b)
+                        }.toMutableList()
+                    }
+                    // Case 3: We are a parameter in a method TestMethod(new HashMap<>())
+                    // -> We resolve the type from the method definition
+                    else if (parent is MethodCallExpr) {
+                        val argIndex = parent.arguments.indexOf(expr)
+                        if (argIndex == -1) {
+                            throw IllegalStateException("Could not determine arg index")
+                        }
+                        val actualType = parent.resolve().getParam(argIndex).type
+                        type.typeArguments = actualType.asReferenceType().typeParametersMap.map {
+                            this.createUnresolvedTypeNode(type, null, it.b)
+                        }.toMutableList()
+                    }
+                    // Case 4: We assign any variable or member x.y = new HashMap<>()
+                    // -> We resolve the type from the member definition
+                    else if (parent is AssignExpr) {
+                        val resolved = parent.calculateResolvedType()
+                        type.typeArguments = resolved.asReferenceType().typeParametersMap.map {
+                            this.createUnresolvedTypeNode(type, null, it.b)
+                        }.toMutableList()
+                    }
+                    // Case 5: We return a value like return new HashMap<>()
+                    // -> We resolve the type from the method return type
+                    else if (parent is ReturnStmt) {
+                        val decl = parent.findAncestor(MethodDeclaration::class.java)
+                        if (!decl.isPresent) {
+                            throw IllegalStateException("Could not find method declaration of return")
+                        }
+
+                        val resolved = decl.get().type.resolve()
+                        type.typeArguments = resolved.asReferenceType().typeParametersMap.map {
+                            this.createUnresolvedTypeNode(type, null, it.b)
+                        }.toMutableList()
+                    }
+                }
+                // Not supported
+                else {
+                    throw IllegalStateException("Could not resolve implicit generic types")
+                }
+            }
+        }
+
+        // TODO: anonymous class body
+
+        return newExpr
     }
 
     private fun visit(parent: CsNode?, expr: SuperExpr): CsExpression {
@@ -537,14 +901,14 @@ class CSharpAstTransformer(
     private fun visit(parent: CsNode?, expr: ArrayCreationExpr): CsExpression {
         val arr = CsArrayCreationExpression()
         arr.parent = parent
-        arr.type = this.createUnresolvedTypeNode(arr, expr.elementType)
-        if (expr.levels.size == 1) {
-            if (expr.levels[0].dimension.isPresent) {
-                arr.sizeExpression = visit(arr, expr.levels[0].dimension.get())
+        arr.type = CsArrayTypeNode(this.createUnresolvedTypeNode(arr, expr.elementType))
+        arr.sizeExpressions = expr.levels.map {
+            if (it.dimension.isPresent) {
+                visit(arr, it.dimension.get())
+            } else {
+                null
             }
-        } else {
-            throw IllegalStateException("Multidimensional arrays not supported")
-        }
+        }.toMutableList()
 
         if (expr.initializer.isPresent) {
             arr.values =
@@ -555,11 +919,36 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode?, expr: MethodCallExpr): CsExpression {
+        var qualifiedMethodName = ""
+        var methodName = context.toMethodName(expr.nameAsString)
+        var resolved: ResolvedMethodDeclaration? = null
+        try {
+            resolved = expr.resolve()
+            qualifiedMethodName = resolved.qualifiedName
+            when (qualifiedMethodName) {
+                "java.io.InputStream.close" -> methodName = "Dispose"
+                "java.io.OutputStream.close" -> methodName = "Dispose"
+                "java.io.Closeable.close" -> methodName = "Dispose"
+                "java.io.Closeable.close" -> methodName = "Dispose"
+                else -> {}
+            }
+        } catch (_: Throwable) {
+        }
+
+
         val invocation = CsInvocationExpression(
-            if (expr.scope.isPresent) CsMemberAccessExpression(
-                visit(null, expr.scope.get()), context.toMethodName(expr.nameAsString)
-            )
-            else CsIdentifier(expr.nameAsString)
+            if (resolved != null && resolved.isStatic) {
+                CsMemberAccessExpression(
+                    this.createUnresolvedTypeNode(null, null, resolved.declaringType()),
+                    methodName
+                )
+            } else if (expr.scope.isPresent) {
+                CsMemberAccessExpression(
+                    visit(null, expr.scope.get()), methodName
+                )
+            } else {
+                CsIdentifier(methodName)
+            }
         )
         invocation.parent = parent
 
@@ -569,8 +958,12 @@ class CSharpAstTransformer(
             }.toMutableList()
         }
 
-        for (a in expr.arguments) {
-            invocation.arguments.add(visit(invocation, a))
+        when (qualifiedMethodName) {
+            "java.util.List.toArray" -> {}
+            else ->
+                for (a in expr.arguments) {
+                    invocation.arguments.add(visit(invocation, a))
+                }
         }
 
         return invocation
@@ -627,16 +1020,46 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode?, expr: NameExpr): CsExpression {
+        var name = expr.nameAsString
         try {
             val resolved = expr.resolve()
             if (resolved.isType) {
                 return this.createUnresolvedTypeNode(parent, expr.name, resolved)
+            } else if (resolved.isParameter) {
+                name = context.toParameterName(name)
+            } else if (resolved.isVariable) {
+                name = context.toLocalVariable(name)
+            } else if (resolved.isField) {
+                name = context.toLocalVariable(name)
+                if (resolved.asField().isStatic) {
+                    return CsMemberAccessExpression(
+                        this.createUnresolvedTypeNode(null, null, resolved.asField().declaringType()),
+                        name
+                    ).apply {
+                        this.parent = parent
+                    }
+                }
+            } else if (resolved.isMethod) {
+                name = context.toMethodName(name)
+                return CsMemberAccessExpression(
+                    this.createUnresolvedTypeNode(null, null, resolved.asMethod().declaringType()),
+                    name
+                ).apply {
+                    this.parent = parent
+                }
+            } else if (resolved.isEnumConstant) {
+                return CsMemberAccessExpression(
+                    this.createUnresolvedTypeNode(null, null, resolved.asEnumConstant().type),
+                    name
+                ).apply {
+                    this.parent = parent
+                }
             }
         } catch (e: Throwable) {
             // ignore
         }
 
-        return CsIdentifier(expr.nameAsString).apply {
+        return CsIdentifier(name).apply {
             this.parent = parent
         }
     }
@@ -672,7 +1095,7 @@ class CSharpAstTransformer(
     private fun visit(parent: CsNode?, expr: VariableDeclarator): CsVariableDeclaration {
         val decl = CsVariableDeclaration(
             this.createUnresolvedTypeNode(null, expr.type),
-            expr.nameAsString,
+            context.toLocalVariable(expr.nameAsString),
             null,
             if (expr.initializer.isPresent) visit(null, expr.initializer.get()) else null
         )
@@ -725,27 +1148,50 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode?, expr: FieldAccessExpr): CsExpression {
+        var fieldName = context.toFieldName(expr.nameAsString)
         try {
             val resolved = expr.resolve()
             if (resolved.isField) {
                 val field = (resolved as ResolvedFieldDeclaration)
+                val fieldQualifier = field.declaringType().qualifiedName + "." + field.name
+
                 if (field.isStatic) {
+                    if (expr.parentNode.get() is SwitchEntry &&
+                        (expr.parentNode.get() as SwitchEntry).labels.contains(expr)
+                    ) {
+                        this.context.registerSymbolAsConst(field);
+                    }
+
+                    when (fieldQualifier) {
+                        "java.lang.Integer.MAX_VALUE" -> fieldName = "MaxValue"
+                        else -> {}
+                    }
+
                     return CsMemberAccessExpression(
-                        CsTypeReference(this.createUnresolvedTypeNode(null, null, field.type)),
-                        context.toFieldName(field.name)
+                        CsTypeReference(this.createUnresolvedTypeNode(null, null, field.declaringType())),
+                        fieldName
                     ).apply {
                         this.parent = parent
                     }
+                } else {
+                    when (fieldQualifier) {
+                        "java.lang.String.length" -> fieldName = "Length"
+                        else -> {}
+                    }
                 }
+
+
             } else if (resolved.isEnumConstant) {
                 val field = (resolved as ResolvedEnumConstantDeclaration)
 
                 return CsMemberAccessExpression(
                     CsTypeReference(this.createUnresolvedTypeNode(null, null, field.type)),
-                    context.toFieldName(field.name)
+                    fieldName
                 ).apply {
                     this.parent = parent
                 }
+            } else if (expr.name.id == "length" && expr.scope.calculateResolvedType().isArray) {
+                fieldName = "Length"
             }
         } catch (e: Throwable) {
             // ignore
@@ -753,17 +1199,25 @@ class CSharpAstTransformer(
 
         return CsMemberAccessExpression(
             visit(null, expr.scope),
-            expr.nameAsString
+            fieldName
         ).apply {
             this.parent = parent
         }
     }
 
-    private fun visit(parent: CsNode?, expr: Parameter): CsParameterDeclaration {
+    private fun visit(parent: CsNode?, expr: Parameter, isCatchClause: Boolean): CsParameterDeclaration {
         val p = CsParameterDeclaration()
         p.parent = parent
-        p.type = this.createUnresolvedTypeNode(p, expr.type)
-        p.name = expr.nameAsString
+        p.type = if (expr.type.isUnknownType)
+            null
+        else if (expr.type.isUnionType && isCatchClause)
+            CsTypeReference(
+                CsStringTypeReference("System.Exception")
+            ).apply {
+                this.parent = p
+            }
+        else this.createUnresolvedTypeNode(p, expr.type)
+        p.name = context.toParameterName(expr.nameAsString)
         p.params = expr.isVarArgs
         // TODO: javadoc
         return p
@@ -916,15 +1370,45 @@ class CSharpAstTransformer(
     }
 
     private fun visit(parent: CsNode?, expr: TryStmt): CsStatement {
-        val t = CsTryStatement(visit(null, expr.tryBlock) as CsBlock)
+        val tryBlock = visit(null, expr.tryBlock) as CsBlock
+
+        if (expr.resources.isNotEmpty()) {
+            val usingBlock = CsUsingStatement(expr.resources.map { visit(null, it) }.toMutableList(), CsBlock())
+            usingBlock.parent = tryBlock
+            for (s in tryBlock.statements) {
+                s.parent = usingBlock
+                usingBlock.body.statements.add(s)
+            }
+
+            if (expr.catchClauses.isEmpty() && expr.finallyBlock.isEmpty) {
+                usingBlock.parent = parent
+                return usingBlock
+            }
+
+            tryBlock.statements.clear()
+            tryBlock.statements.add(usingBlock)
+        }
+
+        val t = CsTryStatement(tryBlock)
         t.catchClauses = expr.catchClauses.map {
             CsCatchClause(
-                visit(null, it.parameter),
+                visit(null, it.parameter, true),
                 visit(null, it.body) as CsBlock
             ).apply {
                 this.parent = t
+                if (it.parameter.type.isUnionType) {
+                    val unionType = it.parameter.type as UnionType
+                    for (t in unionType.elements) {
+                        this.whenTypeClauses.add(this@CSharpAstTransformer.createUnresolvedTypeNode(this, t))
+                    }
+                }
             }
         }.toMutableList()
+
+        if (expr.finallyBlock.isPresent) {
+            t.finallyBlock = visit(t, expr.finallyBlock.get()) as CsBlock
+        }
+
         t.parent = parent
         return t
     }
@@ -974,10 +1458,43 @@ class CSharpAstTransformer(
 
     private fun createUnresolvedTypeNode(
         parent: CsNode?, name: Type
-    ): CsTypeNode {
+    ): CsUnresolvedTypeNode {
         val node = CsUnresolvedTypeNode()
         node.parent = parent
-        node.jType = name.resolve()
+        if (name.isArrayType) {
+            try {
+                node.jType = name.resolve()
+                if (node.jType!!.isReferenceType) {
+                    node.typeArguments = node.jType!!.asReferenceType().typeParametersMap.map {
+                        this.createUnresolvedTypeNode(node, null, it.b)
+                    }.toMutableList()
+                }
+            } catch (e: Throwable) {
+                node.resolved = CsArrayTypeNode(
+                    this.createUnresolvedTypeNode(null, name.elementType)
+                )
+                node.resolved!!.parent = parent
+            }
+        } else {
+            try {
+                node.jType = name.resolve()
+                if (node.jType!!.isReferenceType) {
+                    node.typeArguments = node.jType!!.asReferenceType().typeParametersMap.map {
+                        this.createUnresolvedTypeNode(node, null, it.b)
+                    }.toMutableList()
+                }
+            } catch (e: Throwable) {
+                if (name.isTypeParameter) {
+                    node.resolved = CsTypeReference(CsStringTypeReference(name.asTypeParameter().nameAsString))
+                    node.resolved!!.parent = parent
+                } else {
+                    node.resolved =
+                        CsPrimitiveTypeNode(CsPrimitiveType.Var) // fallback to var, most of the time it should work
+                    node.resolved!!.parent = parent
+                }
+            }
+        }
+
         node.jNode = name
         this.context.registerUnresolvedTypeNode(node);
         return node
@@ -995,7 +1512,7 @@ class CSharpAstTransformer(
     }
 
     private fun createUnresolvedTypeNode(
-        parent: CsNode?, name: Node?, resolved: ResolvedDeclaration
+        parent: CsNode?, name: Node?, resolved: ResolvedDeclaration?
     ): CsTypeNode {
         val node = CsUnresolvedTypeNode()
         node.parent = parent

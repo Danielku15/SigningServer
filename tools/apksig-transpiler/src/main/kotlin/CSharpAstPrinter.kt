@@ -1,5 +1,6 @@
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.util.regex.Pattern
 import kotlin.io.path.exists
 
 class CSharpAstPrinter(
@@ -246,7 +247,10 @@ class CSharpAstPrinter(
             this.write("params ")
         }
         if (p.type != null) {
-            this.writeType(p.type!!, false, p.params)
+            this.writeType(p.type!!)
+            if (p.params) {
+                this.write("[]")
+            }
         }
         this.write(" ${p.name}")
 
@@ -306,6 +310,7 @@ class CSharpAstPrinter(
         } else if (d.isVirtual) {
             this.write("virtual ")
         } else if (d.isOverride) {
+            // TODO: proper check whether interface override
             this.write("override ")
         }
 
@@ -333,8 +338,9 @@ class CSharpAstPrinter(
 
     }
 
-    private fun writeFieldDeclarat1on(d: CsFieldDeclaration) {
+    private fun writeFieldDeclaration(d: CsFieldDeclaration) {
         this.writeDocumentation(d)
+        this.writeAttributes(d)
         this.writeVisibility(d.visibility)
 
         if (this.context.isConst(d)) {
@@ -457,7 +463,7 @@ class CSharpAstPrinter(
     }
 
     protected fun writeDocumentationLines(documentation: String, multiLine: Boolean) {
-        val lines = documentation.trim().split("\n")
+        val lines = documentation.trim().split(Pattern.compile("\r?\n"))
         if (lines.size > 1 || multiLine) {
             if (!this.isStartOfLine) {
                 this.writeLine()
@@ -484,7 +490,7 @@ class CSharpAstPrinter(
         }
 
         when (member.nodeType) {
-            CsSyntaxKind.FieldDeclaration -> this.writeFieldDeclarat1on(member as CsFieldDeclaration)
+            CsSyntaxKind.FieldDeclaration -> this.writeFieldDeclaration(member as CsFieldDeclaration)
             CsSyntaxKind.PropertyDeclaration -> this.writePropertyDeclaration(member as CsPropertyDeclaration)
             CsSyntaxKind.ConstructorDeclaration -> this.writeConstructorDeclaration(member as CsConstructorDeclaration)
             CsSyntaxKind.MethodDeclaration -> this.writeMethodDeclaration(member as CsMethodDeclaration)
@@ -517,71 +523,105 @@ class CSharpAstPrinter(
         return this.canBeConstant(d)
     }
 
+    private enum class WriteTypeMode {
+        ForStaticMemberAccess,
+        ForNew,
+        ForTypeConstraint,
+        ForDeclaration;
+    }
+
     private fun writeType(
         type: CsTypeNode,
-        forNew: Boolean = false,
-        asNativeArray: Boolean = false,
-        forTypeConstraint: Boolean = false
+        mode: WriteTypeMode = WriteTypeMode.ForDeclaration
     ) {
         when (type.nodeType) {
             CsSyntaxKind.PrimitiveTypeNode -> {
-                if (forTypeConstraint) {
-                    when ((type as CsPrimitiveTypeNode).type) {
-                        CsPrimitiveType.Bool, CsPrimitiveType.Int, CsPrimitiveType.Double -> this.write("struct")
-                        CsPrimitiveType.Object, CsPrimitiveType.Dynamic, CsPrimitiveType.String, CsPrimitiveType.Void ->
-                            this.write("class")
-                        else -> throw IllegalStateException("Unsupported primitive in type constraint")
+                when (mode) {
+                    WriteTypeMode.ForTypeConstraint -> {
+                        when ((type as CsPrimitiveTypeNode).type) {
+                            CsPrimitiveType.Bool, CsPrimitiveType.Int, CsPrimitiveType.Double -> this.write("struct")
+                            CsPrimitiveType.Object, CsPrimitiveType.Dynamic, CsPrimitiveType.String, CsPrimitiveType.Void ->
+                                this.write("class")
+                            else -> throw IllegalStateException("Unsupported primitive in type constraint")
+                        }
                     }
-                } else {
-                    when ((type as CsPrimitiveTypeNode).type) {
-                        CsPrimitiveType.Bool ->
-                            this.write("bool")
-                        CsPrimitiveType.Dynamic ->
-                            this.write("dynamic")
-                        CsPrimitiveType.Double ->
-                            this.write("double")
-                        CsPrimitiveType.Int ->
-                            this.write("int")
-                        CsPrimitiveType.Object ->
-                            this.write("object")
-                        CsPrimitiveType.String ->
-                            this.write("string")
-                        CsPrimitiveType.Void ->
-                            this.write("void")
-                        CsPrimitiveType.Var ->
-                            this.write("var")
-                        CsPrimitiveType.Float -> this.write("float")
-                        CsPrimitiveType.Long -> this.write("long")
-                        CsPrimitiveType.Short -> this.write("short")
-                        CsPrimitiveType.Byte -> this.write("sbyte")
-                        CsPrimitiveType.Char -> this.write("char")
+                    WriteTypeMode.ForNew -> {
+                        when ((type as CsPrimitiveTypeNode).type) {
+                            CsPrimitiveType.Bool ->
+                                this.write("bool")
+                            CsPrimitiveType.Dynamic ->
+                                this.write("dynamic")
+                            CsPrimitiveType.Double ->
+                                this.write("double")
+                            CsPrimitiveType.Int ->
+                                this.write("int")
+                            CsPrimitiveType.Object ->
+                                this.write("object")
+                            CsPrimitiveType.String ->
+                                this.write("string")
+                            CsPrimitiveType.Void ->
+                                this.write("void")
+                            CsPrimitiveType.Var ->
+                                this.write("var")
+                            CsPrimitiveType.Float -> this.write("float")
+                            CsPrimitiveType.Long -> this.write("long")
+                            CsPrimitiveType.Short -> this.write("short")
+                            CsPrimitiveType.SByte -> this.write("sbyte")
+                            CsPrimitiveType.Char -> this.write("char")
+                        }
+                    }
+                    WriteTypeMode.ForDeclaration -> {
+                        when ((type as CsPrimitiveTypeNode).type) {
+                            CsPrimitiveType.Bool ->
+                                this.write("bool")
+                            CsPrimitiveType.Dynamic ->
+                                this.write("dynamic")
+                            CsPrimitiveType.Double ->
+                                this.write("double")
+                            CsPrimitiveType.Int ->
+                                this.write("int")
+                            CsPrimitiveType.Object ->
+                                this.write("object")
+                            CsPrimitiveType.String ->
+                                this.write("string")
+                            CsPrimitiveType.Void ->
+                                this.write("void")
+                            CsPrimitiveType.Var ->
+                                this.write("var")
+                            CsPrimitiveType.Float -> this.write("float")
+                            CsPrimitiveType.Long -> this.write("long")
+                            CsPrimitiveType.Short -> this.write("short")
+                            CsPrimitiveType.SByte -> this.write("sbyte")
+                            CsPrimitiveType.Char -> this.write("char")
+                        }
+                    }
+                    WriteTypeMode.ForStaticMemberAccess -> {
+                        when ((type as CsPrimitiveTypeNode).type) {
+                            CsPrimitiveType.Bool ->
+                                this.write("SigningServer.Android.Core.BoolExtensions")
+                            CsPrimitiveType.Double ->
+                                this.write("SigningServer.Android.Core.DoubleExtensions")
+                            CsPrimitiveType.Int ->
+                                this.write("SigningServer.Android.Core.IntExtensions")
+                            CsPrimitiveType.Object ->
+                                this.write("SigningServer.Android.Core.ObjectExtensions")
+                            CsPrimitiveType.String ->
+                                this.write("SigningServer.Android.Core.StringExtensions")
+                            CsPrimitiveType.Float -> this.write("SigningServer.Android.Core.FloatExtensions")
+                            CsPrimitiveType.Long -> this.write("SigningServer.Android.Core.LongExtensions")
+                            CsPrimitiveType.Short -> this.write("SigningServer.Android.Core.ShortExtensions")
+                            CsPrimitiveType.SByte -> this.write("SigningServer.Android.Core.SByteExtensions")
+                            CsPrimitiveType.Char -> this.write("SigningServer.Android.Core.CharExtensions")
+                        }
                     }
                 }
             }
             CsSyntaxKind.ArrayTypeNode -> {
                 val arrayType = type as CsArrayTypeNode
                 this.writeType(arrayType.elementType)
-                this.write("[]")
-            }
-            CsSyntaxKind.MapTypeNode -> {
-                val mapType = type as CsMapTypeNode
-                if (!mapType.valueIsValueType) {
-                    if (forNew) {
-                        this.write("SigningServer.Android.Collections.Map<")
-                    } else {
-                        this.write("SigningServer.Android.Collections.IMap<")
-                    }
-                } else {
-                    if (forNew) {
-                        this.write("SigningServer.Android.Collections.ValueTypeMap<")
-                    } else {
-                        this.write("SigningServer.Android.Collections.IValueTypeMap<")
-                    }
+                if (mode != WriteTypeMode.ForNew) {
+                    this.write("[]")
                 }
-                this.writeType(mapType.keyType)
-                this.write(", ")
-                this.writeType(mapType.valueType)
-                this.write(">")
             }
             CsSyntaxKind.TypeReference -> {
                 val typeReference = type as CsTypeReference
@@ -596,15 +636,15 @@ class CSharpAstPrinter(
                         this.write((type as CsTypeParameterDeclaration).name)
                     }
                     is CsTypeNode -> {
-                        this.writeType(targetType as CsTypeNode, forNew)
+                        this.writeType(targetType as CsTypeNode, mode)
                     }
                     else ->
                         throw IllegalStateException("Unsupported type reference" + targetType)
                 }
 
-                if (typeReference.typeArguments != null && typeReference.typeArguments!!.isNotEmpty()) {
+                if (typeReference.typeArguments.isNotEmpty()) {
                     this.write("<")
-                    this.writeCommaSeparated(typeReference.typeArguments!!, { p -> this.writeType(p) })
+                    this.writeCommaSeparated(typeReference.typeArguments, { p -> this.writeType(p) })
                     this.write(">")
                 }
             }
@@ -615,14 +655,14 @@ class CSharpAstPrinter(
             CsSyntaxKind.EnumMember -> this.write(this.context.getFullName((type as CsEnumMember).parent as CsNamedTypeDeclaration))
             CsSyntaxKind.UnresolvedTypeNode -> {
                 if ((type as CsUnresolvedTypeNode).resolved != null) {
-                    this.writeType(type.resolved!!, forNew, asNativeArray, forTypeConstraint)
+                    this.writeType(type.resolved!!, mode)
                 } else {
                     throw IllegalStateException("Unresolved type node: " + type)
                 }
             }
             else -> throw IllegalStateException("Unsupported type node: " + type.nodeType)
         }
-        if (type.isNullable && !forNew && !forTypeConstraint) {
+        if (type.isNullable && mode == WriteTypeMode.ForDeclaration) {
             this.write("?")
         }
     }
@@ -658,7 +698,9 @@ class CSharpAstPrinter(
         this.write(") => ")
         if (expr.body is CsBlock) {
             this.writeBlock(expr.body as CsBlock)
-        } else {
+        } else if (expr.body is CsExpressionStatement) {
+            this.writeStatement(expr.body as CsExpressionStatement)
+        } else if (expr.body is CsExpression) {
             this.writeExpression(expr.body as CsExpression)
         }
     }
@@ -690,8 +732,9 @@ class CSharpAstPrinter(
     private fun writeArrayCreationExpression(expr: CsArrayCreationExpression) {
         if (expr.type != null) {
             this.write("new ")
-            this.writeType(expr.type!!, true)
+            this.writeType(expr.type!!, WriteTypeMode.ForNew)
             if (expr.values != null) {
+                this.write("[]")
                 if (expr.values!!.isNotEmpty()) {
                     this.writeLine("{")
                     this.indent++
@@ -707,9 +750,13 @@ class CSharpAstPrinter(
                     this.writeLine("()")
                 }
             } else {
-                this.write("[")
-                this.writeExpression(expr.sizeExpression!!)
-                this.write("]")
+                for (s in expr.sizeExpressions) {
+                    this.write("[")
+                    if (s != null) {
+                        this.writeExpression(s)
+                    }
+                    this.write("]")
+                }
             }
         } else if (expr.values != null && expr.values!!.size > 0) {
             this.write("new [] {")
@@ -728,7 +775,11 @@ class CSharpAstPrinter(
     private fun writeTypeOfExpression(expr: CsTypeOfExpression) {
         this.write("typeof")
         this.write("(")
-        this.writeExpression(expr.expression)
+        if (expr.expression is CsTypeNode) {
+            this.writeType(expr.expression as CsTypeNode)
+        } else {
+            this.writeExpression(expr.expression)
+        }
         this.write(")")
     }
 
@@ -747,11 +798,19 @@ class CSharpAstPrinter(
     }
 
     private fun writeNewExpression(expr: CsNewExpression) {
-        this.write("new ")
-        this.writeType(expr.type, true)
-        this.write("(")
-        this.writeCommaSeparated(expr.arguments, { a -> this.writeExpression(a) })
-        this.write(")")
+        if (expr.type is CsPrimitiveTypeNode || ((expr.type is CsUnresolvedTypeNode) && (expr.type as CsUnresolvedTypeNode).resolved is CsPrimitiveTypeNode)) {
+            this.writeType(expr.type, WriteTypeMode.ForStaticMemberAccess)
+            this.write(".Create(")
+            this.writeCommaSeparated(expr.arguments, { a -> this.writeExpression(a) })
+            this.write(")")
+        } else {
+            this.write("new ")
+            this.writeType(expr.type, WriteTypeMode.ForNew)
+            this.write("(")
+            this.writeCommaSeparated(expr.arguments, { a -> this.writeExpression(a) })
+            this.write(")")
+        }
+
     }
 
     private fun writeCastExpression(expr: CsCastExpression) {
@@ -815,6 +874,22 @@ class CSharpAstPrinter(
         this.write("\"" + expr.text.replace("\"", "\\") + "\"")
     }
 
+    private fun writeLongLiteral(expr: CsLongLiteral) {
+        this.write(expr.text)
+    }
+
+    private fun writeCharLiteral(expr: CsCharLiteral) {
+        this.write("'" + expr.text.replace("'", "\\'") + "'")
+    }
+
+    private fun writeDoubleLiteral(expr: CsDoubleLiteral) {
+        this.write(expr.text)
+    }
+
+    private fun writeIntegerLiteral(expr: CsIntegerLiteral) {
+        this.write(expr.text)
+    }
+
     private fun writeIsExpression(expr: CsIsExpression) {
         this.writeExpression(expr.expression)
         this.write(" is ")
@@ -840,7 +915,7 @@ class CSharpAstPrinter(
                     this.write("where ")
                     this.write(it.name)
                     this.write(" : ")
-                    this.writeType(it.constraint!!, false, false, true)
+                    this.writeType(it.constraint!!, WriteTypeMode.ForTypeConstraint)
                 }
             }
             this.indent--
@@ -869,6 +944,10 @@ class CSharpAstPrinter(
             CsSyntaxKind.ThisLiteral -> this.writeThisLiteral(expr as CsThisLiteral)
             CsSyntaxKind.BaseLiteral -> this.writeBaseLiteral(expr as CsBaseLiteral)
             CsSyntaxKind.StringLiteral -> this.writeStringLiteral(expr as CsStringLiteral)
+            CsSyntaxKind.LongLiteral -> this.writeLongLiteral(expr as CsLongLiteral)
+            CsSyntaxKind.DoubleLiteral -> this.writeDoubleLiteral(expr as CsDoubleLiteral)
+            CsSyntaxKind.CharLiteral -> this.writeCharLiteral(expr as CsCharLiteral)
+            CsSyntaxKind.IntegerLiteral -> this.writeIntegerLiteral(expr as CsIntegerLiteral)
             CsSyntaxKind.BinaryExpression -> this.writeBinaryExpression(expr as CsBinaryExpression)
             CsSyntaxKind.ConditionalExpression -> this.writeConditionalExpression(expr as CsConditionalExpression)
             CsSyntaxKind.LambdaExpression -> this.writeLambdaExpression(expr as CsLambdaExpression)
@@ -889,9 +968,20 @@ class CSharpAstPrinter(
             CsSyntaxKind.Identifier -> this.writeIdentifier(expr as CsIdentifier)
             CsSyntaxKind.DefaultExpression -> this.writeDefaultExpression(expr as CsDefaultExpression)
             CsSyntaxKind.TypeOfExpression -> this.writeTypeOfExpression(expr as CsTypeOfExpression)
-            CsSyntaxKind.TypeReference -> this.writeType(expr as CsTypeReference)
+            CsSyntaxKind.TypeReference -> this.writeType(
+                expr as CsTypeReference,
+                if (expr.parent!!.nodeType == CsSyntaxKind.MemberAccessExpression) WriteTypeMode.ForStaticMemberAccess else WriteTypeMode.ForDeclaration
+            )
             CsSyntaxKind.ArrayInitializerExpression -> this.writeArrayInitializerExpression(expr as CsArrayInitializerExpression)
-            else -> throw kotlin.IllegalStateException("Unhandled expression type: ${expr.nodeType}")
+            CsSyntaxKind.VariableDeclarationList -> this.writeVariableDeclarationList(expr as CsVariableDeclarationList)
+            else ->
+                when (expr) {
+                    is CsTypeNode -> this.writeType(
+                        expr,
+                        if (expr.parent!!.nodeType == CsSyntaxKind.MemberAccessExpression) WriteTypeMode.ForStaticMemberAccess else WriteTypeMode.ForDeclaration
+                    )
+                    else -> throw kotlin.IllegalStateException("Unhandled expression type: ${expr.nodeType}")
+                }
         }
     }
 
@@ -912,8 +1002,24 @@ class CSharpAstPrinter(
             CsSyntaxKind.SwitchStatement -> this.writeSwitchStatement(s as CsSwitchStatement)
             CsSyntaxKind.ThrowStatement -> this.writeThrowStatement(s as CsThrowStatement)
             CsSyntaxKind.TryStatement -> this.writeTryStatement(s as CsTryStatement)
+            CsSyntaxKind.LockStatement -> this.writeLockStatement(s as CsLockStatement)
+            CsSyntaxKind.UsingStatement -> this.writeUsingStatement(s as CsUsingStatement)
             else -> throw kotlin.IllegalStateException("Unhandled statement type: ${s.nodeType}")
         }
+    }
+
+    private fun writeUsingStatement(s: CsUsingStatement) {
+        this.write("using(")
+        this.writeCommaSeparated(s.expressions, { writeExpression(it) })
+        this.writeLine(")")
+        this.writeBlock(s.body)
+    }
+
+    private fun writeLockStatement(s: CsLockStatement) {
+        this.write("lock(")
+        this.writeExpression(s.expression)
+        this.writeLine(")")
+        this.writeBlock(s.body)
     }
 
     private fun writeTryStatement(s: CsTryStatement) {
@@ -959,7 +1065,20 @@ class CSharpAstPrinter(
     private fun writeCatchClause(c: CsCatchClause) {
         this.write("catch (")
         this.writeParameter(c.parameter)
-        this.writeLine(")")
+        this.write(")")
+        if (c.whenTypeClauses.isNotEmpty()) {
+            this.write(" when ( ")
+            for ((index, t) in c.whenTypeClauses.withIndex()) {
+                if (index > 0) {
+                    this.write(" || ")
+                }
+                this.write(c.parameter.name)
+                this.write(" is ")
+                this.writeType(t)
+            }
+            this.write(")")
+        }
+        this.writeLine()
         this.writeBlock(c.block)
     }
 

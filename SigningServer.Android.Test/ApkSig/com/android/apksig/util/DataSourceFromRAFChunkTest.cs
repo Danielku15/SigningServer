@@ -12,7 +12,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// Tests for the {@link DataSource} returned by
     /// {@link DataSources#asDataSource(RandomAccessFile, long, long)}.
     /// </summary>
-    [RunWith(typeof(var))]
     public class DataSourceFromRAFChunkTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         [Parameterized.Parameters(Name = "{0}")]

@@ -262,19 +262,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             /// </summary>
             internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<char?, int?>[] SORTED_CODENAMES_FIRST_CHAR_TO_API_LEVEL = new SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair[]{
                 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('C', 2), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('D', 3), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('E', 4), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('F', 7), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('G', 8), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('H', 10), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('I', 13), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('J', 15), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('K', 18), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('L', 20), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('M', 22), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('N', 23), 
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of('O', 25)}
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('C', 2), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('D', 3), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('E', 4), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('F', 7), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('G', 8), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('H', 10), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('I', 13), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('J', 15), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('K', 18), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('L', 20), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('M', 22), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('N', 23), 
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, int>('O', 25)}
             ;
             
             internal static readonly System.Collections.Generic.IComparer<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<char?, int?>> CODENAME_FIRST_CHAR_COMPARATOR = new SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.CodenamesLazyInitializer.ByFirstComparator();
@@ -311,7 +311,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             if ((firstChar >= 'A') && (firstChar <= 'Z'))
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<char?, int?>[] sortedCodenamesFirstCharToApiLevel = SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.CodenamesLazyInitializer.SORTED_CODENAMES_FIRST_CHAR_TO_API_LEVEL;
-                int searchResult = SigningServer.Android.Collections.Arrays.BinarySearch(sortedCodenamesFirstCharToApiLevel, SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(firstChar, null), SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.CodenamesLazyInitializer.CODENAME_FIRST_CHAR_COMPARATOR);
+                int searchResult = SigningServer.Android.Collections.Arrays.BinarySearch<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<char?, object>>(sortedCodenamesFirstCharToApiLevel, SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<char, object>(firstChar, null), SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.CodenamesLazyInitializer.CODENAME_FIRST_CHAR_COMPARATOR);
                 if (searchResult >= 0)
                 {
                     return sortedCodenamesFirstCharToApiLevel[searchResult].GetSecond();

@@ -176,38 +176,38 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         /// </summary>
         internal static int CompareContentDigestAlgorithm(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm alg1, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm alg2)
         {
-            switch (alg1)
+            switch (alg1.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256:
-                    switch (alg2)
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256_CASE:
+                    switch (alg2.Case)
                     {
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256_CASE:
                             return 0;
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512:
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512_CASE:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
                             return -1;
                         default:
                             throw new System.ArgumentException("Unknown alg2: " + alg2);
                     }
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512:
-                    switch (alg2)
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512_CASE:
+                    switch (alg2.Case)
                     {
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256:
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256_CASE:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
                             return 1;
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512_CASE:
                             return 0;
                         default:
                             throw new System.ArgumentException("Unknown alg2: " + alg2);
                     }
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
-                    switch (alg2)
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
+                    switch (alg2.Case)
                     {
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256_CASE:
                             return 1;
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
                             return 0;
-                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512:
+                        case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512_CASE:
                             return -1;
                         default:
                             throw new System.ArgumentException("Unknown alg2: " + alg2);

@@ -15,7 +15,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// &lt;p&gt;To subclass, provide an implementation of {@link #createDataSource(byte[])} which returns
     /// the implementation of {@code DataSource} you want to test.
     /// </summary>
-    public abstract class DataSourceTestBase
+    public abstract class DataSourceTestBase: SigningServer.Android.TestBase
     {
         /// <summary>
         /// Returns a new {@link DataSource} containing the provided contents.
@@ -323,7 +323,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             return SigningServer.Android.Core.StringExtensions.Create(arr, offset, size, SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
         }
         
-        public class CloseableWithDataSource: System.IDisposable
+        public class CloseableWithDataSource: SigningServer.Android.TestBase, System.IDisposable
         {
             internal readonly Com.Android.Apksig.Util.DataSource mDataSource;
             
@@ -365,7 +365,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             
         }
         
-        internal class NullDataSink: Com.Android.Apksig.Util.DataSink
+        internal class NullDataSink: SigningServer.Android.TestBase, Com.Android.Apksig.Util.DataSink
         {
             internal static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink INSTANCE = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink();
             

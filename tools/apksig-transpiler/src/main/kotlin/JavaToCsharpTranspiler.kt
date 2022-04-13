@@ -20,6 +20,8 @@ class JavaToCsharpTranspiler(
     private val sources: Path,
     private vararg val additionalSources: Path
 ) {
+    var overallBaseTypeName: String? = null
+
     fun transpile() {
 //        Log.setAdapter(Log.StandardOutStandardErrorAdapter())
 
@@ -44,7 +46,8 @@ class JavaToCsharpTranspiler(
             throw kotlin.IllegalStateException("Failed to parse sources")
         }
 
-        val context = CSharpEmitterContext(sourcesParsed.first)
+        val context = CSharpEmitterContext()
+        context.overallBaseTypeName = overallBaseTypeName
         println("Transforming to C# AST");
         for (source in sourcesParsed.second.entries) {
             println("  Transforming ${source.key}")

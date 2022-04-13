@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
-    [RunWith(typeof(var))]
-    public class BerDataValueTest
+    public class BerDataValueTest: SigningServer.Android.TestBase
     {
         internal static readonly Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue TEST_VALUE1 = new Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue(SigningServer.Android.IO.ByteBuffer.Wrap(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("aa")), SigningServer.Android.IO.ByteBuffer.Wrap(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("bb")), Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_CLASS_UNIVERSAL, true, Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_SEQUENCE);
         

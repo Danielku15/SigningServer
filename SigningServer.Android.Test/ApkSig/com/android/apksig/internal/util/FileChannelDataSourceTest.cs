@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
-    [RunWith(typeof(var))]
-    public class FileChannelDataSourceTest
+    public class FileChannelDataSourceTest: SigningServer.Android.TestBase
     {
         [Rule]
         public var temporaryFolder = .Create();

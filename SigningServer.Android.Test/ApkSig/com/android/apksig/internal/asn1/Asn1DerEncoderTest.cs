@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
 {
-    [RunWith(typeof(var))]
-    public class Asn1DerEncoderTest
+    public class Asn1DerEncoderTest: SigningServer.Android.TestBase
     {
         [Test]
         public virtual void TestInteger()
@@ -155,7 +154,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithInteger
+        public class SequenceWithInteger: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.INTEGER)]
             public int num;
@@ -168,7 +167,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithOid
+        public class SequenceWithOid: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.OBJECT_IDENTIFIER)]
             public string oid;
@@ -181,7 +180,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithByteBufferOctetString
+        public class SequenceWithByteBufferOctetString: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.OCTET_STRING)]
             public SigningServer.Android.IO.ByteBuffer data;
@@ -194,7 +193,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithByteBufferBitString
+        public class SequenceWithByteBufferBitString: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.BIT_STRING)]
             public SigningServer.Android.IO.ByteBuffer data;
@@ -207,7 +206,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE)]
-        public class Choice
+        public class Choice: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.INTEGER)]
             public int? num;
@@ -234,7 +233,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SetOfIntegers
+        public class SetOfIntegers: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SET_OF, ElementType = Com.Android.Apksig.Internal.Asn1.Asn1Type.INTEGER)]
             public SigningServer.Android.Collections.List<int?> values;
@@ -249,7 +248,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class Sequence
+        public class Sequence: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.INTEGER, Index = 0)]
             public SigningServer.Android.Math.BigInteger num;
@@ -270,7 +269,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithAsn1Class
+        public class SequenceWithAsn1Class: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
             public SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithOid seqWithOid;
@@ -283,7 +282,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithOpaque
+        public class SequenceWithOpaque: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.ANY)]
             public Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject obj;
@@ -296,7 +295,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithBoolean
+        public class SequenceWithBoolean: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.BOOLEAN)]
             public bool value;
@@ -309,7 +308,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithUTCTime
+        public class SequenceWithUTCTime: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.UTC_TIME)]
             public string utcTime;
@@ -322,7 +321,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithGeneralizedTime
+        public class SequenceWithGeneralizedTime: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.GENERALIZED_TIME)]
             public string generalizedTime;
@@ -335,7 +334,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE)]
-        public class SequenceWithSequenceOfUnencodedContainers
+        public class SequenceWithSequenceOfUnencodedContainers: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE_OF)]
             public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers> containers;
@@ -348,7 +347,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         }
         
         [Com.Android.Apksig.Internal.Asn1.Asn1Class(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.UNENCODED_CONTAINER)]
-        public class UnencodedContainerWithSetOfIntegers
+        public class UnencodedContainerWithSetOfIntegers: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Index = 1, Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.SET_OF)]
             public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger> values;

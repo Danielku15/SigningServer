@@ -276,6 +276,7 @@ class CsFieldDeclaration(
     override val nodeType: CsSyntaxKind = CsSyntaxKind.FieldDeclaration
     override var visibility: CsVisibility = CsVisibility.None
     var isReadonly: Boolean = false
+    var isConst: Boolean = false
     var initializer: CsExpression? = null
     override var isStatic: Boolean = false
     override var name: String = ""

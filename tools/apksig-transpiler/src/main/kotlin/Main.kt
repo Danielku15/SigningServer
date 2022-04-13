@@ -25,5 +25,6 @@ fun main(args: Array<String>) {
 
     val testSources = Paths.get(apkSigRepo, "src", "test", "java")
     val testTranspiler = JavaToCsharpTranspiler(Paths.get(args[2]), testSources, mainSources)
+    testTranspiler.overallBaseTypeName = "SigningServer.Android.TestBase"
     testTranspiler.transpile()
 }

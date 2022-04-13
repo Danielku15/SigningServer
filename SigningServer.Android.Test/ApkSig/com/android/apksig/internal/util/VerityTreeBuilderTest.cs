@@ -11,8 +11,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     /// <summary>
     /// Unit tests for {@link VerityTreeBuilder}.
     /// </summary>
-    [RunWith(typeof(var))]
-    public class VerityTreeBuilderTest
+    public class VerityTreeBuilderTest: SigningServer.Android.TestBase
     {
         [Test]
         public virtual void SHA256RootHashMatch()

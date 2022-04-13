@@ -55,7 +55,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 }
                 else 
                 {
-                    return SigningServer.Android.Util.Collections.SingletonList(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.RSA_PKCS1_V1_5_WITH_SHA512);
+                    return SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.RSA_PKCS1_V1_5_WITH_SHA512);
                 }
             }
             else if ("DSA".EqualsIgnoreCase(keyAlgorithm))
@@ -83,7 +83,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 }
                 else 
                 {
-                    return SigningServer.Android.Util.Collections.SingletonList(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.ECDSA_WITH_SHA512);
+                    return SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.ECDSA_WITH_SHA512);
                 }
             }
             else 
@@ -144,7 +144,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 }
                 signerBlocks.Add(signerBlock);
             }
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(new sbyte[]{
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<sbyte[], int>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(new sbyte[]{
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(signerBlocks)}
             ), SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2.V2SchemeConstants.APK_SIGNATURE_SCHEME_V2_BLOCK_ID);
         }
@@ -175,7 +175,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 {
                     throw new SigningServer.Android.Core.RuntimeException(contentDigestAlgorithm + " content digest for " + signatureAlgorithm + " not computed");
                 }
-                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(signatureAlgorithm.GetId(), contentDigest));
+                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte[]>(signatureAlgorithm.GetId(), contentDigest));
             }
             signedData.digests = digests;
             signedData.additionalAttributes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2.V2SchemeSigner.GenerateAdditionalAttributes(v3SigningEnabled);

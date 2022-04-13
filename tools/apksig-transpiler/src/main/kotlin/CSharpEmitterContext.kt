@@ -9,7 +9,8 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType
 import com.github.javaparser.resolution.types.ResolvedType
 import com.github.javaparser.symbolsolver.JavaSymbolSolver
 
-class CSharpEmitterContext(public val symbolSolver: JavaSymbolSolver) {
+class CSharpEmitterContext() {
+    var overallBaseTypeName: String? = null
     private val unresolvedTypeNodes: MutableList<CsUnresolvedTypeNode> = ArrayList()
     private val symbolConst: MutableSet<String> = HashSet()
     val problems: MutableList<Problem> = ArrayList()
@@ -122,6 +123,10 @@ class CSharpEmitterContext(public val symbolSolver: JavaSymbolSolver) {
                 csp
             }
         } else if (s.isUnionType) {
+            val csp = CsPrimitiveTypeNode(CsPrimitiveType.Object)
+            csp.parent = parent
+            csp
+        } else if(s.isNull) {
             val csp = CsPrimitiveTypeNode(CsPrimitiveType.Object)
             csp.parent = parent
             csp

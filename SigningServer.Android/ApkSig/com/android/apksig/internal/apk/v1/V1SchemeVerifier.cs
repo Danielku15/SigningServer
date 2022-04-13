@@ -134,7 +134,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     continue;
                 }
             }
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(manifestMainSection, entryNameToManifestSection);
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section>>(manifestMainSection, entryNameToManifestSection);
         }
         
         /// <summary>
@@ -436,7 +436,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignerInfo> unverifiedSignerInfosToTry;
                 if (minSdkVersion < SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N)
                 {
-                    unverifiedSignerInfosToTry = SigningServer.Android.Util.Collections.SingletonList(signedData.signerInfos.Get(0));
+                    unverifiedSignerInfosToTry = SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignerInfo>(signedData.signerInfos.Get(0));
                 }
                 else 
                 {

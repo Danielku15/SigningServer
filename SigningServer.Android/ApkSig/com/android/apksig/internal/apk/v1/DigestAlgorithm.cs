@@ -13,15 +13,20 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
     /// </summary>
     public class DigestAlgorithm
     {
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm SHA1 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm("SHA-1");
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm SHA1 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm("SHA-1", 0);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm("SHA-256");
+        public const int SHA1_CASE = 0;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm("SHA-256", 1);
+        
+        public const int SHA256_CASE = 1;
         
         internal readonly string mJcaMessageDigestAlgorithm;
         
-        internal DigestAlgorithm(string jcaMessageDigestAlgoritm)
+        internal DigestAlgorithm(string jcaMessageDigestAlgoritm, int caseValue)
         {
             mJcaMessageDigestAlgorithm = jcaMessageDigestAlgoritm;
+            Case = caseValue;
         }
         
         /// <summary>
@@ -39,23 +44,23 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         {
             public override int Compare(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a1, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a2)
             {
-                switch (a1)
+                switch (a1.Case)
                 {
-                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
-                        switch (a2)
+                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
+                        switch (a2.Case)
                         {
-                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                                 return 0;
-                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                                 return -1;
                         }
                         throw new SigningServer.Android.Core.RuntimeException("Unsupported algorithm: " + a2);
-                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
-                        switch (a2)
+                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
+                        switch (a2.Case)
                         {
-                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                                 return 1;
-                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                            case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                                 return 0;
                         }
                         throw new SigningServer.Android.Core.RuntimeException("Unsupported algorithm: " + a2);
@@ -64,6 +69,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 }
             }
             
+        }
+        
+        int Case
+        {
+            get;
         }
         
         internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm[] _values = {SHA1, SHA256};

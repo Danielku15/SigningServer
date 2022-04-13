@@ -11,7 +11,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// <summary>
     /// Tests for the {@link DataSource} returned by {@link DataSources#asDataSource(ByteBuffer)}.
     /// </summary>
-    [RunWith(typeof(var))]
     public class DataSourceFromByteBufferTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         [Test]

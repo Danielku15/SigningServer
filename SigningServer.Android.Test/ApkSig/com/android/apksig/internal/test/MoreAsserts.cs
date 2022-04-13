@@ -8,7 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Test
 {
-    public abstract class MoreAsserts
+    public abstract class MoreAsserts: SigningServer.Android.TestBase
     {
         internal MoreAsserts()
         {

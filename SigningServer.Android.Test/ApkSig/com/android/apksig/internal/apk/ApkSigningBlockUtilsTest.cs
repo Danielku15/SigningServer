@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
 {
-    [RunWith(typeof(var))]
-    public class ApkSigningBlockUtilsTest
+    public class ApkSigningBlockUtilsTest: SigningServer.Android.TestBase
     {
         [Rule]
         public var temporaryFolder = .Create();
@@ -18,7 +17,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         
         public Com.Android.Apksig.Util.DataSource[] dataSource;
         
-        public readonly SigningServer.Android.Collections.Set<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> algos = SigningServer.Android.Util.EnumSet.Of(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512);
+        public readonly SigningServer.Android.Collections.Set<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> algos = SigningServer.Android.Util.EnumSet.Of<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm>(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512);
         
         [Before]
         public virtual void SetUp()

@@ -118,7 +118,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 if (localOffset < mSources[i].Size())
                 {
-                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(i, localOffset);
+                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, long>(i, localOffset);
                 }
                 localOffset -= mSources[i].Size();
             }

@@ -13,27 +13,49 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
     /// </summary>
     public class SignatureAlgorithm
     {
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PSS_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0101, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withRSA/PSS", new SigningServer.Android.Security.Spec.PSSParameterSpec("SHA-256", "MGF1", SigningServer.Android.Security.Spec.MGF1ParameterSpec.SHA256, 256 / 8, 1)), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.M);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PSS_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0101, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, SigningServer.Android.Security.Spec.PSSParameterSpec>("SHA256withRSA/PSS", new SigningServer.Android.Security.Spec.PSSParameterSpec("SHA-256", "MGF1", SigningServer.Android.Security.Spec.MGF1ParameterSpec.SHA256, 256 / 8, 1)), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.M, 0);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PSS_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0102, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA512withRSA/PSS", new SigningServer.Android.Security.Spec.PSSParameterSpec("SHA-512", "MGF1", SigningServer.Android.Security.Spec.MGF1ParameterSpec.SHA512, 512 / 8, 1)), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.M);
+        public const int RSA_PSS_WITH_SHA256_CASE = 0;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PKCS1_V1_5_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0103, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PSS_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0102, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, SigningServer.Android.Security.Spec.PSSParameterSpec>("SHA512withRSA/PSS", new SigningServer.Android.Security.Spec.PSSParameterSpec("SHA-512", "MGF1", SigningServer.Android.Security.Spec.MGF1ParameterSpec.SHA512, 512 / 8, 1)), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.M, 1);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PKCS1_V1_5_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0104, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA512withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public const int RSA_PSS_WITH_SHA512_CASE = 1;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm ECDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0201, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PKCS1_V1_5_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0103, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 2);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm ECDSA_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0202, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA512withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB);
+        public const int RSA_PKCS1_V1_5_WITH_SHA256_CASE = 2;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm DSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0301, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm RSA_PKCS1_V1_5_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0104, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA512withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 3);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm DETDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0301, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withDetDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public const int RSA_PKCS1_V1_5_WITH_SHA512_CASE = 3;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_RSA_PKCS1_V1_5_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0421, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm ECDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0201, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB, 4);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_ECDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0423, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB);
+        public const int ECDSA_WITH_SHA256_CASE = 4;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_DSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0425, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("SHA256withDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm ECDSA_WITH_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0202, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA512withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB, 5);
+        
+        public const int ECDSA_WITH_SHA512_CASE = 5;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm DSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0301, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 6);
+        
+        public const int DSA_WITH_SHA256_CASE = 6;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm DETDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0301, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withDetDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 7);
+        
+        public const int DETDSA_WITH_SHA256_CASE = 7;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_RSA_PKCS1_V1_5_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0421, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "RSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withRSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 8);
+        
+        public const int VERITY_RSA_PKCS1_V1_5_WITH_SHA256_CASE = 8;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_ECDSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0423, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "EC", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withECDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.HONEYCOMB, 9);
+        
+        public const int VERITY_ECDSA_WITH_SHA256_CASE = 9;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm VERITY_DSA_WITH_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm(0x0425, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256, "DSA", SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, object>("SHA256withDSA", null), SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P, SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.INITIAL_RELEASE, 10);
+        
+        public const int VERITY_DSA_WITH_SHA256_CASE = 10;
         
         internal readonly int mId;
         
@@ -47,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         
         internal readonly int mJcaSigAlgMinSdkVersion;
         
-        internal SignatureAlgorithm(int id, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm contentDigestAlgorithm, string jcaKeyAlgorithm, SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, SigningServer.Android.Security.Spec.AlgorithmParameterSpec> jcaSignatureAlgAndParams, int minSdkVersion, int jcaSigAlgMinSdkVersion)
+        internal SignatureAlgorithm(int id, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm contentDigestAlgorithm, string jcaKeyAlgorithm, SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, SigningServer.Android.Security.Spec.AlgorithmParameterSpec> jcaSignatureAlgAndParams, int minSdkVersion, int jcaSigAlgMinSdkVersion, int caseValue)
         {
             mId = id;
             mContentDigestAlgorithm = contentDigestAlgorithm;
@@ -55,6 +77,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             mJcaSignatureAlgAndParams = jcaSignatureAlgAndParams;
             mMinSdkVersion = minSdkVersion;
             mJcaSigAlgMinSdkVersion = jcaSigAlgMinSdkVersion;
+            Case = caseValue;
         }
         
         /// <summary>
@@ -113,6 +136,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 }
             }
             return null;
+        }
+        
+        int Case
+        {
+            get;
         }
         
         internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm[] _values = {

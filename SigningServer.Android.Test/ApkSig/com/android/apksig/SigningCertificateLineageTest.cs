@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
-    [RunWith(typeof(var))]
-    public class SigningCertificateLineageTest
+    public class SigningCertificateLineageTest: SigningServer.Android.TestBase
     {
         internal SigningServer.Android.Collections.List<Com.Android.Apksig.SigningCertificateLineage.SignerConfig> mSigners;
         
@@ -416,7 +415,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             SigningServer.Android.Security.PrivateKey privateKey = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToPrivateKey(typeof(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest), resourcePrefix + ".pk8");
             SigningServer.Android.Security.Cert.X509Certificate cert = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToCertificate(typeof(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest), resourcePrefix + ".x509.pem");
-            return new Com.Android.Apksig.DefaultApkSignerEngine.SignerConfig.Builder(resourcePrefix, privateKey, SigningServer.Android.Util.Collections.SingletonList(cert)).Build();
+            return new Com.Android.Apksig.DefaultApkSignerEngine.SignerConfig.Builder(resourcePrefix, privateKey, SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Security.Cert.X509Certificate>(cert)).Build();
         }
         
     }

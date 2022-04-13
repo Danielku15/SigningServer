@@ -11,7 +11,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// <summary>
     /// Tests for the {@link DataSource} returned by {@link DataSinks#newInMemoryDataSink()}.
     /// </summary>
-    [RunWith(typeof(var))]
     public class InMemoryDataSinkDataSourceTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents)

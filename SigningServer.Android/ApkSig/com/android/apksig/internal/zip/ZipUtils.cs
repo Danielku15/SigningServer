@@ -142,7 +142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             buf.Position(eocdOffsetInBuf);
             SigningServer.Android.IO.ByteBuffer eocd = buf.Slice();
             eocd.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(eocd, bufOffsetInFile + eocdOffsetInBuf);
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<SigningServer.Android.IO.ByteBuffer, long>(eocd, bufOffsetInFile + eocdOffsetInBuf);
         }
         
         /// <summary>

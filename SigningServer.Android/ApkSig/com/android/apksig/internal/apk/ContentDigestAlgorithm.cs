@@ -13,13 +13,21 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
     /// </summary>
     public class ContentDigestAlgorithm
     {
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm CHUNKED_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(1, "SHA-256", 256 / 8);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm CHUNKED_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(1, "SHA-256", 256 / 8, 0);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm CHUNKED_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(2, "SHA-512", 512 / 8);
+        public const int CHUNKED_SHA256_CASE = 0;
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm VERITY_CHUNKED_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(3, "SHA-256", 256 / 8);
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm CHUNKED_SHA512 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(2, "SHA-512", 512 / 8, 1);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(4, "SHA-256", 256 / 8);
+        public const int CHUNKED_SHA512_CASE = 1;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm VERITY_CHUNKED_SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(3, "SHA-256", 256 / 8, 2);
+        
+        public const int VERITY_CHUNKED_SHA256_CASE = 2;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm SHA256 = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm(4, "SHA-256", 256 / 8, 3);
+        
+        public const int SHA256_CASE = 3;
         
         internal readonly int mId;
         
@@ -27,11 +35,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         
         internal readonly int mChunkDigestOutputSizeBytes;
         
-        internal ContentDigestAlgorithm(int id, string jcaMessageDigestAlgorithm, int chunkDigestOutputSizeBytes)
+        internal ContentDigestAlgorithm(int id, string jcaMessageDigestAlgorithm, int chunkDigestOutputSizeBytes, int caseValue)
         {
             mId = id;
             mJcaMessageDigestAlgorithm = jcaMessageDigestAlgorithm;
             mChunkDigestOutputSizeBytes = chunkDigestOutputSizeBytes;
+            Case = caseValue;
         }
         
         /// <summary>
@@ -57,6 +66,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         public virtual int GetChunkDigestOutputSizeBytes()
         {
             return mChunkDigestOutputSizeBytes;
+        }
+        
+        int Case
+        {
+            get;
         }
         
         internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm[] _values = {CHUNKED_SHA256, CHUNKED_SHA512, VERITY_CHUNKED_SHA256, SHA256};

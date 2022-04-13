@@ -11,8 +11,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     /// <summary>
     /// Unit tests for {@link ChainedDataSource}.
     /// </summary>
-    [RunWith(typeof(var))]
-    public class ChainedDataSourceTest
+    public class ChainedDataSourceTest: SigningServer.Android.TestBase
     {
         internal Com.Android.Apksig.Internal.Util.ChainedDataSource mChain;
         

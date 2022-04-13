@@ -8,9 +8,8 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
-    [RunWith(typeof(var))]
     [Suite.SuiteClasses({typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSinkFromOutputStreamTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSinkFromRAFTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromByteBufferTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFChunkTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.InMemoryDataSinkDataSourceTest), typeof(SigningServer.Android.Com.Android.Apksig.Util.InMemoryDataSinkTest)})]
-    public class AllTests
+    public class AllTests: SigningServer.Android.TestBase
     {
     }
     

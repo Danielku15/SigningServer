@@ -69,7 +69,7 @@ class CSharpAstTransformer(
             clz.jSymbol = declaration.resolve()
             visitAnnotations(clz, declaration.annotations)
 
-            declaration.entries.forEach {
+            declaration.entries.forEachIndexed { index, it ->
                 val f = CsFieldDeclaration(CsTypeReference(clz))
                 f.parent = clz
                 f.isStatic = true
@@ -79,12 +79,45 @@ class CSharpAstTransformer(
                 f.initializer = CsNewExpression(CsTypeReference(clz)).apply {
                     this.parent = f
                     this.arguments = it.arguments.map { visit(this, it) }.toMutableList()
+                    this.arguments.add(CsNumericLiteral(index.toString()))
                 }
                 clz.members.add(f)
+
+                val fCase = CsFieldDeclaration(CsPrimitiveTypeNode(CsPrimitiveType.Int))
+                fCase.parent = clz
+                fCase.isConst = true
+                fCase.visibility = CsVisibility.Public
+                fCase.name = it.nameAsString + "_CASE"
+                fCase.initializer = CsNumericLiteral(index.toString())
+                clz.members.add(fCase)
             }
 
             declaration.members.forEach {
                 visit(clz, it)
+            }
+
+            val caseValue = CsPropertyDeclaration(CsPrimitiveTypeNode(CsPrimitiveType.Int))
+            caseValue.parent = clz
+            caseValue.name = "Case"
+            caseValue.getAccessor = CsPropertyAccessorDeclaration("get", null)
+            caseValue.getAccessor!!.parent = caseValue
+            clz.members.add(caseValue)
+
+            val constructor = clz.members.find { it.nodeType == CsSyntaxKind.ConstructorDeclaration } as CsConstructorDeclaration?
+            if(constructor != null) {
+                val p = CsParameterDeclaration()
+                p.parent = constructor
+                p.name = "caseValue"
+                p.type = CsPrimitiveTypeNode(CsPrimitiveType.Int)
+                p.type!!.parent = p
+                constructor.parameters.add(p)
+                (constructor.body as CsBlock).statements.add(CsExpressionStatement(
+                    CsBinaryExpression(
+                        CsIdentifier(caseValue.name),
+                        "=",
+                        CsIdentifier(p.name)
+                    )
+                ))
             }
 
             val valuesInstance = CsFieldDeclaration(
@@ -280,6 +313,8 @@ class CSharpAstTransformer(
 
             if (declaration.extendedTypes.isNonEmpty) {
                 clz.baseClass = this.createUnresolvedTypeNode(clz, declaration.extendedTypes.first())
+            } else if(context.overallBaseTypeName != null) {
+                clz.baseClass = CsTypeReference(CsStringTypeReference(context.overallBaseTypeName!!))
             }
 
             clz.interfaces = declaration.implementedTypes.map {
@@ -431,8 +466,7 @@ class CSharpAstTransformer(
                         csm.isOverride = true
                     }
                 }
-            }
-            catch(_:Throwable) {
+            } catch (_: Throwable) {
             }
         }
 
@@ -528,6 +562,7 @@ class CSharpAstTransformer(
         when (qualifiedName) {
             "java.lang.SuppressWarnings" -> return
             "java.lang.Override" -> return
+            "RunWith" -> return
             else -> {
                 val attribute = visit(clz as CsNode, ann) as CsAttribute
 
@@ -956,6 +991,37 @@ class CSharpAstTransformer(
             invocation.typeArguments = expr.typeArguments.get().map {
                 this.createUnresolvedTypeNode(invocation, it)
             }.toMutableList()
+        } else if (resolved != null && resolved.typeParameters.isNotEmpty()) {
+            val typeParameterLookup = HashMap<String, ResolvedType?>()
+            for (tp in resolved.typeParameters) {
+                typeParameterLookup[tp.qualifiedName] = null
+            }
+
+            for ((index, a) in expr.arguments.withIndex()) {
+                val argDef = if (index < resolved.numberOfParams)
+                    resolved.getParam(index)
+                else if (resolved.getParam(resolved.numberOfParams - 1).isVariadic)
+                    resolved.getParam(resolved.numberOfParams - 1)
+                else
+                    null
+
+                if (argDef != null && argDef.type.isTypeVariable) {
+                    if (typeParameterLookup.containsKey(argDef.type.asTypeVariable().qualifiedName())) {
+                        try {
+                            typeParameterLookup[argDef.type.asTypeVariable().qualifiedName()] =
+                                a.calculateResolvedType()
+                        } catch (_: Throwable) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+
+            if (!typeParameterLookup.any { it.value == null }) {
+                invocation.typeArguments = resolved.typeParameters.map {
+                    this.createUnresolvedTypeNode(invocation, null, typeParameterLookup.get(it.qualifiedName)!!)
+                }.toMutableList()
+            }
         }
 
         when (qualifiedMethodName) {
@@ -1048,12 +1114,17 @@ class CSharpAstTransformer(
                     this.parent = parent
                 }
             } else if (resolved.isEnumConstant) {
-                return CsMemberAccessExpression(
+                val enum = CsMemberAccessExpression(
                     this.createUnresolvedTypeNode(null, null, resolved.asEnumConstant().type),
                     name
                 ).apply {
                     this.parent = parent
                 }
+
+                if (!_enumSwitchStack.empty() && _enumSwitchStack.peek()) {
+                    enum.member += "_CASE"
+                }
+                return enum
             }
         } catch (e: Throwable) {
             // ignore
@@ -1413,8 +1484,22 @@ class CSharpAstTransformer(
         return t
     }
 
+    private val _enumSwitchStack = Stack<Boolean>()
     private fun visit(parent: CsNode?, expr: SwitchStmt): CsStatement {
-        val s = CsSwitchStatement(visit(null, expr.selector))
+        val isEnumSwitch = try {
+            val resolved = expr.selector.calculateResolvedType()
+            resolved.isReferenceType && resolved.asReferenceType().typeDeclaration.isPresent &&
+                    resolved.asReferenceType().typeDeclaration.get().isEnum &&
+                    resolved.asReferenceType().typeDeclaration.get().asEnum().declaredMethods.isNotEmpty()
+        } catch (e: Exception) {
+            false
+        }
+
+        var selector = visit(null, expr.selector)
+        if (isEnumSwitch) {
+            selector = CsMemberAccessExpression(selector, "Case")
+        }
+        val s = CsSwitchStatement(selector)
         s.caseClauses = expr.entries.map {
             if (it.labels.isEmpty()) {
                 CsDefaultClause().apply {
@@ -1425,7 +1510,10 @@ class CSharpAstTransformer(
             } else if (it.labels.size > 1) {
                 throw IllegalStateException("Cases with multiple labels not supported")
             } else {
-                CsCaseClause(visit(null, it.labels.first())).apply {
+                _enumSwitchStack.push(isEnumSwitch)
+                val label = visit(null, it.labels.first())
+                _enumSwitchStack.pop()
+                CsCaseClause(label).apply {
                     val c = this
                     this.parent = s
                     this.statements = it.statements.map { visit(c, it) }.toMutableList()

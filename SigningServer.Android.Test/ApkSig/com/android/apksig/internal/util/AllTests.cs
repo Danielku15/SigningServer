@@ -8,9 +8,8 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
-    [RunWith(typeof(var))]
     [Suite.SuiteClasses({typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.ArrayBackedByteBufferSinkTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.ChainedDataSourceTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.DirectByteBufferSinkTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtilsTest)})]
-    public class AllTests
+    public class AllTests: SigningServer.Android.TestBase
     {
     }
     

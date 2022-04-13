@@ -1830,249 +1830,488 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// </summary>
         public class Issue
         {
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR signatures");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR signatures", 0);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNED_ZIP_ENTRIES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR entries covered by JAR signatures");
+            public const int JAR_SIG_NO_SIGNATURES_CASE = 0;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_ZIP_ENTRY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate entry: %1$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNED_ZIP_ENTRIES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR entries covered by JAR signatures", 1);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_MANIFEST_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate section in META-INF/MANIFEST.MF: %1$s");
+            public const int JAR_SIG_NO_SIGNED_ZIP_ENTRIES_CASE = 1;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNNNAMED_MANIFEST_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed META-INF/MANIFEST.MF: invidual section #%1$d does not have a name");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_ZIP_ENTRY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate entry: %1$s", 2);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNNNAMED_SIG_FILE_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed %1$s: invidual section #%2$d does not have a name");
+            public const int JAR_SIG_DUPLICATE_ZIP_ENTRY_CASE = 2;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Missing META-INF/MANIFEST.MF");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_MANIFEST_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate section in META-INF/MANIFEST.MF: %1$s", 3);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_ZIP_ENTRY_REFERENCED_IN_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s entry referenced by META-INF/MANIFEST.MF not found in the APK");
+            public const int JAR_SIG_DUPLICATE_MANIFEST_SECTION_CASE = 3;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No digest for %1$s in META-INF/MANIFEST.MF");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNNNAMED_MANIFEST_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed META-INF/MANIFEST.MF: invidual section #%1$d does not have a name", 4);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No digest for %1$s in %2$s");
+            public const int JAR_SIG_UNNNAMED_MANIFEST_SECTION_CASE = 4;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_NOT_SIGNED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s entry not signed");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNNNAMED_SIG_FILE_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed %1$s: invidual section #%2$d does not have a name", 5);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Entries %1$s and %3$s are signed with different sets of signers" + " : <%2$s> vs <%4$s>");
+            public const int JAR_SIG_UNNNAMED_SIG_FILE_SECTION_CASE = 5;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%2$s digest of %1$s does not match the digest specified in %3$s" + ". Expected: <%5$s>, actual: <%4$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Missing META-INF/MANIFEST.MF", 6);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MANIFEST_MAIN_SECTION_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s digest of META-INF/MANIFEST.MF main section does not match the digest" + " specified in %2$s. Expected: <%4$s>, actual: <%3$s>");
+            public const int JAR_SIG_NO_MANIFEST_CASE = 6;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MANIFEST_SECTION_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%2$s digest of META-INF/MANIFEST.MF section for %1$s does not match the digest" + " specified in %3$s. Expected: <%5$s>, actual: <%4$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_ZIP_ENTRY_REFERENCED_IN_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s entry referenced by META-INF/MANIFEST.MF not found in the APK", 7);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_MANIFEST_DIGEST_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s does not specify digest of META-INF/MANIFEST.MF" + ". This slows down verification.");
+            public const int JAR_SIG_MISSING_ZIP_ENTRY_REFERENCED_IN_MANIFEST_CASE = 7;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_APK_SIG_STRIP_PROTECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK is signed using APK Signature Scheme v2 but these signatures may be stripped" + " without being detected because %1$s does not contain anti-stripping" + " protections.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_MANIFEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No digest for %1$s in META-INF/MANIFEST.MF", 8);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Partial JAR signature. Found: %1$s, missing: %2$s");
+            public const int JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_MANIFEST_CASE = 8;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify JAR signature %1$s against %2$s: %3$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No digest for %1$s in %2$s", 9);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNSUPPORTED_SIG_ALG = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s uses digest algorithm %5$s and signature algorithm %6$s which" + " is not supported on API Level(s) %4$s for which this APK is being" + " verified");
+            public const int JAR_SIG_NO_ZIP_ENTRY_DIGEST_IN_SIG_FILE_CASE = 9;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_PARSE_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse JAR signature %1$s: %2$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_NOT_SIGNED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s entry not signed", 10);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate in JAR signature %1$s: %2$s");
+            public const int JAR_SIG_ZIP_ENTRY_NOT_SIGNED_CASE = 10;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s did not verify against %2$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Entries %1$s and %3$s are signed with different sets of signers" + " : <%2$s> vs <%4$s>", 11);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s contains no signers");
+            public const int JAR_SIG_ZIP_ENTRY_SIGNERS_MISMATCH_CASE = 11;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_SIG_FILE_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate section in %1$s: %2$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_ZIP_ENTRY_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%2$s digest of %1$s does not match the digest specified in %3$s" + ". Expected: <%5$s>, actual: <%4$s>", 12);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_VERSION_ATTR_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed %1$s: missing Signature-Version attribute");
+            public const int JAR_SIG_ZIP_ENTRY_DIGEST_DID_NOT_VERIFY_CASE = 12;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNKNOWN_APK_SIG_SCHEME_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s references unknown APK signature scheme ID: %2$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MANIFEST_MAIN_SECTION_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s digest of META-INF/MANIFEST.MF main section does not match the digest" + " specified in %2$s. Expected: <%4$s>, actual: <%3$s>", 13);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_APK_SIG_REFERENCED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s indicates the APK is signed using %3$s but no such signature" + " was found. Signature stripped?");
+            public const int JAR_SIG_MANIFEST_MAIN_SECTION_DIGEST_DID_NOT_VERIFY_CASE = 13;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNPROTECTED_ZIP_ENTRY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s not protected by signature. Unauthorized modifications to this JAR entry" + " will not be detected. Delete or move the entry outside of META-INF/.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MANIFEST_SECTION_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%2$s digest of META-INF/MANIFEST.MF section for %1$s does not match the digest" + " specified in %3$s. Expected: <%5$s>, actual: <%4$s>", 14);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR signature from this signer");
+            public const int JAR_SIG_MANIFEST_SECTION_DIGEST_DID_NOT_VERIFY_CASE = 14;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue NO_SIG_FOR_TARGET_SANDBOX_VERSION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Missing APK Signature Scheme v2 signature required for target sandbox version" + " %1$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_MANIFEST_DIGEST_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s does not specify digest of META-INF/MANIFEST.MF" + ". This slows down verification.", 15);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue MIN_SIG_SCHEME_FOR_TARGET_SDK_NOT_MET = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Target SDK version %1$d requires a minimum of signature scheme v%2$d; the APK is" + " not signed with this or a later signature scheme");
+            public const int JAR_SIG_NO_MANIFEST_DIGEST_IN_SIG_FILE_CASE = 15;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No APK Signature Scheme v2 signature from this signer");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_APK_SIG_STRIP_PROTECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK is signed using APK Signature Scheme v2 but these signatures may be stripped" + " without being detected because %1$s does not contain anti-stripping" + " protections.", 16);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed list of signers");
+            public const int JAR_SIG_NO_APK_SIG_STRIP_PROTECTION_CASE = 16;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNER = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed signer block");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Partial JAR signature. Found: %1$s, missing: %2$s", 17);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s");
+            public const int JAR_SIG_MISSING_FILE_CASE = 17;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate #%2$d: %3$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify JAR signature %1$s against %2$s: %3$s", 18);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v2 signature record #%1$d");
+            public const int JAR_SIG_VERIFY_EXCEPTION_CASE = 18;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v2 digest record #%1$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNSUPPORTED_SIG_ALG = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s uses digest algorithm %5$s and signature algorithm %6$s which" + " is not supported on API Level(s) %4$s for which this APK is being" + " verified", 19);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed additional attribute #%1$d");
+            public const int JAR_SIG_UNSUPPORTED_SIG_ALG_CASE = 19;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_APK_SIG_SCHEME_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v2 signer: %1$s references unknown APK signature scheme ID: " + "%2$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_PARSE_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse JAR signature %1$s: %2$s", 20);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MISSING_APK_SIG_REFERENCED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v2 signature %1$s indicates the APK is signed using %2$s but " + "no such signature was found. Signature stripped?");
+            public const int JAR_SIG_PARSE_EXCEPTION_CASE = 20;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signers in APK Signature Scheme v2 signature");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate in JAR signature %1$s: %2$s", 21);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x");
+            public const int JAR_SIG_MALFORMED_CERTIFICATE_CASE = 21;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown additional attribute: ID %1$#x");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s did not verify against %2$s", 22);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s");
+            public const int JAR_SIG_DID_NOT_VERIFY_CASE = 22;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s contains no signers", 23);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signatures");
+            public const int JAR_SIG_NO_SIGNERS_CASE = 23;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No supported signatures: %1$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_DUPLICATE_SIG_FILE_SECTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Duplicate section in %1$s: %2$s", 24);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_CERTIFICATES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No certificates");
+            public const int JAR_SIG_DUPLICATE_SIG_FILE_SECTION_CASE = 24;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Public key mismatch between certificate and signature record: <%1$s> vs <%2$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_VERSION_ATTR_IN_SIG_FILE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed %1$s: missing Signature-Version attribute", 25);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature algorithms mismatch between signatures and digests records" + ": %1$s vs %2$s");
+            public const int JAR_SIG_MISSING_VERSION_ATTR_IN_SIG_FILE_CASE = 25;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_APK_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK integrity check failed. %1$s digest mismatch." + " Expected: <%2$s>, actual: <%3$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNKNOWN_APK_SIG_SCHEME_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s references unknown APK signature scheme ID: %2$d", 26);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed list of signers");
+            public const int JAR_SIG_UNKNOWN_APK_SIG_SCHEME_ID_CASE = 26;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNER = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed signer block");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING_APK_SIG_REFERENCED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("JAR signature %1$s indicates the APK is signed using %3$s but no such signature" + " was found. Signature stripped?", 27);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s");
+            public const int JAR_SIG_MISSING_APK_SIG_REFERENCED_CASE = 27;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate #%2$d: %3$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_UNPROTECTED_ZIP_ENTRY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s not protected by signature. Unauthorized modifications to this JAR entry" + " will not be detected. Delete or move the entry outside of META-INF/.", 28);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v3 signature record #%1$d");
+            public const int JAR_SIG_UNPROTECTED_ZIP_ENTRY_CASE = 28;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v3 digest record #%1$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue JAR_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No JAR signature from this signer", 29);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed additional attribute #%1$d");
+            public const int JAR_SIG_MISSING_CASE = 29;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signers in APK Signature Scheme v3 signature");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue NO_SIG_FOR_TARGET_SANDBOX_VERSION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Missing APK Signature Scheme v2 signature required for target sandbox version" + " %1$d", 30);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MULTIPLE_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Multiple APK Signature Scheme v3 signatures found for a single " + " platform version.");
+            public const int NO_SIG_FOR_TARGET_SANDBOX_VERSION_CASE = 30;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MULTIPLE_PAST_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Multiple signatures found for pre-v3 signing with an APK " + " Signature Scheme v3 signer.  Only one allowed.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue MIN_SIG_SCHEME_FOR_TARGET_SDK_NOT_MET = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Target SDK version %1$d requires a minimum of signature scheme v%2$d; the APK is" + " not signed with this or a later signature scheme", 31);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_PAST_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("v3 signer differs from v1/v2 signer without proper signing certificate lineage.");
+            public const int MIN_SIG_SCHEME_FOR_TARGET_SDK_NOT_MET_CASE = 31;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No APK Signature Scheme v2 signature from this signer", 32);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown additional attribute: ID %1$#x");
+            public const int V2_SIG_MISSING_CASE = 32;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed list of signers", 33);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_INVALID_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Invalid SDK Version parameter(s) encountered in APK Signature " + "scheme v3 signature: minSdkVersion %1$s maxSdkVersion: %2$s");
+            public const int V2_SIG_MALFORMED_SIGNERS_CASE = 33;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNER = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed signer block", 34);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signatures");
+            public const int V2_SIG_MALFORMED_SIGNER_CASE = 34;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No supported signatures");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s", 35);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_CERTIFICATES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No certificates");
+            public const int V2_SIG_MALFORMED_PUBLIC_KEY_CASE = 35;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MIN_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("minSdkVersion mismatch between signed data and signature record:" + " <%1$s> vs <%2$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate #%2$d: %3$s", 36);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MAX_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("maxSdkVersion mismatch between signed data and signature record:" + " <%1$s> vs <%2$s>");
+            public const int V2_SIG_MALFORMED_CERTIFICATE_CASE = 36;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Public key mismatch between certificate and signature record: <%1$s> vs <%2$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v2 signature record #%1$d", 37);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature algorithms mismatch between signatures and digests records" + ": %1$s vs %2$s");
+            public const int V2_SIG_MALFORMED_SIGNATURE_CASE = 37;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_APK_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK integrity check failed. %1$s digest mismatch." + " Expected: <%2$s>, actual: <%3$s>");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v2 digest record #%1$d", 38);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_POR_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("SigningCertificateLineage attribute containd a proof-of-rotation" + " record with signature(s) that did not verify.");
+            public const int V2_SIG_MALFORMED_DIGEST_CASE = 38;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_LINEAGE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse the SigningCertificateLineage structure in the " + "APK Signature Scheme v3 signature's additional attributes section.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed additional attribute #%1$d", 39);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_POR_CERT_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK signing certificate differs from the associated certificate found in the " + "signer's SigningCertificateLineage.");
+            public const int V2_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE_CASE = 39;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_INCONSISTENT_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v3 signers supported min/max SDK " + "versions are not continuous.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_APK_SIG_SCHEME_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v2 signer: %1$s references unknown APK signature scheme ID: " + "%2$d", 40);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MISSING_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v3 signers supported min/max SDK " + "versions do not cover the entire desired range.  Found min:  %1$s max %2$s");
+            public const int V2_SIG_UNKNOWN_APK_SIG_SCHEME_ID_CASE = 40;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_INCONSISTENT_LINEAGES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("SigningCertificateLineages targeting different platform versions" + " using APK Signature Scheme v3 are not all a part of the same overall lineage.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_MISSING_APK_SIG_REFERENCED = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v2 signature %1$s indicates the APK is signed using %2$s but " + "no such signature was found. Signature stripped?", 41);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue APK_SIG_BLOCK_UNKNOWN_ENTRY_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signing Block contains unknown entry: ID %1$#x");
+            public const int V2_SIG_MISSING_APK_SIG_REFERENCED_CASE = 41;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has malformed signer block");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signers in APK Signature Scheme v2 signature", 42);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has unknown signing algorithm: %1$#x");
+            public const int V2_SIG_NO_SIGNERS_CASE = 42;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no signature found");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x", 43);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no supported signature");
+            public const int V2_SIG_UNKNOWN_SIG_ALGORITHM_CASE = 43;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown additional attribute: ID %1$#x", 44);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s");
+            public const int V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE_CASE = 44;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s", 45);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has malformed certificate");
+            public const int V2_SIG_VERIFY_EXCEPTION_CASE = 45;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no certificate");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify", 46);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has mismatched certificate and signature: <%1$s> vs <%2$s>");
+            public const int V2_SIG_DID_NOT_VERIFY_CASE = 46;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_APK_ROOT_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature's hash tree root (content digest) did not verity");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signatures", 47);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_APK_TREE_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature's hash tree did not verity");
+            public const int V2_SIG_NO_SIGNATURES_CASE = 47;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MULTIPLE_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature only supports one signer");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No supported signatures: %1$s", 48);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_V2_V3_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature and V2/V3 signature have mismatched certificates");
+            public const int V2_SIG_NO_SUPPORTED_SIGNATURES_CASE = 48;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_V2_V3_DIGESTS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature and V2/V3 signature have mismatched digests");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_NO_CERTIFICATES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No certificates", 49);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_VERSION_NOT_CURRENT = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature format version %1$d is different from the tool's current " + "version %2$d");
+            public const int V2_SIG_NO_CERTIFICATES_CASE = 49;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Neither the source stamp certificate digest file nor the signature block are " + "present in the APK");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Public key mismatch between certificate and signature record: <%1$s> vs <%2$s>", 50);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No SourceStamp signature");
+            public const int V2_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD_CASE = 50;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate: %1$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature algorithms mismatch between signatures and digests records" + ": %1$s vs %2$s", 51);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed SourceStamp signature");
+            public const int V2_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS_CASE = 51;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V2_SIG_APK_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK integrity check failed. %1$s digest mismatch." + " Expected: <%2$s>, actual: <%3$s>", 52);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s");
+            public const int V2_SIG_APK_DIGEST_DID_NOT_VERIFY_CASE = 52;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed list of signers", 53);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_NO_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signature");
+            public const int V3_SIG_MALFORMED_SIGNERS_CASE = 53;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_NO_SUPPORTED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature(s) {%1$s} not supported: %2$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNER = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed signer block", 54);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Certificate mismatch between SourceStamp block in APK signing block and" + " SourceStamp file in APK: <%1$s> vs <%2$s>");
+            public const int V3_SIG_MALFORMED_SIGNER_CASE = 54;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("A source stamp signature block was found without a corresponding certificate " + "digest in the APK");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s", 55);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("The source stamp certificate digest in the APK, %1$s, does not match the " + "expected digest, %2$s");
+            public const int V3_SIG_MALFORMED_PUBLIC_KEY_CASE = 55;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed stamp attribute #%1$d");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate #%2$d: %3$s", 56);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_UNKNOWN_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown stamp attribute: ID %1$#x");
+            public const int V3_SIG_MALFORMED_CERTIFICATE_CASE = 56;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_LINEAGE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse the SigningCertificateLineage " + "structure in the source stamp attributes section.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v3 signature record #%1$d", 57);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_POR_CERT_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK signing certificate differs from the associated certificate found in the " + "signer's SigningCertificateLineage.");
+            public const int V3_SIG_MALFORMED_SIGNATURE_CASE = 57;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_POR_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Source stamp SigningCertificateLineage attribute " + "contains a proof-of-rotation record with signature(s) that did not verify.");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK Signature Scheme v3 digest record #%1$d", 58);
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue MALFORMED_APK = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK; the following exception was caught when attempting to parse the " + "APK: %1$s");
+            public const int V3_SIG_MALFORMED_DIGEST_CASE = 58;
             
-            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue UNEXPECTED_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("An unexpected exception was caught when verifying the signature: %1$s");
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed additional attribute #%1$d", 59);
+            
+            public const int V3_SIG_MALFORMED_ADDITIONAL_ATTRIBUTE_CASE = 59;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signers in APK Signature Scheme v3 signature", 60);
+            
+            public const int V3_SIG_NO_SIGNERS_CASE = 60;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MULTIPLE_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Multiple APK Signature Scheme v3 signatures found for a single " + " platform version.", 61);
+            
+            public const int V3_SIG_MULTIPLE_SIGNERS_CASE = 61;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MULTIPLE_PAST_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Multiple signatures found for pre-v3 signing with an APK " + " Signature Scheme v3 signer.  Only one allowed.", 62);
+            
+            public const int V3_SIG_MULTIPLE_PAST_SIGNERS_CASE = 62;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_PAST_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("v3 signer differs from v1/v2 signer without proper signing certificate lineage.", 63);
+            
+            public const int V3_SIG_PAST_SIGNERS_MISMATCH_CASE = 63;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x", 64);
+            
+            public const int V3_SIG_UNKNOWN_SIG_ALGORITHM_CASE = 64;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown additional attribute: ID %1$#x", 65);
+            
+            public const int V3_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE_CASE = 65;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s", 66);
+            
+            public const int V3_SIG_VERIFY_EXCEPTION_CASE = 66;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_INVALID_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Invalid SDK Version parameter(s) encountered in APK Signature " + "scheme v3 signature: minSdkVersion %1$s maxSdkVersion: %2$s", 67);
+            
+            public const int V3_SIG_INVALID_SDK_VERSIONS_CASE = 67;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify", 68);
+            
+            public const int V3_SIG_DID_NOT_VERIFY_CASE = 68;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signatures", 69);
+            
+            public const int V3_SIG_NO_SIGNATURES_CASE = 69;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No supported signatures", 70);
+            
+            public const int V3_SIG_NO_SUPPORTED_SIGNATURES_CASE = 70;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_NO_CERTIFICATES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No certificates", 71);
+            
+            public const int V3_SIG_NO_CERTIFICATES_CASE = 71;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MIN_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("minSdkVersion mismatch between signed data and signature record:" + " <%1$s> vs <%2$s>", 72);
+            
+            public const int V3_MIN_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD_CASE = 72;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MAX_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("maxSdkVersion mismatch between signed data and signature record:" + " <%1$s> vs <%2$s>", 73);
+            
+            public const int V3_MAX_SDK_VERSION_MISMATCH_BETWEEN_SIGNER_AND_SIGNED_DATA_RECORD_CASE = 73;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Public key mismatch between certificate and signature record: <%1$s> vs <%2$s>", 74);
+            
+            public const int V3_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD_CASE = 74;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature algorithms mismatch between signatures and digests records" + ": %1$s vs %2$s", 75);
+            
+            public const int V3_SIG_SIG_ALG_MISMATCH_BETWEEN_SIGNATURES_AND_DIGESTS_RECORDS_CASE = 75;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_APK_DIGEST_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK integrity check failed. %1$s digest mismatch." + " Expected: <%2$s>, actual: <%3$s>", 76);
+            
+            public const int V3_SIG_APK_DIGEST_DID_NOT_VERIFY_CASE = 76;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_POR_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("SigningCertificateLineage attribute containd a proof-of-rotation" + " record with signature(s) that did not verify.", 77);
+            
+            public const int V3_SIG_POR_DID_NOT_VERIFY_CASE = 77;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_MALFORMED_LINEAGE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse the SigningCertificateLineage structure in the " + "APK Signature Scheme v3 signature's additional attributes section.", 78);
+            
+            public const int V3_SIG_MALFORMED_LINEAGE_CASE = 78;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_SIG_POR_CERT_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK signing certificate differs from the associated certificate found in the " + "signer's SigningCertificateLineage.", 79);
+            
+            public const int V3_SIG_POR_CERT_MISMATCH_CASE = 79;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_INCONSISTENT_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v3 signers supported min/max SDK " + "versions are not continuous.", 80);
+            
+            public const int V3_INCONSISTENT_SDK_VERSIONS_CASE = 80;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_MISSING_SDK_VERSIONS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signature Scheme v3 signers supported min/max SDK " + "versions do not cover the entire desired range.  Found min:  %1$s max %2$s", 81);
+            
+            public const int V3_MISSING_SDK_VERSIONS_CASE = 81;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V3_INCONSISTENT_LINEAGES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("SigningCertificateLineages targeting different platform versions" + " using APK Signature Scheme v3 are not all a part of the same overall lineage.", 82);
+            
+            public const int V3_INCONSISTENT_LINEAGES_CASE = 82;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue APK_SIG_BLOCK_UNKNOWN_ENTRY_ID = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK Signing Block contains unknown entry: ID %1$#x", 83);
+            
+            public const int APK_SIG_BLOCK_UNKNOWN_ENTRY_ID_CASE = 83;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has malformed signer block", 84);
+            
+            public const int V4_SIG_MALFORMED_SIGNERS_CASE = 84;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has unknown signing algorithm: %1$#x", 85);
+            
+            public const int V4_SIG_UNKNOWN_SIG_ALGORITHM_CASE = 85;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no signature found", 86);
+            
+            public const int V4_SIG_NO_SIGNATURES_CASE = 86;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_SUPPORTED_SIGNATURES = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no supported signature", 87);
+            
+            public const int V4_SIG_NO_SUPPORTED_SIGNATURES_CASE = 87;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify", 88);
+            
+            public const int V4_SIG_DID_NOT_VERIFY_CASE = 88;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s", 89);
+            
+            public const int V4_SIG_VERIFY_EXCEPTION_CASE = 89;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_PUBLIC_KEY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed public key: %1$s", 90);
+            
+            public const int V4_SIG_MALFORMED_PUBLIC_KEY_CASE = 90;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has malformed certificate", 91);
+            
+            public const int V4_SIG_MALFORMED_CERTIFICATE_CASE = 91;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_NO_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has no certificate", 92);
+            
+            public const int V4_SIG_NO_CERTIFICATE_CASE = 92;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature has mismatched certificate and signature: <%1$s> vs <%2$s>", 93);
+            
+            public const int V4_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD_CASE = 93;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_APK_ROOT_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature's hash tree root (content digest) did not verity", 94);
+            
+            public const int V4_SIG_APK_ROOT_DID_NOT_VERIFY_CASE = 94;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_APK_TREE_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature's hash tree did not verity", 95);
+            
+            public const int V4_SIG_APK_TREE_DID_NOT_VERIFY_CASE = 95;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_MULTIPLE_SIGNERS = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature only supports one signer", 96);
+            
+            public const int V4_SIG_MULTIPLE_SIGNERS_CASE = 96;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_V2_V3_SIGNERS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature and V2/V3 signature have mismatched certificates", 97);
+            
+            public const int V4_SIG_V2_V3_SIGNERS_MISMATCH_CASE = 97;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_V2_V3_DIGESTS_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature and V2/V3 signature have mismatched digests", 98);
+            
+            public const int V4_SIG_V2_V3_DIGESTS_MISMATCH_CASE = 98;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue V4_SIG_VERSION_NOT_CURRENT = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("V4 signature format version %1$d is different from the tool's current " + "version %2$d", 99);
+            
+            public const int V4_SIG_VERSION_NOT_CURRENT_CASE = 99;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Neither the source stamp certificate digest file nor the signature block are " + "present in the APK", 100);
+            
+            public const int SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING_CASE = 100;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_SIG_MISSING = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No SourceStamp signature", 101);
+            
+            public const int SOURCE_STAMP_SIG_MISSING_CASE = 101;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_CERTIFICATE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed certificate: %1$s", 102);
+            
+            public const int SOURCE_STAMP_MALFORMED_CERTIFICATE_CASE = 102;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed SourceStamp signature", 103);
+            
+            public const int SOURCE_STAMP_MALFORMED_SIGNATURE_CASE = 103;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown signature algorithm: %1$#x", 104);
+            
+            public const int SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM_CASE = 104;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_VERIFY_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to verify %1$s signature: %2$s", 105);
+            
+            public const int SOURCE_STAMP_VERIFY_EXCEPTION_CASE = 105;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("%1$s signature over signed-data did not verify", 106);
+            
+            public const int SOURCE_STAMP_DID_NOT_VERIFY_CASE = 106;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_NO_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("No signature", 107);
+            
+            public const int SOURCE_STAMP_NO_SIGNATURE_CASE = 107;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_NO_SUPPORTED_SIGNATURE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Signature(s) {%1$s} not supported: %2$s", 108);
+            
+            public const int SOURCE_STAMP_NO_SUPPORTED_SIGNATURE_CASE = 108;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Certificate mismatch between SourceStamp block in APK signing block and" + " SourceStamp file in APK: <%1$s> vs <%2$s>", 109);
+            
+            public const int SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK_CASE = 109;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("A source stamp signature block was found without a corresponding certificate " + "digest in the APK", 110);
+            
+            public const int SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST_CASE = 110;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("The source stamp certificate digest in the APK, %1$s, does not match the " + "expected digest, %2$s", 111);
+            
+            public const int SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH_CASE = 111;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed stamp attribute #%1$d", 112);
+            
+            public const int SOURCE_STAMP_MALFORMED_ATTRIBUTE_CASE = 112;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_UNKNOWN_ATTRIBUTE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Unknown stamp attribute: ID %1$#x", 113);
+            
+            public const int SOURCE_STAMP_UNKNOWN_ATTRIBUTE_CASE = 113;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_MALFORMED_LINEAGE = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Failed to parse the SigningCertificateLineage " + "structure in the source stamp attributes section.", 114);
+            
+            public const int SOURCE_STAMP_MALFORMED_LINEAGE_CASE = 114;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_POR_CERT_MISMATCH = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("APK signing certificate differs from the associated certificate found in the " + "signer's SigningCertificateLineage.", 115);
+            
+            public const int SOURCE_STAMP_POR_CERT_MISMATCH_CASE = 115;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue SOURCE_STAMP_POR_DID_NOT_VERIFY = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Source stamp SigningCertificateLineage attribute " + "contains a proof-of-rotation record with signature(s) that did not verify.", 116);
+            
+            public const int SOURCE_STAMP_POR_DID_NOT_VERIFY_CASE = 116;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue MALFORMED_APK = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("Malformed APK; the following exception was caught when attempting to parse the " + "APK: %1$s", 117);
+            
+            public const int MALFORMED_APK_CASE = 117;
+            
+            public static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue UNEXPECTED_EXCEPTION = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue("An unexpected exception was caught when verifying the signature: %1$s", 118);
+            
+            public const int UNEXPECTED_EXCEPTION_CASE = 118;
             
             internal readonly string mFormat;
             
-            internal Issue(string format)
+            internal Issue(string format, int caseValue)
             {
                 mFormat = format;
+                Case = caseValue;
             }
             
             /// <summary>
@@ -2082,6 +2321,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             internal string GetFormat()
             {
                 return mFormat;
+            }
+            
+            int Case
+            {
+                get;
             }
             
             internal static readonly SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue[] _values = {

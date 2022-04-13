@@ -8,9 +8,8 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
-    [RunWith(typeof(var))]
     [Suite.SuiteClasses({typeof(SigningServer.Android.Com.Android.Apksig.ApkSignerTest), typeof(SigningServer.Android.Com.Android.Apksig.ApkVerifierTest), typeof(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest), typeof(SigningServer.Android.Com.Android.Apksig.SourceStampVerifierTest), typeof(SigningServer.Android.Com.Android.Apksig.Apk.AllTests), typeof(SigningServer.Android.Com.Android.Apksig.Internal.AllTests), typeof(SigningServer.Android.Com.Android.Apksig.Util.AllTests)})]
-    public class AllTests
+    public class AllTests: SigningServer.Android.TestBase
     {
     }
     

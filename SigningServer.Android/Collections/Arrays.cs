@@ -17,5 +17,9 @@ namespace SigningServer.Android.Collections
         {
             return Array.BinarySearch(array, value, comparer);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetHashCode<T>(T[] array)
+        {
+        }
     }
 }

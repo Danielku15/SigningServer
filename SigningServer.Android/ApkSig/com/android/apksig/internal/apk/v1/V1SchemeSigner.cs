@@ -242,12 +242,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     throw new SigningServer.Android.Security.SignatureException("Failed to sign using signer \\" + signerName + "\\", e);
                 }
-                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of("META-INF/" + signerName + ".SF", sfBytes));
+                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>("META-INF/" + signerName + ".SF", sfBytes));
                 SigningServer.Android.Security.PublicKey publicKey = signerConfig.certificates.Get(0).GetPublicKey();
                 string signatureBlockFileName = "META-INF/" + signerName + "." + publicKey.GetAlgorithm().ToUpperCase(SigningServer.Android.Util.Locale.US);
-                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(signatureBlockFileName, signatureBlock));
+                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(signatureBlockFileName, signatureBlock));
             }
-            signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.MANIFEST_ENTRY_NAME, manifest.contents));
+            signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.MANIFEST_ENTRY_NAME, manifest.contents));
             return signatureJarEntries;
         }
         
@@ -478,11 +478,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         
         internal static string GetEntryDigestAttributeName(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm)
         {
-            switch (digestAlgorithm)
+            switch (digestAlgorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                     return "SHA1-Digest";
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                     return "SHA-256-Digest";
                 default:
                     throw new System.ArgumentException("Unexpected content digest algorithm: " + digestAlgorithm);
@@ -491,11 +491,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         
         internal static string GetManifestDigestAttributeName(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm)
         {
-            switch (digestAlgorithm)
+            switch (digestAlgorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                     return "SHA1-Digest-Manifest";
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                     return "SHA-256-Digest-Manifest";
                 default:
                     throw new System.ArgumentException("Unexpected content digest algorithm: " + digestAlgorithm);

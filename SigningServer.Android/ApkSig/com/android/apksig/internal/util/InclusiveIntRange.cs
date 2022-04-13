@@ -47,7 +47,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         {
             if (sortedNonOverlappingRanges.IsEmpty())
             {
-                return SigningServer.Android.Util.Collections.SingletonList(this);
+                return SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange>(this);
             }
             int testValue = min;
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange> result = null;

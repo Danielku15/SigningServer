@@ -94,7 +94,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             {
                 throw new SigningServer.Android.Security.InvalidKeyException("Signer failed", e);
             }
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(signature, tree);
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, sbyte[]>(signature, tree);
         }
         
         internal static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature GenerateSignature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo, sbyte[] apkDigest, sbyte[] additionaData, long fileSize)
@@ -257,13 +257,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         public static int DigestAlgorithmSortingOrder(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm contentDigestAlgorithm)
         {
-            switch (contentDigestAlgorithm)
+            switch (contentDigestAlgorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA256_CASE:
                     return 0;
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
                     return 1;
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512_CASE:
                     return 2;
                 default:
                     return -1;
@@ -285,10 +285,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte?> ConvertToV4HashingInfo(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm algorithm)
         {
-            switch (algorithm)
+            switch (algorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256:
-                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HASHING_ALGORITHM_SHA256, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.LOG2_BLOCK_SIZE_4096_BYTES);
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
+                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HASHING_ALGORITHM_SHA256, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.LOG2_BLOCK_SIZE_4096_BYTES);
                 default:
                     throw new SigningServer.Android.Security.NoSuchAlgorithmException("Invalid hash algorithm, only SHA2-256 over 4 KB chunks supported.");
             }

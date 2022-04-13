@@ -11,7 +11,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     /// <summary>
     /// Hexadecimal encoding where each byte is represented by two hexadecimal digits.
     /// </summary>
-    public class HexEncoding
+    public class HexEncoding: SigningServer.Android.TestBase
     {
         /// <summary>
         /// Hidden constructor to prevent instantiation.

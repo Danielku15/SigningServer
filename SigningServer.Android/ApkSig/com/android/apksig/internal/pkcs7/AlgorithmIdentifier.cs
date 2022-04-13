@@ -36,11 +36,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7
         /// </summary>
         public static SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier GetSignerInfoDigestAlgorithmOid(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm)
         {
-            switch (digestAlgorithm)
+            switch (digestAlgorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                     return new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_DIGEST_SHA1, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL);
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                     return new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_DIGEST_SHA256, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL);
             }
             throw new System.ArgumentException("Unsupported digest algorithm: " + digestAlgorithm);
@@ -54,12 +54,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7
         {
             string keyAlgorithm = publicKey.GetAlgorithm();
             string jcaDigestPrefixForSigAlg;
-            switch (digestAlgorithm)
+            switch (digestAlgorithm.Case)
             {
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                     jcaDigestPrefixForSigAlg = "SHA1";
                     break;
-                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                     jcaDigestPrefixForSigAlg = "SHA256";
                     break;
                 default:
@@ -67,28 +67,28 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7
             }
             if ("RSA".EqualsIgnoreCase(keyAlgorithm))
             {
-                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(jcaDigestPrefixForSigAlg + "withRSA", new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_RSA, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL));
+                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier>(jcaDigestPrefixForSigAlg + "withRSA", new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_RSA, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL));
             }
             else if ("DSA".EqualsIgnoreCase(keyAlgorithm))
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier sigAlgId;
-                switch (digestAlgorithm)
+                switch (digestAlgorithm.Case)
                 {
-                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1:
+                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA1_CASE:
                         sigAlgId = new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_DSA, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL);
                         break;
-                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256:
+                    case SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm.SHA256_CASE:
                         sigAlgId = new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_SHA256_WITH_DSA, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL);
                         break;
                     default:
                         throw new System.ArgumentException("Unexpected digest algorithm: " + digestAlgorithm);
                 }
                 string signingAlgorithmName = jcaDigestPrefixForSigAlg + (deterministicDsaSigning ? "withDetDSA" : "withDSA");
-                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(signingAlgorithmName, sigAlgId);
+                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier>(signingAlgorithmName, sigAlgId);
             }
             else if ("EC".EqualsIgnoreCase(keyAlgorithm))
             {
-                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(jcaDigestPrefixForSigAlg + "withECDSA", new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_EC_PUBLIC_KEY, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL));
+                return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier>(jcaDigestPrefixForSigAlg + "withECDSA", new SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier(SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.OID_SIG_EC_PUBLIC_KEY, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ASN1_DER_NULL));
             }
             else 
             {

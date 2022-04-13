@@ -12,7 +12,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// Tests for the {@link DataSink} returned by
     /// {@link DataSinks#asDataSink(java.io.RandomAccessFile)}.
     /// </summary>
-    [RunWith(typeof(var))]
     public class DataSinkFromRAFTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>
     {
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink> CreateDataSink()
@@ -30,7 +29,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                     tmp.Delete();
                 }
             }
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of((Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable(tmp, f));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>((Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable(tmp, f));
         }
         
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink dataSink)

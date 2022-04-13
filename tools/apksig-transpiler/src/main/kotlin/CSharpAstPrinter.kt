@@ -343,7 +343,7 @@ class CSharpAstPrinter(
         this.writeAttributes(d)
         this.writeVisibility(d.visibility)
 
-        if (this.context.isConst(d)) {
+        if (this.context.isConst(d) || d.isConst) {
             this.write("const ")
         } else {
             if (d.isStatic) {

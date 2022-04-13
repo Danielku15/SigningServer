@@ -11,7 +11,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     /// <summary>
     /// Assorted methods to obtaining test input from resources.
     /// </summary>
-    public class Resources
+    public class Resources: SigningServer.Android.TestBase
     {
         internal Resources()
         {

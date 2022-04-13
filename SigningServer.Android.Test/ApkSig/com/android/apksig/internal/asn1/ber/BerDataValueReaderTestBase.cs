@@ -14,7 +14,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
     /// &lt;p&gt;Subclasses need to provide only an implementation of {@link #createReader(byte[])} and
     /// subclass-specific tests.
     /// </summary>
-    public abstract class BerDataValueReaderTestBase
+    public abstract class BerDataValueReaderTestBase: SigningServer.Android.TestBase
     {
         /// <summary>
         /// Returns a new reader initialized with the provided input.

@@ -8,7 +8,6 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
-    [RunWith(typeof(var))]
     public class InputStreamBerDataValueReaderTest: SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase
     {
         protected override Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader CreateReader(sbyte[] input)

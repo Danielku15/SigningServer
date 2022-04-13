@@ -8,9 +8,8 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
-    [RunWith(typeof(var))]
     [Suite.SuiteClasses({typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.ByteBufferBerDataValueReaderTest), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReaderTest)})]
-    public class AllTests
+    public class AllTests: SigningServer.Android.TestBase
     {
     }
     

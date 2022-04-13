@@ -15,7 +15,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// &lt;p&gt;To subclass, provide an implementation of {@link #createDataSink()} which returns the
     /// implementation of {@code DataSink} you want to test.
     /// </summary>
-    public abstract class DataSinkTestBase<T>
+    public abstract class DataSinkTestBase<T>: SigningServer.Android.TestBase
     {
         /// <summary>
         /// Returns a new {@link DataSink}.
@@ -110,7 +110,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             }
         }
         
-        public class CloseableWithDataSink<T>: System.IDisposable
+        public class CloseableWithDataSink<T>: SigningServer.Android.TestBase, System.IDisposable
         {
             internal readonly T mDataSink;
             

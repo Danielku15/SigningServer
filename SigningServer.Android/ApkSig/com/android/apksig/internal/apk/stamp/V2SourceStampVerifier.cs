@@ -113,7 +113,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>>();
             foreach (SigningServer.Android.Collections.MapEntry<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigest in apkContentDigests.EntrySet())
             {
-                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(apkContentDigest.GetKey().GetId(), apkContentDigest.GetValue()));
+                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte[]>(apkContentDigest.GetKey().GetId(), apkContentDigest.GetValue()));
             }
             SigningServer.Android.Util.Collections.Sort(digests, new System.Collections.Generic.IComparer<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>>());
             return digests;

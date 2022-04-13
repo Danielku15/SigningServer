@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
-    [RunWith(typeof(var))]
-    public class ApkVerifierTest
+    public class ApkVerifierTest: SigningServer.Android.TestBase
     {
         internal static readonly string[] DSA_KEY_NAMES = {"1024", "2048", "3072"};
         

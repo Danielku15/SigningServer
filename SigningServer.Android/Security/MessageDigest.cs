@@ -1,7 +1,10 @@
-﻿namespace SigningServer.Android.Security
+﻿using SigningServer.Android.IO;
+
+namespace SigningServer.Android.Security
 {
     public abstract class MessageDigest
     {
+        public abstract void Update(ByteBuffer data);
         public abstract void Update(sbyte[] data);
         public abstract sbyte[] Digest();
         public abstract int Digest(sbyte[] data, int offset, int length);

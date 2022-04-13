@@ -12,7 +12,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// Tests for the {@link DataSource} returned by
     /// {@link DataSources#asDataSource(java.io.RandomAccessFile)}.
     /// </summary>
-    [RunWith(typeof(var))]
     public class DataSourceFromRAFTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         [Parameterized.Parameters(Name = "{0}")]
@@ -77,7 +76,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         /// <summary>
         /// {@link Closeable} which closes the delegate {@code Closeable} and deletes the provided file.
         /// </summary>
-        internal class TmpFileCloseable: System.IDisposable
+        internal class TmpFileCloseable: SigningServer.Android.TestBase, System.IDisposable
         {
             internal readonly System.IO.FileInfo mFile;
             

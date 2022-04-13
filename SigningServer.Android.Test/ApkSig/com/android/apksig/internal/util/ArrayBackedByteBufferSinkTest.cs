@@ -8,7 +8,6 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
-    [RunWith(typeof(var))]
     public class ArrayBackedByteBufferSinkTest: SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSinkTestBase
     {
         protected override SigningServer.Android.IO.ByteBuffer CreateBuffer(int size)

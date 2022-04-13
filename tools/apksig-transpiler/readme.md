@@ -12,3 +12,4 @@ Due to some limitations in JavaParser and also in the invested efforts, the outp
 * When enums are used in switches this usually results in invalid switch statements. 
 * Anonymous classes are not generated
 * Lambdas are translated 1:1 while the related types might be interfaces.
+* `@Override` will be taken over 1:1 even if they implement interface methods.

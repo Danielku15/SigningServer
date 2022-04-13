@@ -19,7 +19,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             SigningServer.Android.IO.ByteBuffer buf = CreateBuffer(1024);
             buf.Position(SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSinkTestBase.START_POS);
             buf.Limit(buf.Capacity() - 300);
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of(new Com.Android.Apksig.Internal.Util.ByteBufferSink(buf));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Internal.Util.ByteBufferSink>(new Com.Android.Apksig.Internal.Util.ByteBufferSink(buf));
         }
         
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Internal.Util.ByteBufferSink dataSink)

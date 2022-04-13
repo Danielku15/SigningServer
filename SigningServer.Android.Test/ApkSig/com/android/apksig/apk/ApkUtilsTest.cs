@@ -8,8 +8,7 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Apk
 {
-    [RunWith(typeof(var))]
-    public class ApkUtilsTest
+    public class ApkUtilsTest: SigningServer.Android.TestBase
     {
         [Test]
         public virtual void TestGetMinSdkVersionForValidCodename()

@@ -149,7 +149,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                             throw new System.ArgumentException("v1 signing enabled but the oldest signer in the" + " SigningCertificateLineage is missing.  Please provide the" + " oldest signer to enable v1 signing");
                         }
                     }
-                    CreateV1SignerConfigs(SigningServer.Android.Util.Collections.SingletonList(oldestConfig), minSdkVersion);
+                    CreateV1SignerConfigs(SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.SignerConfig>(oldestConfig), minSdkVersion);
                 }
                 else 
                 {
@@ -354,7 +354,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     }
                     break;
                 case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP:
-                    newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.RSA_PKCS1_V1_5_WITH_SHA256);
+                    newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.RSA_PKCS1_V1_5_WITH_SHA256);
                     break;
                 default:
                     throw new System.ArgumentException("Unknown APK Signature Scheme ID requested");
@@ -704,13 +704,13 @@ namespace SigningServer.Android.Com.Android.Apksig
                         SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.GetJarEntryDataRequest actualDataRequest = mOutputSignatureJarEntryDataRequests.Get(entryName);
                         if (actualDataRequest == null)
                         {
-                            signatureZipEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(entryName, expectedData));
+                            signatureZipEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(entryName, expectedData));
                             continue;
                         }
                         sbyte[] actualData = actualDataRequest.GetData();
                         if (!SigningServer.Android.Collections.Arrays.Equals(expectedData, actualData))
                         {
-                            signatureZipEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of(entryName, expectedData));
+                            signatureZipEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(entryName, expectedData));
                         }
                     }
                     if (signatureZipEntries.IsEmpty())

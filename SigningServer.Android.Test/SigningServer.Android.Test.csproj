@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<Title>SigningServer Android Test</Title>
 		<Description>This library contains a port of the official Android apksigner source code.</Description>
+		<RootNamespace>SigningServer.Android</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle" Version="1.8.9" />

@@ -322,7 +322,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig newSignerConfig = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig();
             newSignerConfig.privateKey = parent.GetPrivateKey();
             newSignerConfig.certificates = certificates;
-            newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList(signatureAlgorithm);
+            newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(signatureAlgorithm);
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(newSignerConfig, signedData);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(signatures.Get(0).GetFirst());
             sbyte[] signature = signatures.Get(0).GetSecond();
@@ -365,7 +365,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 throw new System.ArgumentException("Algorithm associated with first signing certificate" + " invalid on desired platform versions", e);
             }
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode firstNode = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode(parent.GetCertificate(), null, null, new sbyte[0], signerCapabilities.GetFlags());
-            return new SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage(mMinSdkVersion, SigningServer.Android.Util.Collections.SingletonList(firstNode));
+            return new SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage(mMinSdkVersion, SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode>(firstNode));
         }
         
         internal static SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage Read(SigningServer.Android.IO.ByteBuffer inputByteBuffer)

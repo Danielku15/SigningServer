@@ -2,6 +2,10 @@
 {
     public class ByteArrayOutputStream : OutputStream
     {
+        public ByteArrayOutputStream()
+        {
+        }
+        
         public ByteArrayOutputStream(int size)
         {
             throw new System.NotImplementedException();

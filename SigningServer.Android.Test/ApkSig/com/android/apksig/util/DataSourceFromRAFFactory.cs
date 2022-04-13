@@ -10,13 +10,22 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
 {
     internal class DataSourceFromRAFFactory
     {
-        public static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory RANDOM_ACCESS_FILE = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory();
+        public static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory RANDOM_ACCESS_FILE = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory(0);
         
-        public static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory FILE_CHANNEL = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory();
+        public const int RANDOM_ACCESS_FILE_CASE = 0;
+        
+        public static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory FILE_CHANNEL = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory(1);
+        
+        public const int FILE_CHANNEL_CASE = 1;
         
         public abstract Com.Android.Apksig.Util.DataSource Create(SigningServer.Android.IO.RandomAccessFile file);
         
         public abstract Com.Android.Apksig.Util.DataSource Create(SigningServer.Android.IO.RandomAccessFile file, long offset, long size);
+        
+        int Case
+        {
+            get;
+        }
         
         internal static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory[] _values = {RANDOM_ACCESS_FILE, FILE_CHANNEL};
         

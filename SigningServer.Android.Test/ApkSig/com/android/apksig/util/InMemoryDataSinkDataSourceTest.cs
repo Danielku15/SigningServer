@@ -5,12 +5,14 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
     /// <summary>
     /// Tests for the {@link DataSource} returned by {@link DataSinks#newInMemoryDataSink()}.
     /// </summary>
+    [TestClass]
     public class InMemoryDataSinkDataSourceTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents)

@@ -5,12 +5,14 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
     /// <summary>
     /// Tests for the {@link DataSource} returned by {@link DataSources#asDataSource(ByteBuffer)}.
     /// </summary>
+    [TestClass]
     public class DataSourceFromByteBufferTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
         [Test]

@@ -5,9 +5,11 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
+    [TestClass]
     public class SourceStampVerifierTest: SigningServer.Android.TestBase
     {
         internal static readonly string RSA_2048_CERT_SHA256_DIGEST = "fb5dbd3c669af9fc236c6991e6387b7f11ff0590997f22d0f5c74ff40e04fca8";

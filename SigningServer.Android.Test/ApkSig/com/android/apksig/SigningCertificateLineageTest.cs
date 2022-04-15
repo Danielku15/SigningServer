@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
+    [TestClass]
     public class SigningCertificateLineageTest: SigningServer.Android.TestBase
     {
         internal SigningServer.Android.Collections.List<Com.Android.Apksig.SigningCertificateLineage.SignerConfig> mSigners;

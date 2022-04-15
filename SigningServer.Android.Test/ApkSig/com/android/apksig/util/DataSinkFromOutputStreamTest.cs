@@ -5,12 +5,14 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
     /// <summary>
     /// Tests for the {@link DataSink} returned by {@link DataSinks#asDataSink(java.io.OutputStream)}.
     /// </summary>
+    [TestClass]
     public class DataSinkFromOutputStreamTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>
     {
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>.CloseableWithDataSink CreateDataSink()

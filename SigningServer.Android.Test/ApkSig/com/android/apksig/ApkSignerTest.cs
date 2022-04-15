@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
+    [TestClass]
     public class ApkSignerTest: SigningServer.Android.TestBase
     {
         /// <summary>

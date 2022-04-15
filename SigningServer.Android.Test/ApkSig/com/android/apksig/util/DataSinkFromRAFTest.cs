@@ -6,6 +6,7 @@
 
 using System;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
@@ -13,6 +14,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// Tests for the {@link DataSink} returned by
     /// {@link DataSinks#asDataSink(java.io.RandomAccessFile)}.
     /// </summary>
+    [TestClass]
     public class DataSinkFromRAFTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>
     {
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>.CloseableWithDataSink CreateDataSink()

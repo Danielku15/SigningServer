@@ -33,10 +33,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         private static InputStream GetResourceAsStream(Type cls, string resourceName)
         {
             var relativeNs = cls.Namespace.Replace(
-                "SigningServer.Android.Com.Android.Apksig.Apk",
-                "SigningServer.Android.Test.Resources");
+                "SigningServer.Android.Com.Android.Apksig",
+                "SigningServer.Android.Resources");
 
-            return new WrapperInputStream(cls.Assembly.GetManifestResourceStream(relativeNs + "." + resourceName));
+            var fullName = relativeNs + "." + resourceName;
+            var stream = typeof(Resources).Assembly.GetManifestResourceStream(fullName);
+            return stream != null ? new WrapperInputStream(stream) : null;
         }
 
         public static SigningServer.Android.IO.InputStream ToInputStream(System.Type cls, string resourceName)

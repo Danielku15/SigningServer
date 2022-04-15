@@ -25,7 +25,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             mIn = input;
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
+        public SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.ReadDataValue(mIn);
         }
@@ -35,9 +35,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         /// 
         /// @throws BerDataValueFormatException if the value being read is malformed.
         /// </summary>
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue(SigningServer.Android.IO.InputStream input)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue(SigningServer.Android.IO.InputStream inputStream)
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.RecordingInputStream input = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.RecordingInputStream(input);
+            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.RecordingInputStream input = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.RecordingInputStream(inputStream);
             try
             {
                 int firstIdentifierByte = input.Read();
@@ -109,7 +109,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Tag number too large");
                 }
-                result << 7;
+                result <<= 7;
                 result |= b & 0x7f;
             }
             while ((b & 0x80) != 0);
@@ -140,7 +140,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Length too large");
                 }
-                result << 8;
+                result <<= 8;
                 result |= b & 0xff;
             }
             return result;
@@ -287,7 +287,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return base.Available();
             }
             
-            public override void Close()
+            public override void Dispose()
             {
                 base.Dispose();
             }

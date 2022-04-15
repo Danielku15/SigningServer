@@ -21,7 +21,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         internal int mSize;
         
         public ByteArrayDataSink()
-            : base (65536)
+            : this (65536)
         {
             ;
         }
@@ -35,7 +35,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mArray = new sbyte[initialCapacity];
         }
         
-        public override void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(sbyte[] buf, int offset, int length)
         {
             if (offset < 0)
             {
@@ -54,7 +54,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mSize += length;
         }
         
-        public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+        public void Consume(SigningServer.Android.IO.ByteBuffer buf)
         {
             if (!buf.HasRemaining())
             {
@@ -97,24 +97,24 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mArray = SigningServer.Android.Collections.Arrays.CopyOf(mArray, newSize);
         }
         
-        public override long Size()
+        public  long Size()
         {
             return mSize;
         }
         
-        public override SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
+        public  SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
         {
             CheckChunkValid(offset, size);
             return SigningServer.Android.IO.ByteBuffer.Wrap(mArray, (int)offset, size).Slice();
         }
         
-        public override void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
+        public  void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
         {
             CheckChunkValid(offset, size);
             sink.Consume(mArray, (int)offset, (int)size);
         }
         
-        public override void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
+        public  void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
         {
             CheckChunkValid(offset, size);
             dest.Put(mArray, (int)offset, size);
@@ -145,10 +145,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
+        public  SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
         {
             CheckChunkValid(offset, size);
-            return new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.SliceDataSource((int)offset, (int)size);
+            return new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.SliceDataSource((int)offset, (int)size, this);
         }
         
         /// <summary>
@@ -160,39 +160,42 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             
             internal readonly int mSliceSize;
             
-            internal SliceDataSource(int offset, int size)
+            private readonly ByteArrayDataSink mParent;
+
+            internal SliceDataSource(int offset, int size, ByteArrayDataSink parent)
             {
                 mSliceOffset = offset;
                 mSliceSize = size;
+                mParent = parent;
             }
             
-            public override long Size()
+            public  long Size()
             {
                 return mSliceSize;
             }
             
-            public override void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
+            public  void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
             {
                 CheckChunkValid(offset, size);
-                sink.Consume(mArray, (int)(mSliceOffset + offset), (int)size);
+                sink.Consume(mParent.mArray, (int)(mSliceOffset + offset), (int)size);
             }
             
-            public override SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
+            public  SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
             {
                 CheckChunkValid(offset, size);
-                return SigningServer.Android.IO.ByteBuffer.Wrap(mArray, (int)(mSliceOffset + offset), size).Slice();
+                return SigningServer.Android.IO.ByteBuffer.Wrap(mParent.mArray, (int)(mSliceOffset + offset), size).Slice();
             }
             
-            public override void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
+            public  void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
             {
                 CheckChunkValid(offset, size);
-                dest.Put(mArray, (int)(mSliceOffset + offset), size);
+                dest.Put(mParent.mArray, (int)(mSliceOffset + offset), size);
             }
             
-            public override SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
+            public  SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
             {
                 CheckChunkValid(offset, size);
-                return new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.SliceDataSource((int)(mSliceOffset + offset), (int)size);
+                return new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.SliceDataSource((int)(mSliceOffset + offset), (int)size, mParent);
             }
             
             internal void CheckChunkValid(long offset, long size)

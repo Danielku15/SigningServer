@@ -17,7 +17,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
         {
         }
         
-        public static readonly int APK_SIGNATURE_SCHEME_V3_BLOCK_ID = 0xf05368c0;
+        public static readonly int APK_SIGNATURE_SCHEME_V3_BLOCK_ID = unchecked((int)0xf05368c0);
         
         public static readonly int PROOF_OF_ROTATION_ATTR_ID = 0x3ba06f8c;
         

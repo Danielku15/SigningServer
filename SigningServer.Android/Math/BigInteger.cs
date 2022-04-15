@@ -24,5 +24,20 @@
         {
             throw new System.NotImplementedException();
         }
+
+        public long LongValue()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public static BigInteger ValueOf(long minValue)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public int IntValue()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

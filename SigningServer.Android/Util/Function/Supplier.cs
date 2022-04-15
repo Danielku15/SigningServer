@@ -2,6 +2,6 @@
 {
     public interface Supplier<T>
     {
-        
+        T Get();
     }
 }

@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.Reflection;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
 {
@@ -34,13 +35,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         /// </summary>
         public static sbyte[] Encode(object container)
         {
-            SigningServer.Android.Core.Class<object> containerClass = container.GetType();
-            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = containerClass.GetDeclaredAnnotation(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class));
+            var containerClass = container.GetType();
+            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = containerClass.GetCustomAttribute<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class>();
             if (containerAnnotation == null)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException(containerClass.GetName() + " not annotated with " + typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class).GetName());
             }
-            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type containerType = containerAnnotation.Type();
+            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type containerType = containerAnnotation.Type;
             switch (containerType)
             {
                 case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE:
@@ -56,7 +57,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         
         internal static sbyte[] ToChoice(object container)
         {
-            SigningServer.Android.Core.Class<object> containerClass = container.GetType();
+            var containerClass = container.GetType();
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> fields = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.GetAnnotatedFields(container);
             if (fields.IsEmpty())
             {
@@ -70,7 +71,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     if (resultField != null)
                     {
-                        throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Multiple non-null fields in CHOICE class " + containerClass.GetName() + ": " + resultField.GetField().GetName() + ", " + field.GetField().GetName());
+                        throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Multiple non-null fields in CHOICE class " + containerClass.GetName() + ": " + resultField.GetField().Name + ", " + field.GetField().Name);
                     }
                     resultField = field;
                 }
@@ -89,18 +90,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         
         internal static sbyte[] ToSequence(object container, bool omitTag)
         {
-            SigningServer.Android.Core.Class<object> containerClass = container.GetType();
+            var containerClass = container.GetType();
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> fields = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.GetAnnotatedFields(container);
-            SigningServer.Android.Util.Collections.Sort(fields, ( f1,  f2) => f1.GetAnnotation().Index() - f2.GetAnnotation().Index();
-            );
+            SigningServer.Android.Util.Collections.Sort(fields, ( f1,  f2) => f1.GetAnnotation().Index - f2.GetAnnotation().Index);
             if (fields.Size() > 1)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField lastField = null;
                 foreach (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField field in fields)
                 {
-                    if ((lastField != null) && (lastField.GetAnnotation().Index() == field.GetAnnotation().Index()))
+                    if ((lastField != null) && (lastField.GetAnnotation().Index == field.GetAnnotation().Index))
                     {
-                        throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Fields have the same index: " + containerClass.GetName() + "." + lastField.GetField().GetName() + " and ." + field.GetField().GetName());
+                        throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Fields have the same index: " + containerClass.GetName() + "." + lastField.GetField().Name + " and ." + field.GetField().Name);
                     }
                     lastField = field;
                 }
@@ -116,7 +116,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 }
                 catch (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException e)
                 {
-                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Failed to encode " + containerClass.GetName() + "." + field.GetField().GetName(), e);
+                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Failed to encode " + containerClass.GetName() + "." + field.GetField().Name, e);
                 }
                 if (serializedField != null)
                 {
@@ -141,17 +141,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             }
         }
         
-        internal static sbyte[] ToSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type elementType)
+        internal static sbyte[] ToSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOrSetOf(values, elementType, true);
         }
         
-        internal static sbyte[] ToSequenceOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type elementType)
+        internal static sbyte[] ToSequenceOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOrSetOf(values, elementType, false);
         }
         
-        internal static sbyte[] ToSequenceOrSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type elementType, bool toSet)
+        internal static sbyte[] ToSequenceOrSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType, bool toSet)
         {
             SigningServer.Android.Collections.List<sbyte[]> serializedValues = new SigningServer.Android.Collections.List<sbyte[]>(values.Size());
             foreach (object value in values)
@@ -183,7 +183,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         {
             internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ByteArrayLexicographicComparator INSTANCE = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ByteArrayLexicographicComparator();
             
-            public override int Compare(sbyte[] arr1, sbyte[] arr2)
+            public int Compare(sbyte[] arr1, sbyte[] arr2)
             {
                 int commonLength = SigningServer.Android.Core.Math.Min(arr1.Length, arr2.Length);
                 for (int i = 0;i < commonLength;i++)
@@ -201,19 +201,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         
         internal static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> GetAnnotatedFields(object container)
         {
-            SigningServer.Android.Core.Class<object> containerClass = container.GetType();
-            SigningServer.Android.Core.Reflect.Field[] declaredFields = containerClass.GetDeclaredFields();
+            var containerClass = container.GetType();
+            var declaredFields = containerClass.GetFields();
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> result = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField>(declaredFields.Length);
-            foreach (SigningServer.Android.Core.Reflect.Field field in declaredFields)
+            foreach (var field in declaredFields)
             {
-                SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field annotation = field.GetDeclaredAnnotation(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field));
+                SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field annotation = field.GetCustomAttribute<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field>();
                 if (annotation == null)
                 {
                     continue;
                 }
-                if (SigningServer.Android.Core.Reflect.Modifier.IsStatic(field.GetModifiers()))
+                if (field.IsStatic)
                 {
-                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field).GetName() + " used on a static field: " + containerClass.GetName() + "." + field.GetName());
+                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field).GetName() + " used on a static field: " + containerClass.GetName() + "." + field.Name);
                 }
                 SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField annotatedField;
                 try
@@ -222,7 +222,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 }
                 catch (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException e)
                 {
-                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Invalid ASN.1 annotation on " + containerClass.GetName() + "." + field.GetName(), e);
+                    throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Invalid ASN.1 annotation on " + containerClass.GetName() + "." + field.Name, e);
                 }
                 result.Add(annotatedField);
             }
@@ -234,14 +234,29 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToInteger((long)value);
         }
         
+        internal static sbyte[] ToInteger(int? value)
+        {
+            return ToInteger(value.Value);
+        }
+        
         internal static sbyte[] ToInteger(long value)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToInteger(SigningServer.Android.Math.BigInteger.ValueOf(value));
         }
         
+        internal static sbyte[] ToInteger(long? value)
+        {
+            return ToInteger(value.Value);
+        }
+        
         internal static sbyte[] ToInteger(SigningServer.Android.Math.BigInteger value)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.CreateTag(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_CLASS_UNIVERSAL, false, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_INTEGER, value.ToByteArray());
+        }
+
+        internal static sbyte[] ToBoolean(bool? value)
+        {
+            return ToBoolean(value.Value);
         }
         
         internal static sbyte[] ToBoolean(bool value)
@@ -337,21 +352,21 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.CreateTag(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_CLASS_UNIVERSAL, false, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_OBJECT_IDENTIFIER, encodedValue.ToByteArray());
         }
         
-        internal static object GetMemberFieldValue(object obj, SigningServer.Android.Core.Reflect.Field field)
+        internal static object GetMemberFieldValue(object obj, FieldInfo field)
         {
             try
             {
-                return field.Get(obj);
+                return field.GetValue(obj);
             }
             catch (SigningServer.Android.Core.ReflectiveOperationException e)
             {
-                throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Failed to read " + obj.GetType().GetName() + "." + field.GetName(), e);
+                throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Failed to read " + obj.GetType().GetName() + "." + field.Name, e);
             }
         }
         
         internal class AnnotatedField
         {
-            internal readonly SigningServer.Android.Core.Reflect.Field mField;
+            internal readonly FieldInfo mField;
             
             internal readonly object mObject;
             
@@ -371,17 +386,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             
             internal readonly bool mOptional;
             
-            public AnnotatedField(object obj, SigningServer.Android.Core.Reflect.Field field, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field annotation)
+            public AnnotatedField(object obj, FieldInfo field, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field annotation)
             {
                 mObject = obj;
                 mField = field;
                 mAnnotation = annotation;
-                mDataType = annotation.Type();
-                mElementDataType = annotation.ElementType();
-                SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1TagClass tagClass = annotation.Cls();
+                mDataType = annotation.Type;
+                mElementDataType = annotation.ElementType;
+                SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1TagClass tagClass = annotation.Cls;
                 if (tagClass == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1TagClass.AUTOMATIC)
                 {
-                    if (annotation.TagNumber() != -1)
+                    if (annotation.TagNumber != -1)
                     {
                         tagClass = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1TagClass.CONTEXT_SPECIFIC;
                     }
@@ -393,9 +408,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 mTagClass = tagClass;
                 mDerTagClass = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagClass(mTagClass);
                 int tagNumber;
-                if (annotation.TagNumber() != -1)
+                if (annotation.TagNumber != -1)
                 {
-                    tagNumber = annotation.TagNumber();
+                    tagNumber = annotation.TagNumber;
                 }
                 else if ((mDataType == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE) || (mDataType == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.ANY))
                 {
@@ -406,15 +421,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                     tagNumber = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagNumber(mDataType);
                 }
                 mDerTagNumber = tagNumber;
-                mTagging = annotation.Tagging();
-                if (((mTagging == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Tagging.EXPLICIT) || (mTagging == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Tagging.IMPLICIT)) && (annotation.TagNumber() == -1))
+                mTagging = annotation.Tagging;
+                if (((mTagging == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Tagging.EXPLICIT) || (mTagging == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Tagging.IMPLICIT)) && (annotation.TagNumber == -1))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Tag number must be specified when tagging mode is " + mTagging);
                 }
-                mOptional = annotation.Optional();
+                mOptional = annotation.Optional;
             }
             
-            public virtual SigningServer.Android.Core.Reflect.Field GetField()
+            public virtual FieldInfo GetField()
             {
                 return mField;
             }
@@ -489,14 +504,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     contentsPosInResult = 3;
                     result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = (sbyte)0x81;
+                    result[1] = unchecked((sbyte)0x81);
                     result[2] = (sbyte)contentsLength;
                 }
                 else if (contentsLength <= 0xffff)
                 {
                     contentsPosInResult = 4;
                     result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = (sbyte)0x82;
+                    result[1] = unchecked((sbyte)0x82);
                     result[2] = (sbyte)(contentsLength >> 8);
                     result[3] = (sbyte)(contentsLength & 0xff);
                 }
@@ -504,7 +519,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     contentsPosInResult = 5;
                     result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = (sbyte)0x83;
+                    result[1] = unchecked((sbyte)0x83);
                     result[2] = (sbyte)(contentsLength >> 16);
                     result[3] = (sbyte)((contentsLength >> 8) & 0xff);
                     result[4] = (sbyte)(contentsLength & 0xff);
@@ -513,7 +528,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     contentsPosInResult = 6;
                     result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = (sbyte)0x84;
+                    result[1] = unchecked((sbyte)0x84);
                     result[2] = (sbyte)(contentsLength >> 24);
                     result[3] = (sbyte)((contentsLength >> 16) & 0xff);
                     result[4] = (sbyte)((contentsLength >> 8) & 0xff);
@@ -535,9 +550,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             {
             }
             
-            public static sbyte[] ToDer(object source, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type targetType, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type targetElementType)
+            public static sbyte[] ToDer(object source, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetType, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetElementType)
             {
-                SigningServer.Android.Core.Class<object> sourceType = source.GetType();
+                var sourceType = source.GetType();
                 if (typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject).Equals(sourceType))
                 {
                     SigningServer.Android.IO.ByteBuffer buf = ((SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject)source).GetEncoded();
@@ -604,8 +619,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                         break;
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE:
                         {
-                            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = sourceType.GetDeclaredAnnotation(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class));
-                            if ((containerAnnotation != null) && (containerAnnotation.Type() == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE))
+                            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = sourceType.GetCustomAttribute<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class>();
+                            if ((containerAnnotation != null) && (containerAnnotation.Type == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE))
                             {
                                 return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequence(source);
                             }
@@ -613,8 +628,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                         }
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE:
                         {
-                            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = sourceType.GetDeclaredAnnotation(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class));
-                            if ((containerAnnotation != null) && (containerAnnotation.Type() == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE))
+                            SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = sourceType.GetCustomAttribute<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class>();
+                            if ((containerAnnotation != null) && (containerAnnotation.Type == SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.CHOICE))
                             {
                                 return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToChoice(source);
                             }

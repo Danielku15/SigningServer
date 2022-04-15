@@ -98,14 +98,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             }
         }
         
-        internal static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> GetApkDigests(SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests)
+        internal static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> GetApkDigests(SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests)
         {
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>>();
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>>();
             foreach (SigningServer.Android.Collections.MapEntry<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigest in apkContentDigests.EntrySet())
             {
                 digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte[]>(apkContentDigest.GetKey().GetId(), apkContentDigest.GetValue()));
             }
-            SigningServer.Android.Util.Collections.Sort(digests, System.Collections.Generic.IComparer.Comparing(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.getFirst));
+
+            SigningServer.Android.Util.Collections.Sort(digests, (a, b) => a.GetFirst().CompareTo(b.GetFirst()));
             return digests;
         }
         

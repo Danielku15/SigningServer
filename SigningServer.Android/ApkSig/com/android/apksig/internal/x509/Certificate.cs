@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Security.Cert;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.X509
 {
@@ -43,7 +44,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.X509
             }
             SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.IssuerAndSerialNumber issuerAndSerialNumber = id.issuerAndSerialNumber;
             sbyte[] encodedIssuer = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(issuerAndSerialNumber.issuer.GetEncoded());
-            Javax.Security.Auth.X500.X500Principal idIssuer = new Javax.Security.Auth.X500.X500Principal(encodedIssuer);
+            X500Principal idIssuer = new X500Principal(encodedIssuer);
             SigningServer.Android.Math.BigInteger idSerialNumber = issuerAndSerialNumber.certificateSerialNumber;
             return idSerialNumber.Equals(cert.GetSerialNumber()) && idIssuer.Equals(cert.GetIssuerX500Principal());
         }
@@ -52,7 +53,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.X509
         {
             if (encodedCertificates.IsEmpty())
             {
-                return SigningServer.Android.Util.Collections.EmptyList();
+                return SigningServer.Android.Util.Collections.EmptyList<SigningServer.Android.Security.Cert.X509Certificate>();
             }
             SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> result = new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate>(encodedCertificates.Size());
             for (int i = 0;i < encodedCertificates.Size();i++)

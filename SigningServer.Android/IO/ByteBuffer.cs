@@ -341,6 +341,11 @@ namespace SigningServer.Android.IO
 
             return -1;
         }
+
+        public void Get(byte[] dst)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class HeapByteBuffer : ByteBuffer

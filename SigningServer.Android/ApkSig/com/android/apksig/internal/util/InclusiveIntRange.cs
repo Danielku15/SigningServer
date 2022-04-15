@@ -69,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 }
                 if (rangeMax >= max)
                 {
-                    return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList();
+                    return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange>();
                 }
                 testValue = rangeMax + 1;
             }
@@ -81,7 +81,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 }
                 result.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange.FromTo(testValue, max));
             }
-            return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList();
+            return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange>();
         }
         
         public override string ToString()

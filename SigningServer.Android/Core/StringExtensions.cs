@@ -42,7 +42,17 @@ namespace SigningServer.Android.Core
             return id.ToString();
         }
 
+        public static string Create(sbyte[] patternBlob, Encoding offset)
+        {
+            
+        }
+        
         public static string Create(sbyte[] patternBlob, string offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static object Create(sbyte[] toByteArray)
         {
             throw new NotImplementedException();
         }

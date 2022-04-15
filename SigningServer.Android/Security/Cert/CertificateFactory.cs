@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SigningServer.Android.IO;
+﻿using SigningServer.Android.IO;
 
 namespace SigningServer.Android.Security.Cert
 {
@@ -15,7 +14,7 @@ namespace SigningServer.Android.Security.Cert
             throw new System.NotImplementedException();
         }
 
-        public IEnumerable<Certificate> GenerateCertificates(InputStream byteArrayInputStream)
+        public Collections.Collection<Certificate> GenerateCertificates(InputStream byteArrayInputStream)
         {
             throw new System.NotImplementedException();
         }

@@ -14,8 +14,8 @@ namespace SigningServer.Android.Security.Cert
         PublicKey GetPublicKey();
         bool HasUnsupportedCriticalExtension();
         bool[] GetKeyUsage();
-        X500Principal GetSubjectDN();
-        X500Principal GetIssuerDN();
+        Principal GetSubjectDN();
+        Principal GetIssuerDN();
         bool Equals(X509Certificate other);
     }
 }

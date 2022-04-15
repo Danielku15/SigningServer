@@ -253,7 +253,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         
         internal class ByLocalFileHeaderOffsetComparator: System.Collections.Generic.IComparer<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord>
         {
-            public override int Compare(SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord r1, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord r2)
+            public int Compare(SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord r1, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord r2)
             {
                 long offset1 = r1.GetLocalFileHeaderOffset();
                 long offset2 = r2.GetLocalFileHeaderOffset();

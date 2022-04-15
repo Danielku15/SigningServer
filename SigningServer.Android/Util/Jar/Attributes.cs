@@ -38,5 +38,10 @@ namespace SigningServer.Android.Util.Jar
         {
             throw new System.NotImplementedException();
         }
+
+        public void PutAll(Attributes getMainAttributes)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

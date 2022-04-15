@@ -93,14 +93,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         ///         file or {@code null} if the file does not contain the record.
         /// @throws IOException if an I/O error occurs while reading the file.
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long?> FindZipEndOfCentralDirectoryRecord(SigningServer.Android.Com.Android.Apksig.Util.DataSource zip)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long> FindZipEndOfCentralDirectoryRecord(SigningServer.Android.Com.Android.Apksig.Util.DataSource zip)
         {
             long fileSize = zip.Size();
             if (fileSize < SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.ZIP_EOCD_REC_MIN_SIZE)
             {
                 return null;
             }
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long?> result = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.FindZipEndOfCentralDirectoryRecord(zip, 0);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long> result = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.FindZipEndOfCentralDirectoryRecord(zip, 0);
             if (result != null)
             {
                 return result;
@@ -118,7 +118,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         ///         file or {@code null} if the file does not contain the record.
         /// @throws IOException if an I/O error occurs while reading the file.
         /// </summary>
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long?> FindZipEndOfCentralDirectoryRecord(SigningServer.Android.Com.Android.Apksig.Util.DataSource zip, int maxCommentSize)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long> FindZipEndOfCentralDirectoryRecord(SigningServer.Android.Com.Android.Apksig.Util.DataSource zip, int maxCommentSize)
         {
             if ((maxCommentSize < 0) || (maxCommentSize > SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.UINT16_MAX_VALUE))
             {

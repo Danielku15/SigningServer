@@ -4,8 +4,13 @@ using SigningServer.Android.IO;
 
 namespace SigningServer.Android.Security.Cert
 {
-    public interface X500Principal : Principal, IEquatable<X500Principal>
+    public class X500Principal : Principal, IEquatable<X500Principal>
     {
-        ByteBuffer GetEncoded();
+        public X500Principal(sbyte[] encodedIssuer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ByteBuffer GetEncoded();
     }
 }

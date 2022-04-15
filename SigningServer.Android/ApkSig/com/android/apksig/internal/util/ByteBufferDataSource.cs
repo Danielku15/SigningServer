@@ -22,9 +22,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// buffer between the buffer's position and limit.
         /// </summary>
         public ByteBufferDataSource(SigningServer.Android.IO.ByteBuffer buffer)
-            : base (buffer, true)
+            : this (buffer, true)
         {
-            ;
         }
         
         /// <summary>
@@ -37,12 +36,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mSize = buffer.Remaining();
         }
         
-        public override long Size()
+        public long Size()
         {
             return mSize;
         }
         
-        public override SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
+        public SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
         {
             CheckChunkValid(offset, size);
             int chunkPosition = (int)offset;
@@ -56,12 +55,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
+        public void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
         {
             dest.Put(GetByteBuffer(offset, size));
         }
         
-        public override void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
+        public void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
         {
             if ((size < 0) || (size > mSize))
             {
@@ -70,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             sink.Consume(GetByteBuffer(offset, (int)size));
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferDataSource Slice(long offset, long size)
+        public SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
         {
             if ((offset == 0) && (size == mSize))
             {

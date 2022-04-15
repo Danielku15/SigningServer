@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Security.Cert;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -21,11 +22,11 @@ namespace SigningServer.Android.Com.Android.Apksig
     /// </summary>
     public class ApkVerifier
     {
-        internal static readonly SigningServer.Android.Collections.Map<int?, string> SUPPORTED_APK_SIG_SCHEME_NAMES = SigningServer.Android.Com.Android.Apksig.ApkVerifier.LoadSupportedApkSigSchemeNames();
+        internal static readonly SigningServer.Android.Collections.Map<int, string> SUPPORTED_APK_SIG_SCHEME_NAMES = SigningServer.Android.Com.Android.Apksig.ApkVerifier.LoadSupportedApkSigSchemeNames();
         
-        internal static SigningServer.Android.Collections.Map<int?, string> LoadSupportedApkSigSchemeNames()
+        internal static SigningServer.Android.Collections.Map<int, string> LoadSupportedApkSigSchemeNames()
         {
-            SigningServer.Android.Collections.Map<int?, string> supportedMap = new SigningServer.Android.Collections.HashMap<int?, string>(2);
+            SigningServer.Android.Collections.Map<int, string> supportedMap = new SigningServer.Android.Collections.HashMap<int, string>(2);
             supportedMap.Put(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2, "APK Signature Scheme v2");
             supportedMap.Put(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3, "APK Signature Scheme v3");
             return supportedMap;
@@ -126,12 +127,12 @@ namespace SigningServer.Android.Com.Android.Apksig
             SigningServer.Android.IO.ByteBuffer androidManifest = null;
             int minSdkVersion = VerifyAndGetMinSdkVersion(apk, zipSections);
             SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result result = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result();
-            SigningServer.Android.Collections.Map<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
-            SigningServer.Android.Collections.Map<int?, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(maxSdkVersion);
-            SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int?>(2);
+            SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+            SigningServer.Android.Collections.Map<int, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(maxSdkVersion);
+            SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(2);
             if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N)
             {
-                SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor = SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor.SINGLE_THREADED;
+                SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor = SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutors.SINGLE_THREADED;
                 if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P)
                 {
                     try
@@ -449,12 +450,17 @@ namespace SigningServer.Android.Com.Android.Apksig
                             {
                                 break;
                             }
+
+                            goto case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils
+                                .VERSION_APK_SIGNATURE_SCHEME_V3;
+                            
                         case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3:
                             if (result.IsVerifiedUsingV3Scheme())
                             {
                                 break;
                             }
                             result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.MIN_SIG_SCHEME_FOR_TARGET_SDK_NOT_MET, targetSdkVersion, minSchemeVersion);
+                            break;
                     }
                 }
             }
@@ -505,7 +511,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 {
                     throw new System.ArgumentException("minSdkVersion (" + mMinSdkVersion + ") > maxSdkVersion (" + mMaxSdkVersion + ")");
                 }
-                return mMinSdkVersion;
+                return mMinSdkVersion.Value;
             }
             SigningServer.Android.IO.ByteBuffer androidManifest = null;
             if (androidManifest == null)
@@ -524,21 +530,21 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// Returns the mapping of signature scheme version to signature scheme name for all signature
         /// schemes starting from V2 supported by the {@code maxSdkVersion}.
         /// </summary>
-        internal static SigningServer.Android.Collections.Map<int?, string> GetSupportedSchemeNames(int maxSdkVersion)
+        internal static SigningServer.Android.Collections.Map<int, string> GetSupportedSchemeNames(int maxSdkVersion)
         {
-            SigningServer.Android.Collections.Map<int?, string> supportedSchemeNames;
+            SigningServer.Android.Collections.Map<int, string> supportedSchemeNames;
             if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P)
             {
                 supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.SUPPORTED_APK_SIG_SCHEME_NAMES;
             }
             else if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N)
             {
-                supportedSchemeNames = new SigningServer.Android.Collections.HashMap<int?, string>(1);
+                supportedSchemeNames = new SigningServer.Android.Collections.HashMap<int, string>(1);
                 supportedSchemeNames.Put(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2, SigningServer.Android.Com.Android.Apksig.ApkVerifier.SUPPORTED_APK_SIG_SCHEME_NAMES.Get(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2));
             }
             else 
             {
-                supportedSchemeNames = SigningServer.Android.Util.Collections.EmptyMap();
+                supportedSchemeNames = SigningServer.Android.Util.Collections.EmptyMap<int, string>();
             }
             return supportedSchemeNames;
         }
@@ -639,8 +645,8 @@ namespace SigningServer.Android.Com.Android.Apksig
                     bool stampSigningBlockFound;
                     try
                     {
-                        SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP);
-                        SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.SourceStampConstants.V2_SOURCE_STAMP_BLOCK_ID, result);
+                        SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result signingBlockResult = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP);
+                        SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.SourceStampConstants.V2_SOURCE_STAMP_BLOCK_ID, signingBlockResult);
                         stampSigningBlockFound = true;
                     }
                     catch (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignatureNotFoundException e)
@@ -665,9 +671,9 @@ namespace SigningServer.Android.Com.Android.Apksig
                         return SigningServer.Android.Com.Android.Apksig.ApkVerifier.CreateSourceStampResultWithError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus.CERT_DIGEST_MISMATCH, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH, actualCertDigest, expectedCertDigest);
                     }
                 }
-                SigningServer.Android.Collections.Map<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
-                SigningServer.Android.Collections.Map<int?, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(mMaxSdkVersion);
-                SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int?>(2);
+                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+                SigningServer.Android.Collections.Map<int, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(mMaxSdkVersion);
+                SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(2);
                 SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result result = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result();
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result v3Result = null;
                 if (mMaxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P)
@@ -795,7 +801,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// signature scheme version other than V2 or V3 is provided a {@code null} value will be
         /// returned.
         /// </summary>
-        internal SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result GetApkContentDigests(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, SigningServer.Android.Collections.Map<int?, string> supportedSchemeNames, SigningServer.Android.Collections.Map<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> sigSchemeApkContentDigests, int apkSigSchemeVersion, int minSdkVersion)
+        internal SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result GetApkContentDigests(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, SigningServer.Android.Collections.Map<int, string> supportedSchemeNames, SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> sigSchemeApkContentDigests, int apkSigSchemeVersion, int minSdkVersion)
         {
             if (!(apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2 || apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3))
             {
@@ -1770,10 +1776,10 @@ namespace SigningServer.Android.Com.Android.Apksig
                 
                 internal SourceStampInfo(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus sourceStampVerificationStatus)
                 {
-                    mCertificates = SigningServer.Android.Util.Collections.EmptyList();
-                    mCertificateLineage = SigningServer.Android.Util.Collections.EmptyList();
-                    mErrors = SigningServer.Android.Util.Collections.EmptyList();
-                    mWarnings = SigningServer.Android.Util.Collections.EmptyList();
+                    mCertificates = SigningServer.Android.Util.Collections.EmptyList<X509Certificate>();
+                    mCertificateLineage = SigningServer.Android.Util.Collections.EmptyList<X509Certificate>();
+                    mErrors = SigningServer.Android.Util.Collections.EmptyList<IssueWithParams>();
+                    mWarnings = SigningServer.Android.Util.Collections.EmptyList<IssueWithParams>();
                     mSourceStampVerificationStatus = sourceStampVerificationStatus;
                 }
                 
@@ -2491,7 +2497,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             /// </summary>
             public virtual object[] GetParams()
             {
-                return mParams.Clone();
+                return (object[])mParams.Clone();
             }
             
             /// <summary>

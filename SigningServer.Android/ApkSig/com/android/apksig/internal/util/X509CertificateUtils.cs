@@ -92,7 +92,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 SigningServer.Android.IO.ByteBuffer encodedCertBuffer = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GetNextDEREncodedCertificateBlock(SigningServer.Android.IO.ByteBuffer.Wrap(encodedForm));
                 int startingPos = encodedCertBuffer.Position();
-                SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(encodedCertBuffer, typeof(SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate));
+                SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate>(encodedCertBuffer);
                 sbyte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
                 certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(reencodedForm));
                 sbyte[] originalEncoding = new sbyte[encodedCertBuffer.Position() - startingPos];
@@ -150,13 +150,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             try
             {
-                SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.X509Certificate> certificates = new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate>(1);
+                SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.Certificate> certificates = new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.Certificate>(1);
                 SigningServer.Android.IO.ByteBuffer encodedCertsBuffer = SigningServer.Android.IO.ByteBuffer.Wrap(encodedCerts);
                 while (encodedCertsBuffer.HasRemaining())
                 {
                     SigningServer.Android.IO.ByteBuffer certBuffer = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GetNextDEREncodedCertificateBlock(encodedCertsBuffer);
                     int startingPos = certBuffer.Position();
-                    SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(certBuffer, typeof(SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate));
+                    SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate>(certBuffer);
                     sbyte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
                     SigningServer.Android.Security.Cert.X509Certificate certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(reencodedForm));
                     sbyte[] originalEncoding = new sbyte[certBuffer.Position() - startingPos];

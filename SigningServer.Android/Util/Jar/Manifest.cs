@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using SigningServer.Android.Com.Android.Apksig.Internal.Jar;
+using SigningServer.Android.IO;
 
 namespace SigningServer.Android.Util.Jar
 {
@@ -14,7 +15,7 @@ namespace SigningServer.Android.Util.Jar
             _entries = new Dictionary<string, Attributes>();
         }
 
-        public Manifest(Stream stream)
+        public Manifest(InputStream stream)
         {
             var ms = new MemoryStream();
             stream.CopyTo(ms);

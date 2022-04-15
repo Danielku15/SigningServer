@@ -20,7 +20,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mSinks = sinks;
         }
         
-        public override void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(sbyte[] buf, int offset, int length)
         {
             foreach (SigningServer.Android.Com.Android.Apksig.Util.DataSink sink in mSinks)
             {
@@ -28,7 +28,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+        public void Consume(SigningServer.Android.IO.ByteBuffer buf)
         {
             int originalPosition = buf.Position();
             for (int i = 0;i < mSinks.Length;i++)

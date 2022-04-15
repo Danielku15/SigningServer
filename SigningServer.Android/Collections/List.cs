@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk;
+using SigningServer.Android.Security.Cert;
 
 namespace SigningServer.Android.Collections
 {
@@ -16,6 +17,11 @@ namespace SigningServer.Android.Collections
 
         public List(IEnumerable<T> other) : base(other)
         {
+        }
+
+        public void Remove(int index)
+        {
+            
         }
 
         public T Get(int index)
@@ -50,6 +56,16 @@ namespace SigningServer.Android.Collections
 
         public class ListIteratorImpl : Iterator<T>
         {
+        }
+
+        public bool ContainsAll(List<T> getCertificates)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public int SubList(int i, int i1)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

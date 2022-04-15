@@ -104,7 +104,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 mValue = value;
             }
             
-            public override SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
+            public SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
             {
                 if (mValueOutput)
                 {

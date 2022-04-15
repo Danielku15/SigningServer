@@ -21,7 +21,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mMessageDigests = digests;
         }
         
-        public override void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(sbyte[] buf, int offset, int length)
         {
             foreach (SigningServer.Android.Security.MessageDigest md in mMessageDigests)
             {
@@ -29,7 +29,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+        public void Consume(SigningServer.Android.IO.ByteBuffer buf)
         {
             int originalPosition = buf.Position();
             foreach (SigningServer.Android.Security.MessageDigest md in mMessageDigests)

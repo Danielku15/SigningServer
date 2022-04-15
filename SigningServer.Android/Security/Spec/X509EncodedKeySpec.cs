@@ -9,5 +9,10 @@
         public X509EncodedKeySpec(sbyte[] data)
         {
         }
+
+        public sbyte[] GetEncoded()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

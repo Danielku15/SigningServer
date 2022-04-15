@@ -68,7 +68,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             return mChunkDigestOutputSizeBytes;
         }
         
-        int Case
+        public int Case
         {
             get;
         }

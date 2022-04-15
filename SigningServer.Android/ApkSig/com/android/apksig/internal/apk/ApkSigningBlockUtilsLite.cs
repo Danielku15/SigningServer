@@ -104,6 +104,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         ///         found for an Android platform version in the range.
         /// </summary>
         public static SigningServer.Android.Collections.List<T> GetSignaturesToVerify<T>(SigningServer.Android.Collections.List<T> signatures, int minSdkVersion, int maxSdkVersion)
+            where T : ApkSupportedSignature
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.GetSignaturesToVerify(signatures, minSdkVersion, maxSdkVersion, false);
         }
@@ -124,6 +125,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         ///         found for an Android platform version in the range.
         /// </summary>
         public static SigningServer.Android.Collections.List<T> GetSignaturesToVerify<T>(SigningServer.Android.Collections.List<T> signatures, int minSdkVersion, int maxSdkVersion, bool onlyRequireJcaSupport)
+            where T : ApkSupportedSignature
         {
             SigningServer.Android.Collections.Map<int?, T> bestSigAlgorithmOnSdkVersion = new SigningServer.Android.Collections.HashMap<int?, T>();
             int minProvidedSignaturesVersion = SigningServer.Android.Core.IntExtensions.MaxValue;
@@ -154,8 +156,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.NoApkSupportedSignaturesException("No supported signature");
             }
             SigningServer.Android.Collections.List<T> signaturesToVerify = new SigningServer.Android.Collections.List<T>(bestSigAlgorithmOnSdkVersion.Values());
-            SigningServer.Android.Util.Collections.Sort(signaturesToVerify, ( sig1,  sig2) => Integer.Compare(sig1.algorithm.GetId(), sig2.algorithm.GetId());
-            );
+            SigningServer.Android.Util.Collections.Sort(signaturesToVerify, ( sig1,  sig2) => sig1.algorithm.GetId().CompareTo(sig2.algorithm.GetId()));
             return signaturesToVerify;
         }
         
@@ -340,16 +341,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             return result;
         }
         
-        public static sbyte[] EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> sequence)
+        public static sbyte[] EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> sequence)
         {
             int resultSize = 0;
-            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]> element in sequence)
+            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]> element in sequence)
             {
                 resultSize += 12 + element.GetSecond().Length;
             }
             SigningServer.Android.IO.ByteBuffer result = SigningServer.Android.IO.ByteBuffer.Allocate(resultSize);
             result.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
-            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]> element in sequence)
+            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]> element in sequence)
             {
                 sbyte[] second = element.GetSecond();
                 result.PutInt(8 + second.Length);

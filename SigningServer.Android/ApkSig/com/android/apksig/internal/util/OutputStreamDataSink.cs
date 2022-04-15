@@ -38,12 +38,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return mOut;
         }
         
-        public override void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(sbyte[] buf, int offset, int length)
         {
             mOut.Write(buf, offset, length);
         }
         
-        public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+        public void Consume(SigningServer.Android.IO.ByteBuffer buf)
         {
             if (!buf.HasRemaining())
             {

@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Core;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
@@ -12,6 +13,20 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     {
         public SigningServer.Android.Core.Runnable CreateRunnable();
         
+    }
+
+    public class DelegateRunnablesProvider : RunnablesProvider
+    {
+        private readonly Func<Runnable> mCreateRunnable;
+
+        public DelegateRunnablesProvider(Func<SigningServer.Android.Core.Runnable> createRunnable)
+        {
+            mCreateRunnable = createRunnable;
+        }
+        public Runnable CreateRunnable()
+        {
+            return mCreateRunnable();
+        }
     }
     
 }

@@ -98,6 +98,7 @@ class CSharpAstTransformer(
 
             val caseValue = CsPropertyDeclaration(CsPrimitiveTypeNode(CsPrimitiveType.Int))
             caseValue.parent = clz
+            caseValue.visibility = CsVisibility.Public
             caseValue.name = "Case"
             caseValue.getAccessor = CsPropertyAccessorDeclaration("get", null)
             caseValue.getAccessor!!.parent = caseValue

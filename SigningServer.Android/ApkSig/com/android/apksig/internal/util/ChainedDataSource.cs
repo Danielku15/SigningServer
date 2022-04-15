@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.Linq;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
@@ -20,16 +21,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         public ChainedDataSource(params SigningServer.Android.Com.Android.Apksig.Util.DataSource[] sources)
         {
             mSources = sources;
-            mTotalSize = SigningServer.Android.Collections.Arrays.Stream(sources).MapToLong(( src) => src.Size();
-            ).Sum();
+            mTotalSize = sources.Sum(s => s.Size());
         }
         
-        public override long Size()
+        public long Size()
         {
             return mTotalSize;
         }
         
-        public override void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
+        public void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
         {
             if (offset + size > mTotalSize)
             {
@@ -54,13 +54,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
+        public SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
         {
             if (offset + size > mTotalSize)
             {
                 throw new System.IndexOutOfRangeException("Requested more than available");
             }
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, long?> firstSource = LocateDataSource(offset);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, long> firstSource = LocateDataSource(offset);
             int i = firstSource.GetFirst();
             offset = firstSource.GetSecond();
             if (offset + size <= mSources[i].Size())
@@ -78,14 +78,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return buffer;
         }
         
-        public override void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
+        public void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
         {
             Feed(offset, size, new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSink(dest));
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
+        public SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, long?> firstSource = LocateDataSource(offset);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, long> firstSource = LocateDataSource(offset);
             int beginIndex = firstSource.GetFirst();
             long beginLocalOffset = firstSource.GetSecond();
             SigningServer.Android.Com.Android.Apksig.Util.DataSource beginSource = mSources[beginIndex];
@@ -95,7 +95,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Util.DataSource> sources = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Util.DataSource>();
             sources.Add(beginSource.Slice(beginLocalOffset, beginSource.Size() - beginLocalOffset));
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, long?> lastSource = LocateDataSource(offset + size - 1);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, long> lastSource = LocateDataSource(offset + size - 1);
             int endIndex = lastSource.GetFirst();
             long endLocalOffset = lastSource.GetSecond();
             for (int i = beginIndex + 1;i < endIndex;i++)
@@ -111,7 +111,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// 
         /// @return Pair of DataSource index and the local offset in the DataSource.
         /// </summary>
-        internal SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, long?> LocateDataSource(long offset)
+        internal SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, long> LocateDataSource(long offset)
         {
             long localOffset = offset;
             for (int i = 0;i < mSources.Length;i++)

@@ -9,7 +9,7 @@ namespace SigningServer.Android.Util.Regex
             throw new System.NotImplementedException();
         }
 
-        public Matcher Matcher(CharSequence input)
+        public Matcher Matcher(string input)
         {
             throw new System.NotImplementedException();
         }

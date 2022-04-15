@@ -24,7 +24,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// beginning of the provided file.
         /// </summary>
         public RandomAccessFileDataSink(SigningServer.Android.IO.RandomAccessFile file)
-            : base (file, 0)
+            : this (file, 0)
         {
             ;
         }
@@ -56,7 +56,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return mFile;
         }
         
-        public override void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(sbyte[] buf, int offset, int length)
         {
             if (offset < 0)
             {
@@ -78,7 +78,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+        public void Consume(SigningServer.Android.IO.ByteBuffer buf)
         {
             int length = buf.Remaining();
             if (length == 0)

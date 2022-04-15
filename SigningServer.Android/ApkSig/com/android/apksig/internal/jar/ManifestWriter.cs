@@ -16,7 +16,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
     public abstract class ManifestWriter
     {
         internal static readonly sbyte[] CRLF = new sbyte[]{
-            '\r', '\n'}
+            (sbyte)'\r', (sbyte)'\n'}
         ;
         
         internal static readonly int MAX_LINE_LENGTH = 70;

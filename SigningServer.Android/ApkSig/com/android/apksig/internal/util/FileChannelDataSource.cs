@@ -55,7 +55,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mSize = size;
         }
         
-        public override long Size()
+        public long Size()
         {
             if (mSize == -1)
             {
@@ -74,7 +74,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSource Slice(long offset, long size)
+        public SigningServer.Android.Com.Android.Apksig.Util.DataSource Slice(long offset, long size)
         {
             long sourceSize = Size();
             SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSource.CheckChunkValid(offset, size, sourceSize);
@@ -85,7 +85,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return new SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSource(mChannel, mOffset + offset, size);
         }
         
-        public override void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
+        public void Feed(long offset, long size, SigningServer.Android.Com.Android.Apksig.Util.DataSink sink)
         {
             long sourceSize = Size();
             SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSource.CheckChunkValid(offset, size, sourceSize);
@@ -122,7 +122,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
+        public void CopyTo(long offset, int size, SigningServer.Android.IO.ByteBuffer dest)
         {
             long sourceSize = Size();
             SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSource.CheckChunkValid(offset, size, sourceSize);
@@ -158,7 +158,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
         }
         
-        public override SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
+        public SigningServer.Android.IO.ByteBuffer GetByteBuffer(long offset, int size)
         {
             if (size < 0)
             {

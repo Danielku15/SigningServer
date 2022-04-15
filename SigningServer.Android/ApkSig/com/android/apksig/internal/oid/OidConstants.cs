@@ -70,7 +70,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Oid
         public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange> GetSigAlgSupportedApiLevels(string digestAlgorithmOid, string signatureAlgorithmOid)
         {
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange> result = SigningServer.Android.Com.Android.Apksig.Internal.Oid.OidConstants.SUPPORTED_SIG_ALG_OIDS.Get(digestAlgorithmOid + "with" + signatureAlgorithmOid);
-            return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList();
+            return (result != null) ? result : SigningServer.Android.Util.Collections.EmptyList<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange>();
         }
         
         public class OidToUserFriendlyNameMapper

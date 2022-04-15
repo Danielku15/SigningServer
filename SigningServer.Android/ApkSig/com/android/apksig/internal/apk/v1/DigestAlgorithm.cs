@@ -42,7 +42,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         
         internal class StrengthComparator: System.Collections.Generic.IComparer<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm>
         {
-            public override int Compare(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a1, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a2)
+            public int Compare(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a1, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm a2)
             {
                 switch (a1.Case)
                 {
@@ -71,7 +71,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             
         }
         
-        int Case
+        public int Case
         {
             get;
         }

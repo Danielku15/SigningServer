@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using SigningServer.Android.IO.Channels;
 
 namespace SigningServer.Android.IO
 {
@@ -34,12 +35,12 @@ namespace SigningServer.Android.IO
             mStream.Seek(position, SeekOrigin.Begin);
         }
 
-        public void Write(byte[] buf, int offset, int length)
+        public void Write(sbyte[] buf, int offset, int length)
         {
             mStream.Write(buf, offset, length);
         }
 
-        public void Write(byte[] buf)
+        public void Write(sbyte[] buf)
         {
             mStream.Write(buf, 0, buf.Length);
         }
@@ -57,43 +58,6 @@ namespace SigningServer.Android.IO
         public void ReadFully(byte[] contents)
         {
             mStream.Read(contents, 0, contents.Length);
-        }
-    }
-
-    public class FileChannel
-    {
-        private readonly FileStream mStream;
-
-        public FileChannel(FileStream stream)
-        {
-            mStream = stream;
-        }
-
-        public long Size()
-        {
-            return mStream.Length;
-        }
-
-        public void Position(long position)
-        {
-            mStream.Seek(position, SeekOrigin.Begin);
-        }
-
-        public int Read(ByteBuffer buf)
-        {
-            var rem = buf.Remaining();
-            var x = new byte[rem];
-            var actual = mStream.Read(x, 0, rem);
-
-            buf.Put(x, 0, actual);
-            return actual;
-        }
-
-        public void Write(ByteBuffer buf)
-        {
-            var x = new byte[buf.Remaining()];
-            buf.Get(x);
-            mStream.Write(x, 0, x.Length);
         }
     }
 }

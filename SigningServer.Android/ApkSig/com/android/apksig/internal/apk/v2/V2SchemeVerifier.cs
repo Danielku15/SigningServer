@@ -46,7 +46,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
         /// signatures are found
         /// @throws IOException if an I/O error occurs when reading the APK
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundSigSchemeIds, int minSdkVersion, int maxSdkVersion)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundSigSchemeIds, int minSdkVersion, int maxSdkVersion)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureInfo signatureInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2.V2SchemeConstants.APK_SIGNATURE_SCHEME_V2_BLOCK_ID, result);
@@ -87,7 +87,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
         /// @param result result populated by this method with interesting information about the APK,
         ///        such as information about signers, and verification errors and warnings.
         /// </summary>
-        internal static void Verify(SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor, SigningServer.Android.Com.Android.Apksig.Util.DataSource beforeApkSigningBlock, SigningServer.Android.IO.ByteBuffer apkSignatureSchemeV2Block, SigningServer.Android.Com.Android.Apksig.Util.DataSource centralDir, SigningServer.Android.IO.ByteBuffer eocd, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
+        internal static void Verify(SigningServer.Android.Com.Android.Apksig.Util.RunnablesExecutor executor, SigningServer.Android.Com.Android.Apksig.Util.DataSource beforeApkSigningBlock, SigningServer.Android.IO.ByteBuffer apkSignatureSchemeV2Block, SigningServer.Android.Com.Android.Apksig.Util.DataSource centralDir, SigningServer.Android.IO.ByteBuffer eocd, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
         {
             SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify = new SigningServer.Android.Collections.HashSet<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm>(1);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2.V2SchemeVerifier.ParseSigners(
@@ -142,7 +142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
         /// expected to be encountered on an Android platform version in the
         /// {@code [minSdkVersion, maxSdkVersion]} range.
         /// </summary>
-        public static void ParseSigners(SigningServer.Android.IO.ByteBuffer apkSignatureSchemeV2Block, SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
+        public static void ParseSigners(SigningServer.Android.IO.ByteBuffer apkSignatureSchemeV2Block, SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
         {
             SigningServer.Android.IO.ByteBuffer signers;
             try
@@ -218,7 +218,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
         /// expected to be encountered on an Android platform version in the
         /// {@code [minSdkVersion, maxSdkVersion]} range.
         /// </summary>
-        internal static void ParseSigner(SigningServer.Android.IO.ByteBuffer signerBlock, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo result, SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
+        internal static void ParseSigner(SigningServer.Android.IO.ByteBuffer signerBlock, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo result, SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
         {
             SigningServer.Android.IO.ByteBuffer signedData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signerBlock);
             sbyte[] signedDataBytes = new sbyte[signedData.Remaining()];
@@ -385,8 +385,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 return;
             }
             int additionalAttributeCount = 0;
-            SigningServer.Android.Collections.Set<int?> supportedApkSigSchemeIds = supportedApkSigSchemeNames.KeySet();
-            SigningServer.Android.Collections.Set<int?> supportedExpectedApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int?>(1);
+            SigningServer.Android.Collections.Set<int> supportedApkSigSchemeIds = supportedApkSigSchemeNames.KeySet();
+            SigningServer.Android.Collections.Set<int> supportedExpectedApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(1);
             while (additionalAttributes.HasRemaining())
             {
                 additionalAttributeCount++;
@@ -411,6 +411,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                             break;
                         default:
                             result.AddWarning(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V2_SIG_UNKNOWN_ADDITIONAL_ATTRIBUTE, id);
+                            break;
                     }
                 }
                 catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.IO.BufferUnderflowException)

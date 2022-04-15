@@ -2,6 +2,9 @@
 {
     public class Matcher
     {
-        
+        public bool Matches()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

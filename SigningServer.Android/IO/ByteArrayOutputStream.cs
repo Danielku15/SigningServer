@@ -20,5 +20,10 @@
         {
             throw new System.NotImplementedException();
         }
+
+        public void Write(int bytes)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Security.Cert;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
@@ -18,171 +19,59 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         internal readonly SigningServer.Android.Security.Cert.X509Certificate mDelegate;
         
-        public DelegatingX509Certificate(SigningServer.Android.Security.Cert.X509Certificate delegate)
+        public DelegatingX509Certificate(SigningServer.Android.Security.Cert.X509Certificate @delegate)
         {
-            this.mDelegate = delegate;
+            this.mDelegate = @delegate;
         }
         
-        public override SigningServer.Android.Collections.Set<string> GetCriticalExtensionOIDs()
-        {
-            return mDelegate.GetCriticalExtensionOIDs();
-        }
-        
-        public override sbyte[] GetExtensionValue(string oid)
-        {
-            return mDelegate.GetExtensionValue(oid);
-        }
-        
-        public override SigningServer.Android.Collections.Set<string> GetNonCriticalExtensionOIDs()
-        {
-            return mDelegate.GetNonCriticalExtensionOIDs();
-        }
-        
-        public override bool HasUnsupportedCriticalExtension()
+        public bool HasUnsupportedCriticalExtension()
         {
             return mDelegate.HasUnsupportedCriticalExtension();
         }
         
-        public override void CheckValidity()
-        {
-            mDelegate.CheckValidity();
-        }
-        
-        public override void CheckValidity(SigningServer.Android.Util.Date date)
-        {
-            mDelegate.CheckValidity(date);
-        }
-        
-        public override int GetVersion()
-        {
-            return mDelegate.GetVersion();
-        }
-        
-        public override SigningServer.Android.Math.BigInteger GetSerialNumber()
+        public SigningServer.Android.Math.BigInteger GetSerialNumber()
         {
             return mDelegate.GetSerialNumber();
         }
         
-        public override SigningServer.Android.Security.Principal GetIssuerDN()
+        public SigningServer.Android.Security.Principal GetIssuerDN()
         {
             return mDelegate.GetIssuerDN();
         }
         
-        public override SigningServer.Android.Security.Principal GetSubjectDN()
+        public SigningServer.Android.Security.Principal GetSubjectDN()
         {
             return mDelegate.GetSubjectDN();
         }
         
-        public override SigningServer.Android.Util.Date GetNotBefore()
-        {
-            return mDelegate.GetNotBefore();
-        }
-        
-        public override SigningServer.Android.Util.Date GetNotAfter()
-        {
-            return mDelegate.GetNotAfter();
-        }
-        
-        public override sbyte[] GetTBSCertificate()
-        {
-            return mDelegate.GetTBSCertificate();
-        }
-        
-        public override sbyte[] GetSignature()
-        {
-            return mDelegate.GetSignature();
-        }
-        
-        public override string GetSigAlgName()
-        {
-            return mDelegate.GetSigAlgName();
-        }
-        
-        public override string GetSigAlgOID()
-        {
-            return mDelegate.GetSigAlgOID();
-        }
-        
-        public override sbyte[] GetSigAlgParams()
-        {
-            return mDelegate.GetSigAlgParams();
-        }
-        
-        public override bool[] GetIssuerUniqueID()
-        {
-            return mDelegate.GetIssuerUniqueID();
-        }
-        
-        public override bool[] GetSubjectUniqueID()
-        {
-            return mDelegate.GetSubjectUniqueID();
-        }
-        
-        public override bool[] GetKeyUsage()
+        public bool[] GetKeyUsage()
         {
             return mDelegate.GetKeyUsage();
         }
         
-        public override int GetBasicConstraints()
-        {
-            return mDelegate.GetBasicConstraints();
-        }
-        
-        public override sbyte[] GetEncoded()
+        public sbyte[] GetEncoded()
         {
             return mDelegate.GetEncoded();
         }
         
-        public override void Verify(SigningServer.Android.Security.PublicKey key)
-        {
-            mDelegate.Verify(key);
-        }
-        
-        public override void Verify(SigningServer.Android.Security.PublicKey key, string sigProvider)
-        {
-            mDelegate.Verify(key, sigProvider);
-        }
-        
-        public override string ToString()
+        public string ToString()
         {
             return mDelegate.ToString();
         }
         
-        public override SigningServer.Android.Security.PublicKey GetPublicKey()
+        public SigningServer.Android.Security.PublicKey GetPublicKey()
         {
             return mDelegate.GetPublicKey();
         }
         
-        public override Javax.Security.Auth.X500.X500Principal GetIssuerX500Principal()
+        public X500Principal GetIssuerX500Principal()
         {
             return mDelegate.GetIssuerX500Principal();
         }
         
-        public override Javax.Security.Auth.X500.X500Principal GetSubjectX500Principal()
+        public bool Equals(X509Certificate other)
         {
-            return mDelegate.GetSubjectX500Principal();
+            return mDelegate.Equals(other);
         }
-        
-        public override SigningServer.Android.Collections.List<string> GetExtendedKeyUsage()
-        {
-            return mDelegate.GetExtendedKeyUsage();
-        }
-        
-        public override SigningServer.Android.Collections.Collection<SigningServer.Android.Collections.List<object>> GetSubjectAlternativeNames()
-        {
-            return mDelegate.GetSubjectAlternativeNames();
-        }
-        
-        public override SigningServer.Android.Collections.Collection<SigningServer.Android.Collections.List<object>> GetIssuerAlternativeNames()
-        {
-            return mDelegate.GetIssuerAlternativeNames();
-        }
-        
-        public override void Verify(SigningServer.Android.Security.PublicKey key, SigningServer.Android.Security.Provider sigProvider)
-        {
-            mDelegate.Verify(key, sigProvider);
-        }
-        
     }
-    
 }

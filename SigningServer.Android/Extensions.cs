@@ -47,6 +47,10 @@ namespace SigningServer.Android
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte[] GetBytes(this string s)
+        {
+            return Encoding.Default.GetBytes(s).ToSBytes();
+        }
         public static sbyte[] GetBytes(this string s, Encoding encoding)
         {
             return encoding.GetBytes(s).ToSBytes();

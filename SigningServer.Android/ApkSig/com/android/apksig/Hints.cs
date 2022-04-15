@@ -61,7 +61,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 this.size = size;
             }
             
-            public virtual SigningServer.Android.Util.Regex.Matcher Matcher(SigningServer.Android.Core.CharSequence input)
+            public virtual SigningServer.Android.Util.Regex.Matcher Matcher(string input)
             {
                 return this.pattern.Matcher(input);
             }

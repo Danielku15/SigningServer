@@ -114,7 +114,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
             return result.Array();
         }
         
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<sbyte[], int?> GenerateApkSignatureSchemeV3Block(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig> signerConfigs, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> contentDigests)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<sbyte[], int> GenerateApkSignatureSchemeV3Block(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig> signerConfigs, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> contentDigests)
         {
             SigningServer.Android.Collections.List<sbyte[]> signerBlocks = new SigningServer.Android.Collections.List<sbyte[]>(signerConfigs.Size());
             int signerNumber = 0;
@@ -136,7 +136,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
                 }
                 signerBlocks.Add(signerBlock);
             }
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<sbyte[], int>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(new sbyte[]{
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<sbyte[], int>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(new sbyte[][]{
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedElements(signerBlocks)}
             ), SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SchemeConstants.APK_SIGNATURE_SCHEME_V3_BLOCK_ID);
         }
@@ -158,7 +158,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
             {
                 throw new SigningServer.Android.Security.SignatureException("Failed to encode certificates", e);
             }
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>>(signerConfig.signatureAlgorithms.Size());
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>>(signerConfig.signatureAlgorithms.Size());
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm signatureAlgorithm in signerConfig.signatureAlgorithms)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm contentDigestAlgorithm = signatureAlgorithm.GetContentDigestAlgorithm();
@@ -233,7 +233,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
                 
                 public int maxSdkVersion;
                 
-                public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> signatures;
+                public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> signatures;
                 
                 public sbyte[] publicKey;
                 
@@ -241,7 +241,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3
             
             internal class SignedData
             {
-                public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> digests;
+                public SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> digests;
                 
                 public SigningServer.Android.Collections.List<sbyte[]> certificates;
                 

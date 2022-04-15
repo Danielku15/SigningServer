@@ -216,7 +216,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// @throws IllegalStateException if there are unfulfilled requests, such as to inspect some JAR
         ///         entries or to output JAR signature, or if the engine is closed
         /// </summary>
-        [SigningServer.Android.Core.Deprecated]
+        [Obsolete]
         public SigningServer.Android.Com.Android.Apksig.ApkSignerEngine.OutputApkSigningBlockRequest OutputZipSections(SigningServer.Android.Com.Android.Apksig.Util.DataSource zipEntries, SigningServer.Android.Com.Android.Apksig.Util.DataSource zipCentralDirectory, SigningServer.Android.Com.Android.Apksig.Util.DataSource zipEocd);
         
         /// <summary>
@@ -303,7 +303,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             /// output policy and without a request to inspect the entry.
             /// </summary>
             public InputJarEntryInstructions(SigningServer.Android.Com.Android.Apksig.ApkSignerEngine.InputJarEntryInstructions.OutputPolicy outputPolicy)
-                : base (outputPolicy, null)
+                : this (outputPolicy, null)
             {
                 ;
             }
@@ -366,7 +366,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// {@link #getDataSink()}. Once the entry's data has been provided to the sink, {@link #done()}
         /// must be invoked.
         /// </summary>
-        internal interface InspectJarEntryRequest
+        public interface InspectJarEntryRequest
         {
             /// <summary>
             /// Returns the data sink into which the entry's uncompressed data should be sent.
@@ -391,7 +391,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// &lt;p&gt;Entries listed in {@link #getAdditionalJarEntries()} must be added to the output APK after
         /// which {@link #done()} must be invoked.
         /// </summary>
-        internal interface OutputJarSignatureRequest
+        public interface OutputJarSignatureRequest
         {
             /// <summary>
             /// Returns JAR entries that must be added to the output APK.
@@ -421,7 +421,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 public JarEntry(string name, sbyte[] data)
                 {
                     mName = name;
-                    mData = data.Clone();
+                    mData = (sbyte[])data.Clone();
                 }
                 
                 /// <summary>
@@ -437,7 +437,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 /// </summary>
                 public virtual sbyte[] GetData()
                 {
-                    return mData.Clone();
+                    return (sbyte[])mData.Clone();
                 }
                 
             }
@@ -458,7 +458,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// 
         /// @deprecated This is now superseded by {@link OutputApkSigningBlockRequest2}.
         /// </summary>
-        internal interface OutputApkSigningBlockRequest
+        public interface OutputApkSigningBlockRequest
         {
             /// <summary>
             /// Returns the APK Signing Block.
@@ -486,7 +486,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// &lt;p&gt;If the output contains an APK Signing Block, that block must be replaced by the block
         /// contained in this request.
         /// </summary>
-        internal interface OutputApkSigningBlockRequest2
+        public interface OutputApkSigningBlockRequest2
         {
             /// <summary>
             /// Returns the APK Signing Block.

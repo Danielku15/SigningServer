@@ -329,7 +329,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                     }
                     catch (SigningServer.Android.IO.IOException e)
                     {
-                        if (e.GetCause() is SigningServer.Android.Util.Zip.DataFormatException)
+                        if (e.InnerException is SigningServer.Android.Util.Zip.DataFormatException)
                         {
                             throw new SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException("Data of entry " + mName + " malformed", e);
                         }
@@ -391,12 +391,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             
             internal bool mClosed;
             
-            internal InflateSinkAdapter(SigningServer.Android.Com.Android.Apksig.Util.DataSink delegate)
+            internal InflateSinkAdapter(SigningServer.Android.Com.Android.Apksig.Util.DataSink @delegate)
             {
-                mDelegate = delegate;
+                mDelegate = @delegate;
             }
             
-            public override void Consume(sbyte[] buf, int offset, int length)
+            public void Consume(sbyte[] buf, int offset, int length)
             {
                 CheckNotClosed();
                 mInflater.SetInput(buf, offset, length);
@@ -424,7 +424,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                 }
             }
             
-            public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+            public void Consume(SigningServer.Android.IO.ByteBuffer buf)
             {
                 CheckNotClosed();
                 if (buf.HasArray())
@@ -452,7 +452,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                 return mOutputByteCount;
             }
             
-            public override void Close()
+            public void Dispose()
             {
                 mClosed = true;
                 mInputBuffer = null;

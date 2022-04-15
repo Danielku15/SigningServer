@@ -61,7 +61,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 return false;
             }
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair other = (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair)obj;
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<A,B> other = (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<A,B>)obj;
             if (mFirst == null)
             {
                 if (other.mFirst != null)

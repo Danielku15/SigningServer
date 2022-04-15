@@ -75,12 +75,12 @@ namespace SigningServer.Android
 
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
-                    new ApkSigner.SignerConfig(certificate.FriendlyName,
-                        new PrivateKey(certificate.PrivateKey),
-                        new List<X509Certificate>
-                        {
-                            new WrappedX509Certificate(certificate)
-                        }, false)
+                    // new ApkSigner.SignerConfig(certificate.FriendlyName,
+                    //     new PrivateKey(certificate.PrivateKey),
+                    //     new List<X509Certificate>
+                    //     {
+                    //         new WrappedX509Certificate(certificate)
+                    //     }, false)
                 };
 
                 ApkSigner.Builder apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
@@ -95,7 +95,8 @@ namespace SigningServer.Android
                     .SetVerityEnabled(false)
                     .SetV4ErrorReportingEnabled(isAndroidSigningEnabled)
                     .SetDebuggableApkPermitted(true)
-                    .SetDigestAlgorithm(digestAlgorithm);
+                    // TODO: allow specifying V1 digest algorithm
+                    /*.SetDigestAlgorithm(digestAlgorithm)*/;
 
                 ApkSigner apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();

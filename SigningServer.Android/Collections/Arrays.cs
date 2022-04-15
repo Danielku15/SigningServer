@@ -21,5 +21,15 @@ namespace SigningServer.Android.Collections
         public static int GetHashCode<T>(T[] array)
         {
         }
+
+        public static sbyte[] CopyOfRange(sbyte[] manifest, int startOffset, int newlineStartOffset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static sbyte[] CopyOf(sbyte[] array, int newSize)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

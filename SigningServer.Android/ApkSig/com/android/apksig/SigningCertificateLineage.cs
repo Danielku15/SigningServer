@@ -28,7 +28,7 @@ namespace SigningServer.Android.Com.Android.Apksig
     {
         public static readonly int MAGIC = 0x3eff39d1;
         
-        internal static readonly int FIRST_VERSION = 1;
+        internal const int FIRST_VERSION = 1;
         
         internal static readonly int CURRENT_VERSION = SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage.FIRST_VERSION;
         
@@ -154,8 +154,8 @@ namespace SigningServer.Android.Com.Android.Apksig
             try
             {
                 SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections = SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.FindZipSections(apk);
-                SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
-                signatureInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SchemeConstants.APK_SIGNATURE_SCHEME_V3_BLOCK_ID, result);
+                SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result signingBlockResult = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
+                signatureInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SchemeConstants.APK_SIGNATURE_SCHEME_V3_BLOCK_ID, signingBlockResult);
             }
             catch (SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException e)
             {
@@ -323,7 +323,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             newSignerConfig.privateKey = parent.GetPrivateKey();
             newSignerConfig.certificates = certificates;
             newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(signatureAlgorithm);
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int?, sbyte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(newSignerConfig, signedData);
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(newSignerConfig, signedData);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(signatures.Get(0).GetFirst());
             sbyte[] signature = signatures.Get(0).GetSecond();
             currentGeneration.sigAlgorithm = sigAlgorithm;
@@ -673,7 +673,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             internal readonly int mCallerConfiguredFlags;
             
             internal SignerCapabilities(int flags)
-                : base (flags, 0)
+                : this (flags, 0)
             {
                 ;
             }

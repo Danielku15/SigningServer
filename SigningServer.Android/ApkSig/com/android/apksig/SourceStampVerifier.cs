@@ -158,7 +158,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         return result;
                     }
                 }
-                SigningServer.Android.Collections.Map<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int?, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
                 if (mMaxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P)
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureInfo signatureInfo;
@@ -444,7 +444,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             
             internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo> mV3SchemeSigners = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo>();
             
-            internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo>> mAllSchemeSigners = SigningServer.Android.Collections.Arrays.AsList(mV1SchemeSigners, mV2SchemeSigners, mV3SchemeSigners);
+            internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo>> mAllSchemeSigners;
             
             internal SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SourceStampInfo mSourceStampInfo;
             
@@ -453,7 +453,12 @@ namespace SigningServer.Android.Com.Android.Apksig
             internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue> mWarnings = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue>();
             
             internal bool mVerified;
-            
+
+            public Result()
+            {
+                mAllSchemeSigners = SigningServer.Android.Collections.Arrays.AsList(mV1SchemeSigners, mV2SchemeSigners, mV3SchemeSigners);
+            }
+
             public virtual void AddVerificationError(int errorId, params object[] parameters)
             {
                 mErrors.Add(new SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue(errorId, parameters));

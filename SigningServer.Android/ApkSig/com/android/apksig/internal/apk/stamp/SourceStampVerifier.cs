@@ -69,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
         /// expected to be encountered on an Android platform version in the {@code [minSdkVersion,
         /// maxSdkVersion]} range.
         /// </summary>
-        public static void VerifyV2SourceStamp(SigningServer.Android.IO.ByteBuffer sourceStampBlockData, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSignerInfo result, SigningServer.Android.Collections.Map<int?, sbyte[]> signatureSchemeApkDigests, sbyte[] sourceStampCertificateDigest, int minSdkVersion, int maxSdkVersion)
+        public static void VerifyV2SourceStamp(SigningServer.Android.IO.ByteBuffer sourceStampBlockData, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSignerInfo result, SigningServer.Android.Collections.Map<int, sbyte[]> signatureSchemeApkDigests, sbyte[] sourceStampCertificateDigest, int minSdkVersion, int maxSdkVersion)
         {
             SigningServer.Android.Security.Cert.X509Certificate sourceStampCertificate = SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.SourceStampVerifier.VerifySourceStampCertificate(sourceStampBlockData, certFactory, sourceStampCertificateDigest, result);
             if (result.ContainsWarnings() || result.ContainsErrors())
@@ -85,7 +85,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
                 SigningServer.Android.IO.ByteBuffer apkDigestSignatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.GetLengthPrefixedSlice(signedSignatureScheme);
                 signedSignatureSchemeData.Put(signatureSchemeId, apkDigestSignatures);
             }
-            foreach (SigningServer.Android.Collections.MapEntry<int?, sbyte[]> signatureSchemeApkDigest in signatureSchemeApkDigests.EntrySet())
+            foreach (SigningServer.Android.Collections.MapEntry<int, sbyte[]> signatureSchemeApkDigest in signatureSchemeApkDigests.EntrySet())
             {
                 if (!signedSignatureSchemeData.ContainsKey(signatureSchemeApkDigest.GetKey()))
                 {

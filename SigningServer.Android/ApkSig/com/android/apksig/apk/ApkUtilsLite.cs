@@ -26,7 +26,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
         /// </summary>
         public static SigningServer.Android.Com.Android.Apksig.Zip.ZipSections FindZipSections(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk)
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long?> eocdAndOffsetInFile = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.FindZipEndOfCentralDirectoryRecord(apk);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.IO.ByteBuffer, long> eocdAndOffsetInFile = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.FindZipEndOfCentralDirectoryRecord(apk);
             if (eocdAndOffsetInFile == null)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException("ZIP End of Central Directory record not found");

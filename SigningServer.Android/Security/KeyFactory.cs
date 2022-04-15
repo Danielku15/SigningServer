@@ -15,7 +15,7 @@ namespace SigningServer.Android.Security
             throw new System.NotImplementedException();
         }
 
-        public T GetKeySpec<T>(PublicKey publicKey, Type type) where T: KeySpec
+        public T GetKeySpec<T>(PublicKey publicKey) where T: KeySpec
         {
             throw new NotImplementedException();
         }

@@ -24,12 +24,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             : base (wrapped)
         {
             ;
-            this.mEncodedForm = (encodedForm != null) ? encodedForm.Clone() : null;
+            this.mEncodedForm = (sbyte[])((encodedForm != null) ? encodedForm.Clone() : null);
         }
         
-        public override sbyte[] GetEncoded()
+        public sbyte[] GetEncoded()
         {
-            return (mEncodedForm != null) ? mEncodedForm.Clone() : null;
+            return (sbyte[])((mEncodedForm != null) ? mEncodedForm.Clone() : null);
         }
         
         public override bool Equals(object o)

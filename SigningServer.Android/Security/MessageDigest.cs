@@ -14,5 +14,30 @@ namespace SigningServer.Android.Security
         {
             throw new System.NotImplementedException();
         }
+
+        public void Update(sbyte[] data, int offset, int length)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string GetAlgorithm()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public int GetDigestLength()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Reset()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public MessageDigest Clone()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

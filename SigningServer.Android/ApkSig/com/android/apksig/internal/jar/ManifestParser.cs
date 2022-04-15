@@ -30,9 +30,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         /// Constructs a new {@code ManifestParser} with the provided input.
         /// </summary>
         public ManifestParser(sbyte[] data)
-            : base (data, 0, data.Length)
+            : this (data, 0, data.Length)
         {
-            ;
         }
         
         /// <summary>
@@ -327,7 +326,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
                     }
                 }
                 mName = sectionName;
-                mAttributes = SigningServer.Android.Util.Collections.UnmodifiableList(new SigningServer.Android.Collections.List<T>(attrs));
+                mAttributes = SigningServer.Android.Util.Collections.UnmodifiableList(new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Attribute>(attrs));
             }
             
             public virtual string GetName()

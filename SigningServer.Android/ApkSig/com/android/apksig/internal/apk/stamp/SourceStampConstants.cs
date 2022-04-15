@@ -23,7 +23,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
         
         public static readonly string SOURCE_STAMP_CERTIFICATE_HASH_ZIP_ENTRY_NAME = "stamp-cert-sha256";
         
-        public static readonly int PROOF_OF_ROTATION_ATTR_ID = 0x9d6303f7;
+        public static readonly int PROOF_OF_ROTATION_ATTR_ID = unchecked((int)0x9d6303f7);
         
     }
     

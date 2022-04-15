@@ -25,7 +25,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             mBuf = buf;
         }
         
-        public override SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
+        public SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue()
         {
             int startPosition = mBuf.Position();
             if (!mBuf.HasRemaining())
@@ -101,7 +101,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Tag number too large");
                 }
-                result << 7;
+                result <<= 7;
                 result |= b & 0x7f;
             }
             while ((b & 0x80) != 0);
@@ -132,7 +132,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Length too large");
                 }
-                result << 8;
+                result <<= 8;
                 result |= b & 0xff;
             }
             return result;

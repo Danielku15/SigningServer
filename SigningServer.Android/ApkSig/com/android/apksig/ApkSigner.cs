@@ -25,7 +25,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// uncompressed entries as well as for aligning the entries's data. See ZIP appnote.txt section
         /// 4.5 Extensible data fields.
         /// </summary>
-        internal static readonly short ALIGNMENT_ZIP_EXTRA_DATA_FIELD_HEADER_ID = (short)0xd935;
+        internal static readonly short ALIGNMENT_ZIP_EXTRA_DATA_FIELD_HEADER_ID = unchecked((short)0xd935);
         
         /// <summary>
         /// Minimum size (in bytes) of the extensible data block/field used for alignment of uncompressed
@@ -221,7 +221,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 int minSdkVersion;
                 if (mMinSdkVersion != null)
                 {
-                    minSdkVersion = mMinSdkVersion;
+                    minSdkVersion = mMinSdkVersion.Value;
                 }
                 else 
                 {
@@ -806,7 +806,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 mName = name;
                 mPrivateKey = privateKey;
-                mCertificates = SigningServer.Android.Util.Collections.UnmodifiableList(new SigningServer.Android.Collections.List<T>(certificates));
+                mCertificates = SigningServer.Android.Util.Collections.UnmodifiableList(new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate>(certificates));
                 mDeterministicDsaSigning = deterministicDsaSigning;
             }
             
@@ -866,7 +866,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 ///     the first certificate must correspond to the {@code privateKey}.
                 /// </summary>
                 public Builder(string name, SigningServer.Android.Security.PrivateKey privateKey, SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> certificates)
-                    : base (name, privateKey, certificates, false)
+                    : this (name, privateKey, certificates, false)
                 {
                     ;
                 }

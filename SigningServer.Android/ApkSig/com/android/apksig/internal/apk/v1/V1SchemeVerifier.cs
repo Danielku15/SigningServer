@@ -35,7 +35,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// @throws NoSuchAlgorithmException if the APK's JAR signatures cannot be verified because a
         ///         required cryptographic algorithm implementation is missing
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections apkSections, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections apkSections, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
         {
             if (minSdkVersion > maxSdkVersion)
             {
@@ -147,7 +147,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             /// with errors, warnings, and information about signers. The APK is considered verified if
             /// the {@link Result#verified} is {@code true}.
             /// </summary>
-            internal static void Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, long cdStartOffset, SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Collections.Set<string> cdEntryNames, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result result)
+            internal static void Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, long cdStartOffset, SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Collections.Set<string> cdEntryNames, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result result)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord manifestEntry = null;
                 SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> sigFileEntries = new SigningServer.Android.Collections.HashMap<string, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord>(1);
@@ -413,12 +413,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignedData signedData;
                 try
                 {
-                    SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.ContentInfo contentInfo = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(SigningServer.Android.IO.ByteBuffer.Wrap(sigBlockBytes), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.ContentInfo));
+                    SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.ContentInfo contentInfo = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.ContentInfo>(SigningServer.Android.IO.ByteBuffer.Wrap(sigBlockBytes));
                     if (!SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Pkcs7Constants.OID_SIGNED_DATA.Equals(contentInfo.contentType))
                     {
                         throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException("Unsupported ContentInfo.contentType: " + contentInfo.contentType);
                     }
-                    signedData = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(contentInfo.content.GetEncoded(), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignedData));
+                    signedData = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignedData>(contentInfo.content.GetEncoded());
                 }
                 catch (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException e)
                 {
@@ -599,7 +599,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     }
                     try
                     {
-                        SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Attribute> signedAttributes = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.ParseImplicitSetOf(signerInfo.signedAttrs.GetEncoded(), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Attribute));
+                        SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Attribute> signedAttributes = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.ParseImplicitSetOf<SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Attribute>(signerInfo.signedAttrs.GetEncoded());
                         SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.SignedAttributes signedAttrs = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.SignedAttributes(signedAttributes);
                         if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N)
                         {
@@ -676,7 +676,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 return result;
             }
             
-            public virtual void VerifySigFileAgainstManifest(sbyte[] manifestBytes, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section> entryNameToManifestSection, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
+            public virtual void VerifySigFileAgainstManifest(sbyte[] manifestBytes, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section> entryNameToManifestSection, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser sf = new SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser(mSigFileBytes);
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection = sf.ReadSection();
@@ -869,7 +869,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 }
             }
             
-            internal void CheckForStrippedApkSignatures(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, SigningServer.Android.Collections.Map<int?, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int?> foundApkSigSchemeIds)
+            internal void CheckForStrippedApkSignatures(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds)
             {
                 string signedWithApkSchemes = sfMainSection.GetAttributeValue(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME_STR);
                 if (signedWithApkSchemes == null)
@@ -884,8 +884,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     return;
                 }
-                SigningServer.Android.Collections.Set<int?> supportedApkSigSchemeIds = supportedApkSigSchemeNames.KeySet();
-                SigningServer.Android.Collections.Set<int?> supportedExpectedApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int?>(1);
+                SigningServer.Android.Collections.Set<int> supportedApkSigSchemeIds = supportedApkSigSchemeNames.KeySet();
+                SigningServer.Android.Collections.Set<int> supportedExpectedApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(1);
                 SigningServer.Android.Util.StringTokenizer tokenizer = new SigningServer.Android.Util.StringTokenizer(signedWithApkSchemes, ",");
                 while (tokenizer.HasMoreTokens())
                 {
@@ -990,7 +990,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         public static int GetMinSdkVersionFromWhichSupportedInManifestOrSignatureFile(string jcaAlgorithmName)
         {
             int? result = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.MIN_SDK_VESION_FROM_WHICH_DIGEST_SUPPORTED_IN_MANIFEST.Get(jcaAlgorithmName.ToUpperCase(SigningServer.Android.Util.Locale.US));
-            return (result != null) ? result : SigningServer.Android.Core.IntExtensions.MaxValue;
+            return (result != null) ? result.Value : SigningServer.Android.Core.IntExtensions.MaxValue;
         }
         
         internal static string GetJarDigestAttributeName(string jcaDigestAlgorithm, string attrNameSuffix)
@@ -1130,7 +1130,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             if (firstSignedEntrySigners == null)
             {
                 result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_NO_SIGNED_ZIP_ENTRIES);
-                return SigningServer.Android.Util.Collections.EmptySet();
+                return SigningServer.Android.Util.Collections.EmptySet<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Signer>();
             }
             else 
             {
@@ -1142,7 +1142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         {
             if (signers.IsEmpty())
             {
-                return SigningServer.Android.Util.Collections.EmptyList();
+                return SigningServer.Android.Util.Collections.EmptyList<string>();
             }
             SigningServer.Android.Collections.List<string> result = new SigningServer.Android.Collections.List<string>(signers.Size());
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Signer signer in signers)
@@ -1331,7 +1331,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 }
                 try
                 {
-                    return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(value.GetEncoded(), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.ObjectIdentifierChoice)).value;
+                    return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.ObjectIdentifierChoice>(value.GetEncoded()).value;
                 }
                 catch (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException e)
                 {
@@ -1348,7 +1348,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 }
                 try
                 {
-                    return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(value.GetEncoded(), typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.OctetStringChoice)).value;
+                    return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.OctetStringChoice>(value.GetEncoded()).value;
                 }
                 catch (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException e)
                 {

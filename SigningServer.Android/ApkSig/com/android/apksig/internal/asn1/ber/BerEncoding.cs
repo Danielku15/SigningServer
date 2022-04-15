@@ -25,74 +25,74 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         /// <summary>
         /// Tag class: UNIVERSAL
         /// </summary>
-        public static readonly int TAG_CLASS_UNIVERSAL = 0;
+        public const int TAG_CLASS_UNIVERSAL = 0;
         
         /// <summary>
         /// Tag class: APPLICATION
         /// </summary>
-        public static readonly int TAG_CLASS_APPLICATION = 1;
+        public const int TAG_CLASS_APPLICATION = 1;
         
         /// <summary>
         /// Tag class: CONTEXT SPECIFIC
         /// </summary>
-        public static readonly int TAG_CLASS_CONTEXT_SPECIFIC = 2;
+        public const int TAG_CLASS_CONTEXT_SPECIFIC = 2;
         
         /// <summary>
         /// Tag class: PRIVATE
         /// </summary>
-        public static readonly int TAG_CLASS_PRIVATE = 3;
+        public const int TAG_CLASS_PRIVATE = 3;
         
         /// <summary>
         /// Tag number: BOOLEAN
         /// </summary>
-        public static readonly int TAG_NUMBER_BOOLEAN = 0x1;
+        public const int TAG_NUMBER_BOOLEAN = 0x1;
         
         /// <summary>
         /// Tag number: INTEGER
         /// </summary>
-        public static readonly int TAG_NUMBER_INTEGER = 0x2;
+        public const int TAG_NUMBER_INTEGER = 0x2;
         
         /// <summary>
         /// Tag number: BIT STRING
         /// </summary>
-        public static readonly int TAG_NUMBER_BIT_STRING = 0x3;
+        public const int TAG_NUMBER_BIT_STRING = 0x3;
         
         /// <summary>
         /// Tag number: OCTET STRING
         /// </summary>
-        public static readonly int TAG_NUMBER_OCTET_STRING = 0x4;
+        public const int TAG_NUMBER_OCTET_STRING = 0x4;
         
         /// <summary>
         /// Tag number: NULL
         /// </summary>
-        public static readonly int TAG_NUMBER_NULL = 0x05;
+        public const int TAG_NUMBER_NULL = 0x05;
         
         /// <summary>
         /// Tag number: OBJECT IDENTIFIER
         /// </summary>
-        public static readonly int TAG_NUMBER_OBJECT_IDENTIFIER = 0x6;
+        public const int TAG_NUMBER_OBJECT_IDENTIFIER = 0x6;
         
         /// <summary>
         /// Tag number: SEQUENCE
         /// </summary>
-        public static readonly int TAG_NUMBER_SEQUENCE = 0x10;
+        public const int TAG_NUMBER_SEQUENCE = 0x10;
         
         /// <summary>
         /// Tag number: SET
         /// </summary>
-        public static readonly int TAG_NUMBER_SET = 0x11;
+        public const int TAG_NUMBER_SET = 0x11;
         
         /// <summary>
         /// Tag number: UTC_TIME
         /// </summary>
-        public static readonly int TAG_NUMBER_UTC_TIME = 0x17;
+        public const int TAG_NUMBER_UTC_TIME = 0x17;
         
         /// <summary>
         /// Tag number: GENERALIZED_TIME
         /// </summary>
-        public static readonly int TAG_NUMBER_GENERALIZED_TIME = 0x18;
+        public const int TAG_NUMBER_GENERALIZED_TIME = 0x18;
         
-        public static int GetTagNumber(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type dataType)
+        public static int GetTagNumber(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? dataType)
         {
             switch (dataType)
             {

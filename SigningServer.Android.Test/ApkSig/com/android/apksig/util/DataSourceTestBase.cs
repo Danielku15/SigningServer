@@ -355,7 +355,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 return mCloseable;
             }
             
-            public override void Close()
+            public void Dispose()
             {
                 if (mCloseable != null)
                 {
@@ -369,11 +369,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         {
             internal static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink INSTANCE = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink();
             
-            public override void Consume(sbyte[] buf, int offset, int length)
+            public void Consume(sbyte[] buf, int offset, int length)
             {
             }
             
-            public override void Consume(SigningServer.Android.IO.ByteBuffer buf)
+            public void Consume(SigningServer.Android.IO.ByteBuffer buf)
             {
             }
             

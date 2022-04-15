@@ -6,6 +6,7 @@ namespace SigningServer.Android.Collections
     {
         bool IsEmpty();
         int Size();
-        void Add(T guaranteedEncodedCert);
+        bool Add(T value);
+        bool ContainsAll(Collection<T> other);
     }
 }

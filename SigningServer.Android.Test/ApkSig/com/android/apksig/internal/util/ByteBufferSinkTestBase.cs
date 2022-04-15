@@ -5,21 +5,23 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
+    [TestClass]
     public abstract class ByteBufferSinkTestBase: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.ByteBufferSink>
     {
         internal static readonly int START_POS = 100;
         
         protected abstract SigningServer.Android.IO.ByteBuffer CreateBuffer(int size);
         
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<Com.Android.Apksig.Internal.Util.ByteBufferSink> CreateDataSink()
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.ByteBufferSink>.CloseableWithDataSink CreateDataSink()
         {
             SigningServer.Android.IO.ByteBuffer buf = CreateBuffer(1024);
             buf.Position(SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSinkTestBase.START_POS);
             buf.Limit(buf.Capacity() - 300);
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Internal.Util.ByteBufferSink>(new Com.Android.Apksig.Internal.Util.ByteBufferSink(buf));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.ByteBufferSink>.CloseableWithDataSink.Of(new Com.Android.Apksig.Internal.Util.ByteBufferSink(buf));
         }
         
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Internal.Util.ByteBufferSink dataSink)

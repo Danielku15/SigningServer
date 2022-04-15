@@ -5,12 +5,14 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
     /// <summary>
     /// Hexadecimal encoding where each byte is represented by two hexadecimal digits.
     /// </summary>
+    [TestClass]
     public class HexEncoding: SigningServer.Android.TestBase
     {
         /// <summary>

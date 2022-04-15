@@ -5,9 +5,11 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
+    [TestClass]
     public class DirectByteBufferSinkTest: SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSinkTestBase
     {
         protected override SigningServer.Android.IO.ByteBuffer CreateBuffer(int size)

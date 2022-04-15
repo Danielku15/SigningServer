@@ -17,10 +17,5 @@
 	<ItemGroup>
 	  <None Remove="Resources\**\*.*" />
 	  <EmbeddedResource Include="Resources\**\*.*" />
-	  <EmbeddedResource Remove="ApkSig\**" />
-	  <None Remove="ApkSig\**" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Compile Remove="ApkSig\**" />
 	</ItemGroup>
 </Project>

@@ -5,9 +5,11 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Apk
 {
+    [TestClass]
     public class ApkUtilsTest: SigningServer.Android.TestBase
     {
         [Test]

@@ -5,9 +5,11 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
+    [TestClass]
     public class X509CertificateUtilsTest: SigningServer.Android.TestBase
     {
         public static readonly string RSA_2048_VALID_PEM_ENCODING = "rsa-2048.x509.pem";

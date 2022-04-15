@@ -5,13 +5,30 @@
 // </auto-generated>
 
 using System;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
+    [TestClass]
     public class FileChannelDataSourceTest: SigningServer.Android.TestBase
     {
-        [Rule]
-        public var temporaryFolder = .Create();
+        public DirectoryInfo temporaryFolder;
+
+        [TestInitialize]
+        public void SetUp()
+        {
+            temporaryFolder = CreateTemporaryFolder();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (temporaryFolder.Exists)
+            {
+                temporaryFolder.Delete(true);
+            }
+        }
         
         [Test]
         public virtual void TestFeedsCorrectData_whenFilePartiallyReadFromBeginning()
@@ -77,7 +94,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         internal SigningServer.Android.IO.RandomAccessFile CreateRaf(sbyte[] content)
         {
-            System.IO.FileInfo dataFile = temporaryFolder.NewFile();
+            System.IO.FileInfo dataFile = new FileInfo(Path.Combine(temporaryFolder.FullName, Guid.NewGuid().ToString("N")));
             using(SigningServer.Android.IO.FileOutputStream fos = new SigningServer.Android.IO.FileOutputStream(dataFile))
             {
                 fos.Write(content);

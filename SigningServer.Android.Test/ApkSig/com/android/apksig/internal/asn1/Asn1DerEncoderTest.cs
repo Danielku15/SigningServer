@@ -5,9 +5,11 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
 {
+    [TestClass]
     public class Asn1DerEncoderTest: SigningServer.Android.TestBase
     {
         [Test]
@@ -20,7 +22,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             AssertEquals("30030201ff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(-1)));
             AssertEquals("3003020180", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(-128)));
             AssertEquals("3005020300ffee", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(0xffee)));
-            AssertEquals("300602047fffffff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MaxValue)));
+            AssertEquals("300602047fffffff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MAX_VALUE)));
             AssertEquals("3006020480000000", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MIN_VALUE)));
         }
         
@@ -31,7 +33,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 1, 2, 3}
             ))));
             AssertEquals("30030401ff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithByteBufferOctetString(SigningServer.Android.IO.ByteBuffer.Wrap(new sbyte[]{
-                (sbyte)0xff}
+                unchecked((sbyte)0xff)}
             ))));
             AssertEquals("30020400", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithByteBufferOctetString(SigningServer.Android.IO.ByteBuffer.Wrap(new sbyte[0]))));
         }
@@ -43,7 +45,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 1, 2, 3}
             ))));
             AssertEquals("30030301ff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithByteBufferBitString(SigningServer.Android.IO.ByteBuffer.Wrap(new sbyte[]{
-                (sbyte)0xff}
+                unchecked((sbyte)0xff)}
             ))));
             AssertEquals("30020300", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithByteBufferBitString(SigningServer.Android.IO.ByteBuffer.Wrap(new sbyte[0]))));
         }
@@ -140,7 +142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         [Test]
         public virtual void TestUnencodedContainer()
         {
-            AssertEquals("30233021310b30030201003004020200ff310830060204800000003108300602047fffffff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithSequenceOfUnencodedContainers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(0), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(255))), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MIN_VALUE))), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MaxValue)))))));
+            AssertEquals("30233021310b30030201003004020200ff310830060204800000003108300602047fffffff", SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.EncodeToHex(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithSequenceOfUnencodedContainers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(0), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(255))), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MIN_VALUE))), new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.UnencodedContainerWithSetOfIntegers(SigningServer.Android.Collections.Arrays.AsList(new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoderTest.SequenceWithInteger(SigningServer.Android.Core.IntExtensions.MAX_VALUE)))))));
         }
         
         internal static sbyte[] Encode(object obj)
@@ -251,7 +253,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         public class Sequence: SigningServer.Android.TestBase
         {
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.INTEGER, Index = 0)]
-            public SigningServer.Android.Math.BigInteger num;
+            public SigningServer.Android.Math.BigInteger? num;
             
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.OBJECT_IDENTIFIER, Index = 1, Optional = true)]
             public string oid;
@@ -259,7 +261,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             [Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = Com.Android.Apksig.Internal.Asn1.Asn1Type.OCTET_STRING, Index = 2)]
             public sbyte[] octets;
             
-            public Sequence(SigningServer.Android.Math.BigInteger num, string oid, sbyte[] octets)
+            public Sequence(SigningServer.Android.Math.BigInteger? num, string oid, sbyte[] octets)
             {
                 this.num = num;
                 this.oid = oid;

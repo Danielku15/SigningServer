@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
@@ -14,6 +15,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
     /// &lt;p&gt;Subclasses need to provide only an implementation of {@link #createReader(byte[])} and
     /// subclass-specific tests.
     /// </summary>
+    [TestClass]
     public abstract class BerDataValueReaderTestBase: SigningServer.Android.TestBase
     {
         /// <summary>
@@ -71,7 +73,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             AssertEquals(7, ReadDataValue("3f808080808080808080808080808080800700").GetTagNumber());
             AssertEquals(375, ReadDataValue("3f827700").GetTagNumber());
             AssertEquals(268435455, ReadDataValue("3fffffff7f00").GetTagNumber());
-            AssertEquals(SigningServer.Android.Core.IntExtensions.MaxValue, ReadDataValue("3f87ffffff7f00").GetTagNumber());
+            AssertEquals(SigningServer.Android.Core.IntExtensions.MAX_VALUE, ReadDataValue("3f87ffffff7f00").GetTagNumber());
         }
         
         [Test(Expected = typeof(Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException))]

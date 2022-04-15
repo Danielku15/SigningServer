@@ -5,19 +5,21 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
     /// <summary>
     /// Unit tests for {@link VerityTreeBuilder}.
     /// </summary>
+    [TestClass]
     public class VerityTreeBuilderTest: SigningServer.Android.TestBase
     {
         [Test]
         public virtual void SHA256RootHashMatch()
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", null, "a3b013ea0f5d5ffbda26d5e84882faa4c051d592c04b8779bd1f0f4e95cc2657");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new sbyte[]()
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new sbyte[0]
             , "a3b013ea0f5d5ffbda26d5e84882faa4c051d592c04b8779bd1f0f4e95cc2657");
             SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new sbyte[]{
                 0x00}

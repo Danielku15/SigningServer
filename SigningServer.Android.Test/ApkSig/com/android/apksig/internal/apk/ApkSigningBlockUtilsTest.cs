@@ -5,29 +5,46 @@
 // </auto-generated>
 
 using System;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SigningServer.Android.Collections;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
 {
+    [TestClass]
     public class ApkSigningBlockUtilsTest: SigningServer.Android.TestBase
     {
-        [Rule]
-        public var temporaryFolder = .Create();
+        public DirectoryInfo temporaryFolder;
         
         internal static readonly int BASE = 255;
         
         public Com.Android.Apksig.Util.DataSource[] dataSource;
         
-        public readonly SigningServer.Android.Collections.Set<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> algos = SigningServer.Android.Util.EnumSet.Of<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm>(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512);
-        
-        [Before]
-        public virtual void SetUp()
+        public readonly SigningServer.Android.Collections.Set<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> algos = new HashSet<ContentDigestAlgorithm>
         {
+            Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.CHUNKED_SHA512   
+        };
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (temporaryFolder.Exists)
+            {
+                temporaryFolder.Delete(true);
+            }
+        }
+        
+        [TestInitialize]
+        public void SetUp()
+        {
+            temporaryFolder = CreateTemporaryFolder();
+            
             sbyte[] part1 = new sbyte[80 * 1024 * 1024 + 12345];
             for (int i = 0;i < part1.Length;++i)
             {
                 part1[i] = (sbyte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
             }
-            System.IO.FileInfo dataFile = temporaryFolder.NewFile("fake.apk");
+            System.IO.FileInfo dataFile = new FileInfo(Path.Combine(temporaryFolder.FullName, "fake.apk"));
             using(SigningServer.Android.IO.FileOutputStream fos = new SigningServer.Android.IO.FileOutputStream(dataFile))
             {
                 fos.Write(part1);
@@ -54,7 +71,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsOld = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsNew = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(algos, dataSource, outputContentDigestsOld);
-            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutor.SINGLE_THREADED, algos, dataSource, outputContentDigestsNew);
+            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.SINGLE_THREADED, algos, dataSource, outputContentDigestsNew);
             AssertEqualDigests(outputContentDigestsOld, outputContentDigestsNew);
         }
         
@@ -63,33 +80,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         {
             SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigests = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsMultithreaded = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
-            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutor.SINGLE_THREADED, algos, dataSource, outputContentDigests);
-            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests((Com.Android.Apksig.Util.RunnablesProvider provider) => {
-                SigningServer.Android.Util.Concurrent.ForkJoinPool forkJoinPool = SigningServer.Android.Util.Concurrent.ForkJoinPool.CommonPool();
-                int jobCount = forkJoinPool.GetParallelism();
-                SigningServer.Android.Collections.List<SigningServer.Android.Util.Concurrent.Future<object>> jobs = new SigningServer.Android.Collections.List<SigningServer.Android.Util.Concurrent.Future<object>>(jobCount);
-                for (int i = 0;i < jobCount;i++)
-                {
-                    jobs.Add(forkJoinPool.Submit(provider.CreateRunnable()));
-                }
-                try
-                {
-                    foreach (SigningServer.Android.Util.Concurrent.Future<object> future in jobs)
-                    {
-                        future.Get();
-                    }
-                }
-                catch (SigningServer.Android.Core.InterruptedException e)
-                {
-                    SigningServer.Android.Core.Thread.CurrentThread().Interrupt();
-                    throw new SigningServer.Android.Core.RuntimeException(e);
-                }
-                catch (SigningServer.Android.Util.Concurrent.ExecutionException e)
-                {
-                    throw new SigningServer.Android.Core.RuntimeException(e);
-                }
-            }
-            , algos, dataSource, outputContentDigestsMultithreaded);
+            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.SINGLE_THREADED, algos, dataSource, outputContentDigests);
+            Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.MULTI_THREADED, algos, dataSource, outputContentDigestsMultithreaded);
             AssertEqualDigests(outputContentDigestsMultithreaded, outputContentDigests);
         }
         

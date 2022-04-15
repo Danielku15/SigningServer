@@ -13,16 +13,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// </summary>
     public class InMemoryDataSinkTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Util.ReadableDataSink>
     {
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<Com.Android.Apksig.Util.ReadableDataSink> CreateDataSink()
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Util.ReadableDataSink>.CloseableWithDataSink CreateDataSink()
         {
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Util.ReadableDataSink>(Com.Android.Apksig.Util.DataSinks.NewInMemoryDataSink());
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Util.ReadableDataSink>.CloseableWithDataSink.Of(Com.Android.Apksig.Util.DataSinks.NewInMemoryDataSink());
         }
         
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Util.ReadableDataSink dataSink)
         {
-            if (dataSink.Size() > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (dataSink.Size() > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.IO.IOException("Too much data: " + dataSink.Size());
+                throw new System.IO.IOException("Too much data: " + dataSink.Size());
             }
             return dataSink.GetByteBuffer(0, (int)dataSink.Size());
         }

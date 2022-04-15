@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.IO;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
@@ -14,9 +15,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// </summary>
     public class DataSinkFromRAFTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>
     {
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink> CreateDataSink()
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>.CloseableWithDataSink CreateDataSink()
         {
-            System.IO.FileInfo tmp = System.IO.FileInfo.CreateTempFile(typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest).GetSimpleName(), ".bin");
+            System.IO.FileInfo tmp = CreateTemporaryFile(typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest).Name, ".bin");
             SigningServer.Android.IO.RandomAccessFile f = null;
             try
             {
@@ -29,15 +30,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                     tmp.Delete();
                 }
             }
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>((Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable(tmp, f));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink>.CloseableWithDataSink.Of((Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable(tmp, f));
         }
-        
+
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink dataSink)
         {
             SigningServer.Android.IO.RandomAccessFile f = dataSink.GetFile();
-            if (f.Length() > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (f.Length() > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.IO.IOException("File too large: " + f.Length());
+                throw new System.IO.IOException("File too large: " + f.Length());
             }
             sbyte[] contents = new sbyte[(int)f.Length()];
             f.Seek(0);

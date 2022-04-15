@@ -23,6 +23,17 @@ namespace SigningServer.Android.Collections
             RemoveAt(index);
         }
 
+        bool Collection<T>.Add(T value)
+        {
+            base.Add(value);
+            return true;
+        }
+
+        public bool ContainsAll(Collection<T> other)
+        {
+            return other.All(Contains);
+        }
+
         public T Get(int index)
         {
             return this[index];

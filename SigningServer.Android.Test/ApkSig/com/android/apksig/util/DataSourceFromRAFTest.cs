@@ -5,6 +5,9 @@
 // </auto-generated>
 
 using System;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SigningServer.Android.IO;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
@@ -12,16 +15,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// Tests for the {@link DataSource} returned by
     /// {@link DataSources#asDataSource(java.io.RandomAccessFile)}.
     /// </summary>
-    public class DataSourceFromRAFTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
+    public abstract  class DataSourceFromRAFTestBase: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
-        [Parameterized.Parameters(Name = "{0}")]
-        public static SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory[] Data()
-        {
-            return DataSourceFromRAFFactory.Values();
-        }
-        
-        [Parameterized.Parameter]
-        public SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFFactory factory;
+        public abstract Com.Android.Apksig.Util.DataSource Create(SigningServer.Android.IO.RandomAccessFile file);
         
         [Test]
         public virtual void TestFileSizeChangesVisible()
@@ -30,7 +26,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             {
                 Com.Android.Apksig.Util.DataSource ds = c.GetDataSource();
                 Com.Android.Apksig.Util.DataSource slice = ds.Slice(3, 2);
-                System.IO.FileInfo f = ((SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable)c.GetCloseable()).GetFile();
+                System.IO.FileInfo f = ((SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTestBase.TmpFileCloseable)c.GetCloseable()).GetFile();
                 SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.AssertGetByteBufferEquals("abcdefg", ds, 0, (int)ds.Size());
                 SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.AssertGetByteBufferEquals("de", slice, 0, (int)slice.Size());
                 SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.AssertFeedEquals("cdefg", ds, 2, 5);
@@ -56,11 +52,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         
         protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents)
         {
-            System.IO.FileInfo tmp = System.IO.FileInfo.CreateTempFile(typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest).GetSimpleName(), ".bin");
+            System.IO.FileInfo tmp = CreateTemporaryFile(typeof(SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTestBase).Name, ".bin");
             SigningServer.Android.IO.RandomAccessFile f = null;
             try
             {
-                SigningServer.Android.IO.File.Files.Write(tmp.ToPath(), contents);
+                File.WriteAllBytes(tmp.FullName, contents.AsBytes());
                 f = new SigningServer.Android.IO.RandomAccessFile(tmp, "r");
             }
             finally
@@ -70,7 +66,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                     tmp.Delete();
                 }
             }
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource.Of(factory.Create(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTest.TmpFileCloseable(tmp, f));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource.Of(Create(f), new SigningServer.Android.Com.Android.Apksig.Util.DataSourceFromRAFTestBase.TmpFileCloseable(tmp, f));
         }
         
         /// <summary>
@@ -93,7 +89,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 return mFile;
             }
             
-            public override void Close()
+            public void Dispose()
             {
                 try
                 {
@@ -112,7 +108,23 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             }
             
         }
-        
     }
     
+    [TestClass]
+    public class DataSourceFromRAFTest :DataSourceFromRAFTestBase
+    {
+        public override DataSource Create(RandomAccessFile file)
+        {
+            return DataSources.AsDataSource(file);
+        }
+    }
+    
+    [TestClass]
+    public class DataSourceFromFileChannelTest :DataSourceFromRAFTestBase 
+    {
+        public override DataSource Create(RandomAccessFile file)
+        {
+            return DataSources.AsDataSource(file.GetChannel());
+        }
+    }
 }

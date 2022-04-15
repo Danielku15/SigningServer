@@ -5,6 +5,8 @@
 // </auto-generated>
 
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
@@ -12,8 +14,22 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     
     public class RunnablesExecutors
     {
-        public static readonly RunnablesExecutor SINGLE_THREADED;
-        public static readonly RunnablesExecutor MULTI_THREADED;
+        public static readonly RunnablesExecutor SINGLE_THREADED = provider =>
+        {
+            provider()();
+        };
+
+        public static readonly RunnablesExecutor MULTI_THREADED = provider =>
+        {
+            var tasks = Enumerable.Range(0, Environment.ProcessorCount)
+                .Select(_ => Task.Factory.StartNew(() =>
+                {
+                    var r = provider();
+                    r();
+                }));
+
+            Task.WaitAll(tasks.ToArray());
+        };
     }
     
 }

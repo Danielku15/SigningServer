@@ -206,11 +206,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.SourceStampVerifier.Builder builder = new Com.Android.Apksig.SourceStampVerifier.Builder(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(apkBytes)));
             if (minSdkVersionOverride != null)
             {
-                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride);
+                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride.Value);
             }
             if (maxSdkVersionOverride != null)
             {
-                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride);
+                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride.Value);
             }
             return builder.Build().VerifySourceStamp(expectedCertDigest);
         }
@@ -298,6 +298,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         break;
                     default:
                         Fail("This method only supports verification of the signing certificates up " + "through the V3 Signature Scheme");
+                        break;
                 }
                 if (expectedCertDigests[i] == null)
                 {

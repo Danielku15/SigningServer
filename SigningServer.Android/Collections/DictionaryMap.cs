@@ -56,6 +56,11 @@ namespace SigningServer.Android.Collections
             {
                 throw new InvalidOperationException();
             }
+            
+            public bool Remove(MapEntry<TKey, TValue> value)
+            {
+                throw new InvalidOperationException();
+            }
 
             public bool IsEmpty()
             {
@@ -65,6 +70,11 @@ namespace SigningServer.Android.Collections
             public bool Contains(MapEntry<TKey, TValue> value)
             {
                 return mDictionaryMap.TryGetValue(value.GetKey(), out var v) && v.Equals(value);
+            }
+
+            public bool ContainsAll(Collection<MapEntry<TKey, TValue>> other)
+            {
+                return other.All(Contains);
             }
 
             public MapEntry<TKey, TValue>[] ToArray(MapEntry<TKey, TValue>[] empty)
@@ -117,6 +127,11 @@ namespace SigningServer.Android.Collections
                 throw new InvalidOperationException();
             }
 
+            public bool Remove(TKey value)
+            {
+                throw new InvalidOperationException();
+            }
+
             public bool IsEmpty()
             {
                 return mDictionaryMap.IsEmpty();
@@ -125,6 +140,11 @@ namespace SigningServer.Android.Collections
             public bool Contains(TKey value)
             {
                 return mDictionaryMap.ContainsKey(value);
+            }
+
+            public bool ContainsAll(Collection<TKey> other)
+            {
+                return other.All(Contains);
             }
 
             public TKey[] ToArray(TKey[] empty)

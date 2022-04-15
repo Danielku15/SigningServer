@@ -15,12 +15,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// &lt;p&gt;To subclass, provide an implementation of {@link #createDataSink()} which returns the
     /// implementation of {@code DataSink} you want to test.
     /// </summary>
-    public abstract class DataSinkTestBase<T>: SigningServer.Android.TestBase
+    public abstract class DataSinkTestBase<T>: SigningServer.Android.TestBase where T: DataSink
     {
         /// <summary>
         /// Returns a new {@link DataSink}.
         /// </summary>
-        protected abstract SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T> CreateDataSink();
+        protected abstract SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink CreateDataSink();
         
         /// <summary>
         /// Returns the contents of the data sink.
@@ -30,7 +30,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         [Test]
         public virtual void TestConsumeFromArray()
         {
-            using(SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T> c = CreateDataSink())
+            using(SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink c = CreateDataSink())
             {
                 T sink = c.GetDataSink();
                 sbyte[] input = "abcdefg".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
@@ -42,12 +42,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 sink.Consume(input, input.Length - 2, 0);
                 sink.Consume(input, input.Length - 1, 0);
                 sink.Consume(input, input.Length, 0);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, -1, 0);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, -1, 3);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, 0, input.Length + 1);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, input.Length - 2, 4);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, input.Length + 1, 0);
-                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.AssertConsumeArrayThrowsIOOB(sink, input, input.Length + 1, 1);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, -1, 0);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, -1, 3);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, 0, input.Length + 1);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, input.Length - 2, 4);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, input.Length + 1, 0);
+                SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.AssertConsumeArrayThrowsIOOB(sink, input, input.Length + 1, 1);
                 AssertContentsEquals("cdea", sink);
             }
         }
@@ -55,7 +55,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         [Test]
         public virtual void TestConsumeFromByteBuffer()
         {
-            using(SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T> c = CreateDataSink())
+            using(SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink c = CreateDataSink())
             {
                 T sink = c.GetDataSink();
                 SigningServer.Android.IO.ByteBuffer input = SigningServer.Android.IO.ByteBuffer.Wrap("abcdefg".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8));
@@ -95,7 +95,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         internal void AssertContentsEquals(string expectedContents, T sink)
         {
             SigningServer.Android.IO.ByteBuffer actual = GetContents(sink);
-            AssertEquals(expectedContents, SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.ToString(actual));
+            AssertEquals(expectedContents, SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.ToString(actual));
         }
         
         internal static void AssertConsumeArrayThrowsIOOB(Com.Android.Apksig.Util.DataSink sink, sbyte[] arr, int offset, int length)
@@ -110,7 +110,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             }
         }
         
-        public class CloseableWithDataSink<T>: SigningServer.Android.TestBase, System.IDisposable
+        public class CloseableWithDataSink: SigningServer.Android.TestBase, System.IDisposable
         {
             internal readonly T mDataSink;
             
@@ -122,14 +122,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 mCloseable = closeable;
             }
             
-            public static SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T> Of<T>(T dataSink)
+            public static SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink Of(T dataSink)
             {
-                return new SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T>(dataSink, null);
+                return new SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink(dataSink, null);
             }
             
-            public static SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T> Of<T>(T dataSink, System.IDisposable closeable)
+            public static SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink Of(T dataSink, System.IDisposable closeable)
             {
-                return new SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<T>(dataSink, closeable);
+                return new SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink(dataSink, closeable);
             }
             
             public virtual T GetDataSink()
@@ -142,7 +142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 return mCloseable;
             }
             
-            public override void Close()
+            public void Dispose()
             {
                 if (mCloseable != null)
                 {

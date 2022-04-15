@@ -5,6 +5,8 @@
 // </auto-generated>
 
 using System;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -32,8 +34,13 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal readonly sbyte[] EXTRA_BLOCK_VALUE = {0, 1, 2, 3, 4, 5, 6, 7};
         
-        [Rule]
-        public var mTemporaryFolder = .Create();
+        public DirectoryInfo mTemporaryFolder;
+
+        [TestInitialize]
+        public void SetUp()
+        {
+            mTemporaryFolder = CreateTemporaryFolder();
+        }
         
         public static void Main(string[] parameters)
         {
@@ -43,60 +50,57 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal static void GenerateGoldenFiles(System.IO.FileInfo outDir)
         {
-            SigningServer.Android.Core.System.output.Println("Generating golden files " + typeof(SigningServer.Android.Com.Android.Apksig.ApkSignerTest).GetSimpleName() + " into " + outDir);
-            if (!outDir.Exists())
+            SigningServer.Android.Core.System.output.Println("Generating golden files " + typeof(SigningServer.Android.Com.Android.Apksig.ApkSignerTest).Name + " into " + outDir);
+            if (!outDir.Exists)
             {
-                if (!outDir.Mkdirs())
-                {
-                    throw new SigningServer.Android.IO.IOException("Failed to create directory: " + outDir);
-                }
+                outDir.Create();
             }
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> rsa2048SignerConfig = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> rsa2048SignerConfigWithLineage = SigningServer.Android.Collections.Arrays.AsList(rsa2048SignerConfig.Get(0), SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME));
             Com.Android.Apksig.SigningCertificateLineage lineage = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToSigningCertificateLineage(typeof(SigningServer.Android.Com.Android.Apksig.ApkSignerTest), SigningServer.Android.Com.Android.Apksig.ApkSignerTest.LINEAGE_RSA_2048_2_SIGNERS_RESOURCE_NAME);
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v1-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v1-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v1-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v1v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v1v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v1v2-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v1v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v1v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v1v2v3-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(outDir, "golden-unaligned-v1v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-legacy-aligned-v1v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(outDir, "golden-aligned-v1v2v3-lineage-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(outDir, "golden-rsa-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(outDir, "golden-rsa-minSdkVersion-1-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(1));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(outDir, "golden-rsa-minSdkVersion-18-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(18));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(outDir, "golden-rsa-minSdkVersion-24-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(24));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(outDir, "golden-rsa-verity-out.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetVerityEnabled(true));
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("pinsapp-unsigned.apk", new System.IO.FileInfo(outDir, "golden-pinsapp-signed.apk"), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetVerityEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(false));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(false).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2v3-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-unaligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-unaligned-v1v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-legacy-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-legacy-aligned-v1v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("golden-aligned-in.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-aligned-v1v2v3-lineage-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfigWithLineage).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSigningCertificateLineage(lineage));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-rsa-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-rsa-minSdkVersion-1-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(1));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-rsa-minSdkVersion-18-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(18));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-rsa-minSdkVersion-24-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetMinSdkVersion(24));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("original.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-rsa-verity-out.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetVerityEnabled(true));
+            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SignGolden("pinsapp-unsigned.apk", new System.IO.FileInfo(Path.Combine(outDir.FullName, "golden-pinsapp-signed.apk")), new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetVerityEnabled(true));
         }
         
         internal static void SignGolden(string inResourceName, System.IO.FileInfo outFile, Com.Android.Apksig.ApkSigner.Builder apkSignerBuilder)
         {
             Com.Android.Apksig.Util.DataSource input = Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(Com.Android.Apksig.ApkSigner), inResourceName)));
             apkSignerBuilder.SetInputApk(input).SetOutputApk(outFile);
-            System.IO.FileInfo outFileIdSig = new System.IO.FileInfo(outFile.GetCanonicalPath() + ".idsig");
+            System.IO.FileInfo outFileIdSig = new System.IO.FileInfo(outFile.FullName + ".idsig");
             apkSignerBuilder.SetV4SignatureOutputFile(outFileIdSig);
             apkSignerBuilder.SetV4ErrorReportingEnabled(true);
             apkSignerBuilder.Build().Sign();
@@ -184,9 +188,6 @@ namespace SigningServer.Android.Com.Android.Apksig
         [Test]
         public virtual void TestDeterministicDsaSignedVerifies()
         {
-            Security.AddProvider(.Create());
-            try
-            {
                 SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDeterministicDsaSignerConfigFromResources("dsa-2048"));
                 string input = "original.apk";
                 System.IO.FileInfo output = Sign(input, new Com.Android.Apksig.ApkSigner.Builder(signers).SetMinSdkVersion(1));
@@ -194,30 +195,17 @@ namespace SigningServer.Android.Com.Android.Apksig
                 output = Sign(input, new Com.Android.Apksig.ApkSigner.Builder(signers).SetMinSdkVersion(21));
                 SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertVerified(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.VerifyForMinSdkVersion(output, 21));
                 SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertVerificationFailure(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.VerifyForMinSdkVersion(output, 20), Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_UNSUPPORTED_SIG_ALG);
-            }
-            finally
-            {
-                Security.RemoveProvider(BouncyCastleProvider.PROVIDER_NAME);
-            }
         }
         
         [Test]
         public virtual void TestDeterministicDsaSigningIsDeterministic()
         {
-            Security.AddProvider(.Create());
-            try
-            {
                 SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDeterministicDsaSignerConfigFromResources("dsa-2048"));
                 string input = "original.apk";
                 Com.Android.Apksig.ApkSigner.Builder apkSignerBuilder = new Com.Android.Apksig.ApkSigner.Builder(signers).SetMinSdkVersion(1);
                 System.IO.FileInfo first = Sign(input, apkSignerBuilder);
                 System.IO.FileInfo second = Sign(input, apkSignerBuilder);
                 AssertFileContentsEqual(first, second);
-            }
-            finally
-            {
-                Security.RemoveProvider(BouncyCastleProvider.PROVIDER_NAME);
-            }
         }
         
         [Test]
@@ -234,12 +222,9 @@ namespace SigningServer.Android.Com.Android.Apksig
         public virtual void TestV1SigningRejectsInvalidZipEntryNames()
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
-            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-cr-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true));
-            );
-            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-lf-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true));
-            );
-            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-nul-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true));
-            );
+            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-cr-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true)));
+            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-lf-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true)));
+            AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("v1-only-with-nul-in-entry-name.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true)));
         }
         
         [Test]
@@ -263,12 +248,10 @@ namespace SigningServer.Android.Com.Android.Apksig
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
             Sign(debuggableBooleanApk, new Com.Android.Apksig.ApkSigner.Builder(signers));
             Sign(debuggableBooleanApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(true));
-            AssertThrows(typeof(SigningServer.Android.Security.SignatureException), () => Sign(debuggableBooleanApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(false));
-            );
+            AssertThrows(typeof(SigningServer.Android.Security.SignatureException), () => Sign(debuggableBooleanApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(false)));
             string debuggableResourceApk = "debuggable-resource.apk";
             Sign(debuggableResourceApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(true));
-            AssertThrows(typeof(SigningServer.Android.Security.SignatureException), () => Sign(debuggableResourceApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(false));
-            );
+            AssertThrows(typeof(SigningServer.Android.Security.SignatureException), () => Sign(debuggableResourceApk, new Com.Android.Apksig.ApkSigner.Builder(signers).SetDebuggableApkPermitted(false)));
         }
         
         [Test]
@@ -276,8 +259,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Collections.Arrays.AsList(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME), SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME));
             Com.Android.Apksig.SigningCertificateLineage lineage = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToSigningCertificateLineage(GetType(), "rsa-1024-lineage-2-signers");
-            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetSigningCertificateLineage(lineage));
-            );
+            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetSigningCertificateLineage(lineage)));
         }
         
         [Test]
@@ -324,8 +306,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkSigner.SignerConfig firstSigner = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.ApkSigner.SignerConfig secondSigner = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Collections.Arrays.AsList(firstSigner, secondSigner);
-            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true));
-            );
+            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true)));
         }
         
         [Test]
@@ -356,8 +337,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         public virtual void TestV4State_disableV2V3EnableV4_fails()
         {
             Com.Android.Apksig.ApkSigner.SignerConfig signer = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
-            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(signer)).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(true));
-            );
+            AssertThrows(typeof(System.InvalidOperationException), () => Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(signer)).SetV1SigningEnabled(true).SetV2SigningEnabled(false).SetV3SigningEnabled(false).SetV4SigningEnabled(true)));
         }
         
         [Test]
@@ -404,8 +384,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signers = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
             Com.Android.Apksig.ApkSigner.SignerConfig sourceStampSigner = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
-            System.Exception exception = AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("original-with-stamp-file.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSourceStampSignerConfig(sourceStampSigner));
-            );
+            System.Exception exception = AssertThrows(typeof(Com.Android.Apksig.Apk.ApkFormatException), () => Sign("original-with-stamp-file.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true).SetV2SigningEnabled(true).SetV3SigningEnabled(true).SetSourceStampSignerConfig(sourceStampSigner)));
             AssertEquals(SigningServer.Android.Core.StringExtensions.Format("Cannot generate SourceStamp. APK contains an existing entry with the" + " name: %s, and it is different than the provided source stamp" + " certificate", Com.Android.Apksig.Apk.ApkUtils.SOURCE_STAMP_CERTIFICATE_HASH_ZIP_ENTRY_NAME), exception.GetMessage());
         }
         
@@ -429,8 +408,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 Com.Android.Apksig.Util.DataSource signedApk = Com.Android.Apksig.Util.DataSources.AsDataSource(f, 0, f.Length());
                 Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections = Com.Android.Apksig.Apk.ApkUtils.FindZipSections(signedApk);
                 Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP);
-                AssertThrows(typeof(Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignatureNotFoundException), () => Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(signedApk, zipSections, Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP, result);
-                );
+                AssertThrows(typeof(Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignatureNotFoundException), () => Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(signedApk, zipSections, Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP, result));
             }
         }
         
@@ -508,8 +486,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         public virtual void TestOtherSignersSignaturesPreserved_v3OnlyDifferentSigner_throwsException()
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> rsa2048SignerConfig = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
-            AssertThrows(typeof(System.InvalidOperationException), () => Sign("v3-only-with-stamp.apk", new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetV4SigningEnabled(false).SetOtherSignersSignaturesPreserved(true));
-            );
+            AssertThrows(typeof(System.InvalidOperationException), () => Sign("v3-only-with-stamp.apk", new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetV4SigningEnabled(false).SetOtherSignersSignaturesPreserved(true)));
         }
         
         [Test]
@@ -527,8 +504,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         public virtual void TestOtherSignersSignaturesPreserved_v2OnlyAppendV3SameSigner_throwsException()
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> rsa2048SignerConfig = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));
-            AssertThrows(typeof(System.InvalidOperationException), () => Sign("v2-rsa-2048-with-extra-sig-block.apk", new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetV4SigningEnabled(false).SetOtherSignersSignaturesPreserved(true));
-            );
+            AssertThrows(typeof(System.InvalidOperationException), () => Sign("v2-rsa-2048-with-extra-sig-block.apk", new Com.Android.Apksig.ApkSigner.Builder(rsa2048SignerConfig).SetV1SigningEnabled(false).SetV2SigningEnabled(false).SetV3SigningEnabled(true).SetV4SigningEnabled(false).SetOtherSignersSignaturesPreserved(true)));
         }
         
         [Test]
@@ -548,13 +524,13 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// Asserts the provided {@code signedApk} contains a signature block with the expected
         /// {@code byte[]} value and block ID as specified in the {@code expectedBlock}.
         /// </summary>
-        internal static void AssertSigningBlockContains(System.IO.FileInfo signedApk, Com.Android.Apksig.Internal.Util.Pair<sbyte[], int?> expectedBlock)
+        internal static void AssertSigningBlockContains(System.IO.FileInfo signedApk, Com.Android.Apksig.Internal.Util.Pair<sbyte[], int> expectedBlock)
         {
             using(SigningServer.Android.IO.RandomAccessFile apkFile = new SigningServer.Android.IO.RandomAccessFile(signedApk, "r"))
             {
                 Com.Android.Apksig.Apk.ApkUtils.ApkSigningBlock apkSigningBlock = Com.Android.Apksig.Apk.ApkUtils.FindApkSigningBlock(Com.Android.Apksig.Util.DataSources.AsDataSource(apkFile));
-                SigningServer.Android.Collections.List<Com.Android.Apksig.Internal.Util.Pair<sbyte[], int?>> signatureBlocks = Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetApkSignatureBlocks(apkSigningBlock.GetContents());
-                foreach (Com.Android.Apksig.Internal.Util.Pair<sbyte[], int?> signatureBlock in signatureBlocks)
+                SigningServer.Android.Collections.List<Com.Android.Apksig.Internal.Util.Pair<sbyte[], int>> signatureBlocks = Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetApkSignatureBlocks(apkSigningBlock.GetContents());
+                foreach (Com.Android.Apksig.Internal.Util.Pair<sbyte[], int> signatureBlock in signatureBlocks)
                 {
                     if (signatureBlock.GetSecond().Equals(expectedBlock.GetSecond()))
                     {
@@ -674,10 +650,10 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signer);
             SigningServer.Android.IO.ByteBuffer publicKey = Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signer);
-            Com.Android.Apksig.Internal.X509.SubjectPublicKeyInfo subjectPublicKeyInfo = Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(publicKey, typeof(Com.Android.Apksig.Internal.X509.SubjectPublicKeyInfo));
+            Com.Android.Apksig.Internal.X509.SubjectPublicKeyInfo subjectPublicKeyInfo = Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<Com.Android.Apksig.Internal.X509.SubjectPublicKeyInfo>(publicKey);
             SigningServer.Android.IO.ByteBuffer subjectPublicKeyBuffer = subjectPublicKeyInfo.subjectPublicKey;
             subjectPublicKeyBuffer.Get();
-            return Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse(subjectPublicKeyBuffer, typeof(Com.Android.Apksig.Internal.X509.RSAPublicKey));
+            return Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<Com.Android.Apksig.Internal.X509.RSAPublicKey>(subjectPublicKeyBuffer);
         }
         
         internal static Com.Android.Apksig.Internal.Apk.SignatureInfo GetSignatureInfoFromApk(System.IO.FileInfo apkFile, int signatureVersionId, int signatureVersionBlockId)
@@ -699,11 +675,11 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             System.IO.FileInfo output = Sign(inResourceName, apkSignerBuilder);
             SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertVerified(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.Verify(output, Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P));
-            if (output.Length() > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (output.Length > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.Core.RuntimeException("Output too large: " + output.Length() + " bytes");
+                throw new SigningServer.Android.Core.RuntimeException("Output too large: " + output.Length + " bytes");
             }
-            sbyte[] outData = new sbyte[(int)output.Length()];
+            sbyte[] outData = new sbyte[(int)output.Length];
             using(SigningServer.Android.IO.FileInputStream fis = new SigningServer.Android.IO.FileInputStream(output))
             {
                 fis.Read(outData);
@@ -728,8 +704,8 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             if (SigningServer.Android.Com.Android.Apksig.ApkSignerTest.KEEP_FAILING_OUTPUT_AS_FILES)
             {
-                System.IO.FileInfo tmp = System.IO.FileInfo.CreateTempFile(GetType().GetSimpleName(), ".apk");
-                SigningServer.Android.IO.File.Files.Copy(output.ToPath(), tmp.ToPath());
+                System.IO.FileInfo tmp = CreateTemporaryFile(GetType().Name, ".apk");
+                File.Copy(output.FullName, tmp.FullName);
                 Fail(tmp + " differs from " + expectedOutResourceName);
             }
             else 
@@ -755,9 +731,9 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal System.IO.FileInfo Sign(Com.Android.Apksig.Util.DataSource input, Com.Android.Apksig.ApkSigner.Builder apkSignerBuilder)
         {
-            System.IO.FileInfo outFile = mTemporaryFolder.NewFile();
+            System.IO.FileInfo outFile = new FileInfo(Path.Combine(mTemporaryFolder.FullName, Guid.NewGuid().ToString("N")));
             apkSignerBuilder.SetInputApk(input).SetOutputApk(outFile);
-            System.IO.FileInfo outFileIdSig = new System.IO.FileInfo(outFile.GetCanonicalPath() + ".idsig");
+            System.IO.FileInfo outFileIdSig = new System.IO.FileInfo(outFile.FullName + ".idsig");
             apkSignerBuilder.SetV4SignatureOutputFile(outFileIdSig);
             apkSignerBuilder.SetV4ErrorReportingEnabled(true);
             apkSignerBuilder.Build().Sign();
@@ -774,10 +750,10 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Builder builder = new Com.Android.Apksig.ApkVerifier.Builder(apk);
             if (minSdkVersionOverride != null)
             {
-                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride);
+                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride.Value);
             }
-            System.IO.FileInfo idSig = new System.IO.FileInfo(apk.GetCanonicalPath() + ".idsig");
-            if (idSig.Exists())
+            System.IO.FileInfo idSig = new System.IO.FileInfo(apk.FullName + ".idsig");
+            if (idSig.Exists)
             {
                 builder.SetV4SignatureFile(idSig);
             }
@@ -803,7 +779,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal void AssertFileContentsEqual(System.IO.FileInfo first, System.IO.FileInfo second)
         {
-            AssertArrayEquals(SigningServer.Android.IO.File.Files.ReadAllBytes(SigningServer.Android.IO.File.Paths.Get(first.GetPath())), SigningServer.Android.IO.File.Files.ReadAllBytes(SigningServer.Android.IO.File.Paths.Get(second.GetPath())));
+            AssertArrayEquals(File.ReadAllBytes(first.FullName), File.ReadAllBytes(second.FullName));
         }
         
         internal static Com.Android.Apksig.ApkSigner.SignerConfig GetDefaultSignerConfigFromResources(string keyNameInResources)

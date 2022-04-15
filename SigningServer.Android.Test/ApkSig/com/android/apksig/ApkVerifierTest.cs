@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.Linq;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -391,36 +392,6 @@ namespace SigningServer.Android.Com.Android.Apksig
         public virtual void TestV1SchemeSignatureCertNotReencoded()
         {
             Com.Android.Apksig.ApkVerifier.Result result = Verify("v1-only-with-rsa-1024-cert-not-der.apk");
-            if (!result.IsVerified())
-            {
-                SigningServer.Android.Collections.List<Com.Android.Apksig.ApkVerifier.Result.V1SchemeSignerInfo> signers = result.GetV1SchemeSigners();
-                if (signers.Size() > 0)
-                {
-                    Com.Android.Apksig.ApkVerifier.Result.V1SchemeSignerInfo signer = signers.Get(0);
-                    foreach (Com.Android.Apksig.ApkVerifier.IssueWithParams issue in signer.GetErrors())
-                    {
-                        if (issue.GetIssue() == Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_PARSE_EXCEPTION)
-                        {
-                            SigningServer.Android.Security.Cert.CertificateFactory certFactory = SigningServer.Android.Security.Cert.CertificateFactory.GetInstance("X.509");
-                            if ("SUN".Equals(certFactory.GetProvider().GetName()))
-                            {
-                                System.Exception exception = (System.Exception)issue.GetParams()[1];
-                                System.Exception e = exception;
-                                while (e != null)
-                                {
-                                    string msg = e.GetMessage();
-                                    e = e.GetCause();
-                                    if ((msg != null) && (msg.Contains("Redundant length bytes found")))
-                                    {
-                                        Assume.AssumeNoException(exception);
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
             SigningServer.Android.Com.Android.Apksig.ApkVerifierTest.AssertVerified(result);
             SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> signingCerts = result.GetSignerCertificates();
             AssertEquals(1, signingCerts.Size());
@@ -853,19 +824,19 @@ namespace SigningServer.Android.Com.Android.Apksig
         [Test]
         public virtual void ApkVerificationIssueAdapter_verifyAllBaseIssuesMapped()
         {
-            SigningServer.Android.Core.Reflect.Field[] fields = typeof(Com.Android.Apksig.ApkVerificationIssue).GetFields();
+            var fields = typeof(Com.Android.Apksig.ApkVerificationIssue).GetFields();
             SigningServer.Android.Core.StringBuilder msg = new SigningServer.Android.Core.StringBuilder();
-            foreach (SigningServer.Android.Core.Reflect.Field field in fields)
+            foreach (var field in fields)
             {
-                if (SigningServer.Android.Core.Reflect.Modifier.IsStatic(field.GetModifiers()) && field.GetType() == typeof(int))
+                if (field.IsStatic && field.FieldType == typeof(int))
                 {
-                    if (!Com.Android.Apksig.ApkVerifier.ApkVerificationIssueAdapter.sVerificationIssueIdToIssue.ContainsKey(field.Get(null)))
+                    if (!Com.Android.Apksig.ApkVerifier.ApkVerificationIssueAdapter.sVerificationIssueIdToIssue.ContainsKey((int)field.GetValue(null)))
                     {
                         if (msg.Length() > 0)
                         {
                             msg.Append('\n');
                         }
-                        msg.Append("A mapping is required from ApkVerificationIssue." + field.GetName() + " to an ApkVerifier.Issue in ApkVerificationIssueAdapter");
+                        msg.Append("A mapping is required from ApkVerificationIssue." + field.Name + " to an ApkVerifier.Issue in ApkVerificationIssueAdapter");
                     }
                 }
             }
@@ -896,11 +867,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Builder builder = new Com.Android.Apksig.ApkVerifier.Builder(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(apkBytes)));
             if (minSdkVersionOverride != null)
             {
-                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride);
+                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride.Value);
             }
             if (maxSdkVersionOverride != null)
             {
-                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride);
+                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride.Value);
             }
             return builder.Build().Verify();
         }
@@ -926,11 +897,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Builder builder = new Com.Android.Apksig.ApkVerifier.Builder(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(apkBytes)));
             if (minSdkVersionOverride != null)
             {
-                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride);
+                builder.SetMinCheckedPlatformVersion(minSdkVersionOverride.Value);
             }
             if (maxSdkVersionOverride != null)
             {
-                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride);
+                builder.SetMaxCheckedPlatformVersion(maxSdkVersionOverride.Value);
             }
             return builder.Build().VerifySourceStamp(expectedCertDigest);
         }
@@ -1078,7 +1049,8 @@ namespace SigningServer.Android.Com.Android.Apksig
                 return;
             }
             SigningServer.Android.Core.StringBuilder msg = new SigningServer.Android.Core.StringBuilder();
-            SigningServer.Android.Collections.List<Com.Android.Apksig.ApkVerifier.IssueWithParams> resultIssueWithParams = SigningServer.Android.Util.Stream.Stream.Of(result.GetErrors(), result.GetWarnings()).Filter(SigningServer.Android.Util.Objects.nonNull).FlatMap(SigningServer.Android.Collections.Collection.stream).Collect(SigningServer.Android.Util.Stream.Collectors.ToList());
+            var resultIssueWithParams = result.GetErrors().Concat(result.GetWarnings()).Where(i => i != null)
+                .ToList();
             foreach (Com.Android.Apksig.ApkVerifier.IssueWithParams issue in resultIssueWithParams)
             {
                 if (expectedIssue.Equals(issue.GetIssue()))
@@ -1094,7 +1066,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo signer = result.GetSourceStampInfo();
             if (signer != null)
             {
-                SigningServer.Android.Collections.List<Com.Android.Apksig.ApkVerifier.IssueWithParams> sourceStampIssueWithParams = SigningServer.Android.Util.Stream.Stream.Of(signer.GetErrors(), signer.GetWarnings()).Filter(SigningServer.Android.Util.Objects.nonNull).FlatMap(SigningServer.Android.Collections.Collection.stream).Collect(SigningServer.Android.Util.Stream.Collectors.ToList());
+                var sourceStampIssueWithParams = signer.GetErrors().Concat(signer.GetWarnings()).Where(i => i != null).ToList();
                 foreach (Com.Android.Apksig.ApkVerifier.IssueWithParams issue in sourceStampIssueWithParams)
                 {
                     if (expectedIssue.Equals(issue.GetIssue()))
@@ -1154,9 +1126,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal static void AssumeThatRsaPssAvailable()
         {
-            Assume.AssumeTrue(SigningServer.Android.Security.Security.GetProviders("Signature.SHA256withRSA/PSS") != null);
+            // Assume.AssumeTrue(SigningServer.Android.Security.Security.GetProviders("Signature.SHA256withRSA/PSS") != null);
         }
-        
     }
-    
 }

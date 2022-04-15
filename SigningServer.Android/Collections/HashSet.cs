@@ -17,6 +17,11 @@ namespace SigningServer.Android.Collections
         {
         }
 
+        public bool ContainsAll(Collection<T> other)
+        {
+            return other.All(Contains);
+        }
+
         public bool IsEmpty()
         {
             return Count == 0;

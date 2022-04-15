@@ -5,18 +5,20 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
     /// <summary>
     /// Unit tests for {@link ChainedDataSource}.
     /// </summary>
+    [TestClass]
     public class ChainedDataSourceTest: SigningServer.Android.TestBase
     {
-        internal Com.Android.Apksig.Internal.Util.ChainedDataSource mChain;
+        internal static Com.Android.Apksig.Internal.Util.ChainedDataSource mChain;
         
-        [Before]
-        public virtual void SetUp()
+        [TestInitialize]
+        public void SetUp()
         {
             mChain = new Com.Android.Apksig.Internal.Util.ChainedDataSource(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap("12".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII))), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap("34567".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII))), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap("".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII))), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap("890".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII))), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap("".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII))));
             AssertEquals(10, mChain.Size());

@@ -13,9 +13,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     /// </summary>
     public class DataSinkFromOutputStreamTest: SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>
     {
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink<Com.Android.Apksig.Internal.Util.OutputStreamDataSink> CreateDataSink()
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>.CloseableWithDataSink CreateDataSink()
         {
-            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase.CloseableWithDataSink.Of<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>((Com.Android.Apksig.Internal.Util.OutputStreamDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(new SigningServer.Android.IO.ByteArrayOutputStream()));
+            return SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<Com.Android.Apksig.Internal.Util.OutputStreamDataSink>.CloseableWithDataSink.Of((Com.Android.Apksig.Internal.Util.OutputStreamDataSink)Com.Android.Apksig.Util.DataSinks.AsDataSink(new SigningServer.Android.IO.ByteArrayOutputStream()));
         }
         
         protected override SigningServer.Android.IO.ByteBuffer GetContents(Com.Android.Apksig.Internal.Util.OutputStreamDataSink dataSink)

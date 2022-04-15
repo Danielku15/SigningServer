@@ -14,5 +14,7 @@ namespace SigningServer.Android.Security
         public abstract PublicKey GeneratePublic(X509EncodedKeySpec keySpec);
 
         public abstract X509EncodedKeySpec GetKeySpec<T>(PublicKey publicKey);
+
+        public abstract PrivateKey GeneratePrivate(PKCS8EncodedKeySpec pkcs8EncodedKeySpec);
     }
 }

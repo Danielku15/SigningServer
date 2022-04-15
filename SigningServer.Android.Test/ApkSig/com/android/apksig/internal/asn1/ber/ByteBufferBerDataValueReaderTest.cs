@@ -5,12 +5,14 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
+    [TestClass]
     public class ByteBufferBerDataValueReaderTest: SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase
     {
-        protected override Com.Android.Apksig.Internal.Asn1.Ber.ByteBufferBerDataValueReader CreateReader(sbyte[] input)
+        protected override Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReader CreateReader(sbyte[] input)
         {
             return new Com.Android.Apksig.Internal.Asn1.Ber.ByteBufferBerDataValueReader(SigningServer.Android.IO.ByteBuffer.Wrap(input));
         }

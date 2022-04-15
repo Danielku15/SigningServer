@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using SigningServer.Android.IO;
@@ -7,6 +8,13 @@ namespace SigningServer.Android.Core
 {
     public static class StringExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Format(CultureInfo cultureInfo, string format, params object[] args)
+        {
+            // NOTE: not perfect, but enough for us
+            return format + string.Join(", ", args);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Format(string format, params object[] args)
         {

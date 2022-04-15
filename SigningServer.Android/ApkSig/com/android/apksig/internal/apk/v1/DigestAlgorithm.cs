@@ -82,7 +82,26 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         {
             return _values;
         }
-        
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
+
+            if (!(obj is DigestAlgorithm d))
+            {
+                return false;
+            }
+
+            return Case == d.Case;
+        }
+
+        public override int GetHashCode()
+        {
+            return Case;
+        }
     }
     
 }

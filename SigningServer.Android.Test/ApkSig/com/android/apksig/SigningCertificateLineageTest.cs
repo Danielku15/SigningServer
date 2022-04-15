@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -22,7 +23,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal static readonly string THIRD_RSA_2048_SIGNER_RESOURCE_NAME = "rsa-2048_3";
         
-        [Before]
+        [TestInitialize]
         public virtual void SetUp()
         {
             mSigners = new SigningServer.Android.Collections.List<Com.Android.Apksig.SigningCertificateLineage.SignerConfig>();
@@ -104,11 +105,21 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             Com.Android.Apksig.SigningCertificateLineage lineage = CreateLineageWithSignersFromResources(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             lineage = UpdateLineageWithSignerFromResources(lineage, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.THIRD_RSA_2048_SIGNER_RESOURCE_NAME);
-            System.IO.FileInfo lineageFile = System.IO.FileInfo.CreateTempFile(GetType().GetSimpleName(), ".bin");
-            lineageFile.DeleteOnExit();
-            lineage.WriteToFile(lineageFile);
-            lineage = Com.Android.Apksig.SigningCertificateLineage.ReadFromFile(lineageFile);
-            AssertLineageContainsExpectedSigners(lineage, mSigners);
+            System.IO.FileInfo lineageFile = CreateTemporaryFile(GetType().Name, ".bin");
+            try
+            {
+                lineage.WriteToFile(lineageFile);
+                lineage = Com.Android.Apksig.SigningCertificateLineage.ReadFromFile(lineageFile);
+                AssertLineageContainsExpectedSigners(lineage, mSigners);
+
+            }
+            finally
+            {
+                if (lineageFile.Exists)
+                {
+                    lineageFile.Delete();
+                }
+            }
         }
         
         [Test]
@@ -116,7 +127,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             Com.Android.Apksig.SigningCertificateLineage lineage = CreateLineageWithSignersFromResources(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig oldSignerConfig = mSigners.Get(0);
-            SigningServer.Android.Collections.List<bool?> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
+            SigningServer.Android.Collections.List<bool> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities newCapabilities = BuildSignerCapabilities(expectedCapabilityValues);
             lineage.UpdateSignerCapabilities(oldSignerConfig, newCapabilities);
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities updatedCapabilities = lineage.GetSignerCapabilities(oldSignerConfig);
@@ -128,22 +139,31 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             Com.Android.Apksig.SigningCertificateLineage lineage = CreateLineageWithSignersFromResources(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig oldSignerConfig = mSigners.Get(0);
-            SigningServer.Android.Collections.List<bool?> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
+            SigningServer.Android.Collections.List<bool> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities newCapabilities = BuildSignerCapabilities(expectedCapabilityValues);
             lineage.UpdateSignerCapabilities(oldSignerConfig, newCapabilities);
-            System.IO.FileInfo lineageFile = System.IO.FileInfo.CreateTempFile(GetType().GetSimpleName(), ".bin");
-            lineageFile.DeleteOnExit();
-            lineage.WriteToFile(lineageFile);
-            lineage = Com.Android.Apksig.SigningCertificateLineage.ReadFromFile(lineageFile);
-            Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities updatedCapabilities = lineage.GetSignerCapabilities(oldSignerConfig);
-            AssertExpectedCapabilityValues(updatedCapabilities, expectedCapabilityValues);
+            System.IO.FileInfo lineageFile = CreateTemporaryFile(GetType().Name, ".bin");
+            try
+            {
+                lineage.WriteToFile(lineageFile);
+                lineage = Com.Android.Apksig.SigningCertificateLineage.ReadFromFile(lineageFile);
+                Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities updatedCapabilities = lineage.GetSignerCapabilities(oldSignerConfig);
+                AssertExpectedCapabilityValues(updatedCapabilities, expectedCapabilityValues);
+            }
+            finally
+            {
+                if (lineageFile.Exists)
+                {
+                    lineageFile.Delete();
+                }
+            }
         }
         
         [Test]
         public virtual void TestCapabilitiesAreNotUpdatedWithDefaultValues()
         {
             Com.Android.Apksig.SigningCertificateLineage lineage = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToSigningCertificateLineage(GetType(), "rsa-2048-lineage-no-capabilities-first-signer");
-            SigningServer.Android.Collections.List<bool?> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
+            SigningServer.Android.Collections.List<bool> expectedCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig oldSignerConfig = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToLineageSignerConfig(GetType(), SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities oldSignerCapabilities = lineage.GetSignerCapabilities(oldSignerConfig);
             AssertExpectedCapabilityValues(oldSignerCapabilities, expectedCapabilityValues);
@@ -158,8 +178,8 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig oldSigner = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToLineageSignerConfig(GetType(), SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig newSigner = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToLineageSignerConfig(GetType(), SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
-            SigningServer.Android.Collections.List<bool?> oldSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
-            SigningServer.Android.Collections.List<bool?> newSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, true, false, false, false);
+            SigningServer.Android.Collections.List<bool> oldSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
+            SigningServer.Android.Collections.List<bool> newSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, true, false, false, false);
             Com.Android.Apksig.SigningCertificateLineage lineage = new Com.Android.Apksig.SigningCertificateLineage.Builder(oldSigner, newSigner).SetOriginalCapabilities(BuildSignerCapabilities(oldSignerCapabilityValues)).SetNewCapabilities(BuildSignerCapabilities(newSignerCapabilityValues)).Build();
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities oldSignerCapabilities = lineage.GetSignerCapabilities(oldSigner);
             AssertExpectedCapabilityValues(oldSignerCapabilities, oldSignerCapabilityValues);
@@ -173,7 +193,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.SigningCertificateLineage lineage = CreateLineageWithSignersFromResources(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig oldSigner = mSigners.Get(mSigners.Size() - 1);
             Com.Android.Apksig.SigningCertificateLineage.SignerConfig newSigner = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToLineageSignerConfig(GetType(), SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.THIRD_RSA_2048_SIGNER_RESOURCE_NAME);
-            SigningServer.Android.Collections.List<bool?> newSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
+            SigningServer.Android.Collections.List<bool> newSignerCapabilityValues = SigningServer.Android.Collections.Arrays.AsList(false, false, false, false, false);
             lineage = lineage.SpawnDescendant(oldSigner, newSigner, BuildSignerCapabilities(newSignerCapabilityValues));
             Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities newSignerCapabilities = lineage.GetSignerCapabilities(newSigner);
             AssertExpectedCapabilityValues(newSignerCapabilities, newSignerCapabilityValues);
@@ -340,7 +360,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// This method should not be used when testing caller configured capabilities since the setXX
         /// method for each capability is called.
         /// </summary>
-        internal Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities BuildSignerCapabilities(SigningServer.Android.Collections.List<bool?> capabilityValues)
+        internal Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities BuildSignerCapabilities(SigningServer.Android.Collections.List<bool> capabilityValues)
         {
             return new Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities.Builder().SetInstalledData(capabilityValues.Size() > 0 ? capabilityValues.Get(0) : true).SetSharedUid(capabilityValues.Size() > 1 ? capabilityValues.Get(1) : true).SetPermission(capabilityValues.Size() > 2 ? capabilityValues.Get(2) : true).SetRollback(capabilityValues.Size() > 3 ? capabilityValues.Get(3) : false).SetAuth(capabilityValues.Size() > 4 ? capabilityValues.Get(4) : true).Build();
         }
@@ -357,7 +377,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         ///  {@mcode SigningCertificateLineage.SignerCapabilities.hasRollback}
         ///  {@mcode SigningCertificateLineage.SignerCapabilities.hasAuth}
         /// </summary>
-        internal void AssertExpectedCapabilityValues(Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities capabilities, SigningServer.Android.Collections.List<bool?> expectedCapabilityValues)
+        internal void AssertExpectedCapabilityValues(Com.Android.Apksig.SigningCertificateLineage.SignerCapabilities capabilities, SigningServer.Android.Collections.List<bool> expectedCapabilityValues)
         {
             AssertTrue("The expectedCapabilityValues do not contain the expected number of elements", expectedCapabilityValues.Size() >= 5);
             AssertEquals("The installed data capability is not set to the expected value", expectedCapabilityValues.Get(0), capabilities.HasInstalledData());

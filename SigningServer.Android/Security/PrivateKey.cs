@@ -1,7 +1,6 @@
 ﻿namespace SigningServer.Android.Security
 {
-    public interface PrivateKey
+    public interface PrivateKey : Key
     {
-        
     }
 }

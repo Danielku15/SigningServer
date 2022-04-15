@@ -7,7 +7,7 @@ namespace SigningServer.Android.Math
         private readonly Org.BouncyCastle.Math.BigInteger mValue;
         public static readonly BigInteger ZERO = new BigInteger(Org.BouncyCastle.Math.BigInteger.Zero); 
 
-        private BigInteger(Org.BouncyCastle.Math.BigInteger value)
+        public BigInteger(Org.BouncyCastle.Math.BigInteger value)
         {
             mValue = value;
         }

@@ -1,5 +1,4 @@
-﻿using NotImplementedException = System.NotImplementedException;
-
+﻿
 namespace SigningServer.Android.Core
 {
     public class StringBuilder

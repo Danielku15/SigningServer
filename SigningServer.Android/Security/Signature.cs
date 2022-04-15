@@ -1,45 +1,23 @@
 ﻿using SigningServer.Android.IO;
+using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security
 {
-    public class Signature
+    public abstract class Signature
     {
         public static Signature GetInstance(string jcaSignatureAlgorithm)
         {
-            throw new System.NotImplementedException();
-        }
-        
-        public void InitVerify(PublicKey publicKey)
-        {
+            return new BouncyCastleSignature(jcaSignatureAlgorithm);
         }
 
-        public void SetParameter(AlgorithmParameterSpec jcaSignatureAlgorithmParams)
-        {
-        }
-
-        public void Update(ByteBuffer signedData)
-        {
-        }
-
-        public bool Verify(sbyte[] signature)
-        {
-        }
-
-        public void Update(sbyte[] signedData)
-        {
-        }
-
-        public void InitSign(PrivateKey privateKey)
-        {
-        }
-
-        public sbyte[] Sign()
-        {
-        }
-
-        public void Update(sbyte b)
-        {
-        }
+        public abstract void InitVerify(PublicKey publicKey);
+        public abstract void InitSign(PrivateKey privateKey);
+        public abstract void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams);
+        public abstract void Update(sbyte data);
+        public abstract void Update(ByteBuffer data);
+        public abstract void Update(sbyte[] data);
+        public abstract bool Verify(sbyte[] signature);
+        public abstract sbyte[] Sign();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SigningServer.Android.IO
 {
@@ -12,5 +13,6 @@ namespace SigningServer.Android.IO
         void Mark(int readlimit);
         void Reset();
         bool MarkSupported();
+        Stream AsStream();
     }
 }

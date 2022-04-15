@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.IO;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
 {
@@ -303,6 +304,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             public bool MarkSupported()
             {
                 return false;
+            }
+
+            public Stream AsStream()
+            {
+                throw new global::System.IO.IOException("Conversion to .net stream not possible");
             }
         }
         

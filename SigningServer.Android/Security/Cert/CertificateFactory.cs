@@ -1,22 +1,21 @@
 ﻿using SigningServer.Android.IO;
+using SigningServer.Android.Security.BouncyCastle;
 
 namespace SigningServer.Android.Security.Cert
 {
-    public class CertificateFactory
+    public abstract class CertificateFactory
     {
         public static CertificateFactory GetInstance(string s)
         {
-            throw new System.NotImplementedException();
+            if (s == "X.509")
+            {
+                return new BouncyCastleX509CertificateFactory();
+            }
+
+            throw new CertificateException("Unsupported certificate type");
         }
 
-        public X509Certificate GenerateCertificate(InputStream byteArrayInputStream)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Collections.Collection<Certificate> GenerateCertificates(InputStream byteArrayInputStream)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract X509Certificate GenerateCertificate(InputStream input);
+        public abstract Collections.Collection<Certificate> GenerateCertificates(InputStream input);
     }
 }

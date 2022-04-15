@@ -59,5 +59,10 @@ namespace SigningServer.Android.IO
         {
             return true;
         }
+
+        public Stream AsStream()
+        {
+            return mIn;
+        }
     }
 }

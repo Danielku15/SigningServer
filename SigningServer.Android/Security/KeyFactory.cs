@@ -1,23 +1,18 @@
-﻿using System;
+﻿using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security
 {
-    public class KeyFactory
+    public abstract class KeyFactory
     {
+        // ReSharper disable once UnusedParameter.Global
         public static KeyFactory GetInstance(string keyAlgorithm)
         {
-            throw new System.NotImplementedException();
+            return new BouncyCastleX509KeyFactory();
         }
 
-        public PublicKey GeneratePublic(X509EncodedKeySpec x509EncodedKeySpec)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract PublicKey GeneratePublic(X509EncodedKeySpec keySpec);
 
-        public T GetKeySpec<T>(PublicKey publicKey) where T: KeySpec
-        {
-            throw new NotImplementedException();
-        }
+        public abstract X509EncodedKeySpec GetKeySpec<T>(PublicKey publicKey);
     }
 }

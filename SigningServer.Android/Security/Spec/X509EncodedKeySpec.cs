@@ -1,18 +1,17 @@
 ﻿namespace SigningServer.Android.Security.Spec
 {
-    public interface KeySpec
-    {
-    }
-
     public class X509EncodedKeySpec : KeySpec
     {
+        private readonly sbyte[] mData;
+
         public X509EncodedKeySpec(sbyte[] data)
         {
+            mData = data;
         }
 
         public sbyte[] GetEncoded()
         {
-            throw new System.NotImplementedException();
+            return (sbyte[])mData.Clone();
         }
     }
 }

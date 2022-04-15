@@ -205,14 +205,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     {
                         throw new SigningServer.Android.Core.RuntimeException("Signature block file name does not contain extension: " + sigBlockEntryName);
                     }
-                    string sigFileEntryName = sigBlockEntryName.Substring(0, extensionDelimiterIndex) + ".SF";
+                    string sigFileEntryName = sigBlockEntryName.SubstringIndex(0, extensionDelimiterIndex) + ".SF";
                     SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord sigFileEntry = sigFileEntries.Get(sigFileEntryName);
                     if (sigFileEntry == null)
                     {
                         result.AddWarning(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_MISSING_FILE, sigBlockEntryName, sigFileEntryName);
                         continue;
                     }
-                    string signerName = sigBlockEntryName.Substring("META-INF/".Length());
+                    string signerName = sigBlockEntryName.SubstringIndex("META-INF/".Length());
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result.SignerInfo signerInfo = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result.SignerInfo(signerName, sigBlockEntryName, sigFileEntry.GetName());
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Signer signer = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Signer(signerName, sigBlockEntry, sigFileEntry, signerInfo);
                     signers.Add(signer);
@@ -542,7 +542,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                         {
                             apiLevelsUserFriendly.Append(SigningServer.Android.Core.StringExtensions.ValueOf(range.GetMin()));
                         }
-                        else if (range.GetMax() == SigningServer.Android.Core.IntExtensions.MaxValue)
+                        else if (range.GetMax() == SigningServer.Android.Core.IntExtensions.MAX_VALUE)
                         {
                             apiLevelsUserFriendly.Append(range.GetMin() + "+");
                         }
@@ -990,7 +990,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         public static int GetMinSdkVersionFromWhichSupportedInManifestOrSignatureFile(string jcaAlgorithmName)
         {
             int? result = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.MIN_SDK_VESION_FROM_WHICH_DIGEST_SUPPORTED_IN_MANIFEST.Get(jcaAlgorithmName.ToUpperCase(SigningServer.Android.Util.Locale.US));
-            return (result != null) ? result.Value : SigningServer.Android.Core.IntExtensions.MaxValue;
+            return (result != null) ? result.Value : SigningServer.Android.Core.IntExtensions.MAX_VALUE;
         }
         
         internal static string GetJarDigestAttributeName(string jcaDigestAlgorithm, string attrNameSuffix)
@@ -1100,9 +1100,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException("Malformed ZIP entry: " + entryName, e);
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
-                    throw new SigningServer.Android.IO.IOException("Failed to read entry: " + entryName, e);
+                    throw new global::System.IO.IOException("Failed to read entry: " + entryName, e);
                 }
                 for (int i = 0;i < expectedDigests.Size();i++)
                 {

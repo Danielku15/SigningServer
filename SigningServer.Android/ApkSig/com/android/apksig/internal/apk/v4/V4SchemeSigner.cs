@@ -63,7 +63,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.WriteBytes(output, pair.GetSecond());
                 }
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 outputFile.Delete();
                 throw e;
@@ -132,7 +132,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             }
             catch (SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException e)
             {
-                throw new SigningServer.Android.IO.IOException("Malformed APK: not a ZIP archive", e);
+                throw new global::System.IO.IOException("Malformed APK: not a ZIP archive", e);
             }
             SigningServer.Android.Security.SignatureException v3Exception;
             try
@@ -152,7 +152,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             {
                 v2Exception = e;
             }
-            throw new SigningServer.Android.IO.IOException("Failed to obtain v2/v3 digest, v3 exception: " + v3Exception + ", v2 exception: " + v2Exception);
+            throw new global::System.IO.IOException("Failed to obtain v2/v3 digest, v3 exception: " + v3Exception + ", v2 exception: " + v2Exception);
         }
         
         internal static sbyte[] GetBestV3Digest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
@@ -200,9 +200,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                     , 
                     foundApkSigSchemeIds
                     , 
-                    SigningServer.Android.Core.IntExtensions.MaxValue
+                    SigningServer.Android.Core.IntExtensions.MAX_VALUE
                     , 
-                    SigningServer.Android.Core.IntExtensions.MaxValue
+                    SigningServer.Android.Core.IntExtensions.MAX_VALUE
                     , 
                     result
                 

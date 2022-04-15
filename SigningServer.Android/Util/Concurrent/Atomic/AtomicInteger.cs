@@ -1,15 +1,18 @@
-﻿namespace SigningServer.Android.Util.Concurrent.Atomic
+﻿using System.Threading;
+
+namespace SigningServer.Android.Util.Concurrent.Atomic
 {
-    public class AtomicInteger
+    public struct AtomicInteger
     {
+        private int mValue;
         public AtomicInteger(int i)
         {
-            throw new System.NotImplementedException();
+            mValue = i;
         }
 
         public int GetAndIncrement()
         {
-            throw new System.NotImplementedException();
+            return Interlocked.Increment(ref mValue) - 1;
         }
     }
 }

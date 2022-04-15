@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace SigningServer.Android.Collections
+﻿namespace SigningServer.Android.Collections
 {
-    public class HashMap<TKey, TValue> : Dictionary<TKey, TValue>,  Map<TKey, TValue>
+    public class HashMap<TKey, TValue> : DictionaryMap<TKey, TValue>
     {
         public HashMap()
         {
@@ -10,18 +8,6 @@ namespace SigningServer.Android.Collections
 
         public HashMap(int capacity) : base(capacity)
         {
-            
         }
-        public Set<MapEntry<object, object>> EntrySet()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        
-        public bool IsEmpty()
-        {
-            throw new System.NotImplementedException();
-        }
-        
     }
 }

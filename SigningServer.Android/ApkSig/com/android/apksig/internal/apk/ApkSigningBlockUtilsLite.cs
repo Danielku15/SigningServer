@@ -63,7 +63,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureNotFoundException("Insufficient data to read size of APK Signing Block entry #" + entryCount);
                 }
                 long lenLong = pairs.GetLong();
-                if ((lenLong < 4) || (lenLong > SigningServer.Android.Core.IntExtensions.MaxValue))
+                if ((lenLong < 4) || (lenLong > SigningServer.Android.Core.IntExtensions.MAX_VALUE))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureNotFoundException("APK Signing Block entry #" + entryCount + " size out of range: " + lenLong);
                 }
@@ -128,7 +128,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             where T : ApkSupportedSignature
         {
             SigningServer.Android.Collections.Map<int?, T> bestSigAlgorithmOnSdkVersion = new SigningServer.Android.Collections.HashMap<int?, T>();
-            int minProvidedSignaturesVersion = SigningServer.Android.Core.IntExtensions.MaxValue;
+            int minProvidedSignaturesVersion = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
             foreach (T sig in signatures)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm = sig.algorithm;

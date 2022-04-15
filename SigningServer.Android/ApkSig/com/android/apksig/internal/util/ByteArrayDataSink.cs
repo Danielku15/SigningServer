@@ -88,11 +88,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 return;
             }
-            if (minCapacity > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (minCapacity > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.IO.IOException("Required capacity too large: " + minCapacity + ", max: " + SigningServer.Android.Core.IntExtensions.MaxValue);
+                throw new global::System.IO.IOException("Required capacity too large: " + minCapacity + ", max: " + SigningServer.Android.Core.IntExtensions.MAX_VALUE);
             }
-            int doubleCurrentSize = (int)SigningServer.Android.Core.Math.Min(mArray.Length * 2L, SigningServer.Android.Core.IntExtensions.MaxValue);
+            int doubleCurrentSize = (int)SigningServer.Android.Core.Math.Min(mArray.Length * 2L, SigningServer.Android.Core.IntExtensions.MAX_VALUE);
             int newSize = (int)SigningServer.Android.Core.Math.Max(minCapacity, doubleCurrentSize);
             mArray = SigningServer.Android.Collections.Arrays.CopyOf(mArray, newSize);
         }

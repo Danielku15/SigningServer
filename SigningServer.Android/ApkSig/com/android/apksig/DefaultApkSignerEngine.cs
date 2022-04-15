@@ -224,7 +224,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         internal SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig> ProcessV3Configs(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig> rawConfigs)
         {
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig> processedConfigs = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig>();
-            int currentMinSdk = SigningServer.Android.Core.IntExtensions.MaxValue;
+            int currentMinSdk = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
             for (int i = rawConfigs.Size() - 1;i >= 0;i--)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig config = rawConfigs.Get(i);
@@ -235,7 +235,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 if (i == rawConfigs.Size() - 1)
                 {
-                    config.maxSdkVersion = SigningServer.Android.Core.IntExtensions.MaxValue;
+                    config.maxSdkVersion = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
                 }
                 else 
                 {
@@ -291,7 +291,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal int GetMinSdkFromV3SignatureAlgorithms(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm> algorithms)
         {
-            int min = SigningServer.Android.Core.IntExtensions.MaxValue;
+            int min = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm algorithm in algorithms)
             {
                 int current = algorithm.GetMinSdkVersion();
@@ -392,7 +392,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 if (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.IsJarEntryDigestNeededInManifest(entry.GetKey()) && IsDebuggable(entryName))
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest extractedDigest = null;
-                    SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> digestsToVerify = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigestsToVerify(entry.GetValue(), "-Digest", mMinSdkVersion, SigningServer.Android.Core.IntExtensions.MaxValue);
+                    SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> digestsToVerify = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigestsToVerify(entry.GetValue(), "-Digest", mMinSdkVersion, SigningServer.Android.Core.IntExtensions.MAX_VALUE);
                     foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest digestToVerify in digestsToVerify)
                     {
                         if (digestToVerify.jcaDigestAlgorithm.Equals(alg))
@@ -474,7 +474,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         }
                     }
                 }
-                catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.Security.Cert.CertificateException || e is SigningServer.Android.IO.IOException)
+                catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.Security.Cert.CertificateException || e is global::System.IO.IOException)
                 {
                     throw new System.ArgumentException("Unable to parse the provided signing block", e);
                 }
@@ -852,7 +852,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig v4SignerConfig = CreateV4SignerConfig();
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.GenerateV4Signature(dataSource, v4SignerConfig, outputFile);
             }
-            catch (System.Exception e) when ( e is SigningServer.Android.Security.InvalidKeyException || e is SigningServer.Android.IO.IOException || e is SigningServer.Android.Security.NoSuchAlgorithmException)
+            catch (System.Exception e) when ( e is SigningServer.Android.Security.InvalidKeyException || e is global::System.IO.IOException || e is SigningServer.Android.Security.NoSuchAlgorithmException)
             {
                 if (ignoreFailures)
                 {
@@ -878,7 +878,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 pair.GetFirst().WriteTo(sigOutput);
                 return pair.GetSecond();
             }
-            catch (System.Exception e) when ( e is SigningServer.Android.Security.InvalidKeyException || e is SigningServer.Android.IO.IOException || e is SigningServer.Android.Security.NoSuchAlgorithmException)
+            catch (System.Exception e) when ( e is SigningServer.Android.Security.InvalidKeyException || e is global::System.IO.IOException || e is SigningServer.Android.Security.NoSuchAlgorithmException)
             {
                 throw new SigningServer.Android.Security.SignatureException("V4 signing failed", e);
             }

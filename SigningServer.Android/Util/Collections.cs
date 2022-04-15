@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using SigningServer.Android.Collections;
-using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
-using SigningServer.Android.Com.Android.Apksig.Internal.Asn1;
-using SigningServer.Android.Com.Android.Apksig.Internal.Jar;
-using SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7;
 
 namespace SigningServer.Android.Util
 {
-    public class Collections
+    public static class Collections
     {
         public static void Sort<T>(Android.Collections.List<T> fields, Comparison<T> func)
         {
             fields.Sort(func);
         }
+
         public static void Sort<T>(Android.Collections.List<T> fields, IComparer<T> func)
         {
             fields.Sort(func);
@@ -49,7 +46,7 @@ namespace SigningServer.Android.Util
 
         public static Android.Collections.List<T> UnmodifiableList<T>(Android.Collections.List<T> list)
         {
-            throw new NotImplementedException();
+            return list;
         }
     }
 }

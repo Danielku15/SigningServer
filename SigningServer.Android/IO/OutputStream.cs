@@ -2,17 +2,10 @@
 
 namespace SigningServer.Android.IO
 {
-    public class OutputStream : IDisposable
+    public interface OutputStream : IDisposable
     {
-        public int Write(char c)
-        {
-            
-        }
-        public int Write(sbyte[] bytes)
-        {
-        }
-        public int Write(sbyte[] bytes, int offset, int length)
-        {
-        }
+        public void Write(int b);
+        public void Write(sbyte[] bytes);
+        public void Write(sbyte[] bytes, int offset, int length);
     }
 }

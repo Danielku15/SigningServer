@@ -97,7 +97,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Truncated tag number");
                 }
                 b = mBuf.Get();
-                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MaxValue, 7))
+                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MAX_VALUE, 7))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Tag number too large");
                 }
@@ -128,7 +128,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Truncated length");
                 }
                 int b = mBuf.Get();
-                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MaxValue, 8))
+                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MAX_VALUE, 8))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Length too large");
                 }

@@ -1234,11 +1234,6 @@ class CSharpAstTransformer(
                         this.context.registerSymbolAsConst(field);
                     }
 
-                    when (fieldQualifier) {
-                        "java.lang.Integer.MAX_VALUE" -> fieldName = "MaxValue"
-                        else -> {}
-                    }
-
                     return CsMemberAccessExpression(
                         CsTypeReference(this.createUnresolvedTypeNode(null, null, field.declaringType())),
                         fieldName

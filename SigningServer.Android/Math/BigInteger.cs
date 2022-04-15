@@ -1,43 +1,50 @@
-﻿namespace SigningServer.Android.Math
-{
-    public struct BigInteger
-    {
-        private System.Numerics.BigInteger _value;
-        public static BigInteger ZERO;
+﻿using System;
 
-        public BigInteger(sbyte[] reencodedModulus)
+namespace SigningServer.Android.Math
+{
+    public readonly struct BigInteger : IComparable<BigInteger>
+    {
+        private readonly Org.BouncyCastle.Math.BigInteger mValue;
+        public static readonly BigInteger ZERO = new BigInteger(Org.BouncyCastle.Math.BigInteger.Zero); 
+
+        private BigInteger(Org.BouncyCastle.Math.BigInteger value)
         {
-            throw new System.NotImplementedException();
+            mValue = value;
+        }
+
+        public BigInteger(sbyte[] encoded)
+        {
+            mValue = new Org.BouncyCastle.Math.BigInteger(encoded.AsBytes());
         }
 
         public int BitLength()
         {
-            throw new System.NotImplementedException();
+            return mValue.BitLength;
         }
 
         public sbyte[] ToByteArray()
         {
-            throw new System.NotImplementedException();
+            return mValue.ToByteArray().AsSBytes();
         }
 
-        public int CompareTo(object zero)
+        public int CompareTo(BigInteger other)
         {
-            throw new System.NotImplementedException();
+            return mValue.CompareTo(other.mValue);
         }
 
         public long LongValue()
         {
-            throw new System.NotImplementedException();
+            return mValue.LongValue;
         }
 
-        public static BigInteger ValueOf(long minValue)
+        public static BigInteger ValueOf(long v)
         {
-            throw new System.NotImplementedException();
+            return new BigInteger(Org.BouncyCastle.Math.BigInteger.ValueOf(v));
         }
 
         public int IntValue()
         {
-            throw new System.NotImplementedException();
+            return mValue.IntValue;
         }
     }
 }

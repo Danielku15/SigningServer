@@ -1,15 +1,25 @@
-﻿namespace SigningServer.Android.Util.Zip
+﻿using System;
+using ICSharpCode.SharpZipLib.Checksum;
+
+namespace SigningServer.Android.Util.Zip
 {
     public class CRC32
     {
-        public void Update(sbyte[] inputBuf, int inputOffset, int inputLength)
+        private readonly Crc32 mCrc;
+
+        public CRC32()
         {
-            throw new System.NotImplementedException();
+            mCrc = new Crc32();
+        }
+        
+        public void Update(sbyte[] data, int offset, int length)
+        {
+            mCrc.Update(new ArraySegment<byte>(data.AsBytes(), offset, length));
         }
 
         public long GetValue()
         {
-            throw new System.NotImplementedException();
+            return mCrc.Value;
         }
     }
 }

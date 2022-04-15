@@ -22,7 +22,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal static int ClampToInt(long value)
         {
-            return (int)SigningServer.Android.Core.Math.Max(0, SigningServer.Android.Core.Math.Min(value, SigningServer.Android.Core.IntExtensions.MaxValue));
+            return (int)SigningServer.Android.Core.Math.Max(0, SigningServer.Android.Core.Math.Min(value, SigningServer.Android.Core.IntExtensions.MAX_VALUE));
         }
         
         public class ByteRange
@@ -95,7 +95,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     output.WriteInt(SigningServer.Android.Com.Android.Apksig.Hints.ClampToInt(pinByteRange.end - pinByteRange.start));
                 }
             }
-            catch (SigningServer.Android.IO.IOException ex)
+            catch (global::System.IO.IOException ex)
             {
                 throw new SigningServer.Android.Core.AssertionError("impossible", ex);
             }

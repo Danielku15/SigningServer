@@ -204,7 +204,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             {
                 chunkCountLong += SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetChunkCount(input.Size(), SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.CONTENT_DIGESTED_CHUNK_MAX_SIZE_BYTES);
             }
-            if (chunkCountLong > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (chunkCountLong > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
                 throw new SigningServer.Android.Security.DigestException("Input too long: " + chunkCountLong + " chunks");
             }
@@ -245,9 +245,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                     {
                         input.Feed(inputOffset, chunkSize, mdSink);
                     }
-                    catch (SigningServer.Android.IO.IOException e)
+                    catch (global::System.IO.IOException e)
                     {
-                        throw new SigningServer.Android.IO.IOException("Failed to read chunk #" + chunkIndex, e);
+                        throw new global::System.IO.IOException("Failed to read chunk #" + chunkIndex, e);
                     }
                     for (int i = 0;i < digestAlgorithmsArray.Length;i++)
                     {
@@ -282,7 +282,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             {
                 chunkCountLong += SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetChunkCount(input.Size(), SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.CONTENT_DIGESTED_CHUNK_MAX_SIZE_BYTES);
             }
-            if (chunkCountLong > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (chunkCountLong > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
                 throw new SigningServer.Android.Security.DigestException("Input too long: " + chunkCountLong + " chunks");
             }
@@ -293,7 +293,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 chunkDigestsList.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkDigests(algorithms, chunkCount));
             }
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkSupplier chunkSupplier = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkSupplier(contents);
-            executor.Execute(new DelegateRunnablesProvider(() => new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkDigester(chunkSupplier, chunkDigestsList)));
+            executor(() => new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkDigester(chunkSupplier, chunkDigestsList).Run);
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkDigests chunkDigests in chunkDigestsList)
             {
                 SigningServer.Android.Security.MessageDigest messageDigest = chunkDigests.CreateMessageDigest();
@@ -333,7 +333,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         /// <summary>
         /// A per-thread digest worker.
         /// </summary>
-        internal class ChunkDigester: SigningServer.Android.Core.Runnable
+        internal class ChunkDigester
         {
             internal readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ChunkSupplier dataSupplier;
             
@@ -389,7 +389,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                         }
                     }
                 }
-                catch (System.Exception e) when ( e is SigningServer.Android.IO.IOException || e is SigningServer.Android.Security.DigestException)
+                catch (System.Exception e) when ( e is global::System.IO.IOException || e is SigningServer.Android.Security.DigestException)
                 {
                     throw new SigningServer.Android.Core.RuntimeException(e);
                 }
@@ -421,7 +421,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 for (int i = 0;i < dataSources.Length;i++)
                 {
                     long chunkCount = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetChunkCount(dataSources[i].Size(), SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.CONTENT_DIGESTED_CHUNK_MAX_SIZE_BYTES);
-                    if (chunkCount > SigningServer.Android.Core.IntExtensions.MaxValue)
+                    if (chunkCount > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
                     {
                         throw new SigningServer.Android.Core.RuntimeException(SigningServer.Android.Core.StringExtensions.Format("Number of chunks in dataSource[%d] is greater than max int.", i));
                     }
@@ -462,7 +462,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 {
                     dataSources[dataSourceIndex].CopyTo(dataSourceChunkOffset * SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.CONTENT_DIGESTED_CHUNK_MAX_SIZE_BYTES, size, buffer);
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     throw new System.InvalidOperationException("Failed to read chunk", e);
                 }
@@ -762,7 +762,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<sbyte[], int>> GetApkSignatureBlocks(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkSigningBlock)
         {
             long apkSigningBlockSize = apkSigningBlock.Size();
-            if (apkSigningBlock.Size() > SigningServer.Android.Core.IntExtensions.MaxValue || apkSigningBlockSize < 32)
+            if (apkSigningBlock.Size() > SigningServer.Android.Core.IntExtensions.MAX_VALUE || apkSigningBlockSize < 32)
             {
                 throw new System.ArgumentException("APK signing block size out of range: " + apkSigningBlockSize);
             }
@@ -772,7 +772,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             while (apkSigningBlockBuffer.HasRemaining())
             {
                 long blockLength = apkSigningBlockBuffer.GetLong();
-                if (blockLength > SigningServer.Android.Core.IntExtensions.MaxValue || blockLength < 4)
+                if (blockLength > SigningServer.Android.Core.IntExtensions.MAX_VALUE || blockLength < 4)
                 {
                     throw new System.ArgumentException("Block index " + (signatureBlocks.Size() + 1) + " size out of range: " + blockLength);
                 }
@@ -873,9 +873,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             {
                 contentDigests = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeContentDigests(executor, contentDigestAlgorithms, beforeCentralDir, centralDir, eocd);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
-                throw new SigningServer.Android.IO.IOException("Failed to read APK being signed", e);
+                throw new global::System.IO.IOException("Failed to read APK being signed", e);
             }
             catch (SigningServer.Android.Security.DigestException e)
             {

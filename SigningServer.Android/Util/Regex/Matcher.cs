@@ -2,9 +2,18 @@
 {
     public class Matcher
     {
+        private readonly System.Text.RegularExpressions.Regex mRegex;
+        private readonly string mInput;
+
+        public Matcher(System.Text.RegularExpressions.Regex regex, string input)
+        {
+            mRegex = regex;
+            mInput = input;
+        }
+
         public bool Matches()
         {
-            throw new System.NotImplementedException();
+            return mRegex.IsMatch(mInput);
         }
     }
 }

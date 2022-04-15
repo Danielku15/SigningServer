@@ -2,29 +2,31 @@
 {
     public class Deflater
     {
+        private readonly ICSharpCode.SharpZipLib.Zip.Compression.Deflater mDeflater;
+
         public Deflater(int level, bool nowrap)
         {
-            throw new System.NotImplementedException();
+            mDeflater = new ICSharpCode.SharpZipLib.Zip.Compression.Deflater(level, nowrap);
         }
 
         public void SetInput(sbyte[] inputBuf, int inputOffset, int inputLength)
         {
-            throw new System.NotImplementedException();
+            mDeflater.SetInput(inputBuf.AsBytes(), inputOffset, inputLength);
         }
 
         public void Finish()
         {
-            throw new System.NotImplementedException();
+            mDeflater.Finish();
         }
 
         public bool Finished()
         {
-            throw new System.NotImplementedException();
+            return mDeflater.IsFinished;
         }
 
         public int Deflate(sbyte[] buf)
         {
-            throw new System.NotImplementedException();
+            return mDeflater.Deflate(buf.AsBytes());
         }
     }
 }

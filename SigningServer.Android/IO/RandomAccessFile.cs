@@ -37,12 +37,12 @@ namespace SigningServer.Android.IO
 
         public void Write(sbyte[] buf, int offset, int length)
         {
-            mStream.Write(buf, offset, length);
+            mStream.Write(buf.AsBytes(), offset, length);
         }
 
         public void Write(sbyte[] buf)
         {
-            mStream.Write(buf, 0, buf.Length);
+            mStream.Write(buf.AsBytes(), 0, buf.Length);
         }
 
         public long Length()
@@ -55,9 +55,9 @@ namespace SigningServer.Android.IO
             mStream.SetLength(i);
         }
 
-        public void ReadFully(byte[] contents)
+        public void ReadFully(sbyte[] contents)
         {
-            mStream.Read(contents, 0, contents.Length);
+            mStream.Read(contents.AsBytes(), 0, contents.Length);
         }
     }
 }

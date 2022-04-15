@@ -2,6 +2,6 @@
 {
     public static class SByteExtensions
     {
-        public static int SIZE;
+        public const int SIZE = 8;
     }
 }

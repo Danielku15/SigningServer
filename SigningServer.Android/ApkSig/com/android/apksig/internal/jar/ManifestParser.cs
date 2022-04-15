@@ -100,7 +100,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
             }
             else 
             {
-                return new SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Attribute(attr.Substring(0, delimiterIndex), attr.Substring(delimiterIndex + ": ".Length()));
+                return new SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Attribute(attr.SubstringIndex(0, delimiterIndex), attr.SubstringIndex(delimiterIndex + ": ".Length()));
             }
         }
         

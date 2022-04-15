@@ -11,5 +11,9 @@ namespace SigningServer.Android.IO
         public UnsupportedEncodingException(string message) : base(message)
         {
         }
+
+        public UnsupportedEncodingException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

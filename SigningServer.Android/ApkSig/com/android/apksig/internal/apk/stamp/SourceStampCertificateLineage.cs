@@ -96,7 +96,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             }
             catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.IO.BufferUnderflowException)
             {
-                throw new SigningServer.Android.IO.IOException("Failed to parse SourceStampCertificateLineage object", e);
+                throw new global::System.IO.IOException("Failed to parse SourceStampCertificateLineage object", e);
             }
             catch (System.Exception e) when ( e is SigningServer.Android.Security.NoSuchAlgorithmException || e is SigningServer.Android.Security.InvalidKeyException || e is SigningServer.Android.Security.InvalidAlgorithmParameterException || e is SigningServer.Android.Security.SignatureException)
             {

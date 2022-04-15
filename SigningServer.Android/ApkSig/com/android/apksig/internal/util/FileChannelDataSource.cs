@@ -63,7 +63,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 {
                     return mChannel.Size();
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     return 0;
                 }
@@ -109,7 +109,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                         int read = mChannel.Read(buf);
                         if (read < 0)
                         {
-                            throw new SigningServer.Android.IO.IOException("Unexpected EOF encountered");
+                            throw new global::System.IO.IOException("Unexpected EOF encountered");
                         }
                         chunkRemaining -= read;
                     }

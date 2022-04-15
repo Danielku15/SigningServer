@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Util
 {
-    public class Base64
+    public static class Base64
     {
         public class Encoder
         {
@@ -22,17 +22,17 @@ namespace SigningServer.Android.Util
             }
         }
 
-        private static readonly Encoder EncoderInstance = new Encoder();
-        private static readonly Decoder DecoderInstance = new Decoder();
+        private static readonly Encoder ENCODER = new Encoder();
+        private static readonly Decoder DECODER = new Decoder();
 
         public static Encoder GetEncoder()
         {
-            return EncoderInstance;
+            return ENCODER;
         }
 
         public static Decoder GetDecoder()
         {
-            return DecoderInstance;
+            return DECODER;
         }
     }
 }

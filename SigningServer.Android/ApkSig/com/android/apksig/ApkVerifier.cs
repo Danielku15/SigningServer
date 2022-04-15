@@ -598,7 +598,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 return VerifySourceStamp(apk, expectedCertDigest);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 return SigningServer.Android.Com.Android.Apksig.ApkVerifier.CreateSourceStampResultWithError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.UNEXPECTED_EXCEPTION, e);
             }
@@ -610,7 +610,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     {
                         input.Dispose();
                     }
-                    catch (SigningServer.Android.IO.IOException ignored)
+                    catch (global::System.IO.IOException ignored)
                     {
                     }
                 }
@@ -754,7 +754,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 return result;
             }
-            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.IO.IOException || e is SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException)
+            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is global::System.IO.IOException || e is SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException)
             {
                 return SigningServer.Android.Com.Android.Apksig.ApkVerifier.CreateSourceStampResultWithError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus.VERIFICATION_ERROR, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.MALFORMED_APK, e);
             }
@@ -2573,7 +2573,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             
             internal int? mMinSdkVersion;
             
-            internal int mMaxSdkVersion = SigningServer.Android.Core.IntExtensions.MaxValue;
+            internal int mMaxSdkVersion = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
             
             /// <summary>
             /// Constructs a new {@code Builder} for verifying the provided APK file.

@@ -8,14 +8,11 @@ using System;
 
 namespace SigningServer.Android.Com.Android.Apksig.Util
 {
-    public interface RunnablesExecutor
-    {
-        public void Execute(SigningServer.Android.Com.Android.Apksig.Util.RunnablesProvider provider);
-    }
+    public delegate void RunnablesExecutor(SigningServer.Android.Com.Android.Apksig.Util.RunnablesProvider provider);
     
     public class RunnablesExecutors
     {
-        public static readonly  RunnablesExecutor SINGLE_THREADED;
+        public static readonly RunnablesExecutor SINGLE_THREADED;
         public static readonly RunnablesExecutor MULTI_THREADED;
     }
     

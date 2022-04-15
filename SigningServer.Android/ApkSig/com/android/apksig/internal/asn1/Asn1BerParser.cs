@@ -519,7 +519,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         internal static int IntegerToInt(SigningServer.Android.IO.ByteBuffer encoded)
         {
             SigningServer.Android.Math.BigInteger value = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.IntegerToBigInteger(encoded);
-            if (value.CompareTo(SigningServer.Android.Math.BigInteger.ValueOf(SigningServer.Android.Core.IntExtensions.MIN_VALUE)) < 0 || value.CompareTo(SigningServer.Android.Math.BigInteger.ValueOf(SigningServer.Android.Core.IntExtensions.MaxValue)) > 0)
+            if (value.CompareTo(SigningServer.Android.Math.BigInteger.ValueOf(SigningServer.Android.Core.IntExtensions.MIN_VALUE)) < 0 || value.CompareTo(SigningServer.Android.Math.BigInteger.ValueOf(SigningServer.Android.Core.IntExtensions.MAX_VALUE)) > 0)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException(SigningServer.Android.Core.StringExtensions.Format("INTEGER cannot be represented as int: %1$d (0x%1$x)", value));
             }

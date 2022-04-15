@@ -123,7 +123,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7
             string jcaDigestAlg = SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier.GetJcaDigestAlgorithm(digestAlgorithmOid);
             if (jcaDigestAlg.StartsWith("SHA-"))
             {
-                jcaDigestAlg = "SHA" + jcaDigestAlg.Substring("SHA-".Length());
+                jcaDigestAlg = "SHA" + jcaDigestAlg.SubstringIndex("SHA-".Length());
             }
             return jcaDigestAlg + "with" + suffix;
         }

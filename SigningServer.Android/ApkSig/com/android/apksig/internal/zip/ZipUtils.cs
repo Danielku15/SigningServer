@@ -197,7 +197,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> ParseZipCentralDirectory(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Zip.ZipSections apkSections)
         {
             long cdSizeBytes = apkSections.GetZipCentralDirectorySizeBytes();
-            if (cdSizeBytes > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (cdSizeBytes > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException("ZIP Central Directory too large: " + cdSizeBytes);
             }

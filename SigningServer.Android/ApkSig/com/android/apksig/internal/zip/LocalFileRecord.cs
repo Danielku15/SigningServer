@@ -140,9 +140,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             {
                 header = apk.GetByteBuffer(headerStartOffset, headerSizeWithName);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
-                throw new SigningServer.Android.IO.IOException("Failed to read Local File Header of " + entryName, e);
+                throw new global::System.IO.IOException("Failed to read Local File Header of " + entryName, e);
             }
             header.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
             int recordSignature = header.GetInt();
@@ -327,7 +327,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                             }
                         }
                     }
-                    catch (SigningServer.Android.IO.IOException e)
+                    catch (global::System.IO.IOException e)
                     {
                         if (e.InnerException is SigningServer.Android.Util.Zip.DataFormatException)
                         {
@@ -341,9 +341,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                     lfhSection.Feed(dataStartOffsetInArchive, mDataSize, sink);
                 }
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
-                throw new SigningServer.Android.IO.IOException("Failed to read data of " + ((mDataCompressed) ? "compressed" : "uncompressed") + " entry " + mName, e);
+                throw new global::System.IO.IOException("Failed to read data of " + ((mDataCompressed) ? "compressed" : "uncompressed") + " entry " + mName, e);
             }
         }
         
@@ -362,9 +362,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         /// </summary>
         public static sbyte[] GetUncompressedData(SigningServer.Android.Com.Android.Apksig.Util.DataSource source, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord cdRecord, long cdStartOffsetInArchive)
         {
-            if (cdRecord.GetUncompressedSize() > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (cdRecord.GetUncompressedSize() > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.IO.IOException(cdRecord.GetName() + " too large: " + cdRecord.GetUncompressedSize());
+                throw new global::System.IO.IOException(cdRecord.GetName() + " too large: " + cdRecord.GetUncompressedSize());
             }
             sbyte[] result = new sbyte[(int)cdRecord.GetUncompressedSize()];
             SigningServer.Android.IO.ByteBuffer resultBuf = SigningServer.Android.IO.ByteBuffer.Wrap(result);
@@ -413,7 +413,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                     }
                     catch (SigningServer.Android.Util.Zip.DataFormatException e)
                     {
-                        throw new SigningServer.Android.IO.IOException("Failed to inflate data", e);
+                        throw new global::System.IO.IOException("Failed to inflate data", e);
                     }
                     if (outputChunkSize == 0)
                     {

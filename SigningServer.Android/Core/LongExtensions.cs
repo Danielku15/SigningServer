@@ -5,9 +5,9 @@ namespace SigningServer.Android.Core
 {
     public static class LongExtensions
     {
-        public static int SIZE;
-        public static long MAX_VALUE;
-        public static long MIN_VALUE;
+        public const int SIZE = 64;
+        public const long MAX_VALUE = long.MaxValue;
+        public const long MIN_VALUE = long.MinValue;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToHexString(long value)
@@ -15,19 +15,29 @@ namespace SigningServer.Android.Core
             return value.ToString("x");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long ParseLong(string s)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return long.Parse(s);
+            }
+            catch (FormatException e)
+            {
+                throw new NumberFormatException(e.Message, e);
+            }
         }
 
-        public static long ValueOf(long integerToLong)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ValueOf(long v)
         {
-            throw new NotImplementedException();
+            return v;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToString(long v)
         {
-            
+            return v.ToString();
         }
     }
 }

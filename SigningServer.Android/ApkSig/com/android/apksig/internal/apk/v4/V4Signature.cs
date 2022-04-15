@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.IO;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
 {
@@ -126,7 +127,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             int version = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadIntLE(stream);
             if (version != SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.CURRENT_VERSION)
             {
-                throw new SigningServer.Android.IO.IOException("Invalid signature version.");
+                throw new global::System.IO.IOException("Invalid signature version.");
             }
             sbyte[] hashingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
             sbyte[] signingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
@@ -170,7 +171,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 int count = stream.Read(buffer, n, len - n);
                 if (count < 0)
                 {
-                    throw new SigningServer.Android.IO.EOFException();
+                    throw new EndOfStreamException();
                 }
                 n += count;
             }
@@ -198,7 +199,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadFully(stream, bytes);
                 return bytes;
             }
-            catch (SigningServer.Android.IO.EOFException ignored)
+            catch (EndOfStreamException ignored)
             {
                 return null;
             }
@@ -208,12 +209,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         {
             if (buffer.Remaining() < 4)
             {
-                throw new SigningServer.Android.IO.EOFException();
+                throw new EndOfStreamException();
             }
             int size = buffer.GetInt();
             if (buffer.Remaining() < size)
             {
-                throw new SigningServer.Android.IO.EOFException();
+                throw new EndOfStreamException();
             }
             sbyte[] bytes = new sbyte[size];
             buffer.Get(bytes);

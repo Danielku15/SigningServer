@@ -33,7 +33,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             catch (SigningServer.Android.IO.BufferOverflowException e)
             {
-                throw new SigningServer.Android.IO.IOException("Insufficient space in output buffer for " + length + " bytes", e);
+                throw new global::System.IO.IOException("Insufficient space in output buffer for " + length + " bytes", e);
             }
         }
         
@@ -46,7 +46,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             catch (SigningServer.Android.IO.BufferOverflowException e)
             {
-                throw new SigningServer.Android.IO.IOException("Insufficient space in output buffer for " + length + " bytes", e);
+                throw new global::System.IO.IOException("Insufficient space in output buffer for " + length + " bytes", e);
             }
         }
         

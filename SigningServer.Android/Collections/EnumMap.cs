@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace SigningServer.Android.Collections
 {
-    public class EnumMap<TKey, TValue> : Dictionary<TKey, TValue>,  Map<TKey, TValue>
+    public class EnumMap<TKey, TValue> : DictionaryMap<TKey, TValue>
     {
-        public EnumMap(Type enumType)
+        // ReSharper disable once UnusedParameter.Local
+        public EnumMap(Type unused)
         {
         }
-        
     }
 }

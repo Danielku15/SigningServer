@@ -17,19 +17,55 @@ namespace SigningServer.Android.Collections
         {
             return Array.BinarySearch(array, value, comparer);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetHashCode<T>(T[] array)
+        public static int GetHashCode(sbyte[] a)
         {
+            if (a == null)
+                return 0;
+
+            int result = 1;
+            foreach (sbyte element in a)
+            {
+                result = 31 * result + element;
+            }
+
+            return result;
         }
 
-        public static sbyte[] CopyOfRange(sbyte[] manifest, int startOffset, int newlineStartOffset)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetHashCode(object[] a)
         {
-            throw new NotImplementedException();
+            if (a == null)
+                return 0;
+
+            int result = 1;
+            foreach (var element in a)
+            {
+                result = 31 * result + (element?.GetHashCode() ?? 0);
+            }
+
+            return result;
         }
 
-        public static sbyte[] CopyOf(sbyte[] array, int newSize)
+        public static sbyte[] CopyOfRange(sbyte[] original, int from, int to)
         {
-            throw new NotImplementedException();
+            var length = to - from;
+            if (length < 0)
+            {
+                throw new ArgumentException(from + " > " + to);
+            }
+
+            var copy = new sbyte[length];
+            Array.Copy(original, from, copy, 0, System.Math.Min(original.Length - from, length));
+            return copy;
+        }
+
+        public static sbyte[] CopyOf(sbyte[] original, int newSize)
+        {
+            var copy = new sbyte[newSize];
+            Array.Copy(original, 0, copy, 0, System.Math.Min(original.Length, newSize));
+            return copy;
         }
     }
 }

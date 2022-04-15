@@ -1,4 +1,6 @@
-﻿namespace SigningServer.Android.IO
+﻿using System;
+
+namespace SigningServer.Android.IO
 {
     public class DataOutputStream : OutputStream
     {
@@ -9,9 +11,32 @@
             mOutput = output;
         }
 
-        public void WriteInt(int clampToInt)
+        public void Write(int v)
         {
-            throw new System.NotImplementedException();
+            mOutput.Write(v);
+        }
+        
+        public void WriteInt(int v)
+        {
+            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v, 24) & 0xFF));
+            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v, 16) & 0xFF));
+            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v,  8) & 0xFF));
+            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v,  0) & 0xFF));
+        }
+
+        public void Dispose()
+        {
+            mOutput.Dispose();
+        }
+
+        public void Write(sbyte[] bytes)
+        {
+            mOutput.Write(bytes);
+        }
+
+        public void Write(sbyte[] bytes, int offset, int length)
+        {
+            mOutput.Write(bytes, offset, length);
         }
     }
 }

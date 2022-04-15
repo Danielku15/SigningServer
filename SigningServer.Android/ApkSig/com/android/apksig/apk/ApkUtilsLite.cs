@@ -83,7 +83,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
                 throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkSigningBlockNotFoundException("No APK Signing Block before ZIP Central Directory");
             }
             long apkSigBlockSizeInFooter = footer.GetLong(0);
-            if ((apkSigBlockSizeInFooter < footer.Capacity()) || (apkSigBlockSizeInFooter > SigningServer.Android.Core.IntExtensions.MaxValue - 8))
+            if ((apkSigBlockSizeInFooter < footer.Capacity()) || (apkSigBlockSizeInFooter > SigningServer.Android.Core.IntExtensions.MAX_VALUE - 8))
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkSigningBlockNotFoundException("APK Signing Block size out of range: " + apkSigBlockSizeInFooter);
             }

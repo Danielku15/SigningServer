@@ -1,12 +1,13 @@
-﻿using NotImplementedException = System.NotImplementedException;
+﻿using System.Runtime.CompilerServices;
 
 namespace SigningServer.Android.Core
 {
     public static class CharExtensions
     {
-        public static bool IsWhitespace(char encodedChar)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsWhitespace(char c)
         {
-            throw new NotImplementedException();
+            return char.IsWhiteSpace(c);
         }
     }
 }

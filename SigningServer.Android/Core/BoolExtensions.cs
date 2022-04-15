@@ -11,9 +11,10 @@ namespace SigningServer.Android.Core
             return value.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Create(bool result)
         {
-            throw new NotImplementedException();
+            return result;
         }
     }
 }

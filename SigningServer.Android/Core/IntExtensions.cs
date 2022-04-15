@@ -5,8 +5,8 @@ namespace SigningServer.Android.Core
 {
     public static class IntExtensions
     {
-        public static int MIN_VALUE;
-        public const int MaxValue = int.MaxValue;
+        public const int MIN_VALUE = int.MinValue;
+        public const int MAX_VALUE = int.MaxValue;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToString(int value)
@@ -20,14 +20,23 @@ namespace SigningServer.Android.Core
             return value.ToString("x");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ParseInt(string s)
         {
-            return int.Parse(s);
+            try
+            {
+                return int.Parse(s);
+            }
+            catch (FormatException e)
+            {
+                throw new NumberFormatException(e.Message, e);
+            }
         }
 
-        public static int ValueOf(int integerToInt)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ValueOf(int v)
         {
-            throw new NotImplementedException();
+            return v;
         }
     }
 }

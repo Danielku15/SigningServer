@@ -395,7 +395,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     }
                     catch (SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException e)
                     {
-                        throw new SigningServer.Android.IO.IOException("Unable to read list of signing certificate nodes in " + "SigningCertificateLineage", e);
+                        throw new global::System.IO.IOException("Unable to read list of signing certificate nodes in " + "SigningCertificateLineage", e);
                     }
                 default:
                     throw new System.ArgumentException("Improper SigningCertificateLineage format: unrecognized version.");

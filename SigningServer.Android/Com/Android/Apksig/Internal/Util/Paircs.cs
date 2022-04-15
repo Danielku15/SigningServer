@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Org.BouncyCastle.Crypto.Tls;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {

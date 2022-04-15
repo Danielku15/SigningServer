@@ -4,33 +4,63 @@ namespace SigningServer.Android.Core
 {
     public class StringBuilder
     {
-        private System.Text.StringBuilder _builder;
+        private readonly global::System.Text.StringBuilder mBuilder;
 
         public StringBuilder()
         {
-            _builder = new System.Text.StringBuilder();
+            mBuilder = new global::System.Text.StringBuilder();
         }
 
         public StringBuilder(string initial)
         {
-            _builder = new System.Text.StringBuilder();
-            _builder.Append(initial);
+            mBuilder = new global::System.Text.StringBuilder();
+            mBuilder.Append(initial);
         }
 
-        public StringBuilder(int valueLength)
+        public StringBuilder(int capacity)
         {
-            throw new NotImplementedException();
+            mBuilder = new global::System.Text.StringBuilder(capacity);
+        }
+
+        public StringBuilder Append(long v)
+        {
+            mBuilder.Append(v);
+            return this;
+        }
+
+        public StringBuilder Append(int v)
+        {
+            mBuilder.Append(v);
+            return this;
+        }
+
+        public StringBuilder Append(sbyte v)
+        {
+            mBuilder.Append(v);
+            return this;
+        }
+
+        public StringBuilder Append(string s)
+        {
+            mBuilder.Append(s);
+            return this;
+        }
+
+        public StringBuilder Append(string s, int start, int end)
+        {
+            mBuilder.Append(s, start, end - start);
+            return this;
         }
 
         public StringBuilder Append(object c)
         {
-            _builder.Append(c);
+            mBuilder.Append(c);
             return this;
         }
 
         public int Length()
         {
-            return _builder.Length;
+            return mBuilder.Length;
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SigningServer.Android
@@ -11,13 +9,25 @@ namespace SigningServer.Android
     internal static class Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string SubstringIndex(this string s, int start)
+        {
+            return s.Substring(start);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string SubstringIndex(this string s, int start, int end)
+        {
+            return s.Substring(start, end - start);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string[] Split(this string s, string sep)
         {
             return s.Split(new[] { sep }, StringSplitOptions.None);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetName(this System.Type t)
+        public static string GetName(this Type t)
         {
             return t.Name;
         }
@@ -49,19 +59,26 @@ namespace SigningServer.Android
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte[] GetBytes(this string s)
         {
-            return Encoding.Default.GetBytes(s).ToSBytes();
+            return Encoding.Default.GetBytes(s).AsSBytes();
         }
+
         public static sbyte[] GetBytes(this string s, Encoding encoding)
         {
-            return encoding.GetBytes(s).ToSBytes();
+            return encoding.GetBytes(s).AsSBytes();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte[] ToSBytes(this byte[] b)
+        public static sbyte[] AsSBytes(this byte[] b)
         {
-            var s = new sbyte[b.Length];
-            Buffer.BlockCopy(b, 0, s, 0, s.Length);
-            return s;
+            // CLR allows conversion from sbyte to byte array
+            return (sbyte[])(object)b;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte[] AsBytes(this sbyte[] b)
+        {
+            // CLR allows conversion from sbyte to byte array
+            return (byte[])(object)b;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -121,94 +138,6 @@ namespace SigningServer.Android
             }
 
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-        }
-
-        public static void TransformBlock(this HashAlgorithm hashAlgorithm, ByteBuffer buf)
-        {
-            // TODO: check for correctness
-            var data = new byte[buf.Remaining()];
-            buf.Get(data);
-            hashAlgorithm.TransformBlock(data, 0, data.Length, null, 0);
-        }
-
-        public static void TransformFinalBlock(this HashAlgorithm hashAlgorithm, ByteBuffer buf)
-        {
-            // TODO: check for correctness
-            var data = new byte[buf.Remaining()];
-            buf.Get(data);
-            hashAlgorithm.TransformFinalBlock(data, 0, data.Length);
-        }
-
-        public static int bitLength(this BigInteger v)
-        {
-            // https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigInteger.cs#L2406
-            byte highValue;
-            int bitsArrayLength;
-            int sign = v.Sign;
-            var bits = v.ToByteArray();
-
-            bitsArrayLength = bits.Length;
-            highValue = bits[bitsArrayLength - 1];
-
-            int bitLength = bitsArrayLength * 8 - LeadingZeroCount(highValue);
-
-            if (sign >= 0)
-                return bitLength;
-
-            // When negative and IsPowerOfTwo, the answer is (bitLength - 1)
-
-            // Check highValue
-            if ((highValue & (highValue - 1)) != 0)
-            {
-                return bitLength;
-            }
-
-            // Check the rest of the bits (if present)
-            for (int i = bitsArrayLength - 2; i >= 0; i--)
-            {
-                // bits array is always non-null when bitsArrayLength >= 2
-                if (bits[i] == 0)
-                {
-                    continue;
-                }
-
-                return bitLength;
-            }
-
-            return bitLength - 1;
-        }
-
-        private static int LeadingZeroCount(byte x)
-        {
-            if (x == 0)
-            {
-                return 8;
-            }
-
-            return LeadingZeroCount((int)x) - (3 * 8) /* Remove first 3 byets */;
-        }
-
-        private static int LeadingZeroCount(int x)
-        {
-            if (x == 0)
-            {
-                return 8;
-            }
-
-            const int numIntBits = sizeof(int) * 8; //compile time constant
-            //do the smearing
-            x |= x >> 1;
-            x |= x >> 2;
-            x |= x >> 4;
-            x |= x >> 8;
-            x |= x >> 16;
-            //count the ones
-            x -= x >> 1 & 0x55555555;
-            x = (x >> 2 & 0x33333333) + (x & 0x33333333);
-            x = (x >> 4) + x & 0x0f0f0f0f;
-            x += x >> 8;
-            x += x >> 16;
-            return numIntBits - (x & 0x0000003f); //subtract # of 1s from 32
         }
     }
 }

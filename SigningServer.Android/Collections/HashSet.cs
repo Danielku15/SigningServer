@@ -1,16 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SigningServer.Android.Collections
 {
-    public interface Set<T> : IEnumerable<T>
-    {
-        bool Add(T value);
-        bool IsEmpty();
-        bool Contains(T value);
-        T[] ToArray(T[] empty);
-        int Size();
-    }
-
     public class HashSet<T> : System.Collections.Generic.HashSet<T>, Set<T>
     {
         public HashSet()
@@ -23,7 +15,21 @@ namespace SigningServer.Android.Collections
 
         public HashSet(IEnumerable<T> items) : base(items)
         {
-            
+        }
+
+        public bool IsEmpty()
+        {
+            return Count == 0;
+        }
+
+        public T[] ToArray(T[] empty)
+        {
+            return this.ToArray();
+        }
+
+        public int Size()
+        {
+            return Count;
         }
     }
 }

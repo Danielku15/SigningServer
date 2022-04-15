@@ -5,6 +5,8 @@
 // </auto-generated>
 
 using System;
+using System.Threading.Tasks;
+using SigningServer.Android.Collections;
 using SigningServer.Android.Core;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
@@ -53,8 +55,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         internal readonly SigningServer.Android.Security.MessageDigest mMd;
         
-        internal readonly SigningServer.Android.Util.Concurrent.ExecutorService mExecutor = new SigningServer.Android.Util.Concurrent.ThreadPoolExecutor(SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.DIGEST_PARALLELISM, SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.DIGEST_PARALLELISM, 0L, SigningServer.Android.Util.Concurrent.TimeUnit.MILLISECONDS, new SigningServer.Android.Util.Concurrent.ArrayBlockingQueue<SigningServer.Android.Core.Runnable>(SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.MAX_OUTSTANDING_CHUNKS), new SigningServer.Android.Util.Concurrent.ThreadPoolExecutor.CallerRunsPolicy());
-        
         public VerityTreeBuilder(sbyte[] salt)
         {
             mSalt = salt;
@@ -63,7 +63,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         public void Dispose()
         {
-            mExecutor.ShutdownNow();
         }
         
         /// <summary>
@@ -189,7 +188,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             int chunks = (int)SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.DivideRoundup(size, SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE);
             int ioSizeChunks = SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.MAX_PREFETCH_CHUNKS;
             sbyte[][] hashes = new sbyte[chunks][];
-            SigningServer.Android.Util.Concurrent.Phaser tasks = new SigningServer.Android.Util.Concurrent.Phaser(1);
+            var tasks = new List<Task>(1);
             long maxReadSize = ioSizeChunks * SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE;
             long readOffset = 0;
             int startChunkIndex = 0;
@@ -202,21 +201,20 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 dataSource.CopyTo(readOffset, readSize, buffer);
                 buffer.Rewind();
                 int readChunkIndex = startChunkIndex;
-                SigningServer.Android.Core.Runnable task = new DelegateRunnable(() => {
+                var task = Task.Factory.StartNew(() => {
                     SigningServer.Android.Security.MessageDigest md = CloneMessageDigest();
                     for (int offset = 0, finish = buffer.Capacity(), chunkIndex = readChunkIndex;offset < finish;offset += SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE, ++chunkIndex)
                     {
                         SigningServer.Android.IO.ByteBuffer chunk = SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.Slice(buffer, offset, offset + SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE);
                         hashes[chunkIndex] = SaltedDigest(md, chunk);
                     }
-                    tasks.ArriveAndDeregister();
                 });
-                tasks.Register();
-                mExecutor.Execute(task);
+                tasks.Add(task);
                 startChunkIndex += bufferSizeChunks;
                 readOffset += readSize;
             }
-            tasks.ArriveAndAwaitAdvance();
+
+            Task.WaitAll(tasks.ToArray());
             foreach (sbyte[] hash in hashes)
             {
                 dataSink.Consume(hash, 0, hash.Length);

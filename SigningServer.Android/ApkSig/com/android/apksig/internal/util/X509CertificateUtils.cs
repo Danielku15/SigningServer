@@ -50,7 +50,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteStreams.ToByteArray(input);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 throw new SigningServer.Android.Security.Cert.CertificateException("Failed to parse certificate", e);
             }
@@ -137,7 +137,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 encodedCerts = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteStreams.ToByteArray(input);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 throw new SigningServer.Android.Security.Cert.CertificateException("Failed to read the input stream", e);
             }

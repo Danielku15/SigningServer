@@ -632,13 +632,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.XmlParserException("XML chunk's header too short. Required at least 20 bytes. Available: " + header.Remaining() + " bytes");
                 }
                 long stringCount = SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.GetUnsignedInt32(header);
-                if (stringCount > SigningServer.Android.Core.IntExtensions.MaxValue)
+                if (stringCount > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.XmlParserException("Too many strings: " + stringCount);
                 }
                 mStringCount = (int)stringCount;
                 long styleCount = SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.GetUnsignedInt32(header);
-                if (styleCount > SigningServer.Android.Core.IntExtensions.MaxValue)
+                if (styleCount > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.XmlParserException("Too many styles: " + styleCount);
                 }
@@ -711,7 +711,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 {
                     lengthChars = ((lengthChars & 0x7fff) << 16) | SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.GetUnsignedInt16(encoded);
                 }
-                if (lengthChars > SigningServer.Android.Core.IntExtensions.MaxValue / 2)
+                if (lengthChars > SigningServer.Android.Core.IntExtensions.MAX_VALUE / 2)
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.XmlParserException("String too long: " + lengthChars + " uint16s");
                 }

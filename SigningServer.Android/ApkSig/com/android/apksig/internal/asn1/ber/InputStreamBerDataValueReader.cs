@@ -75,7 +75,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 SigningServer.Android.IO.ByteBuffer encodedContents = SigningServer.Android.IO.ByteBuffer.Wrap(encoded, contentsOffsetInDataValue, contentsLength);
                 return new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue(SigningServer.Android.IO.ByteBuffer.Wrap(encoded), encodedContents, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagClass((sbyte)firstIdentifierByte), constructed, tagNumber);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Failed to read data value", e);
             }
@@ -105,7 +105,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Truncated tag number");
                 }
-                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MaxValue, 7))
+                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MAX_VALUE, 7))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Tag number too large");
                 }
@@ -136,7 +136,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Truncated length");
                 }
-                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MaxValue, 8))
+                if (result > SigningServer.Android.TypeUtils.UnsignedRightShift(SigningServer.Android.Core.IntExtensions.MAX_VALUE, 8))
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Length too large");
                 }
@@ -237,7 +237,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return mBuf.Size();
             }
             
-            public override int Read()
+            public int Read()
             {
                 int b = mIn.Read();
                 if (b != -1)
@@ -247,7 +247,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return b;
             }
             
-            public override int Read(sbyte[] b)
+            public int Read(sbyte[] b)
             {
                 int len = mIn.Read(b);
                 if (len > 0)
@@ -257,7 +257,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return len;
             }
             
-            public override int Read(sbyte[] b, int off, int len)
+            public int Read(sbyte[] b, int off, int len)
             {
                 len = mIn.Read(b, off, len);
                 if (len > 0)
@@ -267,7 +267,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return len;
             }
             
-            public override long Skip(long n)
+            public long Skip(long n)
             {
                 if (n <= 0)
                 {
@@ -282,30 +282,28 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return (len < 0) ? 0 : len;
             }
             
-            public override int Available()
+            public int Available()
             {
-                return base.Available();
+                return 0;
             }
             
-            public override void Dispose()
-            {
-                base.Dispose();
-            }
-            
-            public override void Mark(int readlimit)
+            public void Dispose()
             {
             }
             
-            public override void Reset()
+            public void Mark(int readlimit)
             {
-                throw new SigningServer.Android.IO.IOException("mark/reset not supported");
             }
             
-            public override bool MarkSupported()
+            public void Reset()
+            {
+                throw new global::System.IO.IOException("mark/reset not supported");
+            }
+            
+            public bool MarkSupported()
             {
                 return false;
             }
-            
         }
         
     }

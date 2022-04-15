@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using SigningServer.Android.Com.Android.Apksig;
-using SigningServer.Android.Com.Android.Apksig.Internal.Apk;
-using SigningServer.Android.Security.Cert;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SigningServer.Android.Collections
 {
@@ -21,7 +20,7 @@ namespace SigningServer.Android.Collections
 
         public void Remove(int index)
         {
-            
+            RemoveAt(index);
         }
 
         public T Get(int index)
@@ -36,9 +35,10 @@ namespace SigningServer.Android.Collections
 
         public void AddAll(IEnumerable<T> items)
         {
-            base.AddRange(items);
+            AddRange(items);
         }
 
+        // ReSharper disable once UnusedParameter.Global
         public T[] ToArray(T[] unused)
         {
             return ToArray();
@@ -51,21 +51,55 @@ namespace SigningServer.Android.Collections
 
         public ListIteratorImpl ListIterator()
         {
-            throw new System.NotImplementedException();
+            return new ListIteratorImpl(this);
         }
 
         public class ListIteratorImpl : Iterator<T>
         {
+            private readonly List<T> mList;
+            private int mCursor = 0;
+            private int mLastRet = -1; // index of last element returned; -1 if no such
+
+            public ListIteratorImpl(List<T> list)
+            {
+                mList = list;
+            }
+
+            public void Remove()
+            {
+                if (mLastRet < 0)
+                    throw new InvalidOperationException();
+
+                mList.Remove(mLastRet);
+                mCursor = mLastRet;
+                mLastRet = -1;
+            }
+
+
+            public bool HasNext()
+            {
+                return mCursor != mList.Count;
+            }
+
+            public T Next()
+            {
+                int i = mCursor;
+                if (i >= mList.Count)
+                    throw new IndexOutOfRangeException();
+                mCursor = i + 1;
+                
+                return mList[mLastRet = i];
+            }
         }
 
-        public bool ContainsAll(List<T> getCertificates)
+        public bool ContainsAll(List<T> other)
         {
-            throw new System.NotImplementedException();
+            return other.All(Contains);
         }
 
-        public int SubList(int i, int i1)
+        public List<T> SubList(int fromIndex, int toIndex)
         {
-            throw new System.NotImplementedException();
+            return new List<T>(GetRange(fromIndex, toIndex - fromIndex));
         }
     }
 }

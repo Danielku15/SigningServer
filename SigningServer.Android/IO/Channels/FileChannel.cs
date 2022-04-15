@@ -24,8 +24,8 @@ namespace SigningServer.Android.IO.Channels
         public int Read(ByteBuffer buf)
         {
             var rem = buf.Remaining();
-            var x = new byte[rem];
-            var actual = mStream.Read(x, 0, rem);
+            var x = new sbyte[rem];
+            var actual = mStream.Read(x.AsBytes(), 0, rem);
 
             buf.Put(x, 0, actual);
             return actual;
@@ -33,9 +33,9 @@ namespace SigningServer.Android.IO.Channels
 
         public void Write(ByteBuffer buf)
         {
-            var x = new byte[buf.Remaining()];
+            var x = new sbyte[buf.Remaining()];
             buf.Get(x);
-            mStream.Write(x, 0, x.Length);
+            mStream.Write(x.AsBytes(), 0, x.Length);
         }
     }
 }

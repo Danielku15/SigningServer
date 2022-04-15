@@ -89,7 +89,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 return VerifySourceStamp(apk, expectedCertDigest);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result result = new SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result();
                 result.AddVerificationError(SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue.UNEXPECTED_EXCEPTION, e);
@@ -103,7 +103,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     {
                         input.Dispose();
                     }
-                    catch (SigningServer.Android.IO.IOException ignored)
+                    catch (global::System.IO.IOException ignored)
                     {
                     }
                 }
@@ -217,7 +217,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 result.MergeFrom(sourceStampResult);
                 return result;
             }
-            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.IO.IOException || e is SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException)
+            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is global::System.IO.IOException || e is SigningServer.Android.Com.Android.Apksig.Zip.ZipFormatException)
             {
                 result.AddVerificationError(SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue.MALFORMED_APK, e);
             }
@@ -799,7 +799,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             
             internal int mMinSdkVersion = 1;
             
-            internal int mMaxSdkVersion = SigningServer.Android.Core.IntExtensions.MaxValue;
+            internal int mMaxSdkVersion = SigningServer.Android.Core.IntExtensions.MAX_VALUE;
             
             /// <summary>
             /// Constructs a new {@code Builder} for source stamp verification of the provided {@code

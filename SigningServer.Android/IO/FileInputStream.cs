@@ -1,15 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace SigningServer.Android.IO
 {
-    public class ByteArrayInputStream : InputStream
+    public class FileInputStream : InputStream
     {
-        private MemoryStream mIn;
-        private long mMark = 0;
+        private readonly FileStream mIn;
 
-        public ByteArrayInputStream(sbyte[] source)
+        public FileInputStream(FileInfo info)
         {
-            mIn = new MemoryStream(source.AsBytes());
+            mIn = info.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         public void Dispose()
@@ -47,17 +47,16 @@ namespace SigningServer.Android.IO
 
         public void Mark(int readlimit)
         {
-            mMark = mIn.Position;
         }
 
         public void Reset()
         {
-            mIn.Seek(mMark, SeekOrigin.Begin);
+            throw new IOException("mark/reset not supported");
         }
 
         public bool MarkSupported()
         {
-            return true;
+            return false;
         }
     }
 }

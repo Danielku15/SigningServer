@@ -171,7 +171,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             {
                 return true;
             }
-            string fileNameLowerCase = entryName.Substring("META-INF/".Length()).ToLowerCase(SigningServer.Android.Util.Locale.US);
+            string fileNameLowerCase = entryName.SubstringIndex("META-INF/".Length()).ToLowerCase(SigningServer.Android.Util.Locale.US);
             if (("manifest.mf".Equals(fileNameLowerCase)) || (fileNameLowerCase.EndsWith(".sf")) || (fileNameLowerCase.EndsWith(".rsa")) || (fileNameLowerCase.EndsWith(".dsa")) || (fileNameLowerCase.EndsWith(".ec")) || (fileNameLowerCase.StartsWith("sig-")))
             {
                 return false;
@@ -282,7 +282,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     sourceManifest = new SigningServer.Android.Util.Jar.Manifest(new SigningServer.Android.IO.ByteArrayInputStream(sourceManifestBytes));
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException("Malformed source META-INF/MANIFEST.MF", e);
                 }
@@ -301,7 +301,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestWriter.WriteMainSection(manifestOut, mainAttrs);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 throw new SigningServer.Android.Core.RuntimeException("Failed to write in-memory MANIFEST.MF", e);
             }
@@ -323,7 +323,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     sectionBytes = sectionOut.ToByteArray();
                     manifestOut.Write(sectionBytes);
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     throw new SigningServer.Android.Core.RuntimeException("Failed to write in-memory MANIFEST.MF", e);
                 }
@@ -383,7 +383,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.SignatureFileWriter.WriteMainSection(output, mainAttrs);
             }
-            catch (SigningServer.Android.IO.IOException e)
+            catch (global::System.IO.IOException e)
             {
                 throw new SigningServer.Android.Core.RuntimeException("Failed to write in-memory .SF file", e);
             }
@@ -399,7 +399,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Jar.SignatureFileWriter.WriteIndividualSection(output, sectionName, attrs);
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     throw new SigningServer.Android.Core.RuntimeException("Failed to write in-memory .SF file", e);
                 }
@@ -410,7 +410,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Jar.SignatureFileWriter.WriteSectionDelimiter(output);
                 }
-                catch (SigningServer.Android.IO.IOException e)
+                catch (global::System.IO.IOException e)
                 {
                     throw new SigningServer.Android.Core.RuntimeException("Failed to write to ByteArrayOutputStream", e);
                 }

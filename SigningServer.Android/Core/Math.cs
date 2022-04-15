@@ -28,6 +28,7 @@ namespace SigningServer.Android.Core
             return global::System.Math.Min(a, b);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ToIntExact(long v)
         {
             return (int)v;

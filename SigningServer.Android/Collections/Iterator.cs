@@ -1,8 +1,6 @@
-﻿using SigningServer.Android.Com.Android.Apksig.Internal.Apk;
-
-namespace SigningServer.Android.Collections
+﻿namespace SigningServer.Android.Collections
 {
-    public interface Iterator<T>
+    public interface Iterator<out T>
     {
         void Remove();
         bool HasNext();

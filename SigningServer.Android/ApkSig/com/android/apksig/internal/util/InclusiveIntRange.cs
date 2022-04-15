@@ -40,7 +40,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         public static SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange From(int min)
         {
-            return new SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange(min, SigningServer.Android.Core.IntExtensions.MaxValue);
+            return new SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange(min, SigningServer.Android.Core.IntExtensions.MAX_VALUE);
         }
         
         public virtual SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange> GetValuesNotIn(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.InclusiveIntRange> sortedNonOverlappingRanges)
@@ -86,7 +86,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         public override string ToString()
         {
-            return "[" + min + ", " + ((max < SigningServer.Android.Core.IntExtensions.MaxValue) ? (max + "]") : "\u221e)");
+            return "[" + min + ", " + ((max < SigningServer.Android.Core.IntExtensions.MAX_VALUE) ? (max + "]") : "\u221e)");
         }
         
     }

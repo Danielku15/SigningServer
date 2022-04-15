@@ -471,9 +471,9 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 outputCentralDirSizeBytes += record.GetSize();
             }
-            if (outputCentralDirSizeBytes > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (outputCentralDirSizeBytes > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
-                throw new SigningServer.Android.IO.IOException("Output ZIP Central Directory too large: " + outputCentralDirSizeBytes + " bytes");
+                throw new global::System.IO.IOException("Output ZIP Central Directory too large: " + outputCentralDirSizeBytes + " bytes");
             }
             SigningServer.Android.IO.ByteBuffer outputCentralDir = SigningServer.Android.IO.ByteBuffer.Allocate((int)outputCentralDirSizeBytes);
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord record in outputCdRecords)
@@ -676,7 +676,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         internal static SigningServer.Android.IO.ByteBuffer GetZipCentralDirectory(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections apkSections)
         {
             long cdSizeBytes = apkSections.GetZipCentralDirectorySizeBytes();
-            if (cdSizeBytes > SigningServer.Android.Core.IntExtensions.MaxValue)
+            if (cdSizeBytes > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException("ZIP Central Directory too large: " + cdSizeBytes);
             }

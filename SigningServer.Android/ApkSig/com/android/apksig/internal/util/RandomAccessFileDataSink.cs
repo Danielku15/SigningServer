@@ -56,7 +56,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return mFile;
         }
         
-        public void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(byte[] buf, int offset, int length)
         {
             if (offset < 0)
             {

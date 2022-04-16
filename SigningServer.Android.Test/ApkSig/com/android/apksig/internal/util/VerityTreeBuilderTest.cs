@@ -19,36 +19,36 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         public virtual void SHA256RootHashMatch()
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", null, "a3b013ea0f5d5ffbda26d5e84882faa4c051d592c04b8779bd1f0f4e95cc2657");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new sbyte[0]
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new byte[0]
             , "a3b013ea0f5d5ffbda26d5e84882faa4c051d592c04b8779bd1f0f4e95cc2657");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-4096-bytes", new byte[]{
                 0x00}
             , "cab1bcac3cf9b91151730c0de1880112d2c9865543d3fa56b534273c06667973");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-8192-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-8192-bytes", new byte[]{
                 0x10}
             , "477afbaa5e884454bb95a8d63366362c21c0a5d7b8e5476b004692bf9a692a00");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524287-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524287-bytes", new byte[]{
                 0x20}
             , "39534c3a0bd27efcafb408e630248082156c80ab41789814749b33e325a93c62");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524288-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524288-bytes", new byte[]{
                 0x21}
             , "34f8b9c33cd49b753b9341b2d8a4b83e59c5ae458ec6a85fbfebd49314c24d4e");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524289-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-524289-bytes", new byte[]{
                 0x22}
             , "1934793602f5e0b8c7aa7ed7e7acb42dca579ed11d8ac5ff9bb6d346f4222bd5");
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-525000-bytes", new sbyte[]{
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.ExpectRootHash("random-data-525000-bytes", new byte[]{
                 0x23}
             , "f63b718c01f569386d7de2e813d7b1e452322c638fb240af3ef01c2e6d317ee8");
         }
         
-        internal static void ExpectRootHash(string inputResource, sbyte[] salt, string expectedRootHash)
+        internal static void ExpectRootHash(string inputResource, byte[] salt, string expectedRootHash)
         {
             AssertEquals(expectedRootHash, SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest.GenerateRootHash(inputResource, salt));
         }
         
-        internal static string GenerateRootHash(string inputResource, sbyte[] salt)
+        internal static string GenerateRootHash(string inputResource, byte[] salt)
         {
-            sbyte[] input = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest), inputResource);
+            byte[] input = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilderTest), inputResource);
             AssertNotNull(input);
             try
             {
@@ -72,7 +72,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         [Test]
         public virtual void GenerateVerityTreeRootHashFromPlaceholderDataSource()
         {
-            sbyte[] sampleEoCDFromDisk = new sbyte[]{
+            byte[] sampleEoCDFromDisk = new byte[]{
                 
                 0x50, 
                 0x4b, 
@@ -100,7 +100,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             string expectedRootHash = "7694e72c242107a5b4ce6091faf867e2f13c033b6b64faddcb13b3d698a8495a";
             using(Com.Android.Apksig.Internal.Util.VerityTreeBuilder builder = new Com.Android.Apksig.Internal.Util.VerityTreeBuilder(null))
             {
-                sbyte[] rootHash = builder.GenerateVerityTreeRootHash(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Allocate(4096)), MakeStringDataSource("this is central directory (fake data)"), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(sampleEoCDFromDisk)));
+                byte[] rootHash = builder.GenerateVerityTreeRootHash(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Allocate(4096)), MakeStringDataSource("this is central directory (fake data)"), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(sampleEoCDFromDisk)));
                 AssertEquals(expectedRootHash, SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Encode(rootHash));
             }
             using(Com.Android.Apksig.Internal.Util.VerityTreeBuilder builder = new Com.Android.Apksig.Internal.Util.VerityTreeBuilder(null))
@@ -108,7 +108,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 SigningServer.Android.IO.ByteBuffer fileTailWithDifferentLengthOfZeros = SigningServer.Android.IO.ByteBuffer.Allocate(sampleEoCDFromDisk.Length + 1);
                 fileTailWithDifferentLengthOfZeros.Put(sampleEoCDFromDisk);
                 fileTailWithDifferentLengthOfZeros.Rewind();
-                sbyte[] rootHash = builder.GenerateVerityTreeRootHash(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Allocate(4096)), MakeStringDataSource("this is central directory (fake data)"), Com.Android.Apksig.Util.DataSources.AsDataSource(fileTailWithDifferentLengthOfZeros));
+                byte[] rootHash = builder.GenerateVerityTreeRootHash(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Allocate(4096)), MakeStringDataSource("this is central directory (fake data)"), Com.Android.Apksig.Util.DataSources.AsDataSource(fileTailWithDifferentLengthOfZeros));
                 AssertEquals(expectedRootHash, SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Encode(rootHash));
             }
         }

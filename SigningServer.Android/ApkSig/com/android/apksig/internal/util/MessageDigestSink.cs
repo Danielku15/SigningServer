@@ -21,7 +21,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mMessageDigests = digests;
         }
         
-        public void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(byte[] buf, int offset, int length)
         {
             foreach (SigningServer.Android.Security.MessageDigest md in mMessageDigests)
             {

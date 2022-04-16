@@ -84,7 +84,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         [Test]
         public virtual void TestGenerateCertificatesWithEmptyInput()
         {
-            AssertEquals("Zero certificates should be returned when passing an empty InputStream to " + "generateCertificates", 0, Com.Android.Apksig.Internal.Util.X509CertificateUtils.GenerateCertificates(new SigningServer.Android.IO.ByteArrayInputStream(new sbyte[0])).Size());
+            AssertEquals("Zero certificates should be returned when passing an empty InputStream to " + "generateCertificates", 0, Com.Android.Apksig.Internal.Util.X509CertificateUtils.GenerateCertificates(new SigningServer.Android.IO.ByteArrayInputStream(new byte[0])).Size());
         }
         
         internal static SigningServer.Android.Collections.Set<string> CreateSetOfValues(params string[] values)
@@ -102,7 +102,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// </summary>
         internal static string GetHexEncodedDigestOfCertFromResources(string resourceName)
         {
-            sbyte[] encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtilsTest), resourceName);
+            byte[] encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtilsTest), resourceName);
             SigningServer.Android.Security.Cert.X509Certificate cert = Com.Android.Apksig.Internal.Util.X509CertificateUtils.GenerateCertificate(encodedForm);
             return SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtilsTest.GetHexEncodedDigestOfBytes(cert.GetEncoded());
         }
@@ -125,7 +125,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Returns the hex encoding of the digest of the specified bytes.
         /// </summary>
-        internal static string GetHexEncodedDigestOfBytes(sbyte[] bytes)
+        internal static string GetHexEncodedDigestOfBytes(byte[] bytes)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Encode(SigningServer.Android.Security.MessageDigest.GetInstance("SHA-256").Digest(bytes));
         }

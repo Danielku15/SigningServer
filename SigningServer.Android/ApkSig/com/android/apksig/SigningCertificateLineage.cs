@@ -81,7 +81,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             return signingCertificateLineage.SpawnDescendant(parent, child, childCapabilities);
         }
         
-        public static SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage ReadFromBytes(sbyte[] lineageBytes)
+        public static SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage ReadFromBytes(byte[] lineageBytes)
         {
             return SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage.ReadFromDataSource(SigningServer.Android.Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(lineageBytes)));
         }
@@ -118,7 +118,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// 
         /// @param attrValue
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage ReadFromV3AttributeValue(sbyte[] attrValue)
+        public static SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage ReadFromV3AttributeValue(byte[] attrValue)
         {
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode> parsedLineage = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.ReadSigningCertificateLineage(SigningServer.Android.IO.ByteBuffer.Wrap(attrValue).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN));
             int minSdkVersion = SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage.CalculateMinSdkVersion(parsedLineage);
@@ -217,7 +217,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 int id = attribute.GetInt();
                 if (id == SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SchemeConstants.PROOF_OF_ROTATION_ATTR_ID)
                 {
-                    sbyte[] value = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(attribute);
+                    byte[] value = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(attribute);
                     SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage lineage = SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage.ReadFromV3AttributeValue(value);
                     lineages.Add(lineage);
                 }
@@ -238,7 +238,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             return result;
         }
         
-        public virtual sbyte[] GetBytes()
+        public virtual byte[] GetBytes()
         {
             return Write().Array();
         }
@@ -249,8 +249,12 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 throw new System.NullReferenceException("file == null");
             }
-            SigningServer.Android.IO.RandomAccessFile outputFile = new SigningServer.Android.IO.RandomAccessFile(file, "rw");
-            WriteToDataSink(new SigningServer.Android.Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink(outputFile));
+
+            using (SigningServer.Android.IO.RandomAccessFile outputFile =
+                   new SigningServer.Android.IO.RandomAccessFile(file, "rw"))
+            {
+                WriteToDataSink(new SigningServer.Android.Com.Android.Apksig.Internal.Util.RandomAccessFileDataSink(outputFile));
+            }
         }
         
         public virtual void WriteToDataSink(SigningServer.Android.Com.Android.Apksig.Util.DataSink dataSink)
@@ -316,16 +320,16 @@ namespace SigningServer.Android.Com.Android.Apksig
             prefixedSignedData.Position(4);
             SigningServer.Android.IO.ByteBuffer signedDataBuffer = SigningServer.Android.IO.ByteBuffer.Allocate(prefixedSignedData.Remaining());
             signedDataBuffer.Put(prefixedSignedData);
-            sbyte[] signedData = signedDataBuffer.Array();
+            byte[] signedData = signedDataBuffer.Array();
             SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> certificates = new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate>(1);
             certificates.Add(parent.GetCertificate());
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig newSignerConfig = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig();
             newSignerConfig.privateKey = parent.GetPrivateKey();
             newSignerConfig.certificates = certificates;
             newSignerConfig.signatureAlgorithms = SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm>(signatureAlgorithm);
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(newSignerConfig, signedData);
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(newSignerConfig, signedData);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(signatures.Get(0).GetFirst());
-            sbyte[] signature = signatures.Get(0).GetSecond();
+            byte[] signature = signatures.Get(0).GetSecond();
             currentGeneration.sigAlgorithm = sigAlgorithm;
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode childNode = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode(child.GetCertificate(), sigAlgorithm, null, signature, childCapabilities.GetFlags());
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode> lineageCopy = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode>(mSigningLineage);
@@ -364,7 +368,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 throw new System.ArgumentException("Algorithm associated with first signing certificate" + " invalid on desired platform versions", e);
             }
-            SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode firstNode = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode(parent.GetCertificate(), null, null, new sbyte[0], signerCapabilities.GetFlags());
+            SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode firstNode = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode(parent.GetCertificate(), null, null, new byte[0], signerCapabilities.GetFlags());
             return new SigningServer.Android.Com.Android.Apksig.SigningCertificateLineage(mMinSdkVersion, SigningServer.Android.Util.Collections.SingletonList<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.SigningCertificateNode>(firstNode));
         }
         
@@ -425,7 +429,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal SigningServer.Android.IO.ByteBuffer Write()
         {
-            sbyte[] encodedLineage = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.EncodeSigningCertificateLineage(mSigningLineage);
+            byte[] encodedLineage = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.EncodeSigningCertificateLineage(mSigningLineage);
             int payloadSize = 4 + 4 + 4 + encodedLineage.Length;
             SigningServer.Android.IO.ByteBuffer result = SigningServer.Android.IO.ByteBuffer.Allocate(payloadSize);
             result.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
@@ -437,7 +441,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             return result;
         }
         
-        public virtual sbyte[] EncodeSigningCertificateLineage()
+        public virtual byte[] EncodeSigningCertificateLineage()
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SigningCertificateLineage.EncodeSigningCertificateLineage(mSigningLineage);
         }

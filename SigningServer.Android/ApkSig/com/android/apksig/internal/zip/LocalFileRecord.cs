@@ -273,9 +273,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         /// Outputs the specified Local File Header record with its data and returns the number of bytes
         /// output.
         /// </summary>
-        public static long OutputRecordWithDeflateCompressedData(string name, int lastModifiedTime, int lastModifiedDate, sbyte[] compressedData, long crc32, long uncompressedSize, SigningServer.Android.Com.Android.Apksig.Util.DataSink output)
+        public static long OutputRecordWithDeflateCompressedData(string name, int lastModifiedTime, int lastModifiedDate, byte[] compressedData, long crc32, long uncompressedSize, SigningServer.Android.Com.Android.Apksig.Util.DataSink output)
         {
-            sbyte[] nameBytes = name.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
+            byte[] nameBytes = name.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
             int recordSize = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.HEADER_SIZE_BYTES + nameBytes.Length;
             SigningServer.Android.IO.ByteBuffer result = SigningServer.Android.IO.ByteBuffer.Allocate(recordSize);
             result.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
@@ -360,13 +360,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         /// <summary>
         /// Returns the uncompressed data pointed to by the provided ZIP Central Directory (CD) record.
         /// </summary>
-        public static sbyte[] GetUncompressedData(SigningServer.Android.Com.Android.Apksig.Util.DataSource source, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord cdRecord, long cdStartOffsetInArchive)
+        public static byte[] GetUncompressedData(SigningServer.Android.Com.Android.Apksig.Util.DataSource source, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord cdRecord, long cdStartOffsetInArchive)
         {
             if (cdRecord.GetUncompressedSize() > SigningServer.Android.Core.IntExtensions.MAX_VALUE)
             {
                 throw new global::System.IO.IOException(cdRecord.GetName() + " too large: " + cdRecord.GetUncompressedSize());
             }
-            sbyte[] result = new sbyte[(int)cdRecord.GetUncompressedSize()];
+            byte[] result = new byte[(int)cdRecord.GetUncompressedSize()];
             SigningServer.Android.IO.ByteBuffer resultBuf = SigningServer.Android.IO.ByteBuffer.Wrap(result);
             SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSink resultSink = new SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferSink(resultBuf);
             SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.OutputUncompressedData(source, cdRecord, cdStartOffsetInArchive, resultSink);
@@ -383,9 +383,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             
             internal SigningServer.Android.Util.Zip.Inflater mInflater = new SigningServer.Android.Util.Zip.Inflater(true);
             
-            internal sbyte[] mOutputBuffer;
+            internal byte[] mOutputBuffer;
             
-            internal sbyte[] mInputBuffer;
+            internal byte[] mInputBuffer;
             
             internal long mOutputByteCount;
             
@@ -396,13 +396,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                 mDelegate = @delegate;
             }
             
-            public void Consume(sbyte[] buf, int offset, int length)
+            public void Consume(byte[] buf, int offset, int length)
             {
                 CheckNotClosed();
                 mInflater.SetInput(buf, offset, length);
                 if (mOutputBuffer == null)
                 {
-                    mOutputBuffer = new sbyte[65536];
+                    mOutputBuffer = new byte[65536];
                 }
                 while (!mInflater.Finished())
                 {
@@ -436,7 +436,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
                 {
                     if (mInputBuffer == null)
                     {
-                        mInputBuffer = new sbyte[65536];
+                        mInputBuffer = new byte[65536];
                     }
                     while (buf.HasRemaining())
                     {

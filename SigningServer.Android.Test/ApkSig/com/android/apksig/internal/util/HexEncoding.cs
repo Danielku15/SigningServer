@@ -27,7 +27,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Encodes the provided data as a hexadecimal string.
         /// </summary>
-        public static string Encode(sbyte[] data)
+        public static string Encode(byte[] data)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Encode(data, 0, data.Length);
         }
@@ -35,12 +35,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Encodes the provided data as a hexadecimal string.
         /// </summary>
-        public static string Encode(sbyte[] data, int offset, int len)
+        public static string Encode(byte[] data, int offset, int len)
         {
             SigningServer.Android.Core.StringBuilder result = new SigningServer.Android.Core.StringBuilder(len * 2);
             for (int i = 0;i < len;i++)
             {
-                sbyte b = data[offset + i];
+                byte b = data[offset + i];
                 result.Append(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.HEX_DIGITS[(SigningServer.Android.TypeUtils.UnsignedRightShift(b, 4)) & 0x0f]);
                 result.Append(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.HEX_DIGITS[b & 0x0f]);
             }
@@ -58,20 +58,20 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Decodes the provided hexadecimal string into an array of bytes.
         /// </summary>
-        public static sbyte[] Decode(string encoded)
+        public static byte[] Decode(string encoded)
         {
             int resultLengthBytes = (encoded.Length() + 1) / 2;
-            sbyte[] result = new sbyte[resultLengthBytes];
+            byte[] result = new byte[resultLengthBytes];
             int resultOffset = 0;
             int encodedCharOffset = 0;
             if ((encoded.Length() % 2) != 0)
             {
-                result[resultOffset++] = (sbyte)SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset));
+                result[resultOffset++] = (byte)SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset));
                 encodedCharOffset++;
             }
             for (int len = encoded.Length();encodedCharOffset < len;encodedCharOffset += 2)
             {
-                result[resultOffset++] = (sbyte)((SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset)) << 4) | SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset + 1)));
+                result[resultOffset++] = (byte)((SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset)) << 4) | SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.GetHexadecimalDigitValue(encoded.CharAt(encodedCharOffset + 1)));
             }
             return result;
         }

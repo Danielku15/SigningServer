@@ -2,7 +2,7 @@
 {
     public abstract class ByteBuffer : Buffer
     {
-        protected internal sbyte[] mRaw;
+        protected internal byte[] mRaw;
         protected int mOffset;
 
         // ReSharper disable once UnusedParameter.Global
@@ -12,10 +12,10 @@
         }
 
         public abstract ByteBuffer Slice();
-        public abstract sbyte Get();
-        public abstract sbyte Get(int i);
+        public abstract byte Get();
+        public abstract byte Get(int i);
 
-        protected ByteBuffer(int mark, int pos, int lim, int cap, sbyte[] hb, int offset)
+        protected ByteBuffer(int mark, int pos, int lim, int cap, byte[] hb, int offset)
             : base(mark, pos, lim, cap)
         {
             mRaw = hb;
@@ -26,10 +26,10 @@
         public abstract short GetShort();
         public abstract int GetInt();
         public abstract long GetLong(int offset);
-        public abstract void Get(sbyte[] dst);
+        public abstract void Get(byte[] dst);
         public abstract int GetInt(int i);
         public abstract short GetShort(int i);
-        public abstract void Get(sbyte[] dst, int offset, int length);
+        public abstract void Get(byte[] dst, int offset, int length);
 
         public ByteBuffer AsReadOnlyBuffer()
         {
@@ -46,7 +46,7 @@
             return mRaw != null;
         }
 
-        public sbyte[] Array()
+        public byte[] Array()
         {
             return mRaw;
         }
@@ -60,24 +60,24 @@
         public abstract void Put(ByteBuffer src);
 
 
-        public void Put(sbyte[] src)
+        public void Put(byte[] src)
         {
             Put(src, 0, src.Length);
         }
 
-        public abstract void Put(sbyte[] src, int offset, int length);
+        public abstract void Put(byte[] src, int offset, int length);
         public abstract void PutShort(int offset, short value);
         public abstract void PutLong(long value);
         public abstract void PutInt(int offset, int value);
         public abstract void PutShort(short value);
         public abstract ByteBuffer PutInt(int value);
 
-        public static ByteBuffer Wrap(sbyte[] src)
+        public static ByteBuffer Wrap(byte[] src)
         {
             return new HeapByteBuffer(src, 0, src.Length);
         }
 
-        public static ByteBuffer Wrap(sbyte[] src, int offset, int length)
+        public static ByteBuffer Wrap(byte[] src, int offset, int length)
         {
             return new HeapByteBuffer(src, offset, length);
         }
@@ -88,7 +88,7 @@
         }
 
         public abstract ByteBuffer Duplicate();
-        public abstract void Put(sbyte x);
+        public abstract void Put(byte x);
 
         public int CompareTo(ByteBuffer that)
         {

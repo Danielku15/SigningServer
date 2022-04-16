@@ -7,7 +7,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
-using SigningServer.Android.Security;
 using SigningServer.Contracts;
 
 namespace SigningServer.Android

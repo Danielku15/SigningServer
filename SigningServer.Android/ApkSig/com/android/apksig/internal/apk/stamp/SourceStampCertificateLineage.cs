@@ -58,7 +58,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
                     int flags = nodeBytes.GetInt();
                     int sigAlgorithmId = nodeBytes.GetInt();
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(lastSigAlgorithmId);
-                    sbyte[] signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(nodeBytes);
+                    byte[] signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(nodeBytes);
                     if (lastCert != null)
                     {
                         string jcaSignatureAlgorithm = sigAlgorithm.GetJcaSignatureAlgorithmAndParams().GetFirst();
@@ -77,7 +77,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
                         }
                     }
                     signedData.Rewind();
-                    sbyte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(signedData);
+                    byte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(signedData);
                     int signedSigAlgorithm = signedData.GetInt();
                     if (lastCert != null && lastSigAlgorithmId != signedSigAlgorithm)
                     {
@@ -115,7 +115,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
         /// </summary>
         public class SigningCertificateNode
         {
-            public SigningCertificateNode(SigningServer.Android.Security.Cert.X509Certificate signingCert, SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm parentSigAlgorithm, SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm, sbyte[] signature, int flags)
+            public SigningCertificateNode(SigningServer.Android.Security.Cert.X509Certificate signingCert, SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm parentSigAlgorithm, SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm sigAlgorithm, byte[] signature, int flags)
             {
                 this.signingCert = signingCert;
                 this.parentSigAlgorithm = parentSigAlgorithm;
@@ -178,7 +178,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             /// signing certificate, which should correspond to the signing certificate used to sign an
             /// APK before rotating to this one, and is formed using {@code signatureAlgorithm}.
             /// </summary>
-            public readonly sbyte[] signature;
+            public readonly byte[] signature;
             
             /// <summary>
             /// the flags detailing how the platform should treat this signing cert

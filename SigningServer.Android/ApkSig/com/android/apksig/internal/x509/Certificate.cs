@@ -43,7 +43,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.X509
                 return false;
             }
             SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.IssuerAndSerialNumber issuerAndSerialNumber = id.issuerAndSerialNumber;
-            sbyte[] encodedIssuer = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(issuerAndSerialNumber.issuer.GetEncoded());
+            byte[] encodedIssuer = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(issuerAndSerialNumber.issuer.GetEncoded());
             X500Principal idIssuer = new X500Principal(encodedIssuer);
             SigningServer.Android.Math.BigInteger idSerialNumber = issuerAndSerialNumber.certificateSerialNumber;
             return idSerialNumber.Equals(cert.GetSerialNumber()) && idIssuer.Equals(cert.GetIssuerX500Principal());
@@ -60,7 +60,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.X509
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject encodedCertificate = encodedCertificates.Get(i);
                 SigningServer.Android.Security.Cert.X509Certificate certificate;
-                sbyte[] encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(encodedCertificate.GetEncoded());
+                byte[] encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(encodedCertificate.GetEncoded());
                 try
                 {
                     certificate = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GenerateCertificate(encodedForm);

@@ -294,7 +294,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             }
         }
         
-        public static string ToHex(sbyte[] value)
+        public static string ToHex(byte[] value)
         {
             SigningServer.Android.Core.StringBuilder sb = new SigningServer.Android.Core.StringBuilder(value.Length * 2);
             int len = value.Length;
@@ -325,7 +325,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.GetByteBuffer(source, len);
         }
         
-        public static sbyte[] ReadLengthPrefixedByteArray(SigningServer.Android.IO.ByteBuffer buf)
+        public static byte[] ReadLengthPrefixedByteArray(SigningServer.Android.IO.ByteBuffer buf)
         {
             int len = buf.GetInt();
             if (len < 0)
@@ -336,23 +336,23 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException("Underflow while reading length-prefixed value. Length: " + len + ", available: " + buf.Remaining());
             }
-            sbyte[] result = new sbyte[len];
+            byte[] result = new byte[len];
             buf.Get(result);
             return result;
         }
         
-        public static sbyte[] EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> sequence)
+        public static byte[] EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>> sequence)
         {
             int resultSize = 0;
-            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]> element in sequence)
+            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]> element in sequence)
             {
                 resultSize += 12 + element.GetSecond().Length;
             }
             SigningServer.Android.IO.ByteBuffer result = SigningServer.Android.IO.ByteBuffer.Allocate(resultSize);
             result.Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
-            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]> element in sequence)
+            foreach (SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]> element in sequence)
             {
-                sbyte[] second = element.GetSecond();
+                byte[] second = element.GetSecond();
                 result.PutInt(8 + second.Length);
                 result.PutInt(element.GetFirst());
                 result.PutInt(second.Length);

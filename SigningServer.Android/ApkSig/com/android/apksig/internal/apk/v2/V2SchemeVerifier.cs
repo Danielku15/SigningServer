@@ -221,12 +221,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
         internal static void ParseSigner(SigningServer.Android.IO.ByteBuffer signerBlock, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo result, SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
         {
             SigningServer.Android.IO.ByteBuffer signedData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signerBlock);
-            sbyte[] signedDataBytes = new sbyte[signedData.Remaining()];
+            byte[] signedDataBytes = new byte[signedData.Remaining()];
             signedData.Get(signedDataBytes);
             signedData.Flip();
             result.signedData = signedDataBytes;
             SigningServer.Android.IO.ByteBuffer signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signerBlock);
-            sbyte[] publicKeyBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(signerBlock);
+            byte[] publicKeyBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(signerBlock);
             int signatureCount = 0;
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SupportedSignature> supportedSignatures = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SupportedSignature>(1);
             while (signatures.HasRemaining())
@@ -236,7 +236,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 {
                     SigningServer.Android.IO.ByteBuffer signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(signatures);
                     int sigAlgorithmId = signature.GetInt();
-                    sbyte[] sigBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(signature);
+                    byte[] sigBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(signature);
                     result.signatures.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.Signature(sigAlgorithmId, sigBytes));
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm signatureAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(sigAlgorithmId);
                     if (signatureAlgorithm == null)
@@ -293,7 +293,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                     }
                     signedData.Position(0);
                     sig.Update(signedData);
-                    sbyte[] sigBytes = signature.signature;
+                    byte[] sigBytes = signature.signature;
                     if (!sig.Verify(sigBytes))
                     {
                         result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V2_SIG_DID_NOT_VERIFY, signatureAlgorithm);
@@ -316,7 +316,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
             while (certificates.HasRemaining())
             {
                 certificateIndex++;
-                sbyte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(certificates);
+                byte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(certificates);
                 SigningServer.Android.Security.Cert.X509Certificate certificate;
                 try
                 {
@@ -336,7 +336,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 return;
             }
             SigningServer.Android.Security.Cert.X509Certificate mainCertificate = result.certs.Get(0);
-            sbyte[] certificatePublicKeyBytes;
+            byte[] certificatePublicKeyBytes;
             try
             {
                 certificatePublicKeyBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodePublicKey(mainCertificate.GetPublicKey());
@@ -360,7 +360,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 {
                     SigningServer.Android.IO.ByteBuffer digest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(digests);
                     int sigAlgorithmId = digest.GetInt();
-                    sbyte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(digest);
+                    byte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ReadLengthPrefixedByteArray(digest);
                     result.contentDigests.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest(sigAlgorithmId, digestBytes));
                 }
                 catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Apk.ApkFormatException || e is SigningServer.Android.IO.BufferUnderflowException)
@@ -394,7 +394,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V2
                 {
                     SigningServer.Android.IO.ByteBuffer attribute = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(additionalAttributes);
                     int id = attribute.GetInt();
-                    sbyte[] value = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(attribute);
+                    byte[] value = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(attribute);
                     result.additionalAttributes.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.AdditionalAttribute(id, value));
                     switch (id)
                     {

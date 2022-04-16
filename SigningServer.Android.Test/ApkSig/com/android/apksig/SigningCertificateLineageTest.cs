@@ -96,7 +96,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             Com.Android.Apksig.SigningCertificateLineage lineage = CreateLineageWithSignersFromResources(SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             lineage = UpdateLineageWithSignerFromResources(lineage, SigningServer.Android.Com.Android.Apksig.SigningCertificateLineageTest.THIRD_RSA_2048_SIGNER_RESOURCE_NAME);
-            sbyte[] lineageBytes = lineage.GetBytes();
+            byte[] lineageBytes = lineage.GetBytes();
             lineage = Com.Android.Apksig.SigningCertificateLineage.ReadFromBytes(lineageBytes);
             AssertLineageContainsExpectedSigners(lineage, mSigners);
         }

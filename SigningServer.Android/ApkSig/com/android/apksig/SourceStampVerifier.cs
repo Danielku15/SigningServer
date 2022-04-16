@@ -148,7 +148,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     result.AddVerificationError(stampSigningBlockFound ? SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST : SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING);
                     return result;
                 }
-                sbyte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                byte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
                 if (expectedCertDigest != null)
                 {
                     string actualCertDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ToHex(sourceStampCertificateDigest);
@@ -158,7 +158,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         return result;
                     }
                 }
-                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>>();
                 if (mMaxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.P)
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureInfo signatureInfo;
@@ -172,7 +172,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     }
                     if (signatureInfo != null)
                     {
-                        SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+                        SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
                         SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.ParseSigners(signatureInfo.signatureBlock, SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V3, apkContentDigests, result);
                         signatureSchemeApkContentDigests.Put(SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V3, apkContentDigests);
                     }
@@ -190,14 +190,14 @@ namespace SigningServer.Android.Com.Android.Apksig
                     }
                     if (signatureInfo != null)
                     {
-                        SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+                        SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
                         SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.ParseSigners(signatureInfo.signatureBlock, SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V2, apkContentDigests, result);
                         signatureSchemeApkContentDigests.Put(SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V2, apkContentDigests);
                     }
                 }
                 if (mMinSdkVersion < SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N || signatureSchemeApkContentDigests.IsEmpty())
                 {
-                    SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.GetApkContentDigestFromV1SigningScheme(cdRecords, apk, zipSections, result);
+                    SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.GetApkContentDigestFromV1SigningScheme(cdRecords, apk, zipSections, result);
                     signatureSchemeApkContentDigests.Put(SigningServer.Android.Com.Android.Apksig.Constants.VERSION_JAR_SIGNATURE_SCHEME, apkContentDigests);
                 }
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigResult sourceStampResult = SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.V2SourceStampVerifier.Verify(
@@ -240,7 +240,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// expected to be encountered on an Android platform version in the
         /// {@code [minSdkVersion, maxSdkVersion]} range.
         /// </summary>
-        public static void ParseSigners(SigningServer.Android.IO.ByteBuffer apkSignatureSchemeBlock, int apkSigSchemeVersion, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result result)
+        public static void ParseSigners(SigningServer.Android.IO.ByteBuffer apkSignatureSchemeBlock, int apkSigSchemeVersion, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result result)
         {
             bool isV2Block = apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V2;
             SigningServer.Android.IO.ByteBuffer signers;
@@ -303,7 +303,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// expected to be encountered on an Android platform version in the
         /// {@code [minSdkVersion, maxSdkVersion]} range.
         /// </summary>
-        internal static void ParseSigner(SigningServer.Android.IO.ByteBuffer signerBlock, int apkSigSchemeVersion, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo signerInfo)
+        internal static void ParseSigner(SigningServer.Android.IO.ByteBuffer signerBlock, int apkSigSchemeVersion, SigningServer.Android.Security.Cert.CertificateFactory certFactory, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result.SignerInfo signerInfo)
         {
             bool isV2Signer = apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Constants.VERSION_APK_SIGNATURE_SCHEME_V2;
             SigningServer.Android.IO.ByteBuffer signedData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.GetLengthPrefixedSlice(signerBlock);
@@ -315,7 +315,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 {
                     SigningServer.Android.IO.ByteBuffer digest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.GetLengthPrefixedSlice(digests);
                     int sigAlgorithmId = digest.GetInt();
-                    sbyte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(digest);
+                    byte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(digest);
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm signatureAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(sigAlgorithmId);
                     if (signatureAlgorithm == null)
                     {
@@ -331,7 +331,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             if (certificates.HasRemaining())
             {
-                sbyte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(certificates);
+                byte[] encodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsLite.ReadLengthPrefixedByteArray(certificates);
                 SigningServer.Android.Security.Cert.X509Certificate certificate;
                 try
                 {
@@ -360,11 +360,11 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// &lt;p&gt;If any errors are encountered while parsing the V1 signers the provided {@code result}
         /// will be updated to include a warning, but the source stamp verification can still proceed.
         /// </summary>
-        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> GetApkContentDigestFromV1SigningScheme(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Zip.ZipSections zipSections, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result result)
+        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> GetApkContentDigestFromV1SigningScheme(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Zip.ZipSections zipSections, SigningServer.Android.Com.Android.Apksig.SourceStampVerifier.Result result)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord manifestCdRecord = null;
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> signatureBlockRecords = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord>(1);
-            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> v1ContentDigest = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> v1ContentDigest = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord cdRecord in cdRecords)
             {
                 string cdRecordName = cdRecord.GetName();
@@ -397,7 +397,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     try
                     {
                         SigningServer.Android.Security.Cert.CertificateFactory certFactory = SigningServer.Android.Security.Cert.CertificateFactory.GetInstance("X.509");
-                        sbyte[] signatureBlockBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, signatureBlockRecord, zipSections.GetZipCentralDirectoryOffset());
+                        byte[] signatureBlockBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, signatureBlockRecord, zipSections.GetZipCentralDirectoryOffset());
                         foreach (SigningServer.Android.Security.Cert.Certificate certificate in certFactory.GenerateCertificates(new SigningServer.Android.IO.ByteArrayInputStream(signatureBlockBytes)))
                         {
                             if (certificate is SigningServer.Android.Security.Cert.X509Certificate)
@@ -422,7 +422,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             try
             {
-                sbyte[] manifestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, manifestCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                byte[] manifestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, manifestCdRecord, zipSections.GetZipCentralDirectoryOffset());
                 v1ContentDigest.Put(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.SHA256, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtilsLite.ComputeSha256DigestBytes(manifestBytes));
                 return v1ContentDigest;
             }

@@ -20,7 +20,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             mEncoded = encoded.Slice();
         }
         
-        public Asn1OpaqueObject(sbyte[] encoded)
+        public Asn1OpaqueObject(byte[] encoded)
         {
             mEncoded = SigningServer.Android.IO.ByteBuffer.Wrap(encoded);
         }

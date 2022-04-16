@@ -1,4 +1,6 @@
-﻿namespace SigningServer.Android.Util.Zip
+﻿using System;
+
+namespace SigningServer.Android.Util.Zip
 {
     public class Inflater
     {
@@ -9,9 +11,9 @@
             mInflater = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater(nowrap);
         }
 
-        public void SetInput(sbyte[] buf, int offset, int length)
+        public void SetInput(byte[] buf, int offset, int length)
         {
-            mInflater.SetInput(buf.AsBytes(), offset, length);
+            mInflater.SetInput(buf, offset, length);
         }
 
         public bool Finished()
@@ -19,9 +21,9 @@
             return mInflater.IsFinished;
         }
 
-        public int Inflate(sbyte[] outputBuffer)
+        public int Inflate(byte[] outputBuffer)
         {
-            return mInflater.Inflate(outputBuffer.AsBytes());
+            return mInflater.Inflate(outputBuffer);
         }
 
         public void End()

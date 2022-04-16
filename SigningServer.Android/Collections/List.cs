@@ -98,7 +98,7 @@ namespace SigningServer.Android.Collections
                 if (i >= mList.Count)
                     throw new IndexOutOfRangeException();
                 mCursor = i + 1;
-                
+
                 return mList[mLastRet = i];
             }
         }
@@ -111,6 +111,32 @@ namespace SigningServer.Android.Collections
         public List<T> SubList(int fromIndex, int toIndex)
         {
             return new List<T>(GetRange(fromIndex, toIndex - fromIndex));
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj == null)
+            {
+                return false;
+            }
+
+            return GetHashCode() == obj.GetHashCode();
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1;
+            foreach (var item in this)
+            {
+                hashCode = 31 * hashCode + (item == null ? 0 : item.GetHashCode());
+            }
+
+            return hashCode;
         }
     }
 }

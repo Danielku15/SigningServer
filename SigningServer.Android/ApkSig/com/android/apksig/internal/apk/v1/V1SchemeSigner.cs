@@ -193,7 +193,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// @throws SignatureException if an error occurs when computing digests of generating
         ///         signatures
         /// </summary>
-        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, sbyte[]>> Sign(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig> signerConfigs, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm jarEntryDigestAlgorithm, SigningServer.Android.Collections.Map<string, sbyte[]> jarEntryDigests, SigningServer.Android.Collections.List<int?> apkSigningSchemeIds, sbyte[] sourceManifestBytes, string createdBy)
+        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, byte[]>> Sign(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig> signerConfigs, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm jarEntryDigestAlgorithm, SigningServer.Android.Collections.Map<string, byte[]> jarEntryDigests, SigningServer.Android.Collections.List<int?> apkSigningSchemeIds, byte[] sourceManifestBytes, string createdBy)
         {
             if (signerConfigs.IsEmpty())
             {
@@ -214,18 +214,18 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// @throws SignatureException if an error occurs when computing digests of generating
         ///         signatures
         /// </summary>
-        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, sbyte[]>> SignManifest(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig> signerConfigs, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm, SigningServer.Android.Collections.List<int?> apkSigningSchemeIds, string createdBy, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile manifest)
+        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, byte[]>> SignManifest(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig> signerConfigs, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm, SigningServer.Android.Collections.List<int?> apkSigningSchemeIds, string createdBy, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile manifest)
         {
             if (signerConfigs.IsEmpty())
             {
                 throw new System.ArgumentException("At least one signer config must be provided");
             }
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, sbyte[]>> signatureJarEntries = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, sbyte[]>>(2 * signerConfigs.Size() + 1);
-            sbyte[] sfBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GenerateSignatureFile(apkSigningSchemeIds, digestAlgorithm, createdBy, manifest);
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, byte[]>> signatureJarEntries = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, byte[]>>(2 * signerConfigs.Size() + 1);
+            byte[] sfBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GenerateSignatureFile(apkSigningSchemeIds, digestAlgorithm, createdBy, manifest);
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig signerConfig in signerConfigs)
             {
                 string signerName = signerConfig.name;
-                sbyte[] signatureBlock;
+                byte[] signatureBlock;
                 try
                 {
                     signatureBlock = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GenerateSignatureBlock(signerConfig, sfBytes);
@@ -242,12 +242,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     throw new SigningServer.Android.Security.SignatureException("Failed to sign using signer \\" + signerName + "\\", e);
                 }
-                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>("META-INF/" + signerName + ".SF", sfBytes));
+                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, byte[]>("META-INF/" + signerName + ".SF", sfBytes));
                 SigningServer.Android.Security.PublicKey publicKey = signerConfig.certificates.Get(0).GetPublicKey();
                 string signatureBlockFileName = "META-INF/" + signerName + "." + publicKey.GetAlgorithm().ToUpperCase(SigningServer.Android.Util.Locale.US);
-                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(signatureBlockFileName, signatureBlock));
+                signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, byte[]>(signatureBlockFileName, signatureBlock));
             }
-            signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, sbyte[]>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.MANIFEST_ENTRY_NAME, manifest.contents));
+            signatureJarEntries.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<string, byte[]>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.MANIFEST_ENTRY_NAME, manifest.contents));
             return signatureJarEntries;
         }
         
@@ -273,7 +273,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// Generated and returns the {@code META-INF/MANIFEST.MF} file based on the provided (optional)
         /// input {@code MANIFEST.MF} and digests of JAR entries covered by the manifest.
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile GenerateManifestFile(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm jarEntryDigestAlgorithm, SigningServer.Android.Collections.Map<string, sbyte[]> jarEntryDigests, sbyte[] sourceManifestBytes)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile GenerateManifestFile(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm jarEntryDigestAlgorithm, SigningServer.Android.Collections.Map<string, byte[]> jarEntryDigests, byte[] sourceManifestBytes)
         {
             SigningServer.Android.Util.Jar.Manifest sourceManifest = null;
             if (sourceManifestBytes != null)
@@ -307,16 +307,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             }
             SigningServer.Android.Collections.List<string> sortedEntryNames = new SigningServer.Android.Collections.List<string>(jarEntryDigests.KeySet());
             SigningServer.Android.Util.Collections.Sort(sortedEntryNames);
-            SigningServer.Android.Collections.SortedMap<string, sbyte[]> invidualSectionsContents = new SigningServer.Android.Collections.TreeMap<string, sbyte[]>();
+            SigningServer.Android.Collections.SortedMap<string, byte[]> invidualSectionsContents = new SigningServer.Android.Collections.TreeMap<string, byte[]>();
             string entryDigestAttributeName = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GetEntryDigestAttributeName(jarEntryDigestAlgorithm);
             foreach (string entryName in sortedEntryNames)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.CheckEntryNameValid(entryName);
-                sbyte[] entryDigest = jarEntryDigests.Get(entryName);
+                byte[] entryDigest = jarEntryDigests.Get(entryName);
                 SigningServer.Android.Util.Jar.Attributes entryAttrs = new SigningServer.Android.Util.Jar.Attributes();
                 entryAttrs.PutValue(entryDigestAttributeName, SigningServer.Android.Util.Base64.GetEncoder().EncodeToString(entryDigest));
                 SigningServer.Android.IO.ByteArrayOutputStream sectionOut = new SigningServer.Android.IO.ByteArrayOutputStream();
-                sbyte[] sectionBytes;
+                byte[] sectionBytes;
                 try
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestWriter.WriteIndividualSection(sectionOut, entryName, entryAttrs);
@@ -349,15 +349,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         
         public class OutputManifestFile
         {
-            public sbyte[] contents;
+            public byte[] contents;
             
-            public SigningServer.Android.Collections.SortedMap<string, sbyte[]> individualSectionsContents;
+            public SigningServer.Android.Collections.SortedMap<string, byte[]> individualSectionsContents;
             
             public SigningServer.Android.Util.Jar.Attributes mainSectionAttributes;
             
         }
         
-        internal static sbyte[] GenerateSignatureFile(SigningServer.Android.Collections.List<int?> apkSignatureSchemeIds, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm manifestDigestAlgorithm, string createdBy, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile manifest)
+        internal static byte[] GenerateSignatureFile(SigningServer.Android.Collections.List<int?> apkSignatureSchemeIds, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm manifestDigestAlgorithm, string createdBy, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.OutputManifestFile manifest)
         {
             SigningServer.Android.Util.Jar.Manifest sf = new SigningServer.Android.Util.Jar.Manifest();
             SigningServer.Android.Util.Jar.Attributes mainAttrs = sf.GetMainAttributes();
@@ -388,11 +388,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 throw new SigningServer.Android.Core.RuntimeException("Failed to write in-memory .SF file", e);
             }
             string entryDigestAttributeName = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GetEntryDigestAttributeName(manifestDigestAlgorithm);
-            foreach (SigningServer.Android.Collections.MapEntry<string, sbyte[]> manifestSection in manifest.individualSectionsContents.EntrySet())
+            foreach (SigningServer.Android.Collections.MapEntry<string, byte[]> manifestSection in manifest.individualSectionsContents.EntrySet())
             {
                 string sectionName = manifestSection.GetKey();
-                sbyte[] sectionContents = manifestSection.GetValue();
-                sbyte[] sectionDigest = md.Digest(sectionContents);
+                byte[] sectionContents = manifestSection.GetValue();
+                byte[] sectionDigest = md.Digest(sectionContents);
                 SigningServer.Android.Util.Jar.Attributes attrs = new SigningServer.Android.Util.Jar.Attributes();
                 attrs.PutValue(entryDigestAttributeName, SigningServer.Android.Util.Base64.GetEncoder().EncodeToString(sectionDigest));
                 try
@@ -422,7 +422,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// Generates the CMS PKCS #7 signature block corresponding to the provided signature file and
         /// signing configuration.
         /// </summary>
-        internal static sbyte[] GenerateSignatureBlock(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig signerConfig, sbyte[] signatureFileBytes)
+        internal static byte[] GenerateSignatureBlock(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.SignerConfig signerConfig, byte[] signatureFileBytes)
         {
             SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> signerCerts = signerConfig.certificates;
             SigningServer.Android.Security.Cert.X509Certificate signingCert = signerCerts.Get(0);
@@ -430,7 +430,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.DigestAlgorithm digestAlgorithm = signerConfig.signatureDigestAlgorithm;
             SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<string, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier> signatureAlgs = SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier.GetSignerInfoSignatureAlgorithm(publicKey, digestAlgorithm, signerConfig.deterministicDsaSigning);
             string jcaSignatureAlgorithm = signatureAlgs.GetFirst();
-            sbyte[] signatureBytes;
+            byte[] signatureBytes;
             try
             {
                 SigningServer.Android.Security.Signature signature = SigningServer.Android.Security.Signature.GetInstance(jcaSignatureAlgorithm);

@@ -1,32 +1,52 @@
-﻿namespace SigningServer.Android.Util.Zip
+﻿using System;
+using System.IO;
+using Org.BouncyCastle.Utilities.Zlib;
+
+namespace SigningServer.Android.Util.Zip
 {
     public class Deflater
     {
-        private readonly ICSharpCode.SharpZipLib.Zip.Compression.Deflater mDeflater;
+        // NOTE: SharpZipLib deflater delivers different results than libs using ZLib. need 1:1 binary
+        // equality with ZLib for golden tests.
+        private ArraySegment<byte> mInput;
+        private readonly ZOutputStream mDeflater;
+        private readonly MemoryStream mOut;
 
         public Deflater(int level, bool nowrap)
         {
-            mDeflater = new ICSharpCode.SharpZipLib.Zip.Compression.Deflater(level, nowrap);
+            mOut = new MemoryStream();
+            mDeflater = new ZOutputStream(mOut, level, nowrap);
         }
 
-        public void SetInput(sbyte[] inputBuf, int inputOffset, int inputLength)
+        public void SetInput(byte[] inputBuf, int inputOffset, int inputLength)
         {
-            mDeflater.SetInput(inputBuf.AsBytes(), inputOffset, inputLength);
+            mInput = new ArraySegment<byte>(inputBuf, inputOffset, inputLength);
         }
 
         public void Finish()
         {
+            mDeflater.Write(mInput.Array, mInput.Offset, mInput.Count);
             mDeflater.Finish();
+            mOut.Position = 0;
+            mFinished = mOut.Position >= mOut.Length;
         }
 
+        private bool mFinished = false;
         public bool Finished()
         {
-            return mDeflater.IsFinished;
+            return mFinished;
         }
 
-        public int Deflate(sbyte[] buf)
+        public int Deflate(byte[] buf)
         {
-            return mDeflater.Deflate(buf.AsBytes());
+            var c = mOut.Read(buf, 0, buf.Length);
+            if (mOut.Position >= mOut.Length)
+            {
+                mFinished = true;
+                mDeflater.Dispose();
+            }
+
+            return c;
         }
     }
 }

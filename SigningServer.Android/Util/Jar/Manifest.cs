@@ -18,7 +18,7 @@ namespace SigningServer.Android.Util.Jar
         public Manifest(InputStream stream)
         {
             var ms = new ByteArrayOutputStream();
-            sbyte[] buf = new sbyte[4096];
+            byte[] buf = new byte[4096];
             int c;
             while ((c = stream.Read(buf)) > 0)
             {
@@ -31,7 +31,7 @@ namespace SigningServer.Android.Util.Jar
             mMainAttributes = new Attributes();
             foreach (var attribute in manifestMainSection.GetAttributes())
             {
-                mMainAttributes[attribute.GetName()] = attribute.GetValue();
+                mMainAttributes.Put(new Attributes.Name(attribute.GetName()), attribute.GetValue());
             }
 
             mEntries = new Dictionary<string, Attributes>();
@@ -41,10 +41,10 @@ namespace SigningServer.Android.Util.Jar
                 var attributes = new Attributes();
                 foreach (var attribute in section.GetAttributes())
                 {
-                    attributes[attribute.GetName()] = attribute.GetValue();
+                    attributes.Put(new Attributes.Name(attribute.GetName()), attribute.GetValue());
                 }
 
-                mEntries[section.GetName()] = attributes;
+                mEntries[section.GetName() ?? string.Empty] = attributes;
             }
         }
 

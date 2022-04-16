@@ -83,7 +83,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// Create a blob of bytes that PinnerService understands as a
         /// sequence of byte ranges to pin.
         /// </summary>
-        public static sbyte[] EncodeByteRangeList(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.ByteRange> pinByteRanges)
+        public static byte[] EncodeByteRangeList(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.ByteRange> pinByteRanges)
         {
             SigningServer.Android.IO.ByteArrayOutputStream bos = new SigningServer.Android.IO.ByteArrayOutputStream(pinByteRanges.Size() * 8);
             SigningServer.Android.IO.DataOutputStream output = new SigningServer.Android.IO.DataOutputStream(bos);
@@ -102,12 +102,12 @@ namespace SigningServer.Android.Com.Android.Apksig
             return bos.ToByteArray();
         }
         
-        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.PatternWithRange> ParsePinPatterns(sbyte[] patternBlob)
+        public static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.PatternWithRange> ParsePinPatterns(byte[] patternBlob)
         {
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.PatternWithRange> pinPatterns = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.PatternWithRange>();
             try
             {
-                foreach (string rawLine in SigningServer.Android.Core.StringExtensions.Create(patternBlob, "UTF-8").Split("\n"))
+                foreach (string rawLine in SigningServer.Android.Core.StringExtensions.Create(patternBlob, "UTF-8").TrimEnd().Split("\n"))
                 {
                     string line = rawLine.ReplaceFirst("#.*", "");
                     string[] fields = line.Split(" ");

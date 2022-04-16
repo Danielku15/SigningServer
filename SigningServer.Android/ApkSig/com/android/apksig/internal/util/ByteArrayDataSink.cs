@@ -16,7 +16,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     {
         internal static readonly int MAX_READ_CHUNK_SIZE = 65536;
         
-        internal sbyte[] mArray;
+        internal byte[] mArray;
         
         internal int mSize;
         
@@ -32,16 +32,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             {
                 throw new System.ArgumentException("initial capacity: " + initialCapacity);
             }
-            mArray = new sbyte[initialCapacity];
+            mArray = new byte[initialCapacity];
         }
         
-        public void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(byte[] buf, int offset, int length)
         {
             if (offset < 0)
             {
                 throw new System.IndexOutOfRangeException("offset: " + offset);
             }
-            if (offset > buf.Length)
+            if (offset > buf.Length || offset + length > buf.Length)
             {
                 throw new System.IndexOutOfRangeException("offset: " + offset + ", buf.length: " + buf.Length);
             }
@@ -67,7 +67,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 return;
             }
             EnsureAvailable(buf.Remaining());
-            sbyte[] tmp = new sbyte[SigningServer.Android.Core.Math.Min(buf.Remaining(), SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.MAX_READ_CHUNK_SIZE)];
+            byte[] tmp = new byte[SigningServer.Android.Core.Math.Min(buf.Remaining(), SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteArrayDataSink.MAX_READ_CHUNK_SIZE)];
             while (buf.HasRemaining())
             {
                 int chunkSize = SigningServer.Android.Core.Math.Min(buf.Remaining(), tmp.Length);

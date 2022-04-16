@@ -30,7 +30,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.AssertCopyToEquals("bcd", ds, 0, (int)ds.Size());
         }
         
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents)
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(byte[] contents)
         {
             return SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource.Of(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(contents)));
         }

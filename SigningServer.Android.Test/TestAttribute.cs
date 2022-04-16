@@ -22,8 +22,8 @@ namespace SigningServer.Android
                             new Exception($"Expected exception {Expected.FullName} but none thrown");
                     }
                     else if (testResult.Outcome == UnitTestOutcome.Failed && 
-                             testResult.TestFailureException != null && 
-                             testResult.TestFailureException.GetType().IsInstanceOfType(Expected))
+                             testResult.TestFailureException != null &&
+                             UnwrapTestException(testResult.TestFailureException).GetType().IsAssignableFrom(Expected))
                     {
                         testResult.Outcome = UnitTestOutcome.Passed;
                         testResult.TestFailureException = null;
@@ -31,6 +31,16 @@ namespace SigningServer.Android
                 }
             }
             return result;
+        }
+
+        private Exception UnwrapTestException(Exception exception)
+        {
+            if (exception.GetType().Name == "TestFailedException")
+            {
+                return exception.InnerException;
+            }
+
+            return exception;
         }
     }
 }

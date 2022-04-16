@@ -17,9 +17,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     {
         internal static SigningServer.Android.Security.Cert.CertificateFactory sCertFactory = null;
         
-        public static readonly sbyte[] BEGIN_CERT_HEADER = "-----BEGIN CERTIFICATE-----".GetBytes();
+        public static readonly byte[] BEGIN_CERT_HEADER = "-----BEGIN CERTIFICATE-----".GetBytes();
         
-        public static readonly sbyte[] END_CERT_FOOTER = "-----END CERTIFICATE-----".GetBytes();
+        public static readonly byte[] END_CERT_FOOTER = "-----END CERTIFICATE-----".GetBytes();
         
         internal static void BuildCertFactory()
         {
@@ -45,7 +45,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// </summary>
         public static SigningServer.Android.Security.Cert.X509Certificate GenerateCertificate(SigningServer.Android.IO.InputStream input)
         {
-            sbyte[] encodedForm;
+            byte[] encodedForm;
             try
             {
                 encodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteStreams.ToByteArray(input);
@@ -62,7 +62,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// 
         /// @throws CertificateException if the encodedForm cannot be decoded to a valid certificate.
         /// </summary>
-        public static SigningServer.Android.Security.Cert.X509Certificate GenerateCertificate(sbyte[] encodedForm)
+        public static SigningServer.Android.Security.Cert.X509Certificate GenerateCertificate(byte[] encodedForm)
         {
             if (SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.sCertFactory == null)
             {
@@ -77,31 +77,32 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// 
         /// @throws CertificateException if the encodedForm cannot be decoded to a valid certificate.
         /// </summary>
-        public static SigningServer.Android.Security.Cert.X509Certificate GenerateCertificate(sbyte[] encodedForm, SigningServer.Android.Security.Cert.CertificateFactory certFactory)
+        public static SigningServer.Android.Security.Cert.X509Certificate GenerateCertificate(byte[] encodedForm, SigningServer.Android.Security.Cert.CertificateFactory certFactory)
         {
             SigningServer.Android.Security.Cert.X509Certificate certificate;
+            try
+            {
+                SigningServer.Android.IO.ByteBuffer encodedCertBuffer = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GetNextDEREncodedCertificateBlock(SigningServer.Android.IO.ByteBuffer.Wrap(encodedForm));
+                int startingPos = encodedCertBuffer.Position();
+                SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate>(encodedCertBuffer);
+                byte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
+                certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(reencodedForm));
+                byte[] originalEncoding = new byte[encodedCertBuffer.Position() - startingPos];
+                encodedCertBuffer.Position(startingPos);
+                encodedCertBuffer.Get(originalEncoding);
+                SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate guaranteedEncodedCert = new SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
+                return guaranteedEncodedCert;
+            }
+            catch (System.Exception e)
+            {
+            }
+            
             try
             {
                 certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(encodedForm));
                 return certificate;
             }
             catch (SigningServer.Android.Security.Cert.CertificateException e)
-            {
-            }
-            try
-            {
-                SigningServer.Android.IO.ByteBuffer encodedCertBuffer = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GetNextDEREncodedCertificateBlock(SigningServer.Android.IO.ByteBuffer.Wrap(encodedForm));
-                int startingPos = encodedCertBuffer.Position();
-                SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate>(encodedCertBuffer);
-                sbyte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
-                certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(reencodedForm));
-                sbyte[] originalEncoding = new sbyte[encodedCertBuffer.Position() - startingPos];
-                encodedCertBuffer.Position(startingPos);
-                encodedCertBuffer.Get(originalEncoding);
-                SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate guaranteedEncodedCert = new SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
-                return guaranteedEncodedCert;
-            }
-            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException || e is SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException || e is SigningServer.Android.Security.Cert.CertificateException)
             {
                 throw new SigningServer.Android.Security.Cert.CertificateException("Failed to parse certificate", e);
             }
@@ -132,7 +133,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// </summary>
         public static SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.Certificate> GenerateCertificates(SigningServer.Android.IO.InputStream input, SigningServer.Android.Security.Cert.CertificateFactory certFactory)
         {
-            sbyte[] encodedCerts;
+            byte[] encodedCerts;
             try
             {
                 encodedCerts = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteStreams.ToByteArray(input);
@@ -143,13 +144,6 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             try
             {
-                return certFactory.GenerateCertificates(new SigningServer.Android.IO.ByteArrayInputStream(encodedCerts));
-            }
-            catch (SigningServer.Android.Security.Cert.CertificateException e)
-            {
-            }
-            try
-            {
                 SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.Certificate> certificates = new SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.Certificate>(1);
                 SigningServer.Android.IO.ByteBuffer encodedCertsBuffer = SigningServer.Android.IO.ByteBuffer.Wrap(encodedCerts);
                 while (encodedCertsBuffer.HasRemaining())
@@ -157,9 +151,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                     SigningServer.Android.IO.ByteBuffer certBuffer = SigningServer.Android.Com.Android.Apksig.Internal.Util.X509CertificateUtils.GetNextDEREncodedCertificateBlock(encodedCertsBuffer);
                     int startingPos = certBuffer.Position();
                     SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate reencodedCert = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.Parse<SigningServer.Android.Com.Android.Apksig.Internal.X509.Certificate>(certBuffer);
-                    sbyte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
+                    byte[] reencodedForm = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.Encode(reencodedCert);
                     SigningServer.Android.Security.Cert.X509Certificate certificate = (SigningServer.Android.Security.Cert.X509Certificate)certFactory.GenerateCertificate(new SigningServer.Android.IO.ByteArrayInputStream(reencodedForm));
-                    sbyte[] originalEncoding = new sbyte[certBuffer.Position() - startingPos];
+                    byte[] originalEncoding = new byte[certBuffer.Position() - startingPos];
                     certBuffer.Position(startingPos);
                     certBuffer.Get(originalEncoding);
                     SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate guaranteedEncodedCert = new SigningServer.Android.Com.Android.Apksig.Internal.Util.GuaranteedEncodedFormX509Certificate(certificate, originalEncoding);
@@ -167,10 +161,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 }
                 return certificates;
             }
-            catch (System.Exception e) when ( e is SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DecodingException || e is SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException)
+            catch (System.Exception e)
             {
-                throw new SigningServer.Android.Security.Cert.CertificateException("Failed to parse certificates", e);
             }
+            
+            
+            return certFactory.GenerateCertificates(new SigningServer.Android.IO.ByteArrayInputStream(encodedCerts));
         }
         
         /// <summary>
@@ -234,7 +230,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                     throw new SigningServer.Android.Security.Cert.CertificateException("The provided input contains the PEM certificate header without a " + "valid certificate footer");
                 }
             }
-            sbyte[] derEncoding = SigningServer.Android.Util.Base64.GetDecoder().Decode(pemEncoding.ToString());
+            byte[] derEncoding = SigningServer.Android.Util.Base64.GetDecoder().Decode(pemEncoding.ToString());
             int nextEncodedChar = certificateBuffer.Position();
             while (certificateBuffer.HasRemaining())
             {

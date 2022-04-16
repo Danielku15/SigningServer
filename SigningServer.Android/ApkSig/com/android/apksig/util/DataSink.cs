@@ -22,7 +22,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         /// @throws IndexOutOfBoundsException if {@code offset} or {@code length} are negative, or if
         ///         {@code offset + length} is greater than {@code buf.length}.
         /// </summary>
-        public void Consume(sbyte[] buf, int offset, int length);
+        public void Consume(byte[] buf, int offset, int length);
         
         /// <summary>
         /// Consumes all remaining data in the provided buffer and advances the buffer's position

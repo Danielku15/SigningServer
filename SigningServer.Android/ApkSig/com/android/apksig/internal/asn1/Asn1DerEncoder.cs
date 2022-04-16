@@ -5,6 +5,8 @@
 // </auto-generated>
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
@@ -33,7 +35,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         ///        &lt;/ul&gt;
         /// @throws Asn1EncodingException if the input could not be encoded
         /// </summary>
-        public static sbyte[] Encode(object container)
+        public static byte[] Encode(object container)
         {
             var containerClass = container.GetType();
             SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class containerAnnotation = containerClass.GetCustomAttribute<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Class>();
@@ -55,7 +57,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             }
         }
         
-        internal static sbyte[] ToChoice(object container)
+        internal static byte[] ToChoice(object container)
         {
             var containerClass = container.GetType();
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> fields = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.GetAnnotatedFields(container);
@@ -83,12 +85,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             return resultField.ToDer();
         }
         
-        internal static sbyte[] ToSequence(object container)
+        internal static byte[] ToSequence(object container)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequence(container, false);
         }
         
-        internal static sbyte[] ToSequence(object container, bool omitTag)
+        internal static byte[] ToSequence(object container, bool omitTag)
         {
             var containerClass = container.GetType();
             SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField> fields = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.GetAnnotatedFields(container);
@@ -105,11 +107,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                     lastField = field;
                 }
             }
-            SigningServer.Android.Collections.List<sbyte[]> serializedFields = new SigningServer.Android.Collections.List<sbyte[]>(fields.Size());
+            SigningServer.Android.Collections.List<byte[]> serializedFields = new SigningServer.Android.Collections.List<byte[]>(fields.Size());
             int contentLen = 0;
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.AnnotatedField field in fields)
             {
-                sbyte[] serializedField;
+                byte[] serializedField;
                 try
                 {
                     serializedField = field.ToDer();
@@ -126,9 +128,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             }
             if (omitTag)
             {
-                sbyte[] unencodedResult = new sbyte[contentLen];
+                byte[] unencodedResult = new byte[contentLen];
                 int index = 0;
-                foreach (sbyte[] serializedField in serializedFields)
+                foreach (byte[] serializedField in serializedFields)
                 {
                     SigningServer.Android.Core.System.Arraycopy(serializedField, 0, unencodedResult, index, serializedField.Length);
                     index += serializedField.Length;
@@ -141,19 +143,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             }
         }
         
-        internal static sbyte[] ToSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
+        internal static byte[] ToSetOf(ICollection values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOrSetOf(values, elementType, true);
         }
         
-        internal static sbyte[] ToSequenceOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
+        internal static byte[] ToSequenceOf(ICollection values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOrSetOf(values, elementType, false);
         }
         
-        internal static sbyte[] ToSequenceOrSetOf(SigningServer.Android.Collections.Collection<object> values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType, bool toSet)
+        internal static byte[] ToSequenceOrSetOf(ICollection values, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? elementType, bool toSet)
         {
-            SigningServer.Android.Collections.List<sbyte[]> serializedValues = new SigningServer.Android.Collections.List<sbyte[]>(values.Size());
+            SigningServer.Android.Collections.List<byte[]> serializedValues = new SigningServer.Android.Collections.List<byte[]>(values.Count);
             foreach (object value in values)
             {
                 serializedValues.Add(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.JavaToDerConverter.ToDer(value, elementType, null));
@@ -179,11 +181,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         /// two arrays are compared in ascending order. Elements at out of range indices are assumed to
         /// be smaller than the smallest possible value for an element.
         /// </summary>
-        internal class ByteArrayLexicographicComparator: System.Collections.Generic.IComparer<sbyte[]>
+        internal class ByteArrayLexicographicComparator: System.Collections.Generic.IComparer<byte[]>
         {
             internal static readonly SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ByteArrayLexicographicComparator INSTANCE = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ByteArrayLexicographicComparator();
             
-            public int Compare(sbyte[] arr1, sbyte[] arr2)
+            public int Compare(byte[] arr1, byte[] arr2)
             {
                 int commonLength = SigningServer.Android.Core.Math.Min(arr1.Length, arr2.Length);
                 for (int i = 0;i < commonLength;i++)
@@ -229,39 +231,39 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             return result;
         }
         
-        internal static sbyte[] ToInteger(int value)
+        internal static byte[] ToInteger(int value)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToInteger((long)value);
         }
         
-        internal static sbyte[] ToInteger(int? value)
+        internal static byte[] ToInteger(int? value)
         {
             return ToInteger(value.Value);
         }
         
-        internal static sbyte[] ToInteger(long value)
+        internal static byte[] ToInteger(long value)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToInteger(SigningServer.Android.Math.BigInteger.ValueOf(value));
         }
         
-        internal static sbyte[] ToInteger(long? value)
+        internal static byte[] ToInteger(long? value)
         {
             return ToInteger(value.Value);
         }
         
-        internal static sbyte[] ToInteger(SigningServer.Android.Math.BigInteger value)
+        internal static byte[] ToInteger(SigningServer.Android.Math.BigInteger value)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.CreateTag(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_CLASS_UNIVERSAL, false, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_INTEGER, value.ToByteArray());
         }
 
-        internal static sbyte[] ToBoolean(bool? value)
+        internal static byte[] ToBoolean(bool? value)
         {
             return ToBoolean(value.Value);
         }
         
-        internal static sbyte[] ToBoolean(bool value)
+        internal static byte[] ToBoolean(bool value)
         {
-            sbyte[] result = new sbyte[1];
+            byte[] result = new byte[1];
             if (value == false)
             {
                 result[0] = 0;
@@ -273,10 +275,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.CreateTag(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_CLASS_UNIVERSAL, false, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_BOOLEAN, result);
         }
         
-        internal static sbyte[] ToOid(string oid)
+        internal static byte[] ToOid(string oid)
         {
             SigningServer.Android.IO.ByteArrayOutputStream encodedValue = new SigningServer.Android.IO.ByteArrayOutputStream();
-            string[] nodes = oid.Split("\\.");
+            string[] nodes = oid.Split(".");
             if (nodes.Length < 2)
             {
                 throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("OBJECT IDENTIFIER must contain at least two nodes: " + oid);
@@ -439,7 +441,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 return mAnnotation;
             }
             
-            public virtual sbyte[] ToDer()
+            public virtual byte[] ToDer()
             {
                 object fieldValue = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.GetMemberFieldValue(mObject, mField);
                 if (fieldValue == null)
@@ -450,7 +452,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                     }
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1EncodingException("Required field not set");
                 }
-                sbyte[] encoded = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.JavaToDerConverter.ToDer(fieldValue, mDataType, mElementDataType);
+                byte[] encoded = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.JavaToDerConverter.ToDer(fieldValue, mDataType, mElementDataType);
                 switch (mTagging)
                 {
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Tagging.NORMAL:
@@ -477,66 +479,66 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             
         }
         
-        internal static sbyte[] CreateTag(int tagClass, bool constructed, int tagNumber, params sbyte[][] contents)
+        internal static byte[] CreateTag(int tagClass, bool constructed, int tagNumber, params byte[][] contents)
         {
             if (tagNumber >= 0x1f)
             {
                 throw new System.ArgumentException("High tag numbers not supported: " + tagNumber);
             }
-            sbyte firstIdentifierByte = (sbyte)((tagClass << 6) | (constructed ? 1 << 5 : 0) | tagNumber);
+            byte firstIdentifierByte = (byte)((tagClass << 6) | (constructed ? 1 << 5 : 0) | tagNumber);
             int contentsLength = 0;
-            foreach (sbyte[] c in contents)
+            foreach (byte[] c in contents)
             {
                 contentsLength += c.Length;
             }
             int contentsPosInResult;
-            sbyte[] result;
+            byte[] result;
             if (contentsLength < 0x80)
             {
                 contentsPosInResult = 2;
-                result = new sbyte[contentsPosInResult + contentsLength];
+                result = new byte[contentsPosInResult + contentsLength];
                 result[0] = firstIdentifierByte;
-                result[1] = (sbyte)contentsLength;
+                result[1] = (byte)contentsLength;
             }
             else 
             {
                 if (contentsLength <= 0xff)
                 {
                     contentsPosInResult = 3;
-                    result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = unchecked((sbyte)0x81);
-                    result[2] = (sbyte)contentsLength;
+                    result = new byte[contentsPosInResult + contentsLength];
+                    result[1] = (byte)0x81;
+                    result[2] = (byte)contentsLength;
                 }
                 else if (contentsLength <= 0xffff)
                 {
                     contentsPosInResult = 4;
-                    result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = unchecked((sbyte)0x82);
-                    result[2] = (sbyte)(contentsLength >> 8);
-                    result[3] = (sbyte)(contentsLength & 0xff);
+                    result = new byte[contentsPosInResult + contentsLength];
+                    result[1] = (byte)0x82;
+                    result[2] = (byte)(contentsLength >> 8);
+                    result[3] = (byte)(contentsLength & 0xff);
                 }
                 else if (contentsLength <= 0xffffff)
                 {
                     contentsPosInResult = 5;
-                    result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = unchecked((sbyte)0x83);
-                    result[2] = (sbyte)(contentsLength >> 16);
-                    result[3] = (sbyte)((contentsLength >> 8) & 0xff);
-                    result[4] = (sbyte)(contentsLength & 0xff);
+                    result = new byte[contentsPosInResult + contentsLength];
+                    result[1] = (byte)0x83;
+                    result[2] = (byte)(contentsLength >> 16);
+                    result[3] = (byte)((contentsLength >> 8) & 0xff);
+                    result[4] = (byte)(contentsLength & 0xff);
                 }
                 else 
                 {
                     contentsPosInResult = 6;
-                    result = new sbyte[contentsPosInResult + contentsLength];
-                    result[1] = unchecked((sbyte)0x84);
-                    result[2] = (sbyte)(contentsLength >> 24);
-                    result[3] = (sbyte)((contentsLength >> 16) & 0xff);
-                    result[4] = (sbyte)((contentsLength >> 8) & 0xff);
-                    result[5] = (sbyte)(contentsLength & 0xff);
+                    result = new byte[contentsPosInResult + contentsLength];
+                    result[1] = (byte)0x84;
+                    result[2] = (byte)(contentsLength >> 24);
+                    result[3] = (byte)((contentsLength >> 16) & 0xff);
+                    result[4] = (byte)((contentsLength >> 8) & 0xff);
+                    result[5] = (byte)(contentsLength & 0xff);
                 }
                 result[0] = firstIdentifierByte;
             }
-            foreach (sbyte[] c in contents)
+            foreach (byte[] c in contents)
             {
                 SigningServer.Android.Core.System.Arraycopy(c, 0, result, contentsPosInResult, c.Length);
                 contentsPosInResult += c.Length;
@@ -550,13 +552,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
             {
             }
             
-            public static sbyte[] ToDer(object source, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetType, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetElementType)
+            public static byte[] ToDer(object source, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetType, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type? targetElementType)
             {
                 var sourceType = source.GetType();
                 if (typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject).Equals(sourceType))
                 {
                     SigningServer.Android.IO.ByteBuffer buf = ((SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject)source).GetEncoded();
-                    sbyte[] result = new sbyte[buf.Remaining()];
+                    byte[] result = new byte[buf.Remaining()];
                     buf.Get(result);
                     return result;
                 }
@@ -568,16 +570,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.OCTET_STRING:
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.BIT_STRING:
-                        sbyte[] value = null;
+                        byte[] value = null;
                         if (source is SigningServer.Android.IO.ByteBuffer)
                         {
                             SigningServer.Android.IO.ByteBuffer buf = (SigningServer.Android.IO.ByteBuffer)source;
-                            value = new sbyte[buf.Remaining()];
+                            value = new byte[buf.Remaining()];
                             buf.Slice().Get(value);
                         }
-                        else if (source is sbyte[])
+                        else if (source is byte[])
                         {
-                            value = (sbyte[])source;
+                            value = (byte[])source;
                         }
                         if (value != null)
                         {
@@ -636,9 +638,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                             break;
                         }
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SET_OF:
-                        return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSetOf((SigningServer.Android.Collections.Collection<object>)source, targetElementType);
+                        return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSetOf((ICollection)source, targetElementType);
                     case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE_OF:
-                        return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOf((SigningServer.Android.Collections.Collection<object>)source, targetElementType);
+                        return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1DerEncoder.ToSequenceOf((ICollection)source, targetElementType);
                     default:
                         break;
                 }
@@ -650,7 +652,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         /// <summary>
         /// ASN.1 DER-encoded {@code NULL}.
         /// </summary>
-        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject ASN1_DER_NULL = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject(new sbyte[]{
+        public static readonly SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject ASN1_DER_NULL = new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject(new byte[]{
             SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.TAG_NUMBER_NULL, 0}
         );
         

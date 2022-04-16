@@ -20,7 +20,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         /// <summary>
         /// Returns a new {@link DataSource} containing the provided contents.
         /// </summary>
-        protected abstract SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents);
+        protected abstract SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(byte[] contents);
         
         protected virtual SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(string contents)
         {
@@ -254,7 +254,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         
         protected static void AssertCopyToEquals(string expectedContents, Com.Android.Apksig.Util.DataSource ds, long offset, int size)
         {
-            sbyte[] arr = new sbyte[size + 10];
+            byte[] arr = new byte[size + 10];
             SigningServer.Android.IO.ByteBuffer buf = SigningServer.Android.IO.ByteBuffer.Wrap(arr, 1, size + 5);
             buf.Position(2);
             AssertEquals(size + 4, buf.Remaining());
@@ -304,7 +304,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         /// </summary>
         public static string ToString(SigningServer.Android.IO.ByteBuffer buf)
         {
-            sbyte[] arr;
+            byte[] arr;
             int offset;
             int size = buf.Remaining();
             if (buf.HasArray())
@@ -314,7 +314,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             }
             else 
             {
-                arr = new sbyte[buf.Remaining()];
+                arr = new byte[buf.Remaining()];
                 offset = 0;
                 int oldPos = buf.Position();
                 buf.Get(arr);
@@ -369,7 +369,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
         {
             internal static readonly SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink INSTANCE = new SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.NullDataSink();
             
-            public void Consume(sbyte[] buf, int offset, int length)
+            public void Consume(byte[] buf, int offset, int length)
             {
             }
             

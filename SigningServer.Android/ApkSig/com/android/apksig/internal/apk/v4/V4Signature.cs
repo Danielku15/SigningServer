@@ -15,19 +15,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         public static readonly int HASHING_ALGORITHM_SHA256 = 1;
         
-        public static readonly sbyte LOG2_BLOCK_SIZE_4096_BYTES = 12;
+        public static readonly byte LOG2_BLOCK_SIZE_4096_BYTES = 12;
         
         public class HashingInfo
         {
             public readonly int hashAlgorithm;
             
-            public readonly sbyte log2BlockSize;
+            public readonly byte log2BlockSize;
             
-            public readonly sbyte[] salt;
+            public readonly byte[] salt;
             
-            public readonly sbyte[] rawRootHash;
+            public readonly byte[] rawRootHash;
             
-            internal HashingInfo(int hashAlgorithm, sbyte log2BlockSize, sbyte[] salt, sbyte[] rawRootHash)
+            internal HashingInfo(int hashAlgorithm, byte log2BlockSize, byte[] salt, byte[] rawRootHash)
             {
                 this.hashAlgorithm = hashAlgorithm;
                 this.log2BlockSize = log2BlockSize;
@@ -35,17 +35,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 this.rawRootHash = rawRootHash;
             }
             
-            public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo FromByteArray(sbyte[] bytes)
+            public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo FromByteArray(byte[] bytes)
             {
                 SigningServer.Android.IO.ByteBuffer buffer = SigningServer.Android.IO.ByteBuffer.Wrap(bytes).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
                 int hashAlgorithm = buffer.GetInt();
-                sbyte log2BlockSize = buffer.Get();
-                sbyte[] salt = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
-                sbyte[] rawRootHash = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte log2BlockSize = buffer.Get();
+                byte[] salt = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] rawRootHash = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
                 return new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo(hashAlgorithm, log2BlockSize, salt, rawRootHash);
             }
             
-            public virtual sbyte[] ToByteArray()
+            public virtual byte[] ToByteArray()
             {
                 int size = 4 + 1 + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.salt) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.rawRootHash);
                 SigningServer.Android.IO.ByteBuffer buffer = SigningServer.Android.IO.ByteBuffer.Allocate(size).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
@@ -60,19 +60,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         public class SigningInfo
         {
-            public readonly sbyte[] apkDigest;
+            public readonly byte[] apkDigest;
             
-            public readonly sbyte[] certificate;
+            public readonly byte[] certificate;
             
-            public readonly sbyte[] additionalData;
+            public readonly byte[] additionalData;
             
-            public readonly sbyte[] publicKey;
+            public readonly byte[] publicKey;
             
             public readonly int signatureAlgorithmId;
             
-            public readonly sbyte[] signature;
+            public readonly byte[] signature;
             
-            internal SigningInfo(sbyte[] apkDigest, sbyte[] certificate, sbyte[] additionalData, sbyte[] publicKey, int signatureAlgorithmId, sbyte[] signature)
+            internal SigningInfo(byte[] apkDigest, byte[] certificate, byte[] additionalData, byte[] publicKey, int signatureAlgorithmId, byte[] signature)
             {
                 this.apkDigest = apkDigest;
                 this.certificate = certificate;
@@ -82,19 +82,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 this.signature = signature;
             }
             
-            public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo FromByteArray(sbyte[] bytes)
+            public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo FromByteArray(byte[] bytes)
             {
                 SigningServer.Android.IO.ByteBuffer buffer = SigningServer.Android.IO.ByteBuffer.Wrap(bytes).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
-                sbyte[] apkDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
-                sbyte[] certificate = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
-                sbyte[] additionalData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
-                sbyte[] publicKey = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] apkDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] certificate = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] additionalData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] publicKey = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
                 int signatureAlgorithmId = buffer.GetInt();
-                sbyte[] signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
+                byte[] signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(buffer);
                 return new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo(apkDigest, certificate, additionalData, publicKey, signatureAlgorithmId, signature);
             }
             
-            public virtual sbyte[] ToByteArray()
+            public virtual byte[] ToByteArray()
             {
                 int size = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.apkDigest) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.certificate) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.additionalData) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.publicKey) + 4 + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(this.signature);
                 SigningServer.Android.IO.ByteBuffer buffer = SigningServer.Android.IO.ByteBuffer.Allocate(size).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
@@ -111,11 +111,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         public readonly int version;
         
-        public readonly sbyte[] hashingInfo;
+        public readonly byte[] hashingInfo;
         
-        public readonly sbyte[] signingInfo;
+        public readonly byte[] signingInfo;
         
-        internal V4Signature(int version, sbyte[] hashingInfo, sbyte[] signingInfo)
+        internal V4Signature(int version, byte[] hashingInfo, byte[] signingInfo)
         {
             this.version = version;
             this.hashingInfo = hashingInfo;
@@ -129,8 +129,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             {
                 throw new global::System.IO.IOException("Invalid signature version.");
             }
-            sbyte[] hashingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
-            sbyte[] signingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
+            byte[] hashingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
+            byte[] signingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadBytes(stream);
             return new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature(version, hashingInfo, signingInfo);
         }
         
@@ -141,7 +141,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.WriteBytes(stream, this.signingInfo);
         }
         
-        public static sbyte[] GetSignedData(long fileSize, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo)
+        public static byte[] GetSignedData(long fileSize, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo)
         {
             int size = 4 + 8 + 4 + 1 + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(hashingInfo.salt) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(hashingInfo.rawRootHash) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(signingInfo.apkDigest) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(signingInfo.certificate) + SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.BytesSize(signingInfo.additionalData);
             SigningServer.Android.IO.ByteBuffer buffer = SigningServer.Android.IO.ByteBuffer.Allocate(size).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN);
@@ -157,12 +157,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             return buffer.Array();
         }
         
-        public static int BytesSize(sbyte[] bytes)
+        public static int BytesSize(byte[] bytes)
         {
             return 4 + (bytes == null ? 0 : bytes.Length);
         }
         
-        public static void ReadFully(SigningServer.Android.IO.InputStream stream, sbyte[] buffer)
+        public static void ReadFully(SigningServer.Android.IO.InputStream stream, byte[] buffer)
         {
             int len = buffer.Length;
             int n = 0;
@@ -179,23 +179,23 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         
         public static int ReadIntLE(SigningServer.Android.IO.InputStream stream)
         {
-            sbyte[] buffer = new sbyte[4];
+            byte[] buffer = new byte[4];
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadFully(stream, buffer);
             return SigningServer.Android.IO.ByteBuffer.Wrap(buffer).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN).GetInt();
         }
         
         public static void WriteIntLE(SigningServer.Android.IO.OutputStream stream, int v)
         {
-            sbyte[] buffer = SigningServer.Android.IO.ByteBuffer.Wrap(new sbyte[4]).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN).PutInt(v).Array();
+            byte[] buffer = SigningServer.Android.IO.ByteBuffer.Wrap(new byte[4]).Order(SigningServer.Android.IO.ByteOrder.LITTLE_ENDIAN).PutInt(v).Array();
             stream.Write(buffer);
         }
         
-        public static sbyte[] ReadBytes(SigningServer.Android.IO.InputStream stream)
+        public static byte[] ReadBytes(SigningServer.Android.IO.InputStream stream)
         {
             try
             {
                 int size = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadIntLE(stream);
-                sbyte[] bytes = new sbyte[size];
+                byte[] bytes = new byte[size];
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadFully(stream, bytes);
                 return bytes;
             }
@@ -205,7 +205,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             }
         }
         
-        public static sbyte[] ReadBytes(SigningServer.Android.IO.ByteBuffer buffer)
+        public static byte[] ReadBytes(SigningServer.Android.IO.ByteBuffer buffer)
         {
             if (buffer.Remaining() < 4)
             {
@@ -216,12 +216,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             {
                 throw new EndOfStreamException();
             }
-            sbyte[] bytes = new sbyte[size];
+            byte[] bytes = new byte[size];
             buffer.Get(bytes);
             return bytes;
         }
         
-        public static void WriteBytes(SigningServer.Android.IO.OutputStream stream, sbyte[] bytes)
+        public static void WriteBytes(SigningServer.Android.IO.OutputStream stream, byte[] bytes)
         {
             if (bytes == null)
             {
@@ -232,7 +232,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             stream.Write(bytes);
         }
         
-        public static void WriteBytes(SigningServer.Android.IO.ByteBuffer buffer, sbyte[] bytes)
+        public static void WriteBytes(SigningServer.Android.IO.ByteBuffer buffer, byte[] bytes)
         {
             if (bytes == null)
             {

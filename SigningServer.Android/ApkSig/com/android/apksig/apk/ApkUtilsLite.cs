@@ -144,7 +144,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             
         }
         
-        public static sbyte[] ComputeSha256DigestBytes(sbyte[] data)
+        public static byte[] ComputeSha256DigestBytes(byte[] data)
         {
             SigningServer.Android.Security.MessageDigest messageDigest;
             try

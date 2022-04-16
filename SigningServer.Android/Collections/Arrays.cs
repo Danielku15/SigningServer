@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace SigningServer.Android.Collections
@@ -19,13 +20,13 @@ namespace SigningServer.Android.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetHashCode(sbyte[] a)
+        public static int GetHashCode(byte[] a)
         {
             if (a == null)
                 return 0;
 
             int result = 1;
-            foreach (sbyte element in a)
+            foreach (byte element in a)
             {
                 result = 31 * result + element;
             }
@@ -48,7 +49,7 @@ namespace SigningServer.Android.Collections
             return result;
         }
 
-        public static sbyte[] CopyOfRange(sbyte[] original, int from, int to)
+        public static byte[] CopyOfRange(byte[] original, int from, int to)
         {
             var length = to - from;
             if (length < 0)
@@ -56,16 +57,21 @@ namespace SigningServer.Android.Collections
                 throw new ArgumentException(from + " > " + to);
             }
 
-            var copy = new sbyte[length];
-            Array.Copy(original, from, copy, 0, System.Math.Min(original.Length - from, length));
+            var copy = new byte[length];
+            Buffer.BlockCopy(original, from, copy, 0, System.Math.Min(original.Length - from, length));
             return copy;
         }
 
-        public static sbyte[] CopyOf(sbyte[] original, int newSize)
+        public static byte[] CopyOf(byte[] original, int newSize)
         {
-            var copy = new sbyte[newSize];
-            Array.Copy(original, 0, copy, 0, System.Math.Min(original.Length, newSize));
+            var copy = new byte[newSize];
+            Buffer.BlockCopy(original, 0, copy, 0, System.Math.Min(original.Length, newSize));
             return copy;
+        }
+
+        public static bool Equals<T>(T[] a, T[] b)
+        {
+            return a.SequenceEqual(b);
         }
     }
 }

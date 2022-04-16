@@ -18,7 +18,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         {
         }
         
-        public static sbyte[] ToByteArray(Type cls, string resourceName)
+        public static byte[] ToByteArray(Type cls, string resourceName)
         {
             using(SigningServer.Android.IO.InputStream input = GetResourceAsStream(cls, resourceName))
             {
@@ -95,7 +95,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         
         public static SigningServer.Android.Security.PrivateKey ToPrivateKey(System.Type cls, string resourceName, string keyAlgorithm)
         {
-            sbyte[] encoded = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(cls, resourceName);
+            byte[] encoded = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(cls, resourceName);
             SigningServer.Android.Security.KeyFactory keyFactory;
             switch (keyAlgorithm.ToUpperCase(SigningServer.Android.Util.Locale.US))
             {

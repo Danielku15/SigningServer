@@ -33,66 +33,66 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         [Test]
         public virtual void TestFeedsCorrectData_whenFilePartiallyReadFromBeginning()
         {
-            sbyte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(1024 * 1024 + 987654);
+            byte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(1024 * 1024 + 987654);
             SigningServer.Android.IO.RandomAccessFile raf = CreateRaf(fullFileContent);
             Com.Android.Apksig.Util.DataSource rafDataSource = new Com.Android.Apksig.Internal.Util.FileChannelDataSource(raf.GetChannel());
             Com.Android.Apksig.Internal.Util.ByteArrayDataSink dataSink = new Com.Android.Apksig.Internal.Util.ByteArrayDataSink();
             int bytesToFeed = 1024 * 1024 + 12345;
             rafDataSource.Feed(0, bytesToFeed, dataSink);
-            sbyte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOf(fullFileContent, bytesToFeed);
-            sbyte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
+            byte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOf(fullFileContent, bytesToFeed);
+            byte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
             AssertArrayEquals(expectedBytes, resultBytes);
         }
         
         [Test]
         public virtual void TestFeedsCorrectData_whenFilePartiallyReadWithOffset()
         {
-            sbyte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(1024 * 1024 + 987654);
+            byte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(1024 * 1024 + 987654);
             SigningServer.Android.IO.RandomAccessFile raf = CreateRaf(fullFileContent);
             Com.Android.Apksig.Util.DataSource rafDataSource = new Com.Android.Apksig.Internal.Util.FileChannelDataSource(raf.GetChannel());
             Com.Android.Apksig.Internal.Util.ByteArrayDataSink dataSink = new Com.Android.Apksig.Internal.Util.ByteArrayDataSink();
             int offset = 23456;
             int bytesToFeed = 1024 * 1024 + 12345;
             rafDataSource.Feed(offset, bytesToFeed, dataSink);
-            sbyte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOfRange(fullFileContent, offset, offset + bytesToFeed);
-            sbyte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
+            byte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOfRange(fullFileContent, offset, offset + bytesToFeed);
+            byte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
             AssertArrayEquals(expectedBytes, resultBytes);
         }
         
         [Test]
         public virtual void TestFeedsCorrectData_whenSeveralMbRead()
         {
-            sbyte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(3 * 1024 * 1024 + 987654);
+            byte[] fullFileContent = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.CreateFileContent(3 * 1024 * 1024 + 987654);
             SigningServer.Android.IO.RandomAccessFile raf = CreateRaf(fullFileContent);
             Com.Android.Apksig.Util.DataSource rafDataSource = new Com.Android.Apksig.Internal.Util.FileChannelDataSource(raf.GetChannel());
             Com.Android.Apksig.Internal.Util.ByteArrayDataSink dataSink = new Com.Android.Apksig.Internal.Util.ByteArrayDataSink();
             int offset = 23456;
             int bytesToFeed = 2 * 1024 * 1024 + 12345;
             rafDataSource.Feed(offset, bytesToFeed, dataSink);
-            sbyte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOfRange(fullFileContent, offset, offset + bytesToFeed);
-            sbyte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
+            byte[] expectedBytes = SigningServer.Android.Collections.Arrays.CopyOfRange(fullFileContent, offset, offset + bytesToFeed);
+            byte[] resultBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.FileChannelDataSourceTest.GetDataSinkBytes(dataSink);
             AssertArrayEquals(expectedBytes, resultBytes);
         }
         
-        internal static sbyte[] GetDataSinkBytes(Com.Android.Apksig.Internal.Util.ByteArrayDataSink dataSink)
+        internal static byte[] GetDataSinkBytes(Com.Android.Apksig.Internal.Util.ByteArrayDataSink dataSink)
         {
             SigningServer.Android.IO.ByteBuffer result = dataSink.GetByteBuffer(0, (int)dataSink.Size());
-            sbyte[] resultBytes = new sbyte[result.Limit()];
+            byte[] resultBytes = new byte[result.Limit()];
             result.Get(resultBytes);
             return resultBytes;
         }
         
-        internal static sbyte[] CreateFileContent(int fileSize)
+        internal static byte[] CreateFileContent(int fileSize)
         {
-            sbyte[] fullFileContent = new sbyte[fileSize];
+            byte[] fullFileContent = new byte[fileSize];
             for (int i = 0;i < fileSize;++i)
             {
-                fullFileContent[i] = (sbyte)(i % 255);
+                fullFileContent[i] = (byte)(i % 255);
             }
             return fullFileContent;
         }
         
-        internal SigningServer.Android.IO.RandomAccessFile CreateRaf(sbyte[] content)
+        internal SigningServer.Android.IO.RandomAccessFile CreateRaf(byte[] content)
         {
             System.IO.FileInfo dataFile = new FileInfo(Path.Combine(temporaryFolder.FullName, Guid.NewGuid().ToString("N")));
             using(SigningServer.Android.IO.FileOutputStream fos = new SigningServer.Android.IO.FileOutputStream(dataFile))

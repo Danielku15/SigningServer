@@ -6,7 +6,7 @@ namespace SigningServer.Android.Util
     {
         private readonly Queue<string> mTokens;
 
-        public StringTokenizer(string s, string separators = "\t\n\r\f")
+        public StringTokenizer(string s, string separators = " \t\n\r\f")
         {
             mTokens = new Queue<string>(s.Split(separators.ToCharArray()));
         }

@@ -54,7 +54,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         /// </summary>
         public static void GenerateV4Signature(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkContent, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig, System.IO.FileInfo outputFile)
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, sbyte[]> pair = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.GenerateV4Signature(apkContent, signerConfig);
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, byte[]> pair = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.GenerateV4Signature(apkContent, signerConfig);
             try
             {
                 using(SigningServer.Android.IO.OutputStream output = new SigningServer.Android.IO.FileOutputStream(outputFile))
@@ -73,17 +73,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         /// <summary>
         /// Generate v4 signature and hash tree for a given APK.
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, sbyte[]> GenerateV4Signature(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkContent, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, byte[]> GenerateV4Signature(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkContent, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig)
         {
-            sbyte[] salt = null;
-            sbyte[] additionalData = null;
+            byte[] salt = null;
+            byte[] additionalData = null;
             long fileSize = apkContent.Size();
-            sbyte[] apkDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.GetApkDigest(apkContent);
+            byte[] apkDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.GetApkDigest(apkContent);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VerityTreeAndDigest verityContentDigestInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeChunkVerityTreeAndDigest(apkContent);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm verityContentDigestAlgorithm = verityContentDigestInfo.contentDigestAlgorithm;
-            sbyte[] rootHash = verityContentDigestInfo.rootHash;
-            sbyte[] tree = verityContentDigestInfo.tree;
-            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte> hashingAlgorithmBlockSizePair = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.ConvertToV4HashingInfo(verityContentDigestAlgorithm);
+            byte[] rootHash = verityContentDigestInfo.rootHash;
+            byte[] tree = verityContentDigestInfo.tree;
+            SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte> hashingAlgorithmBlockSizePair = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.ConvertToV4HashingInfo(verityContentDigestAlgorithm);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo(hashingAlgorithmBlockSizePair.GetFirst(), hashingAlgorithmBlockSizePair.GetSecond(), salt, rootHash);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature signature;
             try
@@ -94,10 +94,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             {
                 throw new SigningServer.Android.Security.InvalidKeyException("Signer failed", e);
             }
-            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, sbyte[]>(signature, tree);
+            return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature, byte[]>(signature, tree);
         }
         
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature GenerateSignature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo, sbyte[] apkDigest, sbyte[] additionaData, long fileSize)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature GenerateSignature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.SignerConfig signerConfig, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo, byte[] apkDigest, byte[] additionaData, long fileSize)
         {
             if (signerConfig.certificates.IsEmpty())
             {
@@ -108,22 +108,22 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 throw new SigningServer.Android.Security.Cert.CertificateEncodingException("Should only have one certificate");
             }
             SigningServer.Android.Security.PublicKey publicKey = signerConfig.certificates.Get(0).GetPublicKey();
-            SigningServer.Android.Collections.List<sbyte[]> encodedCertificates = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeCertificates(signerConfig.certificates);
-            sbyte[] encodedCertificate = encodedCertificates.Get(0);
+            SigningServer.Android.Collections.List<byte[]> encodedCertificates = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeCertificates(signerConfig.certificates);
+            byte[] encodedCertificate = encodedCertificates.Get(0);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfoNoSignature = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo(apkDigest, encodedCertificate, additionaData, publicKey.GetEncoded(), -1, null);
-            sbyte[] data = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.GetSignedData(fileSize, hashingInfo, signingInfoNoSignature);
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(signerConfig, data);
+            byte[] data = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.GetSignedData(fileSize, hashingInfo, signingInfoNoSignature);
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>> signatures = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GenerateSignaturesOverData(signerConfig, data);
             if (signatures.Size() != 1)
             {
                 throw new SigningServer.Android.Security.SignatureException("Should only be one signature generated");
             }
             int signatureAlgorithmId = signatures.Get(0).GetFirst();
-            sbyte[] signature = signatures.Get(0).GetSecond();
+            byte[] signature = signatures.Get(0).GetSecond();
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo(apkDigest, encodedCertificate, additionaData, publicKey.GetEncoded(), signatureAlgorithmId, signature);
             return new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.CURRENT_VERSION, hashingInfo.ToByteArray(), signingInfo.ToByteArray());
         }
         
-        internal static sbyte[] GetApkDigest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk)
+        internal static byte[] GetApkDigest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk)
         {
             SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections;
             try
@@ -155,7 +155,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             throw new global::System.IO.IOException("Failed to obtain v2/v3 digest, v3 exception: " + v3Exception + ", v2 exception: " + v2Exception);
         }
         
-        internal static sbyte[] GetBestV3Digest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
+        internal static byte[] GetBestV3Digest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
         {
             SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify = new SigningServer.Android.Collections.HashSet<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm>(1);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
@@ -182,7 +182,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.PickBestDigest(contentDigests);
         }
         
-        internal static sbyte[] GetBestV2Digest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
+        internal static byte[] GetBestV2Digest(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
         {
             SigningServer.Android.Collections.Set<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm> contentDigestsToVerify = new SigningServer.Android.Collections.HashSet<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm>(1);
             SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(1);
@@ -225,14 +225,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeSigner.PickBestDigest(contentDigests);
         }
         
-        internal static sbyte[] PickBestDigest(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests)
+        internal static byte[] PickBestDigest(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests)
         {
             if (contentDigests == null || contentDigests.IsEmpty())
             {
                 throw new SigningServer.Android.Security.SignatureException("Should have at least one digest");
             }
             int bestAlgorithmOrder = -1;
-            sbyte[] bestDigest = null;
+            byte[] bestDigest = null;
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest contentDigest in contentDigests)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm signatureAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(contentDigest.GetSignatureAlgorithmId());
@@ -283,12 +283,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             return false;
         }
         
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte> ConvertToV4HashingInfo(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm algorithm)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte> ConvertToV4HashingInfo(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm algorithm)
         {
             switch (algorithm.Case)
             {
                 case SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.VERITY_CHUNKED_SHA256_CASE:
-                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HASHING_ALGORITHM_SHA256, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.LOG2_BLOCK_SIZE_4096_BYTES);
+                    return SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, byte>(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HASHING_ALGORITHM_SHA256, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.LOG2_BLOCK_SIZE_4096_BYTES);
                 default:
                     throw new SigningServer.Android.Security.NoSuchAlgorithmException("Invalid hash algorithm, only SHA2-256 over 4 KB chunks supported.");
             }

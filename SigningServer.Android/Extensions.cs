@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SigningServer.Android
 {
@@ -57,28 +58,14 @@ namespace SigningServer.Android
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte[] GetBytes(this string s)
+        public static byte[] GetBytes(this string s)
         {
-            return Encoding.Default.GetBytes(s).AsSBytes();
+            return Encoding.Default.GetBytes(s);
         }
 
-        public static sbyte[] GetBytes(this string s, Encoding encoding)
+        public static byte[] GetBytes(this string s, Encoding encoding)
         {
-            return encoding.GetBytes(s).AsSBytes();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte[] AsSBytes(this byte[] b)
-        {
-            // CLR allows conversion from sbyte to byte array
-            return (sbyte[])(object)b;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] AsBytes(this sbyte[] b)
-        {
-            // CLR allows conversion from sbyte to byte array
-            return (byte[])(object)b;
+            return encoding.GetBytes(s);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,15 +116,10 @@ namespace SigningServer.Android
             map[key] = value;
         }
 
-        public static string ReplaceFirst(this string text, string search, string replace)
+        public static string ReplaceFirst(this string text, string pattern, string replace)
         {
-            var pos = text.IndexOf(search, StringComparison.Ordinal);
-            if (pos < 0)
-            {
-                return text;
-            }
-
-            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+            var regex = new Regex(pattern);
+            return regex.Replace(text, replace, 1);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 
 namespace SigningServer.Android.Security.BouncyCastle
@@ -13,7 +12,7 @@ namespace SigningServer.Android.Security.BouncyCastle
             KeyParameter = keyParameter;
         }
 
-        public sbyte[] GetEncoded()
+        public byte[] GetEncoded()
         {
             throw new KeyException("Encoding of private key not supported");
         }

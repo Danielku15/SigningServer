@@ -33,7 +33,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal readonly int EXTRA_BLOCK_ID = 0x7e57c0de;
         
-        internal readonly sbyte[] EXTRA_BLOCK_VALUE = {0, 1, 2, 3, 4, 5, 6, 7};
+        internal readonly byte[] EXTRA_BLOCK_VALUE = {0, 1, 2, 3, 4, 5, 6, 7};
         
         public DirectoryInfo mTemporaryFolder;
 
@@ -348,7 +348,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkSigner.SignerConfig sourceStampSigner = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.SECOND_RSA_2048_SIGNER_RESOURCE_NAME);
             SigningServer.Android.Security.MessageDigest messageDigest = SigningServer.Android.Security.MessageDigest.GetInstance("SHA-256");
             messageDigest.Update(sourceStampSigner.GetCertificates().Get(0).GetEncoded());
-            sbyte[] expectedStampCertificateDigest = messageDigest.Digest();
+            byte[] expectedStampCertificateDigest = messageDigest.Digest();
             System.IO.FileInfo signedApkFile = Sign("original.apk", new Com.Android.Apksig.ApkSigner.Builder(signers).SetV1SigningEnabled(true).SetSourceStampSignerConfig(sourceStampSigner));
             using(SigningServer.Android.IO.RandomAccessFile f = new SigningServer.Android.IO.RandomAccessFile(signedApkFile, "r"))
             {
@@ -365,7 +365,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                     }
                 }
                 AssertNotNull(stampCdRecord);
-                sbyte[] actualStampCertificateDigest = Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(signedApk, stampCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                byte[] actualStampCertificateDigest = Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(signedApk, stampCdRecord, zipSections.GetZipCentralDirectoryOffset());
                 AssertArrayEquals(expectedStampCertificateDigest, actualStampCertificateDigest);
             }
         }
@@ -470,7 +470,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Result result = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.Verify(signedApk, null);
             SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertVerified(result);
             SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertResultContainsSigners(result, SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME, SigningServer.Android.Com.Android.Apksig.ApkSignerTest.EC_P256_SIGNER_RESOURCE_NAME);
-            AssertSigningBlockContains(signedApk, Com.Android.Apksig.Internal.Util.Pair.Of<sbyte[], int>(EXTRA_BLOCK_VALUE, EXTRA_BLOCK_ID));
+            AssertSigningBlockContains(signedApk, Com.Android.Apksig.Internal.Util.Pair.Of<byte[], int>(EXTRA_BLOCK_VALUE, EXTRA_BLOCK_ID));
         }
         
         [Test]
@@ -498,7 +498,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             Com.Android.Apksig.ApkVerifier.Result result = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.Verify(signedApk, null);
             SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertVerified(result);
             SigningServer.Android.Com.Android.Apksig.ApkSignerTest.AssertResultContainsSigners(result, SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME);
-            AssertSigningBlockContains(signedApk, Com.Android.Apksig.Internal.Util.Pair.Of<sbyte[], int>(EXTRA_BLOCK_VALUE, EXTRA_BLOCK_ID));
+            AssertSigningBlockContains(signedApk, Com.Android.Apksig.Internal.Util.Pair.Of<byte[], int>(EXTRA_BLOCK_VALUE, EXTRA_BLOCK_ID));
         }
         
         [Test]
@@ -525,13 +525,13 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// Asserts the provided {@code signedApk} contains a signature block with the expected
         /// {@code byte[]} value and block ID as specified in the {@code expectedBlock}.
         /// </summary>
-        internal static void AssertSigningBlockContains(System.IO.FileInfo signedApk, Com.Android.Apksig.Internal.Util.Pair<sbyte[], int> expectedBlock)
+        internal static void AssertSigningBlockContains(System.IO.FileInfo signedApk, Com.Android.Apksig.Internal.Util.Pair<byte[], int> expectedBlock)
         {
             using(SigningServer.Android.IO.RandomAccessFile apkFile = new SigningServer.Android.IO.RandomAccessFile(signedApk, "r"))
             {
                 Com.Android.Apksig.Apk.ApkUtils.ApkSigningBlock apkSigningBlock = Com.Android.Apksig.Apk.ApkUtils.FindApkSigningBlock(Com.Android.Apksig.Util.DataSources.AsDataSource(apkFile));
-                SigningServer.Android.Collections.List<Com.Android.Apksig.Internal.Util.Pair<sbyte[], int>> signatureBlocks = Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetApkSignatureBlocks(apkSigningBlock.GetContents());
-                foreach (Com.Android.Apksig.Internal.Util.Pair<sbyte[], int> signatureBlock in signatureBlocks)
+                SigningServer.Android.Collections.List<Com.Android.Apksig.Internal.Util.Pair<byte[], int>> signatureBlocks = Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetApkSignatureBlocks(apkSigningBlock.GetContents());
+                foreach (Com.Android.Apksig.Internal.Util.Pair<byte[], int> signatureBlock in signatureBlocks)
                 {
                     if (signatureBlock.GetSecond().Equals(expectedBlock.GetSecond()))
                     {
@@ -680,7 +680,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 throw new SigningServer.Android.Core.RuntimeException("Output too large: " + output.Length + " bytes");
             }
-            sbyte[] outData = new sbyte[(int)output.Length];
+            byte[] outData = new byte[(int)output.Length];
             using(SigningServer.Android.IO.FileInputStream fis = new SigningServer.Android.IO.FileInputStream(output))
             {
                 fis.Read(outData);
@@ -688,6 +688,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             SigningServer.Android.IO.ByteBuffer actualOutBuf = SigningServer.Android.IO.ByteBuffer.Wrap(outData);
             SigningServer.Android.IO.ByteBuffer expectedOutBuf = SigningServer.Android.IO.ByteBuffer.Wrap(SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(GetType(), expectedOutResourceName));
             bool identical = false;
+            var identicalCount = 0;
             if (actualOutBuf.Remaining() == expectedOutBuf.Remaining())
             {
                 while (actualOutBuf.HasRemaining())
@@ -696,6 +697,8 @@ namespace SigningServer.Android.Com.Android.Apksig
                     {
                         break;
                     }
+
+                    identicalCount++;
                 }
                 identical = !actualOutBuf.HasRemaining();
             }
@@ -711,7 +714,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             else 
             {
-                Fail("Output differs from " + expectedOutResourceName);
+                Fail("Output differs from " + expectedOutResourceName + ", identical: " + identicalCount + "/" + outData.Length);
             }
         }
         

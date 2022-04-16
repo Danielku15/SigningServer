@@ -32,7 +32,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             {
                 return null;
             }
-            sbyte firstIdentifierByte = mBuf.Get();
+            byte firstIdentifierByte = mBuf.Get();
             int tagNumber = ReadTagNumber(firstIdentifierByte);
             bool constructed = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.IsConstructed(firstIdentifierByte);
             if (!mBuf.HasRemaining())
@@ -73,7 +73,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             return new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue(encoded, encodedContents, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagClass(firstIdentifierByte), constructed, tagNumber);
         }
         
-        internal int ReadTagNumber(sbyte firstIdentifierByte)
+        internal int ReadTagNumber(byte firstIdentifierByte)
         {
             int tagNumber = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagNumber(firstIdentifierByte);
             if (tagNumber == 0x1f)

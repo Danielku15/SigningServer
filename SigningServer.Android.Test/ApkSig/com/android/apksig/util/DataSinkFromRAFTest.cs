@@ -42,7 +42,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             {
                 throw new System.IO.IOException("File too large: " + f.Length());
             }
-            sbyte[] contents = new sbyte[(int)f.Length()];
+            byte[] contents = new byte[(int)f.Length()];
             f.Seek(0);
             f.ReadFully(contents);
             return SigningServer.Android.IO.ByteBuffer.Wrap(contents);

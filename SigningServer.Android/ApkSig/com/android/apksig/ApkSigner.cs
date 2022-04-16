@@ -257,7 +257,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             int lastModifiedTimeForNewEntries = -1;
             long inputOffset = 0;
             long outputOffset = 0;
-            sbyte[] sourceStampCertificateDigest = null;
+            byte[] sourceStampCertificateDigest = null;
             SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> outputCdRecordsByName = new SigningServer.Android.Collections.HashMap<string, SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord>(inputCdRecords.Size());
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord inputCdRecord in inputCdRecordsSortedByLfhOffset)
             {
@@ -391,7 +391,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             if (signerEngine.IsEligibleForSourceStamp())
             {
-                sbyte[] uncompressedData = signerEngine.GenerateSourceStampCertificateDigest();
+                byte[] uncompressedData = signerEngine.GenerateSourceStampCertificateDigest();
                 if (mForceSourceStampOverwrite || sourceStampCertificateDigest == null || SigningServer.Android.Collections.Arrays.Equals(uncompressedData, sourceStampCertificateDigest))
                 {
                     outputOffset += SigningServer.Android.Com.Android.Apksig.ApkSigner.OutputDataToOutputApk(
@@ -420,7 +420,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 pinByteRanges.Add(new SigningServer.Android.Com.Android.Apksig.Hints.ByteRange(outputOffset, SigningServer.Android.Core.LongExtensions.MAX_VALUE));
                 string entryName = SigningServer.Android.Com.Android.Apksig.Hints.PIN_BYTE_RANGE_ZIP_ENTRY_NAME;
-                sbyte[] uncompressedData = SigningServer.Android.Com.Android.Apksig.Hints.EncodeByteRangeList(pinByteRanges);
+                byte[] uncompressedData = SigningServer.Android.Com.Android.Apksig.Hints.EncodeByteRangeList(pinByteRanges);
                 SigningServer.Android.Com.Android.Apksig.ApkSigner.RequestOutputEntryInspection(signerEngine, entryName, uncompressedData);
                 outputOffset += SigningServer.Android.Com.Android.Apksig.ApkSigner.OutputDataToOutputApk(
                     entryName
@@ -445,7 +445,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 foreach (SigningServer.Android.Com.Android.Apksig.ApkSignerEngine.OutputJarSignatureRequest.JarEntry entry in outputJarSignatureRequest.GetAdditionalJarEntries())
                 {
                     string entryName = entry.GetName();
-                    sbyte[] uncompressedData = entry.GetData();
+                    byte[] uncompressedData = entry.GetData();
                     SigningServer.Android.Com.Android.Apksig.ApkSigner.RequestOutputEntryInspection(signerEngine, entryName, uncompressedData);
                     outputOffset += SigningServer.Android.Com.Android.Apksig.ApkSigner.OutputDataToOutputApk(
                         entryName
@@ -490,7 +490,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 int padding = outputApkSigningBlockRequest.GetPaddingSizeBeforeApkSigningBlock();
                 outputApkOut.Consume(SigningServer.Android.IO.ByteBuffer.Allocate(padding));
-                sbyte[] outputApkSigningBlock = outputApkSigningBlockRequest.GetApkSigningBlock();
+                byte[] outputApkSigningBlock = outputApkSigningBlockRequest.GetApkSigningBlock();
                 outputApkOut.Consume(outputApkSigningBlock, 0, outputApkSigningBlock.Length);
                 SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.SetZipEocdCentralDirectoryOffset(outputEocd, outputCentralDirStartOffset + padding + outputApkSigningBlock.Length);
                 outputApkSigningBlockRequest.Done();
@@ -504,7 +504,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
         }
         
-        internal static void RequestOutputEntryInspection(SigningServer.Android.Com.Android.Apksig.ApkSignerEngine signerEngine, string entryName, sbyte[] uncompressedData)
+        internal static void RequestOutputEntryInspection(SigningServer.Android.Com.Android.Apksig.ApkSignerEngine signerEngine, string entryName, byte[] uncompressedData)
         {
             SigningServer.Android.Com.Android.Apksig.ApkSignerEngine.InspectJarEntryRequest inspectEntryRequest = signerEngine.OutputJarEntry(entryName);
             if (inspectEntryRequest != null)
@@ -514,10 +514,10 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
         }
         
-        internal static long OutputDataToOutputApk(string entryName, sbyte[] uncompressedData, long localFileHeaderOffset, SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> outputCdRecords, int lastModifiedTimeForNewEntries, int lastModifiedDateForNewEntries, SigningServer.Android.Com.Android.Apksig.Util.DataSink outputApkOut)
+        internal static long OutputDataToOutputApk(string entryName, byte[] uncompressedData, long localFileHeaderOffset, SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> outputCdRecords, int lastModifiedTimeForNewEntries, int lastModifiedDateForNewEntries, SigningServer.Android.Com.Android.Apksig.Util.DataSink outputApkOut)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.DeflateResult deflateResult = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.Deflate(SigningServer.Android.IO.ByteBuffer.Wrap(uncompressedData));
-            sbyte[] compressedData = deflateResult.output;
+            byte[] compressedData = deflateResult.output;
             long uncompressedDataCrc32 = deflateResult.inputCrc32;
             long numOfDataBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.OutputRecordWithDeflateCompressedData(
                 entryName
@@ -755,7 +755,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             if (pinListCdRecord != null)
             {
                 pinPatterns = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Hints.PatternWithRange>();
-                sbyte[] patternBlob;
+                byte[] patternBlob;
                 try
                 {
                     patternBlob = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(lhfSection, pinListCdRecord, lhfSection.Size());

@@ -10,15 +10,18 @@ namespace SigningServer.Android
     {
         protected static DirectoryInfo CreateTemporaryFolder()
         {
-            var info = new DirectoryInfo(Path.Combine(Path.GetTempFileName(), Guid.NewGuid().ToString("N")));
-            info.Create();
+            var info = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+            if (!info.Exists)
+            {
+                info.Create();
+            }
             return info;
         }
 
 
         protected static FileInfo CreateTemporaryFile(string name, string extension)
         {
-            return new FileInfo(Path.Combine(Path.GetTempFileName(), name + Guid.NewGuid().ToString("N") + extension));
+            return new FileInfo(Path.Combine(Path.GetTempPath(), name + Guid.NewGuid().ToString("N") + extension));
         }
 
         protected static void AssumeNoException(Exception e)
@@ -26,9 +29,9 @@ namespace SigningServer.Android
             // Nothing to do
         }
         
-        protected static void AssertArrayEquals<T>(T[] a, T[] b)
+        protected static void AssertArrayEquals<T>(T[] expected, T[] actual)
         {
-            a.Should().Equal(b);
+            actual.Should().Equal(expected);
         }
         
         protected static Exception AssertThrows(Type exceptionType, Action action)
@@ -39,16 +42,16 @@ namespace SigningServer.Android
                 Fail($"Expected exception of type {exceptionType.FullName}");
                 return null;
             }
-            catch (Exception e) when (e.GetType().IsInstanceOfType(exceptionType))
+            catch (Exception e) when (exceptionType.IsInstanceOfType(e))
             {
                 // Expected
                 return e;
             }
         }
 
-        protected static void AssertArrayEquals<T>(string message, T[] a, T[] b)
+        protected static void AssertArrayEquals<T>(string message, T[] expected, T[] actual)
         {
-            a.Should().Equal(b, message);
+            actual.Should().Equal(expected, message);
         }
 
         protected static void AssertSame<T>(T a, T b)
@@ -56,19 +59,19 @@ namespace SigningServer.Android
             a.Should().BeSameAs(b);
         }
 
-        protected static void AssertEquals<T>(string message, T a, T b)
+        protected static void AssertEquals<T>(string message, T expected, T actual)
         {
-            a.Should().Be(b, message);
+            actual.Should().Be(expected, message);
         }
 
-        protected static void AssertNotEquals<T>(string message, T a, T b)
+        protected static void AssertNotEquals<T>(string message, T expected, T actual)
         {
-            a.Should().NotBe(b, message);
+            actual.Should().NotBe(expected, message);
         }
 
-        protected static void AssertEquals<T>(T a, T b)
+        protected static void AssertEquals<T>(T expected, T actual)
         {
-            a.Should().Be(b);
+            actual.Should().Be(expected);
         }
 
         protected static void AssertTrue(string message, bool value)

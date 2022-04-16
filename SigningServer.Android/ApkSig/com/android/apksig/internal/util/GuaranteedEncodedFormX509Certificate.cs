@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Security.Cert;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
@@ -16,22 +17,27 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
     {
         internal static readonly long serialVersionUID = 1L;
         
-        internal readonly sbyte[] mEncodedForm;
+        internal readonly byte[] mEncodedForm;
         
         internal int mHash = -1;
         
-        public GuaranteedEncodedFormX509Certificate(SigningServer.Android.Security.Cert.X509Certificate wrapped, sbyte[] encodedForm)
+        public GuaranteedEncodedFormX509Certificate(SigningServer.Android.Security.Cert.X509Certificate wrapped, byte[] encodedForm)
             : base (wrapped)
         {
             ;
-            this.mEncodedForm = (sbyte[])((encodedForm != null) ? encodedForm.Clone() : null);
+            this.mEncodedForm = (byte[])((encodedForm != null) ? encodedForm.Clone() : null);
         }
         
-        public sbyte[] GetEncoded()
+        public override byte[] GetEncoded()
         {
-            return (sbyte[])((mEncodedForm != null) ? mEncodedForm.Clone() : null);
+            return (byte[])((mEncodedForm != null) ? mEncodedForm.Clone() : null);
         }
-        
+
+        public override bool Equals(X509Certificate other)
+        {
+            return this.Equals((object)other);
+        }
+
         public override bool Equals(object o)
         {
             if (this == o)
@@ -40,8 +46,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 return false;
             try
             {
-                sbyte[] a = this.GetEncoded();
-                sbyte[] b = ((SigningServer.Android.Security.Cert.X509Certificate)o).GetEncoded();
+                byte[] a = this.GetEncoded();
+                byte[] b = ((SigningServer.Android.Security.Cert.X509Certificate)o).GetEncoded();
                 return SigningServer.Android.Collections.Arrays.Equals(a, b);
             }
             catch (SigningServer.Android.Security.Cert.CertificateEncodingException e)

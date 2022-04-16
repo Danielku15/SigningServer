@@ -1,21 +1,29 @@
-﻿using SigningServer.Android.Math;
+﻿using System.Linq;
+using SigningServer.Android.Math;
 
 namespace SigningServer.Android.Security.Cert
 {
     public interface Certificate
     {
-        sbyte[] GetEncoded();
+        byte[] GetEncoded();
     }
 
-    public interface X509Certificate : Certificate
+    public abstract class X509Certificate : Certificate
     {
-        X500Principal GetIssuerX500Principal();
-        BigInteger GetSerialNumber();
-        PublicKey GetPublicKey();
-        bool HasUnsupportedCriticalExtension();
-        bool[] GetKeyUsage();
-        Principal GetSubjectDN();
-        Principal GetIssuerDN();
-        bool Equals(X509Certificate other);
+        public abstract X500Principal GetIssuerX500Principal();
+        public abstract BigInteger GetSerialNumber();
+        public abstract PublicKey GetPublicKey();
+        public abstract bool HasUnsupportedCriticalExtension();
+        public abstract bool[] GetKeyUsage();
+        public abstract Principal GetSubjectDN();
+        public abstract Principal GetIssuerDN();
+        public abstract byte[] GetEncoded();
+
+        public virtual bool Equals(X509Certificate other)
+        {
+            var thisCert = GetEncoded();
+            var otherCert = other.GetEncoded();
+            return thisCert.SequenceEqual(otherCert);
+        }
     }
 }

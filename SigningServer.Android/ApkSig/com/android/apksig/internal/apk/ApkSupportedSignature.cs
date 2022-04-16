@@ -15,13 +15,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
     {
         public readonly SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm algorithm;
         
-        public readonly sbyte[] signature;
+        public readonly byte[] signature;
         
         /// <summary>
         /// Constructs a new supported signature using the provided {@code algorithm} and {@code
         /// signature} bytes.
         /// </summary>
-        public ApkSupportedSignature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm algorithm, sbyte[] signature)
+        public ApkSupportedSignature(SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm algorithm, byte[] signature)
         {
             this.algorithm = algorithm;
             this.signature = signature;

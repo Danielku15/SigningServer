@@ -18,9 +18,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// Returns the remaining data of the provided buffer as a new byte array and advances the
         /// position of the buffer to the buffer's limit.
         /// </summary>
-        public static sbyte[] ToByteArray(SigningServer.Android.IO.ByteBuffer buf)
+        public static byte[] ToByteArray(SigningServer.Android.IO.ByteBuffer buf)
         {
-            sbyte[] result = new sbyte[buf.Remaining()];
+            byte[] result = new byte[buf.Remaining()];
             buf.Get(result);
             return result;
         }

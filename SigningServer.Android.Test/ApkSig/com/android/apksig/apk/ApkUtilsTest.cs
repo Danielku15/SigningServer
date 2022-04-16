@@ -123,7 +123,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             SigningServer.Android.IO.ByteBuffer manifest = SigningServer.Android.Com.Android.Apksig.Apk.ApkUtilsTest.GetAndroidManifest("original.apk");
             SigningServer.Android.Security.MessageDigest md = SigningServer.Android.Security.MessageDigest.GetInstance("SHA-256");
             md.Update(manifest);
-            sbyte[] actualDigest = md.Digest();
+            var actualDigest = md.Digest();
             AssertEquals("8b3de63a282652221162cdc327f424924ac3c7c24e642035975a1ee7a395c4dc", SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Encode(actualDigest));
         }
         
@@ -132,12 +132,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             return SigningServer.Android.Com.Android.Apksig.Apk.ApkUtilsTest.GetAndroidManifest(SigningServer.Android.Com.Android.Apksig.Apk.ApkUtilsTest.GetResource(apkResourceName));
         }
         
-        internal static SigningServer.Android.IO.ByteBuffer GetAndroidManifest(sbyte[] apk)
+        internal static SigningServer.Android.IO.ByteBuffer GetAndroidManifest(byte[] apk)
         {
             return Com.Android.Apksig.Apk.ApkUtils.GetAndroidManifest(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(apk)));
         }
         
-        internal static sbyte[] GetResource(string resourceName)
+        internal static byte[] GetResource(string resourceName)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(typeof(Com.Android.Apksig.ApkSigner), resourceName);
         }

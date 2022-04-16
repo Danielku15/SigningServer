@@ -52,7 +52,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException("Missing length");
                 }
-                bool constructed = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.IsConstructed((sbyte)firstIdentifierByte);
+                bool constructed = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.IsConstructed((byte)firstIdentifierByte);
                 int contentsLength;
                 int contentsOffsetInDataValue;
                 if ((firstLengthByte & 0x80) == 0)
@@ -72,9 +72,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                     contentsOffsetInDataValue = input.GetReadByteCount();
                     contentsLength = constructed ? SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.SkipConstructedIndefiniteLengthContents(input) : SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.SkipPrimitiveIndefiniteLengthContents(input);
                 }
-                sbyte[] encoded = input.GetReadBytes();
+                byte[] encoded = input.GetReadBytes();
                 SigningServer.Android.IO.ByteBuffer encodedContents = SigningServer.Android.IO.ByteBuffer.Wrap(encoded, contentsOffsetInDataValue, contentsLength);
-                return new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue(SigningServer.Android.IO.ByteBuffer.Wrap(encoded), encodedContents, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagClass((sbyte)firstIdentifierByte), constructed, tagNumber);
+                return new SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue(SigningServer.Android.IO.ByteBuffer.Wrap(encoded), encodedContents, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagClass((byte)firstIdentifierByte), constructed, tagNumber);
             }
             catch (global::System.IO.IOException e)
             {
@@ -84,7 +84,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         
         internal static int ReadTagNumber(SigningServer.Android.IO.InputStream input, int firstIdentifierByte)
         {
-            int tagNumber = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagNumber((sbyte)firstIdentifierByte);
+            int tagNumber = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.GetTagNumber((byte)firstIdentifierByte);
             if (tagNumber == 0x1f)
             {
                 return SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.InputStreamBerDataValueReader.ReadHighTagNumber(input);
@@ -228,7 +228,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 mBuf = new SigningServer.Android.IO.ByteArrayOutputStream();
             }
             
-            public virtual sbyte[] GetReadBytes()
+            public virtual byte[] GetReadBytes()
             {
                 return mBuf.ToByteArray();
             }
@@ -248,7 +248,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return b;
             }
             
-            public int Read(sbyte[] b)
+            public int Read(byte[] b)
             {
                 int len = mIn.Read(b);
                 if (len > 0)
@@ -258,7 +258,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 return len;
             }
             
-            public int Read(sbyte[] b, int off, int len)
+            public int Read(byte[] b, int off, int len)
             {
                 len = mIn.Read(b, off, len);
                 if (len > 0)
@@ -274,7 +274,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
                 {
                     return mIn.Skip(n);
                 }
-                sbyte[] buf = new sbyte[4096];
+                byte[] buf = new byte[4096];
                 int len = mIn.Read(buf, 0, (int)SigningServer.Android.Core.Math.Min(buf.Length, n));
                 if (len > 0)
                 {

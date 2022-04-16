@@ -33,7 +33,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             using(SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.CloseableWithDataSink c = CreateDataSink())
             {
                 T sink = c.GetDataSink();
-                sbyte[] input = "abcdefg".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
+                byte[] input = "abcdefg".GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
                 sink.Consume(input, 2, 3);
                 sink.Consume(input, 0, 1);
                 AssertContentsEquals("cdea", sink);
@@ -71,8 +71,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
                 sink.Consume(input);
                 AssertContentsEquals("cdea", sink);
                 input = SigningServer.Android.IO.ByteBuffer.AllocateDirect(2);
-                input.Put((sbyte)'X');
-                input.Put((sbyte)'Z');
+                input.Put((byte)'X');
+                input.Put((byte)'Z');
                 input.Flip();
                 sink.Consume(input);
                 AssertContentsEquals("cdeaXZ", sink);
@@ -98,7 +98,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
             AssertEquals(expectedContents, SigningServer.Android.Com.Android.Apksig.Util.DataSinkTestBase<T>.ToString(actual));
         }
         
-        internal static void AssertConsumeArrayThrowsIOOB(Com.Android.Apksig.Util.DataSink sink, sbyte[] arr, int offset, int length)
+        internal static void AssertConsumeArrayThrowsIOOB(Com.Android.Apksig.Util.DataSink sink, byte[] arr, int offset, int length)
         {
             try
             {

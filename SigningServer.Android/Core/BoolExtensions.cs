@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace SigningServer.Android.Core
 {
@@ -8,7 +7,7 @@ namespace SigningServer.Android.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToString(bool value)
         {
-            return value.ToString();
+            return value.ToString().ToUpper();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

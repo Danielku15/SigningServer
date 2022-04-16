@@ -2,7 +2,7 @@
 {
     public interface Key
     {
-        sbyte[] GetEncoded();
+        byte[] GetEncoded();
         string GetFormat();
         string GetAlgorithm();
     }

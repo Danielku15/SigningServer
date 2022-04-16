@@ -195,7 +195,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         /// constructed encoding for its contents, or {@code false} if the data value uses primitive
         /// encoding for its contents.
         /// </summary>
-        public static bool IsConstructed(sbyte firstIdentifierByte)
+        public static bool IsConstructed(byte firstIdentifierByte)
         {
             return (firstIdentifierByte & SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerEncoding.ID_FLAG_CONSTRUCTED_ENCODING) != 0;
         }
@@ -204,28 +204,28 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         /// Returns the tag class encoded in the provided first identifier byte. See {@code TAG_CLASS}
         /// constants.
         /// </summary>
-        public static int GetTagClass(sbyte firstIdentifierByte)
+        public static int GetTagClass(byte firstIdentifierByte)
         {
             return (firstIdentifierByte & 0xff) >> 6;
         }
         
-        public static sbyte SetTagClass(sbyte firstIdentifierByte, int tagClass)
+        public static byte SetTagClass(byte firstIdentifierByte, int tagClass)
         {
-            return (sbyte)((firstIdentifierByte & 0x3f) | (tagClass << 6));
+            return (byte)((firstIdentifierByte & 0x3f) | (tagClass << 6));
         }
         
         /// <summary>
         /// Returns the tag number encoded in the provided first identifier byte. See {@code TAG_NUMBER}
         /// constants.
         /// </summary>
-        public static int GetTagNumber(sbyte firstIdentifierByte)
+        public static int GetTagNumber(byte firstIdentifierByte)
         {
             return firstIdentifierByte & 0x1f;
         }
         
-        public static sbyte SetTagNumber(sbyte firstIdentifierByte, int tagNumber)
+        public static byte SetTagNumber(byte firstIdentifierByte, int tagNumber)
         {
-            return (sbyte)((firstIdentifierByte & ~0x1f) | tagNumber);
+            return (byte)((firstIdentifierByte & ~0x1f) | tagNumber);
         }
         
     }

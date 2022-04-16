@@ -19,7 +19,7 @@ namespace SigningServer.Android.Security
         {
             if (data.HasArray())
             {
-                mDigest.BlockUpdate(data.Array().AsBytes(), data.ArrayOffset() + data.Position(),
+                mDigest.BlockUpdate(data.Array(), data.ArrayOffset() + data.Position(),
                     data.Limit() - data.Position());
             }
             else
@@ -28,26 +28,27 @@ namespace SigningServer.Android.Security
             }
         }
 
-        public void Update(sbyte[] data)
+        public void Update(byte[] data)
         {
-            mDigest.BlockUpdate(data.AsBytes(), 0, data.Length);
+            mDigest.BlockUpdate(data, 0, data.Length);
         }
 
-        public sbyte[] Digest()
+        public byte[] Digest()
         {
-            var result = new byte[mDigest.GetByteLength()];
+            var result = new byte[mDigest.GetDigestSize()];
             mDigest.DoFinal(result, 0);
             mDigest.Reset();
-            return result.AsSBytes();
+            return result;
         }
 
-        public int Digest(sbyte[] data, int offset, int length)
+        public int Digest(byte[] data, int offset, int length)
         {
-            mDigest.BlockUpdate(data.AsBytes(), offset, length);
-            return mDigest.GetByteLength();
+            mDigest.DoFinal(data, offset);
+            mDigest.Reset();
+            return mDigest.GetDigestSize();
         }
 
-        public sbyte[] Digest(sbyte[] data)
+        public byte[] Digest(byte[] data)
         {
             Update(data);
             return Digest();
@@ -65,9 +66,9 @@ namespace SigningServer.Android.Security
             }
         }
 
-        public void Update(sbyte[] data, int offset, int length)
+        public void Update(byte[] data, int offset, int length)
         {
-            mDigest.BlockUpdate(data.AsBytes(), offset, length);
+            mDigest.BlockUpdate(data, offset, length);
         }
 
         public string GetAlgorithm()

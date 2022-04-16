@@ -2,16 +2,16 @@
 {
     public class X509EncodedKeySpec : KeySpec
     {
-        private readonly sbyte[] mData;
+        private readonly byte[] mData;
 
-        public X509EncodedKeySpec(sbyte[] data)
+        public X509EncodedKeySpec(byte[] data)
         {
             mData = data;
         }
 
-        public sbyte[] GetEncoded()
+        public byte[] GetEncoded()
         {
-            return (sbyte[])mData.Clone();
+            return (byte[])mData.Clone();
         }
     }
 }

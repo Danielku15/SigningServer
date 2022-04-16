@@ -20,10 +20,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Returns the data remaining in the provided input stream as a byte array
         /// </summary>
-        public static sbyte[] ToByteArray(SigningServer.Android.IO.InputStream input)
+        public static byte[] ToByteArray(SigningServer.Android.IO.InputStream input)
         {
             SigningServer.Android.IO.ByteArrayOutputStream result = new SigningServer.Android.IO.ByteArrayOutputStream();
-            sbyte[] buf = new sbyte[16384];
+            byte[] buf = new byte[16384];
             int chunkSize;
             while ((chunkSize = input.Read(buf)) != -1)
             {

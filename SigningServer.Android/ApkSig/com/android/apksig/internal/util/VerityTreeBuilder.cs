@@ -51,11 +51,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Optional salt to apply before each digestion.
         /// </summary>
-        internal readonly sbyte[] mSalt;
+        internal readonly byte[] mSalt;
         
         internal readonly SigningServer.Android.Security.MessageDigest mMd;
         
-        public VerityTreeBuilder(sbyte[] salt)
+        public VerityTreeBuilder(byte[] salt)
         {
             mSalt = salt;
             mMd = SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.GetNewMessageDigest();
@@ -72,7 +72,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// must be page aligned) and the "Central Directory offset" field in End of Central Directory
         /// are skipped.
         /// </summary>
-        public virtual sbyte[] GenerateVerityTreeRootHash(SigningServer.Android.Com.Android.Apksig.Util.DataSource beforeApkSigningBlock, SigningServer.Android.Com.Android.Apksig.Util.DataSource centralDir, SigningServer.Android.Com.Android.Apksig.Util.DataSource eocd)
+        public virtual byte[] GenerateVerityTreeRootHash(SigningServer.Android.Com.Android.Apksig.Util.DataSource beforeApkSigningBlock, SigningServer.Android.Com.Android.Apksig.Util.DataSource centralDir, SigningServer.Android.Com.Android.Apksig.Util.DataSource eocd)
         {
             if (beforeApkSigningBlock.Size() % SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE != 0)
             {
@@ -90,7 +90,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Returns the root hash of the verity tree built from the data source.
         /// </summary>
-        public virtual sbyte[] GenerateVerityTreeRootHash(SigningServer.Android.Com.Android.Apksig.Util.DataSource fileSource)
+        public virtual byte[] GenerateVerityTreeRootHash(SigningServer.Android.Com.Android.Apksig.Util.DataSource fileSource)
         {
             SigningServer.Android.IO.ByteBuffer verityBuffer = GenerateVerityTree(fileSource);
             return GetRootHashFromTree(verityBuffer);
@@ -132,7 +132,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 int incomplete = (int)(totalOutput % SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE);
                 if (incomplete > 0)
                 {
-                    sbyte[] padding = new sbyte[SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE - incomplete];
+                    byte[] padding = new byte[SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE - incomplete];
                     middleBufferSink.Consume(padding, 0, padding.Length);
                 }
             }
@@ -142,7 +142,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Returns the digested root hash from the top level (only page) of a verity tree.
         /// </summary>
-        public virtual sbyte[] GetRootHashFromTree(SigningServer.Android.IO.ByteBuffer verityBuffer)
+        public virtual byte[] GetRootHashFromTree(SigningServer.Android.IO.ByteBuffer verityBuffer)
         {
             SigningServer.Android.IO.ByteBuffer firstPage = SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.Slice(verityBuffer.AsReadOnlyBuffer(), 0, SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE);
             return SaltedDigest(firstPage);
@@ -187,7 +187,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             long size = dataSource.Size();
             int chunks = (int)SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.DivideRoundup(size, SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE);
             int ioSizeChunks = SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.MAX_PREFETCH_CHUNKS;
-            sbyte[][] hashes = new sbyte[chunks][];
+            byte[][] hashes = new byte[chunks][];
             var tasks = new List<Task>(1);
             long maxReadSize = ioSizeChunks * SigningServer.Android.Com.Android.Apksig.Internal.Util.VerityTreeBuilder.CHUNK_SIZE;
             long readOffset = 0;
@@ -215,7 +215,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
 
             Task.WaitAll(tasks.ToArray());
-            foreach (sbyte[] hash in hashes)
+            foreach (byte[] hash in hashes)
             {
                 dataSink.Consume(hash, 0, hash.Length);
             }
@@ -224,12 +224,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
         /// <summary>
         /// Returns the digest of data with salt prepended.
         /// </summary>
-        internal sbyte[] SaltedDigest(SigningServer.Android.IO.ByteBuffer data)
+        internal byte[] SaltedDigest(SigningServer.Android.IO.ByteBuffer data)
         {
             return SaltedDigest(mMd, data);
         }
         
-        internal sbyte[] SaltedDigest(SigningServer.Android.Security.MessageDigest md, SigningServer.Android.IO.ByteBuffer data)
+        internal byte[] SaltedDigest(SigningServer.Android.Security.MessageDigest md, SigningServer.Android.IO.ByteBuffer data)
         {
             md.Reset();
             if (mSalt != null)

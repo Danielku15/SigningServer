@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using System.IO;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
 {
@@ -276,7 +277,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         
         public static SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.DeflateResult Deflate(SigningServer.Android.IO.ByteBuffer input)
         {
-            sbyte[] inputBuf;
+            byte[] inputBuf;
             int inputOffset;
             int inputLength = input.Remaining();
             if (input.HasArray())
@@ -287,24 +288,24 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             }
             else 
             {
-                inputBuf = new sbyte[inputLength];
+                inputBuf = new byte[inputLength];
                 inputOffset = 0;
                 input.Get(inputBuf);
             }
             SigningServer.Android.Util.Zip.CRC32 crc32 = new SigningServer.Android.Util.Zip.CRC32();
             crc32.Update(inputBuf, inputOffset, inputLength);
             long crc32Value = crc32.GetValue();
-            SigningServer.Android.IO.ByteArrayOutputStream output = new SigningServer.Android.IO.ByteArrayOutputStream();
+            var output = new MemoryStream();
             SigningServer.Android.Util.Zip.Deflater deflater = new SigningServer.Android.Util.Zip.Deflater(9, true);
             deflater.SetInput(inputBuf, inputOffset, inputLength);
             deflater.Finish();
-            sbyte[] buf = new sbyte[65536];
+            byte[] buf = new byte[65536];
             while (!deflater.Finished())
             {
                 int chunkSize = deflater.Deflate(buf);
                 output.Write(buf, 0, chunkSize);
             }
-            return new SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.DeflateResult(inputLength, crc32Value, output.ToByteArray());
+            return new SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.DeflateResult(inputLength, crc32Value, output.ToArray());
         }
         
         public class DeflateResult
@@ -313,9 +314,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             
             public readonly long inputCrc32;
             
-            public readonly sbyte[] output;
+            public readonly byte[] output;
             
-            public DeflateResult(int inputSizeBytes, long inputCrc32, sbyte[] output)
+            public DeflateResult(int inputSizeBytes, long inputCrc32, byte[] output)
             {
                 this.inputSizeBytes = inputSizeBytes;
                 this.inputCrc32 = inputCrc32;

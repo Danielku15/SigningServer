@@ -21,7 +21,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         /// <summary>
         /// Returns a new reader initialized with the provided input.
         /// </summary>
-        protected abstract Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReader CreateReader(sbyte[] input);
+        protected abstract Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReader CreateReader(byte[] input);
         
         [Test]
         public virtual void TestEmptyInput()
@@ -96,17 +96,17 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         [Test]
         public virtual void TestShortFormLength()
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new sbyte[0], ReadDataValue("3000").GetEncodedContents());
+            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new byte[0], ReadDataValue("3000").GetEncodedContents());
             SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("010203"), ReadDataValue("3003010203").GetEncodedContents());
         }
         
         [Test]
         public virtual void TestLongFormLength()
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new sbyte[0], ReadDataValue("308100").GetEncodedContents());
+            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new byte[0], ReadDataValue("308100").GetEncodedContents());
             SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("010203"), ReadDataValue("30820003010203").GetEncodedContents());
-            AssertEquals(255, ReadDataValue(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase.Concat(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("3081ff"), new sbyte[255])).GetEncodedContents().Remaining());
-            AssertEquals(0x110, ReadDataValue(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase.Concat(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("30820110"), new sbyte[0x110])).GetEncodedContents().Remaining());
+            AssertEquals(255, ReadDataValue(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase.Concat(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("3081ff"), new byte[255])).GetEncodedContents().Remaining());
+            AssertEquals(0x110, ReadDataValue(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueReaderTestBase.Concat(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("30820110"), new byte[0x110])).GetEncodedContents().Remaining());
         }
         
         [Test(Expected = typeof(Com.Android.Apksig.Internal.Asn1.Ber.BerDataValueFormatException))]
@@ -130,7 +130,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         [Test]
         public virtual void TestIndefiniteFormLength()
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new sbyte[0], ReadDataValue("30800000").GetEncodedContents());
+            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new byte[0], ReadDataValue("30800000").GetEncodedContents());
             SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("020103"), ReadDataValue("30800201030000").GetEncodedContents());
             SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode("000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f"), ReadDataValue("0280" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "000102030405060708090a0b0c0d0e0f" + "0000").GetEncodedContents());
         }
@@ -162,13 +162,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
         [Test]
         public virtual void TestEmptyDefiniteLengthContents()
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new sbyte[0], ReadDataValue("3000").GetEncodedContents());
+            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new byte[0], ReadDataValue("3000").GetEncodedContents());
         }
         
         [Test]
         public virtual void TestEmptyIndefiniteLengthContents()
         {
-            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new sbyte[0], ReadDataValue("30800000").GetEncodedContents());
+            SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(new byte[0], ReadDataValue("30800000").GetEncodedContents());
         }
         
         [Test]
@@ -204,7 +204,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             return CreateReader(SigningServer.Android.Com.Android.Apksig.Internal.Util.HexEncoding.Decode(hexEncodedInput));
         }
         
-        internal Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue(sbyte[] input)
+        internal Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue ReadDataValue(byte[] input)
         {
             return CreateReader(input).ReadDataValue();
         }
@@ -214,9 +214,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber
             return CreateReader(hexEncodedInput).ReadDataValue();
         }
         
-        internal static sbyte[] Concat(sbyte[] arr1, sbyte[] arr2)
+        internal static byte[] Concat(byte[] arr1, byte[] arr2)
         {
-            sbyte[] result = new sbyte[arr1.Length + arr2.Length];
+            byte[] result = new byte[arr1.Length + arr2.Length];
             SigningServer.Android.Core.System.Arraycopy(arr1, 0, result, 0, arr1.Length);
             SigningServer.Android.Core.System.Arraycopy(arr2, 0, result, arr1.Length, arr2.Length);
             return result;

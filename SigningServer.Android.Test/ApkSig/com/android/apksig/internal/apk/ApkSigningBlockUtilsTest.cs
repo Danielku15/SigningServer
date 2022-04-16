@@ -39,10 +39,10 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         {
             temporaryFolder = CreateTemporaryFolder();
             
-            sbyte[] part1 = new sbyte[80 * 1024 * 1024 + 12345];
+            byte[] part1 = new byte[80 * 1024 * 1024 + 12345];
             for (int i = 0;i < part1.Length;++i)
             {
-                part1[i] = (sbyte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
+                part1[i] = (byte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
             }
             System.IO.FileInfo dataFile = new FileInfo(Path.Combine(temporaryFolder.FullName, "fake.apk"));
             using(SigningServer.Android.IO.FileOutputStream fos = new SigningServer.Android.IO.FileOutputStream(dataFile))
@@ -50,15 +50,15 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 fos.Write(part1);
             }
             SigningServer.Android.IO.RandomAccessFile raf = new SigningServer.Android.IO.RandomAccessFile(dataFile, "r");
-            sbyte[] part2 = new sbyte[1_500_000];
+            byte[] part2 = new byte[1_500_000];
             for (int i = 0;i < part2.Length;++i)
             {
-                part2[i] = (sbyte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
+                part2[i] = (byte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
             }
-            sbyte[] part3 = new sbyte[30_000];
+            byte[] part3 = new byte[30_000];
             for (int i = 0;i < part3.Length;++i)
             {
-                part3[i] = (sbyte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
+                part3[i] = (byte)(i % SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtilsTest.BASE);
             }
             dataSource = new Com.Android.Apksig.Util.DataSource[]{
                 Com.Android.Apksig.Util.DataSources.AsDataSource(raf), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(part2)), Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(part3))}
@@ -68,8 +68,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         [Test]
         public virtual void TestNewVersionMatchesOld()
         {
-            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsOld = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
-            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsNew = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> outputContentDigestsOld = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> outputContentDigestsNew = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(algos, dataSource, outputContentDigestsOld);
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.SINGLE_THREADED, algos, dataSource, outputContentDigestsNew);
             AssertEqualDigests(outputContentDigestsOld, outputContentDigestsNew);
@@ -78,20 +78,20 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
         [Test]
         public virtual void TestMultithreadedVersionMatchesSinglethreaded()
         {
-            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigests = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
-            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> outputContentDigestsMultithreaded = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> outputContentDigests = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> outputContentDigestsMultithreaded = new SigningServer.Android.Collections.EnumMap<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.SINGLE_THREADED, algos, dataSource, outputContentDigests);
             Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeOneMbChunkContentDigests(Com.Android.Apksig.Util.RunnablesExecutors.MULTI_THREADED, algos, dataSource, outputContentDigestsMultithreaded);
             AssertEqualDigests(outputContentDigestsMultithreaded, outputContentDigests);
         }
         
-        internal void AssertEqualDigests(SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> d1, SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> d2)
+        internal void AssertEqualDigests(SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> d1, SigningServer.Android.Collections.Map<Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> d2)
         {
             AssertEquals(d1.KeySet(), d2.KeySet());
             foreach (Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm algo in d1.KeySet())
             {
-                sbyte[] digest1 = d1.Get(algo);
-                sbyte[] digest2 = d2.Get(algo);
+                byte[] digest1 = d1.Get(algo);
+                byte[] digest2 = d2.Get(algo);
                 AssertArrayEquals(digest1, digest2);
             }
         }

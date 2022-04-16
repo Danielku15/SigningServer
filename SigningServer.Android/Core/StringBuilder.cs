@@ -27,13 +27,19 @@ namespace SigningServer.Android.Core
             return this;
         }
 
+        public StringBuilder Append(char c)
+        {
+            mBuilder.Append(c);
+            return this;
+        }
+        
         public StringBuilder Append(int v)
         {
             mBuilder.Append(v);
             return this;
         }
 
-        public StringBuilder Append(sbyte v)
+        public StringBuilder Append(byte v)
         {
             mBuilder.Append(v);
             return this;
@@ -60,6 +66,11 @@ namespace SigningServer.Android.Core
         public int Length()
         {
             return mBuilder.Length;
+        }
+
+        public override string ToString()
+        {
+            return mBuilder.ToString();
         }
     }
 }

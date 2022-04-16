@@ -6,7 +6,7 @@ namespace SigningServer.Android.Util
     {
         public class Encoder
         {
-            public string EncodeToString(sbyte[] entryDigest)
+            public string EncodeToString(byte[] entryDigest)
             {
                 var unsigned = (byte[])(object)entryDigest;
                 return Convert.ToBase64String(unsigned);
@@ -15,10 +15,10 @@ namespace SigningServer.Android.Util
 
         public class Decoder
         {
-            public sbyte[] Decode(string digestBase64)
+            public byte[] Decode(string digestBase64)
             {
                 var unsigned = Convert.FromBase64String(digestBase64);
-                return (sbyte[])(object)unsigned;
+                return (byte[])(object)unsigned;
             }
         }
 

@@ -11,7 +11,7 @@ namespace SigningServer.Android.Collections
         IEnumerable<TValue> Values();
         bool IsEmpty();
         Set<TKey> KeySet();
-        bool Remove(TKey entryName);
+        bool Remove(TKey key);
         void Clear();
     }
 }

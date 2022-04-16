@@ -38,7 +38,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             return mOut;
         }
         
-        public void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(byte[] buf, int offset, int length)
         {
             mOut.Write(buf, offset, length);
         }
@@ -56,7 +56,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             }
             else 
             {
-                sbyte[] tmp = new sbyte[SigningServer.Android.Core.Math.Min(buf.Remaining(), SigningServer.Android.Com.Android.Apksig.Internal.Util.OutputStreamDataSink.MAX_READ_CHUNK_SIZE)];
+                byte[] tmp = new byte[SigningServer.Android.Core.Math.Min(buf.Remaining(), SigningServer.Android.Com.Android.Apksig.Internal.Util.OutputStreamDataSink.MAX_READ_CHUNK_SIZE)];
                 while (buf.HasRemaining())
                 {
                     int chunkSize = SigningServer.Android.Core.Math.Min(buf.Remaining(), tmp.Length);

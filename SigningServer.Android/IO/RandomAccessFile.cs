@@ -7,6 +7,7 @@ namespace SigningServer.Android.IO
     public class RandomAccessFile : IDisposable
     {
         private readonly FileStream mStream;
+        private FileChannel mFileChannel;
 
         public RandomAccessFile(FileInfo file, string mode)
         {
@@ -27,7 +28,22 @@ namespace SigningServer.Android.IO
 
         public FileChannel GetChannel()
         {
-            return new FileChannel(mStream);
+            var channel = mFileChannel;
+            if (channel == null)
+            {
+                lock (this)
+                {
+                    channel = mFileChannel;
+                    if (channel == null)
+                    {
+                        channel = new FileChannel(mStream);
+                        mFileChannel = channel;
+                    }
+                }
+            }
+
+            return channel;
+
         }
 
         public void Seek(long position)
@@ -35,14 +51,18 @@ namespace SigningServer.Android.IO
             mStream.Seek(position, SeekOrigin.Begin);
         }
 
-        public void Write(sbyte[] buf, int offset, int length)
+        public void Write(byte[] buf, int offset, int length)
         {
-            mStream.Write(buf.AsBytes(), offset, length);
+            if (offset < 0 || offset + length > buf.Length)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            mStream.Write(buf, offset, length);
         }
 
-        public void Write(sbyte[] buf)
+        public void Write(byte[] buf)
         {
-            mStream.Write(buf.AsBytes(), 0, buf.Length);
+            mStream.Write(buf, 0, buf.Length);
         }
 
         public long Length()
@@ -55,9 +75,9 @@ namespace SigningServer.Android.IO
             mStream.SetLength(i);
         }
 
-        public void ReadFully(sbyte[] contents)
+        public void ReadFully(byte[] contents)
         {
-            mStream.Read(contents.AsBytes(), 0, contents.Length);
+            mStream.Read(contents, 0, contents.Length);
         }
     }
 }

@@ -16,9 +16,9 @@ namespace SigningServer.Android.IO
             mIn.Dispose();
         }
 
-        public int Read(sbyte[] buffer, int offset, int len)
+        public int Read(byte[] buffer, int offset, int len)
         {
-            var count = mIn.Read(buffer.AsBytes(), offset, len);
+            var count = mIn.Read(buffer, offset, len);
             return count == 0 ? -1 : count;
         }
 
@@ -27,7 +27,7 @@ namespace SigningServer.Android.IO
             return mIn.ReadByte();
         }
 
-        public int Read(sbyte[] b)
+        public int Read(byte[] b)
         {
             return Read(b, 0, b.Length);
         }

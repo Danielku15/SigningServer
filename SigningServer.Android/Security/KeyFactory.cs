@@ -8,7 +8,7 @@ namespace SigningServer.Android.Security
         // ReSharper disable once UnusedParameter.Global
         public static KeyFactory GetInstance(string keyAlgorithm)
         {
-            return new BouncyCastleX509KeyFactory();
+            return new BouncyCastleKeyFactory();
         }
 
         public abstract PublicKey GeneratePublic(X509EncodedKeySpec keySpec);

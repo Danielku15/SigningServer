@@ -18,18 +18,18 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
     /// </summary>
     public class ManifestParser
     {
-        internal readonly sbyte[] mManifest;
+        internal readonly byte[] mManifest;
         
         internal int mOffset;
         
         internal int mEndOffset;
         
-        internal sbyte[] mBufferedLine;
+        internal byte[] mBufferedLine;
         
         /// <summary>
         /// Constructs a new {@code ManifestParser} with the provided input.
         /// </summary>
-        public ManifestParser(sbyte[] data)
+        public ManifestParser(byte[] data)
             : this (data, 0, data.Length)
         {
         }
@@ -37,7 +37,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         /// <summary>
         /// Constructs a new {@code ManifestParser} with the provided input.
         /// </summary>
-        public ManifestParser(sbyte[] data, int offset, int length)
+        public ManifestParser(byte[] data, int offset, int length)
         {
             mManifest = data;
             mOffset = offset;
@@ -110,7 +110,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         /// </summary>
         internal string ReadAttribute()
         {
-            sbyte[] bytes = ReadAttributeBytes();
+            byte[] bytes = ReadAttributeBytes();
             if (bytes == null)
             {
                 return null;
@@ -129,19 +129,19 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         /// Returns the next attribute or empty array if end of section has been reached or {@code null}
         /// if end of input has been reached.
         /// </summary>
-        internal sbyte[] ReadAttributeBytes()
+        internal byte[] ReadAttributeBytes()
         {
             if ((mBufferedLine != null) && (mBufferedLine.Length == 0))
             {
                 mBufferedLine = null;
                 return SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.EMPTY_BYTE_ARRAY;
             }
-            sbyte[] line = ReadLine();
+            byte[] line = ReadLine();
             if (line == null)
             {
                 if (mBufferedLine != null)
                 {
-                    sbyte[] result = mBufferedLine;
+                    byte[] result = mBufferedLine;
                     mBufferedLine = null;
                     return result;
                 }
@@ -151,13 +151,13 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
             {
                 if (mBufferedLine != null)
                 {
-                    sbyte[] result = mBufferedLine;
+                    byte[] result = mBufferedLine;
                     mBufferedLine = SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.EMPTY_BYTE_ARRAY;
                     return result;
                 }
                 return SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.EMPTY_BYTE_ARRAY;
             }
-            sbyte[] attrLine;
+            byte[] attrLine;
             if (mBufferedLine == null)
             {
                 attrLine = line;
@@ -166,7 +166,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
             {
                 if ((line.Length == 0) || (line[0] != ' '))
                 {
-                    sbyte[] result = mBufferedLine;
+                    byte[] result = mBufferedLine;
                     mBufferedLine = line;
                     return result;
                 }
@@ -198,11 +198,11 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
             }
         }
         
-        internal static readonly sbyte[] EMPTY_BYTE_ARRAY = new sbyte[0];
+        internal static readonly byte[] EMPTY_BYTE_ARRAY = new byte[0];
         
-        internal static sbyte[] Concat(sbyte[] arr1, sbyte[] arr2, int offset2, int length2)
+        internal static byte[] Concat(byte[] arr1, byte[] arr2, int offset2, int length2)
         {
-            sbyte[] result = new sbyte[arr1.Length + length2];
+            byte[] result = new byte[arr1.Length + length2];
             SigningServer.Android.Core.System.Arraycopy(arr1, 0, result, 0, arr1.Length);
             SigningServer.Android.Core.System.Arraycopy(arr2, offset2, result, arr1.Length, length2);
             return result;
@@ -212,7 +212,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         /// Returns the next line (without line delimiter characters) or {@code null} if end of input has
         /// been reached.
         /// </summary>
-        internal sbyte[] ReadLine()
+        internal byte[] ReadLine()
         {
             if (mOffset >= mEndOffset)
             {
@@ -223,7 +223,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
             int newlineEndOffset = -1;
             for (int i = startOffset;i < mEndOffset;i++)
             {
-                sbyte b = mManifest[i];
+                byte b = mManifest[i];
                 if (b == '\r')
                 {
                     newlineStartOffset = i;

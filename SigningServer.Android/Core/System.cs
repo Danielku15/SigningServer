@@ -9,9 +9,9 @@ namespace SigningServer.Android.Core
         public static readonly PrintStream output = new PrintStream(Console.Out);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Arraycopy(Array src, int srcIndex, Array dest, int destIndex, int length)
+        public static void Arraycopy(byte[] src, int srcIndex, byte[] dest, int destIndex, int length)
         {
-            Array.Copy(src, srcIndex, dest, destIndex, length);
+            global::System.Buffer.BlockCopy(src, srcIndex, dest, destIndex, length);
         }
     }
 }

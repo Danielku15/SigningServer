@@ -15,7 +15,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Util
     [TestClass]
     public class InMemoryDataSinkDataSourceTest: SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase
     {
-        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(sbyte[] contents)
+        protected override SigningServer.Android.Com.Android.Apksig.Util.DataSourceTestBase.CloseableWithDataSource CreateDataSource(byte[] contents)
         {
             Com.Android.Apksig.Util.ReadableDataSink sink = Com.Android.Apksig.Util.DataSinks.NewInMemoryDataSink();
             sink.Consume(contents, 0, contents.Length);

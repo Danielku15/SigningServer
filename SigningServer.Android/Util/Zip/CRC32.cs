@@ -12,9 +12,9 @@ namespace SigningServer.Android.Util.Zip
             mCrc = new Crc32();
         }
         
-        public void Update(sbyte[] data, int offset, int length)
+        public void Update(byte[] data, int offset, int length)
         {
-            mCrc.Update(new ArraySegment<byte>(data.AsBytes(), offset, length));
+            mCrc.Update(new ArraySegment<byte>(data, offset, length));
         }
 
         public long GetValue()

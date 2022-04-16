@@ -34,7 +34,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                     int size = end - begin;
                     Com.Android.Apksig.Util.ReadableDataSink sink = Com.Android.Apksig.Util.DataSinks.NewInMemoryDataSink(size);
                     mChain.Feed(begin, size, sink);
-                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".Substring(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), sink.GetByteBuffer(0, size));
+                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".SubstringIndex(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), sink.GetByteBuffer(0, size));
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 {
                     int size = end - begin;
                     SigningServer.Android.IO.ByteBuffer buffer = mChain.GetByteBuffer(begin, size);
-                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".Substring(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
+                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".SubstringIndex(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                     mChain.CopyTo(begin, size, buffer);
                     AssertEquals(size, buffer.Position());
                     buffer.Rewind();
-                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".Substring(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
+                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".SubstringIndex(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
                 {
                     int size = end - begin;
                     SigningServer.Android.IO.ByteBuffer buffer = mChain.Slice(begin, size).GetByteBuffer(0, size);
-                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".Substring(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
+                    AssertByteBufferEquals(SigningServer.Android.IO.ByteBuffer.Wrap("1234567890".SubstringIndex(begin, end).GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.US_ASCII)), buffer);
                 }
             }
         }

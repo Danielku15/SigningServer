@@ -5,6 +5,7 @@
 // </auto-generated>
 
 using System;
+using SigningServer.Android.Collections;
 
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
 {
@@ -107,7 +108,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         /// @return a pair of main entry manifest section representation and a mapping between entry name
         ///     and its manifest section representation
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section>> ParseManifest(sbyte[] manifestBytes, SigningServer.Android.Collections.Set<string> cdEntryNames, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result result)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section>> ParseManifest(byte[] manifestBytes, SigningServer.Android.Collections.Set<string> cdEntryNames, SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Result result)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser manifest = new SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser(manifestBytes);
             SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection = manifest.ReadSection();
@@ -180,7 +181,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_NO_MANIFEST);
                     return;
                 }
-                sbyte[] manifestBytes;
+                byte[] manifestBytes;
                 try
                 {
                     manifestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, manifestEntry, cdStartOffset);
@@ -344,7 +345,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             
             internal bool mIgnored;
             
-            internal sbyte[] mSigFileBytes;
+            internal byte[] mSigFileBytes;
             
             internal SigningServer.Android.Collections.Set<string> mSigFileEntryNames;
             
@@ -393,7 +394,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             
             public virtual void VerifySigBlockAgainstSigFile(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, long cdStartOffset, int minSdkVersion, int maxSdkVersion)
             {
-                sbyte[] sigBlockBytes;
+                byte[] sigBlockBytes;
                 try
                 {
                     sigBlockBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, mSignatureBlockEntry, cdStartOffset);
@@ -512,7 +513,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             /// Returns the signing certificate if the provided {@link SignerInfo} verifies against the
             /// contents of the provided signature file, or {@code null} if it does not verify.
             /// </summary>
-            internal SigningServer.Android.Security.Cert.X509Certificate VerifySignerInfoAgainstSigFile(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignedData signedData, SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.X509Certificate> signedDataCertificates, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignerInfo signerInfo, sbyte[] signatureFile, int minSdkVersion, int maxSdkVersion)
+            internal SigningServer.Android.Security.Cert.X509Certificate VerifySignerInfoAgainstSigFile(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignedData signedData, SigningServer.Android.Collections.Collection<SigningServer.Android.Security.Cert.X509Certificate> signedDataCertificates, SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.SignerInfo signerInfo, byte[] signatureFile, int minSdkVersion, int maxSdkVersion)
             {
                 string digestAlgorithmOid = signerInfo.digestAlgorithm.algorithm;
                 string signatureAlgorithmOid = signerInfo.signatureAlgorithm.algorithm;
@@ -613,12 +614,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                                 return null;
                             }
                         }
-                        sbyte[] expectedSignatureFileDigest = signedAttrs.GetSingleOctetStringValue(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Pkcs7Constants.OID_MESSAGE_DIGEST);
+                        byte[] expectedSignatureFileDigest = signedAttrs.GetSingleOctetStringValue(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.Pkcs7Constants.OID_MESSAGE_DIGEST);
                         if (expectedSignatureFileDigest == null)
                         {
                             throw new SigningServer.Android.Security.SignatureException("No content digest in signed attributes");
                         }
-                        sbyte[] actualSignatureFileDigest = SigningServer.Android.Security.MessageDigest.GetInstance(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier.GetJcaDigestAlgorithm(digestAlgorithmOid)).Digest(signatureFile);
+                        byte[] actualSignatureFileDigest = SigningServer.Android.Security.MessageDigest.GetInstance(SigningServer.Android.Com.Android.Apksig.Internal.Pkcs7.AlgorithmIdentifier.GetJcaDigestAlgorithm(digestAlgorithmOid)).Digest(signatureFile);
                         if (!SigningServer.Android.Collections.Arrays.Equals(expectedSignatureFileDigest, actualSignatureFileDigest))
                         {
                             return null;
@@ -629,7 +630,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                         throw new SigningServer.Android.Security.SignatureException("Failed to parse signed attributes", e);
                     }
                     SigningServer.Android.IO.ByteBuffer signedAttrsOriginalEncoding = signerInfo.signedAttrs.GetEncoded();
-                    s.Update((sbyte)0x31);
+                    s.Update((byte)0x31);
                     signedAttrsOriginalEncoding.Position(1);
                     s.Update(signedAttrsOriginalEncoding);
                 }
@@ -637,7 +638,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 {
                     s.Update(signatureFile);
                 }
-                sbyte[] sigBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(signerInfo.signature.Slice());
+                byte[] sigBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.ByteBufferUtils.ToByteArray(signerInfo.signature.Slice());
                 if (!s.Verify(sigBytes))
                 {
                     return null;
@@ -676,7 +677,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 return result;
             }
             
-            public virtual void VerifySigFileAgainstManifest(sbyte[] manifestBytes, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section> entryNameToManifestSection, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
+            public virtual void VerifySigFileAgainstManifest(byte[] manifestBytes, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, SigningServer.Android.Collections.Map<string, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section> entryNameToManifestSection, SigningServer.Android.Collections.Map<int, string> supportedApkSigSchemeNames, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, int minSdkVersion, int maxSdkVersion)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser sf = new SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser(mSigFileBytes);
                 SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection = sf.ReadSection();
@@ -761,7 +762,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             /// Returns {@code true} if the whole-file digest of the manifest against the main section of
             /// the .SF file.
             /// </summary>
-            internal bool VerifyManifestDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, bool createdBySigntool, sbyte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
+            internal bool VerifyManifestDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, bool createdBySigntool, byte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
             {
                 SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> expectedDigests = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigestsToVerify(sfMainSection, ((createdBySigntool) ? "-Digest" : "-Digest-Manifest"), minSdkVersion, maxSdkVersion);
                 bool digestFound = !expectedDigests.IsEmpty();
@@ -774,8 +775,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest expectedDigest in expectedDigests)
                 {
                     string jcaDigestAlgorithm = expectedDigest.jcaDigestAlgorithm;
-                    sbyte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes);
-                    sbyte[] expected = expectedDigest.digest;
+                    byte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes);
+                    byte[] expected = expectedDigest.digest;
                     if (!SigningServer.Android.Collections.Arrays.Equals(expected, actual))
                     {
                         mResult.AddWarning(
@@ -802,7 +803,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             /// Verifies the digest of the manifest's main section against the main section of the .SF
             /// file.
             /// </summary>
-            internal void VerifyManifestMainSectionDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, sbyte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
+            internal void VerifyManifestMainSectionDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfMainSection, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestMainSection, byte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
             {
                 SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> expectedDigests = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigestsToVerify(sfMainSection, "-Digest-Manifest-Main-Attributes", minSdkVersion, maxSdkVersion);
                 if (expectedDigests.IsEmpty())
@@ -812,8 +813,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest expectedDigest in expectedDigests)
                 {
                     string jcaDigestAlgorithm = expectedDigest.jcaDigestAlgorithm;
-                    sbyte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes, manifestMainSection.GetStartOffset(), manifestMainSection.GetSizeBytes());
-                    sbyte[] expected = expectedDigest.digest;
+                    byte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes, manifestMainSection.GetStartOffset(), manifestMainSection.GetSizeBytes());
+                    byte[] expected = expectedDigest.digest;
                     if (!SigningServer.Android.Collections.Arrays.Equals(expected, actual))
                     {
                         mResult.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.JAR_SIG_MANIFEST_MAIN_SECTION_DIGEST_DID_NOT_VERIFY, jcaDigestAlgorithm, mSignatureFileEntry.GetName(), SigningServer.Android.Util.Base64.GetEncoder().EncodeToString(actual), SigningServer.Android.Util.Base64.GetEncoder().EncodeToString(expected));
@@ -825,7 +826,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             /// Verifies the digest of the manifest's individual section against the corresponding
             /// individual section of the .SF file.
             /// </summary>
-            internal void VerifyManifestIndividualSectionDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfIndividualSection, bool createdBySigntool, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestIndividualSection, sbyte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
+            internal void VerifyManifestIndividualSectionDigest(SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section sfIndividualSection, bool createdBySigntool, SigningServer.Android.Com.Android.Apksig.Internal.Jar.ManifestParser.Section manifestIndividualSection, byte[] manifestBytes, int minSdkVersion, int maxSdkVersion)
             {
                 string entryName = sfIndividualSection.GetName();
                 SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> expectedDigests = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigestsToVerify(sfIndividualSection, "-Digest", minSdkVersion, maxSdkVersion);
@@ -847,8 +848,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest expectedDigest in expectedDigests)
                 {
                     string jcaDigestAlgorithm = expectedDigest.jcaDigestAlgorithm;
-                    sbyte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes, sectionStartIndex, sectionSizeBytes);
-                    sbyte[] expected = expectedDigest.digest;
+                    byte[] actual = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.Digest(jcaDigestAlgorithm, manifestBytes, sectionStartIndex, sectionSizeBytes);
+                    byte[] expected = expectedDigest.digest;
                     if (!SigningServer.Android.Collections.Arrays.Equals(expected, actual))
                     {
                         mResult.AddError(
@@ -968,8 +969,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                     {
                         continue;
                     }
-                    sbyte[] digest = base64Decoder.Decode(digestBase64);
-                    sbyte[] digestInResult = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigest(result, alg);
+                    byte[] digest = base64Decoder.Decode(digestBase64);
+                    byte[] digestInResult = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetDigest(result, alg);
                     if ((digestInResult == null) || (!SigningServer.Android.Collections.Arrays.Equals(digestInResult, digest)))
                     {
                         result.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest(alg, digest));
@@ -1005,11 +1006,27 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             }
         }
         
-        internal static readonly SigningServer.Android.Collections.Map<string, string> UPPER_CASE_JCA_DIGEST_ALG_TO_CANONICAL;
+        internal static readonly SigningServer.Android.Collections.Map<string, string> UPPER_CASE_JCA_DIGEST_ALG_TO_CANONICAL = new HashMap<string, string>(8)
+        {
+            ["MD5"] = "MD5",
+            ["SHA"] = "SHA-1",
+            ["SHA1"] = "SHA-1",
+            ["SHA-1"] = "SHA-1",
+            ["SHA-256"] = "SHA-256",
+            ["SHA-384"] = "SHA-384",
+            ["SHA-512"] = "SHA-512"
+        };
         
-        internal static readonly SigningServer.Android.Collections.Map<string, int?> MIN_SDK_VESION_FROM_WHICH_DIGEST_SUPPORTED_IN_MANIFEST;
+        internal static readonly SigningServer.Android.Collections.Map<string, int> MIN_SDK_VESION_FROM_WHICH_DIGEST_SUPPORTED_IN_MANIFEST = new HashMap<string, int>(5)
+        {
+            ["MD5"] = 0,
+            ["SHA-1"] = 0,
+            ["SHA-256"] = 0,
+            ["SHA-384"] = Com.Android.Apksig.Internal.Util.AndroidSdkVersion.GINGERBREAD,
+            ["SHA-512"] = Com.Android.Apksig.Internal.Util.AndroidSdkVersion.GINGERBREAD
+        };
         
-        internal static sbyte[] GetDigest(SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> digests, string jcaDigestAlgorithm)
+        internal static byte[] GetDigest(SigningServer.Android.Collections.Collection<SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest> digests, string jcaDigestAlgorithm)
         {
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest digest in digests)
             {
@@ -1107,7 +1124,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 for (int i = 0;i < expectedDigests.Size();i++)
                 {
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.NamedDigest expectedDigest = expectedDigests.Get(i);
-                    sbyte[] actualDigest = mds[i].Digest();
+                    byte[] actualDigest = mds[i].Digest();
                     if (!SigningServer.Android.Collections.Arrays.Equals(expectedDigest.digest, actualDigest))
                     {
                         result.AddError(
@@ -1157,14 +1174,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
             return SigningServer.Android.Security.MessageDigest.GetInstance(algorithm);
         }
         
-        internal static sbyte[] Digest(string algorithm, sbyte[] data, int offset, int length)
+        internal static byte[] Digest(string algorithm, byte[] data, int offset, int length)
         {
             SigningServer.Android.Security.MessageDigest md = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetMessageDigest(algorithm);
             md.Update(data, offset, length);
             return md.Digest();
         }
         
-        internal static sbyte[] Digest(string algorithm, sbyte[] data)
+        internal static byte[] Digest(string algorithm, byte[] data)
         {
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeVerifier.GetMessageDigest(algorithm).Digest(data);
         }
@@ -1173,9 +1190,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         {
             public readonly string jcaDigestAlgorithm;
             
-            public readonly sbyte[] digest;
+            public readonly byte[] digest;
             
-            internal NamedDigest(string jcaDigestAlgorithm, sbyte[] digest)
+            internal NamedDigest(string jcaDigestAlgorithm, byte[] digest)
             {
                 this.jcaDigestAlgorithm = jcaDigestAlgorithm;
                 this.digest = digest;
@@ -1339,7 +1356,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
                 }
             }
             
-            public virtual sbyte[] GetSingleOctetStringValue(string attrOid)
+            public virtual byte[] GetSingleOctetStringValue(string attrOid)
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject value = GetSingleValue(attrOid);
                 if (value == null)
@@ -1362,7 +1379,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1
         public class OctetStringChoice
         {
             [SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Field(Type = SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.OCTET_STRING)]
-            public sbyte[] value;
+            public byte[] value;
             
         }
         

@@ -8,56 +8,50 @@ namespace SigningServer.Android.Security.BouncyCastle
     {
         private readonly Org.BouncyCastle.X509.X509Certificate mCert;
 
-        public BouncyCastleX509Certificate(Org.BouncyCastle.X509.X509Certificate cert)
+        public BouncyCastleX509Certificate( Org.BouncyCastle.X509.X509Certificate cert)
         {
             mCert = cert;
         }
 
-        public X500Principal GetIssuerX500Principal()
+        public override X500Principal GetIssuerX500Principal()
         {
-            return new X500Principal(mCert.IssuerDN.GetEncoded().AsSBytes());
+            return new X500Principal(mCert.IssuerDN.GetEncoded());
         }
 
-        public sbyte[] GetEncoded()
+        public override byte[] GetEncoded()
         {
-            return mCert.GetEncoded().AsSBytes();
+            return mCert.GetEncoded();
         }
 
-        public BigInteger GetSerialNumber()
+        public override BigInteger GetSerialNumber()
         {
             return new BigInteger(mCert.SerialNumber);
         }
 
-        public PublicKey GetPublicKey()
+        public override PublicKey GetPublicKey()
         {
-            return new BouncyCastlePublicKey(mCert);
+            return new BouncyCastlePublicKey(mCert.CertificateStructure.SubjectPublicKeyInfo.GetEncoded(), mCert.GetPublicKey());
         }
 
-        public bool HasUnsupportedCriticalExtension()
+        public override bool HasUnsupportedCriticalExtension()
         {
             return false;
         }
 
-        public bool[] GetKeyUsage()
+        public override bool[] GetKeyUsage()
         {
             return mCert.GetKeyUsage();
         }
 
-        public Principal GetSubjectDN()
+        public override Principal GetSubjectDN()
         {
-            return new X500Principal(mCert.SubjectDN.GetEncoded().AsSBytes());
+            return new X500Principal(mCert.SubjectDN.GetEncoded());
         }
 
-        public Principal GetIssuerDN()
+        public override Principal GetIssuerDN()
         {
             return GetIssuerX500Principal();
         }
 
-        public bool Equals(X509Certificate other)
-        {
-            var thisCert = GetEncoded();
-            var otherCert = other.GetEncoded();
-            return thisCert.SequenceEqual(otherCert);
-        }
     }
 }

@@ -716,7 +716,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                     throw new SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.XmlParserException("String too long: " + lengthChars + " uint16s");
                 }
                 int lengthBytes = lengthChars * 2;
-                sbyte[] arr;
+                byte[] arr;
                 int arrOffset;
                 if (encoded.HasArray())
                 {
@@ -726,7 +726,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 }
                 else 
                 {
-                    arr = new sbyte[lengthBytes];
+                    arr = new byte[lengthBytes];
                     arrOffset = 0;
                     encoded.Get(arr);
                 }
@@ -756,7 +756,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 {
                     lengthBytes = ((lengthBytes & 0x7f) << 8) | SigningServer.Android.Com.Android.Apksig.Internal.Apk.AndroidBinXmlParser.GetUnsignedInt8(encoded);
                 }
-                sbyte[] arr;
+                byte[] arr;
                 int arrOffset;
                 if (encoded.HasArray())
                 {
@@ -766,7 +766,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
                 }
                 else 
                 {
-                    arr = new sbyte[lengthBytes];
+                    arr = new byte[lengthBytes];
                     arrOffset = 0;
                     encoded.Get(arr);
                 }

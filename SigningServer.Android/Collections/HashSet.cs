@@ -36,5 +36,33 @@ namespace SigningServer.Android.Collections
         {
             return Count;
         }
+        
+        
+            
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj == null)
+            {
+                return false;
+            }
+
+            return GetHashCode() == obj.GetHashCode();
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1;
+            foreach (var item in this)
+            {
+                hashCode = 31 * hashCode + (item == null ? 0 : item.GetHashCode());
+            }
+
+            return hashCode;
+        }
     }
 }

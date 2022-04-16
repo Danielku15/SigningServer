@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Util.Jar
 {
-    public class Attributes : HashMap<object, object>
+    public class Attributes : HashMap<Attributes.Name, string>
     {
         public class Name
         {
@@ -20,28 +20,41 @@ namespace SigningServer.Android.Util.Jar
             {
                 return mName;
             }
+
+            protected bool Equals(Name other)
+            {
+                return mName == other.mName;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((Name)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (mName != null ? mName.GetHashCode() : 0);
+            }
         }
 
         public string GetValue(Name name)
         {
-            return Get(name.ToString()).ToString();
+            return Get(name);
         }
 
-        public int Size()
-        {
-            return Count;
-        }
-        
         public void PutValue(string name, string value)
         {
-            this[name] = value;
+            Put(new Name(name), value);
         }
 
         public void PutAll(Attributes attributes)
         {
-            foreach (var attribute in attributes)
+            foreach (var attribute in attributes.EntrySet())
             {
-                this[attribute.Key.ToString()] = attribute.Value.ToString();
+                Put(attribute.GetKey(), attribute.GetValue());
             }
         }
     }

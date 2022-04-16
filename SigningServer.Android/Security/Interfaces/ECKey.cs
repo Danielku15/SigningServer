@@ -7,8 +7,18 @@ namespace SigningServer.Android.Security.Interfaces
         ECParameterSpec GetParams();
     }
     
-    public interface ECParameterSpec
+    public class ECParameterSpec
     {
-        BigInteger GetOrder();
+        private readonly BigInteger mOrder;
+
+        public ECParameterSpec(BigInteger order)
+        {
+            mOrder = order;
+        }
+
+        public BigInteger GetOrder()
+        {
+            return mOrder;
+        }
     }
 }

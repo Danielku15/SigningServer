@@ -1,23 +1,26 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using System;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.X509;
+using SigningServer.Android.Math;
+using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.BouncyCastle
 {
-    public class BouncyCastlePublicKey : PublicKey
+    public class BouncyCastlePublicKey : PublicKey, RSAKey, DSAKey, ECKey
     {
-        private readonly X509Certificate mCert;
+        private readonly byte[] mEncoded;
 
-        public AsymmetricKeyParameter KeyParameter => mCert.GetPublicKey();
+        public AsymmetricKeyParameter KeyParameter { get; }
 
-        public BouncyCastlePublicKey(X509Certificate cert)
+        public BouncyCastlePublicKey(byte[] encoded, AsymmetricKeyParameter key)
         {
-            mCert = cert;
+            mEncoded = encoded;
+            KeyParameter = key;
         }
 
-        public sbyte[] GetEncoded()
+        public byte[] GetEncoded()
         {
-            return mCert.GetEncoded().AsSBytes();
+            return mEncoded;
         }
 
         public string GetFormat()
@@ -27,13 +30,33 @@ namespace SigningServer.Android.Security.BouncyCastle
 
         public string GetAlgorithm()
         {
-            switch (mCert.GetPublicKey())
+            switch (KeyParameter)
             {
                 case DsaKeyParameters _: return "DSA";
                 case RsaKeyParameters _: return "RSA";
                 case ECKeyParameters _: return "EC";
             }
-            return mCert.SigAlgName;
+            return KeyParameter.ToString();
+        }
+
+        public BigInteger GetModulus()
+        {
+            if (KeyParameter is RsaKeyParameters rsa)
+            {
+                return new BigInteger(rsa.Modulus);
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        public ECParameterSpec GetParams()
+        {
+            if (KeyParameter is ECKeyParameters ec)
+            {
+                return new ECParameterSpec(new BigInteger(ec.Parameters.Curve.Order));
+            }
+
+            throw new InvalidOperationException();
         }
     }
 }

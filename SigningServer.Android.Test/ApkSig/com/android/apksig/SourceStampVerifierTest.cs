@@ -204,7 +204,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         
         internal Com.Android.Apksig.SourceStampVerifier.Result VerifySourceStamp(string apkFilenameInResources, string expectedCertDigest, int? minSdkVersionOverride, int? maxSdkVersionOverride)
         {
-            sbyte[] apkBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(GetType(), apkFilenameInResources);
+            byte[] apkBytes = SigningServer.Android.Com.Android.Apksig.Internal.Util.Resources.ToByteArray(GetType(), apkFilenameInResources);
             Com.Android.Apksig.SourceStampVerifier.Builder builder = new Com.Android.Apksig.SourceStampVerifier.Builder(Com.Android.Apksig.Util.DataSources.AsDataSource(SigningServer.Android.IO.ByteBuffer.Wrap(apkBytes)));
             if (minSdkVersionOverride != null)
             {

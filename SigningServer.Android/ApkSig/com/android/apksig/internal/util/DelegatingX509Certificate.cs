@@ -24,54 +24,49 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             this.mDelegate = @delegate;
         }
         
-        public bool HasUnsupportedCriticalExtension()
+        public override bool HasUnsupportedCriticalExtension()
         {
             return mDelegate.HasUnsupportedCriticalExtension();
         }
         
-        public SigningServer.Android.Math.BigInteger GetSerialNumber()
+        public override SigningServer.Android.Math.BigInteger GetSerialNumber()
         {
             return mDelegate.GetSerialNumber();
         }
         
-        public SigningServer.Android.Security.Principal GetIssuerDN()
+        public override SigningServer.Android.Security.Principal GetIssuerDN()
         {
             return mDelegate.GetIssuerDN();
         }
         
-        public SigningServer.Android.Security.Principal GetSubjectDN()
+        public override SigningServer.Android.Security.Principal GetSubjectDN()
         {
             return mDelegate.GetSubjectDN();
         }
         
-        public bool[] GetKeyUsage()
+        public override bool[] GetKeyUsage()
         {
             return mDelegate.GetKeyUsage();
         }
         
-        public sbyte[] GetEncoded()
+        public override  byte[] GetEncoded()
         {
             return mDelegate.GetEncoded();
         }
         
-        public string ToString()
+        public override string ToString()
         {
             return mDelegate.ToString();
         }
         
-        public SigningServer.Android.Security.PublicKey GetPublicKey()
+        public override SigningServer.Android.Security.PublicKey GetPublicKey()
         {
             return mDelegate.GetPublicKey();
         }
         
-        public X500Principal GetIssuerX500Principal()
+        public override X500Principal GetIssuerX500Principal()
         {
             return mDelegate.GetIssuerX500Principal();
-        }
-        
-        public bool Equals(X509Certificate other)
-        {
-            return mDelegate.Equals(other);
         }
     }
 }

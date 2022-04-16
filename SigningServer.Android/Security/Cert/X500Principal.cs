@@ -8,14 +8,14 @@ namespace SigningServer.Android.Security.Cert
     {
         private readonly X500DistinguishedName mName;
 
-        public X500Principal(sbyte[] encoded)
+        public X500Principal(byte[] encoded)
         {
-            mName = new X500DistinguishedName(encoded.AsBytes());
+            mName = new X500DistinguishedName(encoded);
         }
 
         public ByteBuffer GetEncoded()
         {
-            return ByteBuffer.Wrap(mName.RawData.AsSBytes());
+            return ByteBuffer.Wrap(mName.RawData);
         }
 
         public string GetName()

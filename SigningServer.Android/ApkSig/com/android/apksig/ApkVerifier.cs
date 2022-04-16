@@ -127,7 +127,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             SigningServer.Android.IO.ByteBuffer androidManifest = null;
             int minSdkVersion = VerifyAndGetMinSdkVersion(apk, zipSections);
             SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result result = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result();
-            SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+            SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>>();
             SigningServer.Android.Collections.Map<int, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(maxSdkVersion);
             SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(2);
             if (maxSdkVersion >= SigningServer.Android.Com.Android.Apksig.Internal.Util.AndroidSdkVersion.N)
@@ -245,7 +245,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 if (sourceStampCdRecord != null)
                 {
-                    sbyte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                    byte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
                     SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigResult sourceStampResult = SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.V2SourceStampVerifier.Verify(
                         apk
                         , 
@@ -393,7 +393,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 {
                     result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
                 }
-                sbyte[] digestFromV4 = digestsFromV4.Get(0).GetValue();
+                byte[] digestFromV4 = digestsFromV4.Get(0).GetValue();
                 if (result.IsVerifiedUsingV3Scheme())
                 {
                     SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.V3SchemeSignerInfo> v3Signers = result.GetV3SchemeSigners();
@@ -402,7 +402,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_MULTIPLE_SIGNERS);
                     }
                     SigningServer.Android.Com.Android.Apksig.ApkVerifier.CheckV4Certificate(v4Signers.Get(0).mCerts, v3Signers.Get(0).mCerts, result);
-                    sbyte[] digestFromV3 = SigningServer.Android.Com.Android.Apksig.ApkVerifier.PickBestDigestForV4(v3Signers.Get(0).GetContentDigests());
+                    byte[] digestFromV3 = SigningServer.Android.Com.Android.Apksig.ApkVerifier.PickBestDigestForV4(v3Signers.Get(0).GetContentDigests());
                     if (!SigningServer.Android.Collections.Arrays.Equals(digestFromV4, digestFromV3))
                     {
                         result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
@@ -416,7 +416,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_MULTIPLE_SIGNERS);
                     }
                     SigningServer.Android.Com.Android.Apksig.ApkVerifier.CheckV4Certificate(v4Signers.Get(0).mCerts, v2Signers.Get(0).mCerts, result);
-                    sbyte[] digestFromV2 = SigningServer.Android.Com.Android.Apksig.ApkVerifier.PickBestDigestForV4(v2Signers.Get(0).GetContentDigests());
+                    byte[] digestFromV2 = SigningServer.Android.Com.Android.Apksig.ApkVerifier.PickBestDigestForV4(v2Signers.Get(0).GetContentDigests());
                     if (!SigningServer.Android.Collections.Arrays.Equals(digestFromV4, digestFromV2))
                     {
                         result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_V2_V3_DIGESTS_MISMATCH);
@@ -662,7 +662,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         return SigningServer.Android.Com.Android.Apksig.ApkVerifier.CreateSourceStampResultWithError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus.STAMP_MISSING, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING);
                     }
                 }
-                sbyte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                byte[] sourceStampCertificateDigest = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, sourceStampCdRecord, zipSections.GetZipCentralDirectoryOffset());
                 if (expectedCertDigest != null)
                 {
                     string actualCertDigest = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ToHex(sourceStampCertificateDigest);
@@ -671,7 +671,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                         return SigningServer.Android.Com.Android.Apksig.ApkVerifier.CreateSourceStampResultWithError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result.SourceStampInfo.SourceStampVerificationStatus.CERT_DIGEST_MISMATCH, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH, actualCertDigest, expectedCertDigest);
                     }
                 }
-                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>>();
+                SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>> signatureSchemeApkContentDigests = new SigningServer.Android.Collections.HashMap<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>>();
                 SigningServer.Android.Collections.Map<int, string> supportedSchemeNames = SigningServer.Android.Com.Android.Apksig.ApkVerifier.GetSupportedSchemeNames(mMaxSdkVersion);
                 SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds = new SigningServer.Android.Collections.HashSet<int>(2);
                 SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result result = new SigningServer.Android.Com.Android.Apksig.ApkVerifier.Result();
@@ -801,7 +801,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// signature scheme version other than V2 or V3 is provided a {@code null} value will be
         /// returned.
         /// </summary>
-        internal SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result GetApkContentDigests(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, SigningServer.Android.Collections.Map<int, string> supportedSchemeNames, SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>> sigSchemeApkContentDigests, int apkSigSchemeVersion, int minSdkVersion)
+        internal SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result GetApkContentDigests(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, SigningServer.Android.Collections.Set<int> foundApkSigSchemeIds, SigningServer.Android.Collections.Map<int, string> supportedSchemeNames, SigningServer.Android.Collections.Map<int, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>> sigSchemeApkContentDigests, int apkSigSchemeVersion, int minSdkVersion)
         {
             if (!(apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2 || apkSigSchemeVersion == SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3))
             {
@@ -843,7 +843,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.V3.V3SchemeVerifier.ParseSigners(signatureInfo.signatureBlock, contentDigestsToVerify, result);
             }
-            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo in result.signers)
             {
                 foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest contentDigest in signerInfo.contentDigests)
@@ -864,8 +864,8 @@ namespace SigningServer.Android.Com.Android.Apksig
         {
             try
             {
-                sbyte[] v4Cert = v4Certs.Get(0).GetEncoded();
-                sbyte[] cert = v2v3Certs.Get(0).GetEncoded();
+                byte[] v4Cert = v4Certs.Get(0).GetEncoded();
+                byte[] cert = v2v3Certs.Get(0).GetEncoded();
                 if (!SigningServer.Android.Collections.Arrays.Equals(cert, v4Cert))
                 {
                     result.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_V2_V3_SIGNERS_MISMATCH);
@@ -877,16 +877,16 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
         }
         
-        internal static sbyte[] PickBestDigestForV4(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests)
+        internal static byte[] PickBestDigestForV4(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests)
         {
-            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = new SigningServer.Android.Collections.HashMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>();
+            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = new SigningServer.Android.Collections.HashMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>();
             SigningServer.Android.Com.Android.Apksig.ApkVerifier.CollectApkContentDigests(contentDigests, apkContentDigests);
             return SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.PickBestDigestForV4(apkContentDigests);
         }
         
-        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> GetApkContentDigestsFromSigningSchemeResult(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result apkSigningSchemeResult)
+        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> GetApkContentDigestsFromSigningSchemeResult(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result apkSigningSchemeResult)
         {
-            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests = new SigningServer.Android.Collections.HashMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>();
+            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests = new SigningServer.Android.Collections.HashMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>();
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo in apkSigningSchemeResult.signers)
             {
                 SigningServer.Android.Com.Android.Apksig.ApkVerifier.CollectApkContentDigests(signerInfo.contentDigests, apkContentDigests);
@@ -894,10 +894,10 @@ namespace SigningServer.Android.Com.Android.Apksig
             return apkContentDigests;
         }
         
-        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> GetApkContentDigestFromV1SigningScheme(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
+        internal static SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> GetApkContentDigestFromV1SigningScheme(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord> cdRecords, SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord manifestCdRecord = null;
-            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> v1ContentDigest = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
+            SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> v1ContentDigest = new SigningServer.Android.Collections.EnumMap<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]>(typeof(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm));
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord cdRecord in cdRecords)
             {
                 if (SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeConstants.MANIFEST_ENTRY_NAME.Equals(cdRecord.GetName()))
@@ -912,7 +912,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
             try
             {
-                sbyte[] manifestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, manifestCdRecord, zipSections.GetZipCentralDirectoryOffset());
+                byte[] manifestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Zip.LocalFileRecord.GetUncompressedData(apk, manifestCdRecord, zipSections.GetZipCentralDirectoryOffset());
                 v1ContentDigest.Put(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm.SHA256, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ComputeSha256DigestBytes(manifestBytes));
                 return v1ContentDigest;
             }
@@ -922,7 +922,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             }
         }
         
-        internal static void CollectApkContentDigests(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests)
+        internal static void CollectApkContentDigests(SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest> contentDigests, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests)
         {
             foreach (SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.ContentDigest contentDigest in contentDigests)
             {
@@ -2479,6 +2479,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 return Case;
             }
+
+            public override string ToString()
+            {
+                return mFormat;
+            }
         }
         
         /// <summary>
@@ -2535,11 +2540,11 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// </summary>
         internal class ByteArray
         {
-            internal readonly sbyte[] mArray;
+            internal readonly byte[] mArray;
             
             internal readonly int mHashCode;
             
-            internal ByteArray(sbyte[] arr)
+            internal ByteArray(byte[] arr)
             {
                 mArray = arr;
                 mHashCode = SigningServer.Android.Collections.Arrays.GetHashCode(mArray);
@@ -2682,8 +2687,59 @@ namespace SigningServer.Android.Com.Android.Apksig
             internal ApkVerificationIssueAdapter()
             {
             }
-            
-            public static readonly SigningServer.Android.Collections.Map<int?, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue> sVerificationIssueIdToIssue = new SigningServer.Android.Collections.HashMap<int?, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue>();
+
+            public static readonly
+                SigningServer.Android.Collections.Map<int, SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue>
+                sVerificationIssueIdToIssue =
+                    new SigningServer.Android.Collections.HashMap<int,
+                        SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue>
+                    {
+                        [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNERS] = Issue.V2_SIG_MALFORMED_SIGNERS,
+                        [ApkVerificationIssue.V2_SIG_NO_SIGNERS] = Issue.V2_SIG_NO_SIGNERS,
+                        [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNER] = Issue.V2_SIG_MALFORMED_SIGNER,
+                        [ApkVerificationIssue.V2_SIG_MALFORMED_SIGNATURE] = Issue.V2_SIG_MALFORMED_SIGNATURE,
+                        [ApkVerificationIssue.V2_SIG_NO_SIGNATURES] = Issue.V2_SIG_NO_SIGNATURES,
+                        [ApkVerificationIssue.V2_SIG_MALFORMED_CERTIFICATE] = Issue.V2_SIG_MALFORMED_CERTIFICATE,
+                        [ApkVerificationIssue.V2_SIG_NO_CERTIFICATES] = Issue.V2_SIG_NO_CERTIFICATES,
+                        [ApkVerificationIssue.V2_SIG_MALFORMED_DIGEST] = Issue.V2_SIG_MALFORMED_DIGEST,
+                        [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNERS] = Issue.V3_SIG_MALFORMED_SIGNERS,
+                        [ApkVerificationIssue.V3_SIG_NO_SIGNERS] = Issue.V3_SIG_NO_SIGNERS,
+                        [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNER] = Issue.V3_SIG_MALFORMED_SIGNER,
+                        [ApkVerificationIssue.V3_SIG_MALFORMED_SIGNATURE] = Issue.V3_SIG_MALFORMED_SIGNATURE,
+                        [ApkVerificationIssue.V3_SIG_NO_SIGNATURES] = Issue.V3_SIG_NO_SIGNATURES,
+                        [ApkVerificationIssue.V3_SIG_MALFORMED_CERTIFICATE] = Issue.V3_SIG_MALFORMED_CERTIFICATE,
+                        [ApkVerificationIssue.V3_SIG_NO_CERTIFICATES] = Issue.V3_SIG_NO_CERTIFICATES,
+                        [ApkVerificationIssue.V3_SIG_MALFORMED_DIGEST] = Issue.V3_SIG_MALFORMED_DIGEST,
+                        [ApkVerificationIssue.SOURCE_STAMP_NO_SIGNATURE] = Issue.SOURCE_STAMP_NO_SIGNATURE,
+                        [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_CERTIFICATE] =
+                            Issue.SOURCE_STAMP_MALFORMED_CERTIFICATE,
+                        [ApkVerificationIssue.SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM] =
+                            Issue.SOURCE_STAMP_UNKNOWN_SIG_ALGORITHM,
+                        [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_SIGNATURE] =
+                            Issue.SOURCE_STAMP_MALFORMED_SIGNATURE,
+                        [ApkVerificationIssue.SOURCE_STAMP_DID_NOT_VERIFY] = Issue.SOURCE_STAMP_DID_NOT_VERIFY,
+                        [ApkVerificationIssue.SOURCE_STAMP_VERIFY_EXCEPTION] = Issue.SOURCE_STAMP_VERIFY_EXCEPTION,
+                        [ApkVerificationIssue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH] =
+                            Issue.SOURCE_STAMP_EXPECTED_DIGEST_MISMATCH,
+                        [ApkVerificationIssue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST] =
+                            Issue.SOURCE_STAMP_SIGNATURE_BLOCK_WITHOUT_CERT_DIGEST,
+                        [ApkVerificationIssue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING] =
+                            Issue.SOURCE_STAMP_CERT_DIGEST_AND_SIG_BLOCK_MISSING,
+                        [ApkVerificationIssue.SOURCE_STAMP_NO_SUPPORTED_SIGNATURE] = Issue.SOURCE_STAMP_NO_SUPPORTED_SIGNATURE,
+                        [ApkVerificationIssue.SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK] =
+                            Issue.SOURCE_STAMP_CERTIFICATE_MISMATCH_BETWEEN_SIGNATURE_BLOCK_AND_APK,
+                        [ApkVerificationIssue.MALFORMED_APK] = Issue.MALFORMED_APK,
+                        [ApkVerificationIssue.UNEXPECTED_EXCEPTION] = Issue.UNEXPECTED_EXCEPTION,
+                        [ApkVerificationIssue.SOURCE_STAMP_SIG_MISSING] = Issue.SOURCE_STAMP_SIG_MISSING,
+                        [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_ATTRIBUTE] =
+                            Issue.SOURCE_STAMP_MALFORMED_ATTRIBUTE,
+                        [ApkVerificationIssue.SOURCE_STAMP_UNKNOWN_ATTRIBUTE] = Issue.SOURCE_STAMP_UNKNOWN_ATTRIBUTE,
+                        [ApkVerificationIssue.SOURCE_STAMP_MALFORMED_LINEAGE] = Issue.SOURCE_STAMP_MALFORMED_LINEAGE,
+                        [ApkVerificationIssue.SOURCE_STAMP_POR_CERT_MISMATCH] = Issue.SOURCE_STAMP_POR_CERT_MISMATCH,
+                        [ApkVerificationIssue.SOURCE_STAMP_POR_DID_NOT_VERIFY] = Issue.SOURCE_STAMP_POR_DID_NOT_VERIFY,
+                        [ApkVerificationIssue.JAR_SIG_NO_SIGNATURES] = Issue.JAR_SIG_NO_SIGNATURES,
+                        [ApkVerificationIssue.JAR_SIG_PARSE_EXCEPTION] = Issue.JAR_SIG_PARSE_EXCEPTION
+                    };
             
             /// <summary>
             /// Converts the provided {@code verificationIssues} to a {@code List} of corresponding

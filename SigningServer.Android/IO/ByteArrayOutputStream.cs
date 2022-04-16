@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace SigningServer.Android.IO
 {
@@ -16,9 +17,9 @@ namespace SigningServer.Android.IO
             mOut = new MemoryStream(capacity);
         }
 
-        public sbyte[] ToByteArray()
+        public byte[] ToByteArray()
         {
-            return mOut.ToArray().AsSBytes();
+            return mOut.ToArray();
         }
 
         public int Size()
@@ -26,14 +27,18 @@ namespace SigningServer.Android.IO
             return (int)mOut.Length;
         }
 
-        public void Write(sbyte[] bytes)
+        public void Write(byte[] bytes)
         {
             Write(bytes, 0, bytes.Length);
         }
 
-        public void Write(sbyte[] bytes, int offset, int length)
+        public void Write(byte[] bytes, int offset, int length)
         {
-            mOut.Write(bytes.AsBytes(), offset, length);
+            if (offset < 0 || offset + length > bytes.Length)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            mOut.Write(bytes, offset, length);
         }
 
         public void Dispose()

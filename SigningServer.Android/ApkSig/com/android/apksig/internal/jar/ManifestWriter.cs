@@ -15,8 +15,8 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
     /// </summary>
     public abstract class ManifestWriter
     {
-        internal static readonly sbyte[] CRLF = new sbyte[]{
-            (sbyte)'\r', (sbyte)'\n'}
+        internal static readonly byte[] CRLF = new byte[]{
+            (byte)'\r', (byte)'\n'}
         ;
         
         internal static readonly int MAX_LINE_LENGTH = 70;
@@ -69,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         
         internal static void WriteLine(SigningServer.Android.IO.OutputStream output, string line)
         {
-            sbyte[] lineBytes = line.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
+            byte[] lineBytes = line.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
             int offset = 0;
             int remaining = lineBytes.Length;
             bool firstLine = true;
@@ -96,9 +96,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Jar
         
         public static SigningServer.Android.Collections.SortedMap<string, string> GetAttributesSortedByName(SigningServer.Android.Util.Jar.Attributes attributes)
         {
-            SigningServer.Android.Collections.Set<SigningServer.Android.Collections.MapEntry<object, object>> attributesEntries = attributes.EntrySet();
+            var attributesEntries = attributes.EntrySet();
             SigningServer.Android.Collections.SortedMap<string, string> namedAttributes = new SigningServer.Android.Collections.TreeMap<string, string>();
-            foreach (SigningServer.Android.Collections.MapEntry<object, object> attribute in attributesEntries)
+            foreach (var attribute in attributesEntries)
             {
                 string attrName = attribute.GetKey().ToString();
                 string attrValue = attribute.GetValue().ToString();

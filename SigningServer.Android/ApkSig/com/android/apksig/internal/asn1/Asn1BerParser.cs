@@ -260,11 +260,18 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
         internal static object ParseSetOf(
             SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue container, Type t)
         {
-            return ParseSetOfMethod.MakeGenericMethod(t).Invoke(null, new object[]{container});
+            try
+            {
+                return ParseSetOfMethod.MakeGenericMethod(t).Invoke(null, new object[] { container });
+            }
+            catch (TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
         }
 
         private static readonly MethodInfo ParseSetOfMethod = typeof(Asn1BerParser)
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .GetMethods(BindingFlags.Static | BindingFlags.Public| BindingFlags.NonPublic)
             .First(m => m.Name == nameof(ParseSetOf) && m.IsGenericMethod);
         
         internal static SigningServer.Android.Collections.List<T> ParseSetOf<T>(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue container)
@@ -579,9 +586,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                     {
                         case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SET_OF:
                         case SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type.SEQUENCE_OF:
-                            if (typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject).Equals(field.GetType()))
+                            if (typeof(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1OpaqueObject).Equals(field.FieldType))
                             {
-                                field.SetValue(obj, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.BerToJavaConverter.Convert(type, dataValue, field.GetType()));
+                                field.SetValue(obj, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.BerToJavaConverter.Convert(type, dataValue, field.FieldType));
                             }
                             else 
                             {
@@ -589,7 +596,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                             }
                             return;
                         default:
-                            field.SetValue(obj, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.BerToJavaConverter.Convert(type, dataValue, field.GetType()));
+                            field.SetValue(obj, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.BerToJavaConverter.Convert(type, dataValue, field.FieldType));
                             break;
                     }
                 }
@@ -599,17 +606,24 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 }
             }
             
-            internal static readonly sbyte[] EMPTY_BYTE_ARRAY = new sbyte[0];
+            internal static readonly byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
             public static object Convert(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type sourceType,
                 SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue dataValue,
                 Type t)
             {
-                return ConvertMethod.MakeGenericMethod(t).Invoke(null, new object[] { sourceType, dataValue });
+                try
+                {
+                    return ConvertMethod.MakeGenericMethod(t).Invoke(null, new object[] { sourceType, dataValue });
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             }
 
-            private static readonly MethodInfo ConvertMethod = typeof(Asn1BerParser)
-                .GetMethods(BindingFlags.Static | BindingFlags.Public)
+            private static readonly MethodInfo ConvertMethod = typeof(BerToJavaConverter)
+                .GetMethods(BindingFlags.Static | BindingFlags.Public| BindingFlags.NonPublic)
                 .First(m => m.Name == nameof(Convert) && m.IsGenericMethodDefinition);
             
             public static T Convert<T>(SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1Type sourceType, SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Ber.BerDataValue dataValue)
@@ -618,14 +632,14 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Asn1
                 {
                     return (T)(object)dataValue.GetEncodedContents();
                 }
-                else if (typeof(sbyte[]) == typeof(T))
+                else if (typeof(byte[]) == typeof(T))
                 {
                     SigningServer.Android.IO.ByteBuffer resultBuf = dataValue.GetEncodedContents();
                     if (!resultBuf.HasRemaining())
                     {
                         return (T)(object)SigningServer.Android.Com.Android.Apksig.Internal.Asn1.Asn1BerParser.BerToJavaConverter.EMPTY_BYTE_ARRAY;
                     }
-                    sbyte[] result = new sbyte[resultBuf.Remaining()];
+                    byte[] result = new byte[resultBuf.Remaining()];
                     resultBuf.Get(result);
                     return (T)(object)result;
                 }

@@ -14,10 +14,10 @@ namespace SigningServer.Android.Security
         public abstract void InitVerify(PublicKey publicKey);
         public abstract void InitSign(PrivateKey privateKey);
         public abstract void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams);
-        public abstract void Update(sbyte data);
+        public abstract void Update(byte data);
         public abstract void Update(ByteBuffer data);
-        public abstract void Update(sbyte[] data);
-        public abstract bool Verify(sbyte[] signature);
-        public abstract sbyte[] Sign();
+        public abstract void Update(byte[] data);
+        public abstract bool Verify(byte[] signature);
+        public abstract byte[] Sign();
     }
 }

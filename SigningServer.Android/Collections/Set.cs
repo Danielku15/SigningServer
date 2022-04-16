@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SigningServer.Android.Collections
+﻿namespace SigningServer.Android.Collections
 {
     public interface Set<T> : Collection<T>
     {

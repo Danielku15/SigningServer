@@ -18,7 +18,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Test
         /// Asserts that the contents of the provided {@code ByteBuffer} are as expected. This method
         /// does not change the position or the limit of the provided buffer.
         /// </summary>
-        public static void AssertByteBufferEquals(sbyte[] expected, SigningServer.Android.IO.ByteBuffer actual)
+        public static void AssertByteBufferEquals(byte[] expected, SigningServer.Android.IO.ByteBuffer actual)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Test.MoreAsserts.AssertByteBufferEquals(null, expected, actual);
         }
@@ -27,16 +27,16 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Test
         /// Asserts that the contents of the provided {@code ByteBuffer} are as expected. This method
         /// does not change the position or the limit of the provided buffer.
         /// </summary>
-        public static void AssertByteBufferEquals(string message, sbyte[] expected, SigningServer.Android.IO.ByteBuffer actual)
+        public static void AssertByteBufferEquals(string message, byte[] expected, SigningServer.Android.IO.ByteBuffer actual)
         {
-            sbyte[] actualArr;
+            byte[] actualArr;
             if ((actual.HasArray()) && (actual.ArrayOffset() == 0) && (actual.Array().Length == actual.Remaining()))
             {
                 actualArr = actual.Array();
             }
             else 
             {
-                actualArr = new sbyte[actual.Remaining()];
+                actualArr = new byte[actual.Remaining()];
                 int actualOriginalPos = actual.Position();
                 actual.Get(actualArr);
                 actual.Position(actualOriginalPos);

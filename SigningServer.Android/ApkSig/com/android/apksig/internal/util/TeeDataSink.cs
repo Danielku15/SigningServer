@@ -20,7 +20,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
             mSinks = sinks;
         }
         
-        public void Consume(sbyte[] buf, int offset, int length)
+        public void Consume(byte[] buf, int offset, int length)
         {
             foreach (SigningServer.Android.Com.Android.Apksig.Util.DataSink sink in mSinks)
             {

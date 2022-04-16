@@ -192,7 +192,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         
         public static SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord CreateWithDeflateCompressedData(string name, int lastModifiedTime, int lastModifiedDate, long crc32, long compressedSize, long uncompressedSize, long localFileHeaderOffset)
         {
-            sbyte[] nameBytes = name.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
+            byte[] nameBytes = name.GetBytes(SigningServer.Android.IO.Charset.StandardCharsets.UTF_8);
             short gpFlags = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.GP_FLAG_EFS;
             short compressionMethod = SigningServer.Android.Com.Android.Apksig.Internal.Zip.ZipUtils.COMPRESSION_METHOD_DEFLATED;
             int recordSize = SigningServer.Android.Com.Android.Apksig.Internal.Zip.CentralDirectoryRecord.HEADER_SIZE_BYTES + nameBytes.Length;
@@ -226,7 +226,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
         
         public static string GetName(SigningServer.Android.IO.ByteBuffer record, int position, int nameLengthBytes)
         {
-            sbyte[] nameBytes;
+            byte[] nameBytes;
             int nameBytesOffset;
             if (record.HasArray())
             {
@@ -235,7 +235,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Zip
             }
             else 
             {
-                nameBytes = new sbyte[nameLengthBytes];
+                nameBytes = new byte[nameLengthBytes];
                 nameBytesOffset = 0;
                 int originalPosition = record.Position();
                 try

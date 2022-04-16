@@ -7,9 +7,9 @@ namespace SigningServer.Android.IO
         private MemoryStream mIn;
         private long mMark = 0;
 
-        public ByteArrayInputStream(sbyte[] source)
+        public ByteArrayInputStream(byte[] source)
         {
-            mIn = new MemoryStream(source.AsBytes());
+            mIn = new MemoryStream(source);
         }
 
         public void Dispose()
@@ -17,9 +17,9 @@ namespace SigningServer.Android.IO
             mIn.Dispose();
         }
 
-        public int Read(sbyte[] buffer, int offset, int len)
+        public int Read(byte[] buffer, int offset, int len)
         {
-            var count = mIn.Read(buffer.AsBytes(), offset, len);
+            var count = mIn.Read(buffer, offset, len);
             return count == 0 ? -1 : count;
         }
 
@@ -28,7 +28,7 @@ namespace SigningServer.Android.IO
             return mIn.ReadByte();
         }
 
-        public int Read(sbyte[] b)
+        public int Read(byte[] b)
         {
             return Read(b, 0, b.Length);
         }

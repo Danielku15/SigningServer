@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SigningServer.Android.IO
+﻿namespace SigningServer.Android.IO
 {
     public class DataOutputStream : OutputStream
     {
@@ -18,10 +16,10 @@ namespace SigningServer.Android.IO
         
         public void WriteInt(int v)
         {
-            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v, 24) & 0xFF));
-            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v, 16) & 0xFF));
-            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v,  8) & 0xFF));
-            mOutput.Write((sbyte)(TypeUtils.UnsignedRightShift(v,  0) & 0xFF));
+            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v, 24) & 0xFF));
+            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v, 16) & 0xFF));
+            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v,  8) & 0xFF));
+            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v,  0) & 0xFF));
         }
 
         public void Dispose()
@@ -29,12 +27,12 @@ namespace SigningServer.Android.IO
             mOutput.Dispose();
         }
 
-        public void Write(sbyte[] bytes)
+        public void Write(byte[] bytes)
         {
             mOutput.Write(bytes);
         }
 
-        public void Write(sbyte[] bytes, int offset, int length)
+        public void Write(byte[] bytes, int offset, int length)
         {
             mOutput.Write(bytes, offset, length);
         }

@@ -21,14 +21,14 @@ namespace SigningServer.Android.IO
             mFileStream.WriteByte((byte)b);
         }
         
-        public void Write(sbyte[] bytes)
+        public void Write(byte[] bytes)
         {
             Write(bytes, 0, bytes.Length);
         }
 
-        public void Write(sbyte[] bytes, int offset, int length)
+        public void Write(byte[] bytes, int offset, int length)
         {
-            mFileStream.Write(bytes.AsBytes(), offset, length);
+            mFileStream.Write(bytes, offset, length);
         }
     }
 }

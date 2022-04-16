@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Util.Concurrent.Atomic
 {
-    public struct AtomicInteger
+    public class AtomicInteger
     {
         private int mValue;
         public AtomicInteger(int i)

@@ -34,7 +34,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, System.IO.FileInfo v4SignatureFile)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature signature;
-            sbyte[] tree;
+            byte[] tree;
             using(SigningServer.Android.IO.InputStream input = new SigningServer.Android.IO.FileInputStream(v4SignatureFile))
             {
                 signature = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.ReadFrom(input);
@@ -52,7 +52,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             }
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo hashingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.HashingInfo.FromByteArray(signature.hashingInfo);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo.FromByteArray(signature.signingInfo);
-            sbyte[] signedData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.GetSignedData(apk.Size(), hashingInfo, signingInfo);
+            byte[] signedData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.GetSignedData(apk.Size(), hashingInfo, signingInfo);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4SchemeVerifier.ParseAndVerifySignatureBlock(signingInfo, signedData);
             result.signers.Add(signerInfo);
             if (result.ContainsErrors())
@@ -73,12 +73,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
         /// This verifies {@signingInfo} over {@code signedData}, as well as parsing the certificate
         /// contained in the signature block. This method adds one or more errors to the {@code result}.
         /// </summary>
-        internal static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo ParseAndVerifySignatureBlock(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo, sbyte[] signedData)
+        internal static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo ParseAndVerifySignatureBlock(SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4.V4Signature.SigningInfo signingInfo, byte[] signedData)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo();
             result.index = 0;
             int sigAlgorithmId = signingInfo.signatureAlgorithmId;
-            sbyte[] sigBytes = signingInfo.signature;
+            byte[] sigBytes = signingInfo.signature;
             result.signatures.Add(new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo.Signature(sigAlgorithmId, sigBytes));
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm signatureAlgorithm = SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureAlgorithm.FindById(sigAlgorithmId);
             if (signatureAlgorithm == null)
@@ -89,7 +89,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             string jcaSignatureAlgorithm = signatureAlgorithm.GetJcaSignatureAlgorithmAndParams().GetFirst();
             SigningServer.Android.Security.Spec.AlgorithmParameterSpec jcaSignatureAlgorithmParams = signatureAlgorithm.GetJcaSignatureAlgorithmAndParams().GetSecond();
             string keyAlgorithm = signatureAlgorithm.GetJcaKeyAlgorithm();
-            sbyte[] publicKeyBytes = signingInfo.publicKey;
+            byte[] publicKeyBytes = signingInfo.publicKey;
             SigningServer.Android.Security.PublicKey publicKey;
             try
             {
@@ -137,7 +137,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
                 return result;
             }
             result.certs.Add(certificate);
-            sbyte[] certificatePublicKeyBytes;
+            byte[] certificatePublicKeyBytes;
             try
             {
                 certificatePublicKeyBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodePublicKey(certificate.GetPublicKey());
@@ -158,12 +158,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.V4
             return result;
         }
         
-        internal static void VerifyRootHashAndTree(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkContent, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo, sbyte[] expectedDigest, sbyte[] expectedTree)
+        internal static void VerifyRootHashAndTree(SigningServer.Android.Com.Android.Apksig.Util.DataSource apkContent, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo, byte[] expectedDigest, byte[] expectedTree)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VerityTreeAndDigest actualContentDigestInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ComputeChunkVerityTreeAndDigest(apkContent);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm algorithm = actualContentDigestInfo.contentDigestAlgorithm;
-            sbyte[] actualDigest = actualContentDigestInfo.rootHash;
-            sbyte[] actualTree = actualContentDigestInfo.tree;
+            byte[] actualDigest = actualContentDigestInfo.rootHash;
+            byte[] actualTree = actualContentDigestInfo.tree;
             if (!SigningServer.Android.Collections.Arrays.Equals(expectedDigest, actualDigest))
             {
                 signerInfo.AddError(SigningServer.Android.Com.Android.Apksig.ApkVerifier.Issue.V4_SIG_APK_ROOT_DID_NOT_VERIFY, algorithm, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ToHex(expectedDigest), SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.ToHex(actualDigest));

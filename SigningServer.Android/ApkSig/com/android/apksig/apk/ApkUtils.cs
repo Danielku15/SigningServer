@@ -562,7 +562,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Apk
             }
         }
         
-        public static sbyte[] ComputeSha256DigestBytes(sbyte[] data)
+        public static byte[] ComputeSha256DigestBytes(byte[] data)
         {
             return SigningServer.Android.Com.Android.Apksig.Apk.ApkUtilsLite.ComputeSha256DigestBytes(data);
         }

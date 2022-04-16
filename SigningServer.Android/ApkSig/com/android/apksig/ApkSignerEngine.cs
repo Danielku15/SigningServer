@@ -107,7 +107,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// @return set of entry names which were processed by the engine during the initialization, a
         ///         subset of entryNames
         /// </summary>
-        public SigningServer.Android.Collections.Set<string> InitWith(sbyte[] manifestBytes, SigningServer.Android.Collections.Set<string> entryNames);
+        public SigningServer.Android.Collections.Set<string> InitWith(byte[] manifestBytes, SigningServer.Android.Collections.Set<string> entryNames);
         
         /// <summary>
         /// Indicates to this engine that the input APK contains the provided APK Signing Block. The
@@ -282,7 +282,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         /// <summary>
         /// Generates the digest of the certificate used to sign the source stamp.
         /// </summary>
-        public sbyte[] GenerateSourceStampCertificateDigest();
+        public byte[] GenerateSourceStampCertificateDigest();
         
         /// <summary>
         /// Instructions about how to handle an input APK's JAR entry.
@@ -410,7 +410,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             {
                 internal readonly string mName;
                 
-                internal readonly sbyte[] mData;
+                internal readonly byte[] mData;
                 
                 /// <summary>
                 /// Constructs a new {@code JarEntry} with the provided name and data.
@@ -418,10 +418,10 @@ namespace SigningServer.Android.Com.Android.Apksig
                 /// @param data uncompressed data of the entry. Changes to this array will not be
                 ///        reflected in {@link #getData()}.
                 /// </summary>
-                public JarEntry(string name, sbyte[] data)
+                public JarEntry(string name, byte[] data)
                 {
                     mName = name;
-                    mData = (sbyte[])data.Clone();
+                    mData = (byte[])data.Clone();
                 }
                 
                 /// <summary>
@@ -435,9 +435,9 @@ namespace SigningServer.Android.Com.Android.Apksig
                 /// <summary>
                 /// Returns the uncompressed data of this JAR entry.
                 /// </summary>
-                public virtual sbyte[] GetData()
+                public virtual byte[] GetData()
                 {
-                    return (sbyte[])mData.Clone();
+                    return (byte[])mData.Clone();
                 }
                 
             }
@@ -463,7 +463,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             /// <summary>
             /// Returns the APK Signing Block.
             /// </summary>
-            public sbyte[] GetApkSigningBlock();
+            public byte[] GetApkSigningBlock();
             
             /// <summary>
             /// Indicates that the APK Signing Block was output as requested.
@@ -491,7 +491,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             /// <summary>
             /// Returns the APK Signing Block.
             /// </summary>
-            public sbyte[] GetApkSigningBlock();
+            public byte[] GetApkSigningBlock();
             
             /// <summary>
             /// Indicates that the APK Signing Block was output as requested.

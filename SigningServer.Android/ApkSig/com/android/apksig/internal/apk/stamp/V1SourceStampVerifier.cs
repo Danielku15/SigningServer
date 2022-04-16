@@ -34,7 +34,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
         ///     found
         /// @throws IOException if an I/O error occurs when reading the APK
         /// </summary>
-        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, sbyte[] sourceStampCertificateDigest, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests, int minSdkVersion, int maxSdkVersion)
+        public static SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result Verify(SigningServer.Android.Com.Android.Apksig.Util.DataSource apk, SigningServer.Android.Com.Android.Apksig.Apk.ApkUtils.ZipSections zipSections, byte[] sourceStampCertificateDigest, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests, int minSdkVersion, int maxSdkVersion)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result(SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.VERSION_SOURCE_STAMP);
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.SignatureInfo signatureInfo = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.FindSignature(apk, zipSections, SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.SourceStampConstants.V1_SOURCE_STAMP_BLOCK_ID, result);
@@ -61,7 +61,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
         /// result}. See {@link #verify(DataSource, ApkUtils.ZipSections, byte[], Map, int, int)} for
         /// more information about the contract of this method.
         /// </summary>
-        internal static void Verify(SigningServer.Android.IO.ByteBuffer sourceStampBlock, sbyte[] sourceStampCertificateDigest, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
+        internal static void Verify(SigningServer.Android.IO.ByteBuffer sourceStampBlock, byte[] sourceStampCertificateDigest, SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests, int minSdkVersion, int maxSdkVersion, SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result result)
         {
             SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo signerInfo = new SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo();
             result.signers.Add(signerInfo);
@@ -69,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             {
                 SigningServer.Android.Security.Cert.CertificateFactory certFactory = SigningServer.Android.Security.Cert.CertificateFactory.GetInstance("X.509");
                 SigningServer.Android.IO.ByteBuffer sourceStampBlockData = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.GetLengthPrefixedSlice(sourceStampBlock);
-                sbyte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.V1SourceStampVerifier.GetApkDigests(apkContentDigests));
+                byte[] digestBytes = SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.EncodeAsSequenceOfLengthPrefixedPairsOfIntAndLengthPrefixedBytes(SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.V1SourceStampVerifier.GetApkDigests(apkContentDigests));
                 SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp.SourceStampVerifier.VerifyV1SourceStamp(
                     sourceStampBlockData
                     , 
@@ -98,12 +98,12 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk.Stamp
             }
         }
         
-        internal static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> GetApkDigests(SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigests)
+        internal static SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>> GetApkDigests(SigningServer.Android.Collections.Map<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigests)
         {
-            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, sbyte[]>>();
-            foreach (SigningServer.Android.Collections.MapEntry<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, sbyte[]> apkContentDigest in apkContentDigests.EntrySet())
+            SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>> digests = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair<int, byte[]>>();
+            foreach (SigningServer.Android.Collections.MapEntry<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ContentDigestAlgorithm, byte[]> apkContentDigest in apkContentDigests.EntrySet())
             {
-                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, sbyte[]>(apkContentDigest.GetKey().GetId(), apkContentDigest.GetValue()));
+                digests.Add(SigningServer.Android.Com.Android.Apksig.Internal.Util.Pair.Of<int, byte[]>(apkContentDigest.GetKey().GetId(), apkContentDigest.GetValue()));
             }
 
             SigningServer.Android.Util.Collections.Sort(digests, (a, b) => a.GetFirst().CompareTo(b.GetFirst()));

@@ -36,6 +36,7 @@ class Program
     {
         // Workaround to load config
         var builder = WebHost.CreateDefaultBuilder(args);
+        builder.Configure(_ => { });
         var configuration = builder.Build().Services.GetRequiredService<IConfiguration>();
         var signingServerConfiguration = new SigningServerConfiguration();
         configuration.GetSection("SigningServer").Bind(signingServerConfiguration);

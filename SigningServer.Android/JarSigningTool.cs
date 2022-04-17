@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
+using SigningServer.Android.Security;
 using SigningServer.Android.Security.DotNet;
 using SigningServer.Contracts;
 using X509Certificate = SigningServer.Android.Security.Cert.X509Certificate;
@@ -19,17 +21,15 @@ namespace SigningServer.Android
     //  it does not already exist in the manifest. Each manifest entry lists one or more digest attributes and an optional Magic attribute."
     // https://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#Signed_JAR_File
 
-    public class AndroidApkSigningTool : ISigningTool
+    public class JarSigningTool : ISigningTool
     {
-        public static readonly Version Version = typeof(AndroidApkSigningTool).Assembly.GetName().Version;
-        public static readonly string CreatedBy = Version.ToString(3) + " (SigningServer)";
-        private static readonly HashSet<string> ApkSupportedExtension =
+        private static readonly HashSet<string> JarSupportedExtension =
             new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
             {
-                ".jar", ".apk", ".aab"
+                ".jar"
             };
 
-        private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms =
+        private static readonly Dictionary<string, DigestAlgorithm> JarSupportedHashAlgorithms =
             new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
             {
                 ["SHA1"] = DigestAlgorithm.SHA1,
@@ -38,7 +38,7 @@ namespace SigningServer.Android
 
         public bool IsFileSupported(string fileName)
         {
-            return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
+            return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
         public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
@@ -87,24 +87,14 @@ namespace SigningServer.Android
                             androidCertificate
                         }, false)
                 };
-
-                ApkSigner.Builder apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
-                        .SetInputApk(new FileInfo(inputFileName))
-                        .SetOutputApk(new FileInfo(outputFileName))
-                        .SetOtherSignersSignaturesPreserved(false)
-                        .SetV1SigningEnabled(true)
-                        .SetV2SigningEnabled(true)
-                        .SetV3SigningEnabled(true)
-                        .SetV4SigningEnabled(false) // TODO: no way to transport idsig file to client
-                        .SetForceSourceStampOverwrite(false)
-                        .SetVerityEnabled(false)
-                        .SetCreatedBy(CreatedBy)
-                        .SetV4ErrorReportingEnabled(false) // TOOD: v4 support for signing server
-                        .SetDebuggableApkPermitted(true);
-
+                
+                // We use some internals of the APK signer to perform the JAR signing. 
+                var apkSignerBuilder = new ApkSigner.Builder(new JarSignerEngine(signerConfigs))
+                    .SetInputApk(new FileInfo(inputFileName))
+                    .SetOutputApk(new FileInfo(outputFileName));
                 var apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();
-
+                
                 File.Delete(inputFileName);
                 File.Move(outputFileName, inputFileName);
 
@@ -167,8 +157,8 @@ namespace SigningServer.Android
         }
 
         /// <inheritdoc />
-        public string[] SupportedFileExtensions => ApkSupportedExtension.ToArray();
+        public string[] SupportedFileExtensions => JarSupportedExtension.ToArray();
 
-        public string[] SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
+        public string[] SupportedHashAlgorithms => JarSupportedHashAlgorithms.Keys.ToArray();
     }
 }

@@ -12,6 +12,10 @@ namespace SigningServer.Android.Security.Cert
         {
             mName = new X500DistinguishedName(encoded);
         }
+        public X500Principal(X500DistinguishedName name)
+        {
+            mName = name;
+        }
 
         public ByteBuffer GetEncoded()
         {

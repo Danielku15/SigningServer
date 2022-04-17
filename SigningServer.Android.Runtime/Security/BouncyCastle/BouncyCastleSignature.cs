@@ -52,6 +52,9 @@ namespace SigningServer.Android.Security.BouncyCastle
                 case "SHA3-512WITHDDSA":
                     mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(512))), new Sha3Digest(512));
                     break;
+                case "MD5WITHDSA":
+                    mSigner = new DsaDigestSigner(new DsaSigner(), new MD5Digest());
+                    break;
                 default:
                     mSigner = SignerUtilities.GetSigner(jcaSignatureAlgorithm);
                     break;
@@ -70,12 +73,12 @@ namespace SigningServer.Android.Security.BouncyCastle
 
         public override void InitSign(PrivateKey privateKey)
         {
-            if (!(privateKey is BouncyCastlePrivateKey bouncyPublic))
+            if (!(privateKey is BouncyCastlePrivateKey bouncyPrivate))
             {
                 throw new ArgumentException("Need bouncy castle public key");
             }
 
-            mSigner.Init(true, bouncyPublic.KeyParameter);
+            mSigner.Init(true, bouncyPrivate.KeyParameter);
         }
 
         public override void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams)

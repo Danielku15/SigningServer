@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 
 namespace SigningServer.Android.Security.BouncyCastle
 {
-    internal class BouncyCastlePrivateKey : PrivateKey
+    public class BouncyCastlePrivateKey : PrivateKey, CryptographyProviderAccessor
     {
         public AsymmetricKeyParameter KeyParameter { get; }
 
@@ -30,7 +30,10 @@ namespace SigningServer.Android.Security.BouncyCastle
                 case RsaKeyParameters _: return "RSA";
                 case ECKeyParameters _: return "EC";
             }
+
             throw new KeyException("Unknown private key algorithm");
         }
+
+        public CryptographyProvider Provider => BouncyCastleCryptographyProvider.INSTANCE;
     }
 }

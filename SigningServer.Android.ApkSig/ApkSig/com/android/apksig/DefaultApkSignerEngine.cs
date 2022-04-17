@@ -23,6 +23,7 @@
 
 using System;
 using SigningServer.Android.Collections;
+using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -220,6 +221,7 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 mV1SignerConfigs.Add(v1SignerConfig);
             }
+
             mV1ContentDigestAlgorithm = v1ContentDigestAlgorithm;
             mSignatureExpectedOutputJarEntryNames = SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1.V1SchemeSigner.GetOutputEntryNames(mV1SignerConfigs);
         }

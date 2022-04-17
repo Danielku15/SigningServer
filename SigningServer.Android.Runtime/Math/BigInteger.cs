@@ -64,5 +64,10 @@ namespace SigningServer.Android.Math
         {
             return (mValue != null ? mValue.GetHashCode() : 0);
         }
+
+        public override string ToString()
+        {
+            return mValue.ToString();
+        }
     }
 }

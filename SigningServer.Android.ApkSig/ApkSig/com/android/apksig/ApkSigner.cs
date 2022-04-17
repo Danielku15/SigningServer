@@ -22,6 +22,7 @@
  */
 
 using System;
+using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
 
 namespace SigningServer.Android.Com.Android.Apksig
 {
@@ -68,7 +69,7 @@ namespace SigningServer.Android.Com.Android.Apksig
         internal readonly int? mMinSdkVersion;
         
         internal readonly bool mV1SigningEnabled;
-        
+
         internal readonly bool mV2SigningEnabled;
         
         internal readonly bool mV3SigningEnabled;
@@ -249,7 +250,14 @@ namespace SigningServer.Android.Com.Android.Apksig
                 {
                     engineSignerConfigs.Add(new SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.SignerConfig.Builder(signerConfig.GetName(), signerConfig.GetPrivateKey(), signerConfig.GetCertificates(), signerConfig.GetDeterministicDsaSigning()).Build());
                 }
-                SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.Builder signerEngineBuilder = new SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.Builder(engineSignerConfigs, minSdkVersion).SetV1SigningEnabled(mV1SigningEnabled).SetV2SigningEnabled(mV2SigningEnabled).SetV3SigningEnabled(mV3SigningEnabled).SetVerityEnabled(mVerityEnabled).SetDebuggableApkPermitted(mDebuggableApkPermitted).SetOtherSignersSignaturesPreserved(mOtherSignersSignaturesPreserved).SetSigningCertificateLineage(mSigningCertificateLineage);
+                SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.Builder signerEngineBuilder = new SigningServer.Android.Com.Android.Apksig.DefaultApkSignerEngine.Builder(engineSignerConfigs, minSdkVersion)
+                    .SetV1SigningEnabled(mV1SigningEnabled)
+                    .SetV2SigningEnabled(mV2SigningEnabled)
+                    .SetV3SigningEnabled(mV3SigningEnabled)
+                    .SetVerityEnabled(mVerityEnabled)
+                    .SetDebuggableApkPermitted(mDebuggableApkPermitted)
+                    .SetOtherSignersSignaturesPreserved(mOtherSignersSignaturesPreserved
+                    ).SetSigningCertificateLineage(mSigningCertificateLineage);
                 if (mCreatedBy != null)
                 {
                     signerEngineBuilder.SetCreatedBy(mCreatedBy);
@@ -819,7 +827,7 @@ namespace SigningServer.Android.Com.Android.Apksig
             
             internal bool mDeterministicDsaSigning;
             
-            internal SignerConfig(string name, SigningServer.Android.Security.PrivateKey privateKey, SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> certificates, bool deterministicDsaSigning)
+            public SignerConfig(string name, SigningServer.Android.Security.PrivateKey privateKey, SigningServer.Android.Collections.List<SigningServer.Android.Security.Cert.X509Certificate> certificates, bool deterministicDsaSigning)
             {
                 mName = name;
                 mPrivateKey = privateKey;
@@ -1435,7 +1443,6 @@ namespace SigningServer.Android.Com.Android.Apksig
                 }
                 return new SigningServer.Android.Com.Android.Apksig.ApkSigner(mSignerConfigs, mSourceStampSignerConfig, mSourceStampSigningCertificateLineage, mForceSourceStampOverwrite, mMinSdkVersion, mV1SigningEnabled, mV2SigningEnabled, mV3SigningEnabled, mV4SigningEnabled, mVerityEnabled, mV4ErrorReportingEnabled, mDebuggableApkPermitted, mOtherSignersSignaturesPreserved, mCreatedBy, mSignerEngine, mInputApkFile, mInputApkDataSource, mOutputApkFile, mOutputApkDataSink, mOutputApkDataSource, mOutputV4File, mSigningCertificateLineage);
             }
-            
         }
         
     }

@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Security.Interfaces
 {
-    internal class ECParameterSpec
+    public class ECParameterSpec
     {
         private readonly BigInteger mOrder;
 

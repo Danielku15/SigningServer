@@ -6,7 +6,7 @@ using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.BouncyCastle
 {
-    internal class BouncyCastlePublicKey : PublicKey, RSAKey, DSAKey, ECKey
+    public class BouncyCastlePublicKey : PublicKey, RSAKey, DSAKey, ECKey, CryptographyProviderAccessor
     {
         private readonly byte[] mEncoded;
 
@@ -58,5 +58,7 @@ namespace SigningServer.Android.Security.BouncyCastle
 
             throw new InvalidOperationException();
         }
+
+        public CryptographyProvider Provider => BouncyCastleCryptographyProvider.INSTANCE;
     }
 }

@@ -4,8 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
-using SigningServer.Android.Crypto;
+using SigningServer.Android.Com.Android.Apksig;
+using SigningServer.Android.Com.Android.Apksig.Apk;
+using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
+using SigningServer.Android.Security.DotNet;
 using SigningServer.Contracts;
+using X509Certificate = SigningServer.Android.Security.Cert.X509Certificate;
 
 namespace SigningServer.Android
 {
@@ -17,17 +21,20 @@ namespace SigningServer.Android
 
     public class AndroidApkSigningTool : ISigningTool
     {
-        private static readonly HashSet<string> ApkSupportedExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            ".jar",  ".apk"
-        };
+        public static readonly Version Version = typeof(AndroidApkSigningTool).Assembly.GetName().Version;
+        public static readonly string CreatedBy = Version.ToString(3) + " (SigningServer)";
+        private static readonly HashSet<string> ApkSupportedExtension =
+            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            {
+                ".apk", ".aab"
+            };
 
-        private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms = new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            ["SHA1"] = DigestAlgorithm.SHA1,
-            ["SHA256"] = DigestAlgorithm.SHA256,
-            ["SHA512"] = DigestAlgorithm.SHA512
-        };
+        private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms =
+            new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
+            {
+                ["SHA1"] = DigestAlgorithm.SHA1,
+                ["SHA256"] = DigestAlgorithm.SHA256
+            };
 
         public bool IsFileSupported(string fileName)
         {
@@ -55,23 +62,47 @@ namespace SigningServer.Android
             var outputFileName = inputFileName + ".signed";
             try
             {
-                if (string.IsNullOrEmpty(signFileRequest.HashAlgorithm) || !ApkSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm, out var digestAlgorithm))
+                var androidCertificate = new DotNetX509Certificate(certificate);
+
+                var name = certificate.FriendlyName;
+                if (string.IsNullOrEmpty(name))
                 {
-                    digestAlgorithm = null;
+                    name = certificate.SubjectName.Name;
+                    if (name?.StartsWith("CN=", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        name = name.Substring("CN=".Length);
+                    }
                 }
-
-                var isV2SigningEnabled =
-                    ".apk".Equals(Path.GetExtension(inputFileName), StringComparison.InvariantCultureIgnoreCase) && // v2 only for APKs not for JARs
-                    (digestAlgorithm == null || !digestAlgorithm.Equals(DigestAlgorithm.SHA1)) // v2 signing requires SHA256 or SHA512
-                ;
-
-                var apkSigner = new ApkSigner(certificate, inputFileName, outputFileName)
+                if (string.IsNullOrEmpty(name))
                 {
-                    V1SigningEnabled = true,
-                    V2SigningEnabled = isV2SigningEnabled,
-                    DigestAlgorithm = digestAlgorithm
+                    name = "sig";
+                }
+                
+                var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
+                {
+                    new ApkSigner.SignerConfig(name,
+                        androidCertificate.GetPrivateKey(),
+                        new Collections.List<X509Certificate>
+                        {
+                            androidCertificate
+                        }, false)
                 };
 
+                ApkSigner.Builder apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
+                        .SetInputApk(new FileInfo(inputFileName))
+                        .SetOutputApk(new FileInfo(outputFileName))
+                        .SetOtherSignersSignaturesPreserved(false)
+                        .SetV1SigningEnabled(true)
+                        .SetV2SigningEnabled(true)
+                        .SetV3SigningEnabled(true)
+                        .SetV4SigningEnabled(false) // TODO: no way to transport idsig file to client
+                        .SetForceSourceStampOverwrite(false)
+                        .SetVerityEnabled(false)
+                        .SetCreatedBy(CreatedBy)
+                        .SetV4ErrorReportingEnabled(false) // TOOD: v4 support for signing server
+                        .SetDebuggableApkPermitted(true);
+
+                var apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();
 
                 File.Delete(inputFileName);
@@ -87,35 +118,38 @@ namespace SigningServer.Android
                 {
                     File.Delete(outputFileName);
                 }
+
                 throw;
             }
-
         }
 
 
         public bool IsFileSigned(string inputFileName)
         {
-            using (var inputJar = new ZipFile(inputFileName))
+            using (var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
             {
-                var manifestExists = false;
+                // Android manifest does not need to exist if we have a jar
+                var manifestExists = Path.GetExtension(inputFileName) == ".jar";
                 var signatureExists = false;
                 var signatureBlockExists = false;
 
-                foreach (var entry in inputJar.OfType<ZipEntry>())
+                ZipEntry entry;
+                while ((entry = inputJar.GetNextEntry()) != null)
                 {
                     if (entry.IsFile)
                     {
-                        if (entry.Name == ApkSigner.V1ManifestEntryName)
+                        if (ApkUtils.ANDROID_MANIFEST_ZIP_ENTRY_NAME.Equals(entry.Name,
+                                StringComparison.OrdinalIgnoreCase))
                         {
                             manifestExists = true;
                         }
-                        else if (entry.Name.StartsWith("META-INF", StringComparison.InvariantCultureIgnoreCase))
+                        else if (entry.Name.StartsWith("META-INF", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (entry.Name.EndsWith(".SF", StringComparison.InvariantCultureIgnoreCase))
+                            if (entry.Name.EndsWith(".SF", StringComparison.OrdinalIgnoreCase))
                             {
                                 signatureExists = true;
                             }
-                            else if (entry.Name.EndsWith(".RSA", StringComparison.InvariantCultureIgnoreCase))
+                            else if (entry.Name.EndsWith(".RSA", StringComparison.OrdinalIgnoreCase))
                             {
                                 signatureBlockExists = true;
                             }
@@ -134,6 +168,7 @@ namespace SigningServer.Android
 
         /// <inheritdoc />
         public string[] SupportedFileExtensions => ApkSupportedExtension.ToArray();
+
         public string[] SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
     }
 }

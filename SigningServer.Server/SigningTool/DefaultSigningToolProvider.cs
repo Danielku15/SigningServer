@@ -11,8 +11,9 @@ namespace SigningServer.Server
         private static readonly ISigningTool[] SigningTools =
         {
             new PortableExecutableSigningTool(),
-            new AppxSigningTool(),
             new AndroidApkSigningTool(),
+            new JarSigningTool(),
+            new AppxSigningTool(),
             new ClickOnceSigningTool(),
             new PowerShellSigningTool()
         };

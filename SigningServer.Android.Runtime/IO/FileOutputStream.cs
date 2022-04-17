@@ -4,21 +4,21 @@ namespace SigningServer.Android.IO
 {
     internal class FileOutputStream : OutputStream
     {
-        private readonly FileStream mFileStream;
+        private readonly FileStream _fileStream;
 
         public FileOutputStream(FileInfo file)
         {
-            mFileStream = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            _fileStream = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
         }
 
         public void Dispose()
         {
-            mFileStream.Dispose();
+            _fileStream.Dispose();
         }
 
         public void Write(int b)
         {
-            mFileStream.WriteByte((byte)b);
+            _fileStream.WriteByte((byte)b);
         }
         
         public void Write(byte[] bytes)
@@ -28,7 +28,7 @@ namespace SigningServer.Android.IO
 
         public void Write(byte[] bytes, int offset, int length)
         {
-            mFileStream.Write(bytes, offset, length);
+            _fileStream.Write(bytes, offset, length);
         }
     }
 }

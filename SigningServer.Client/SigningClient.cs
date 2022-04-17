@@ -18,9 +18,9 @@ public sealed class SigningClient : IDisposable
     private readonly SigningClientConfiguration _configuration;
     private ChannelFactory<ISigningServer> _clientFactory;
     private ISigningServer _client;
-    private TimeSpan _timeout;
+    private readonly TimeSpan _timeout;
     private HashSet<string> _supportedHashAlgorithms;
-    private Uri _signingServer;
+    private readonly Uri _signingServer;
 
     public SigningClient(SigningClientConfiguration configuration)
     {
@@ -35,17 +35,10 @@ public sealed class SigningClient : IDisposable
         {
             throw new ArgumentException(
                 $"Invalid SigningServer specified (expected host:port, found {configuration.SigningServer})",
-                "configuration");
+                nameof(configuration));
         }
 
-        if (configuration.Timeout > 0)
-        {
-            _timeout = TimeSpan.FromSeconds(configuration.Timeout);
-        }
-        else
-        {
-            _timeout = TimeSpan.FromSeconds(60);
-        }
+        _timeout = TimeSpan.FromSeconds(configuration.Timeout > 0 ? configuration.Timeout : 60);
 
         var uriBuilder = new UriBuilder
         {
@@ -60,6 +53,7 @@ public sealed class SigningClient : IDisposable
     public void Dispose()
     {
         (_clientFactory as IDisposable)?.Dispose();
+        // ReSharper disable once SuspiciousTypeConversion.Global
         (_client as IDisposable)?.Dispose();
     }
 
@@ -95,7 +89,6 @@ public sealed class SigningClient : IDisposable
     private void InternalSignFile(string file)
     {
         var info = new FileInfo(file);
-        SignFileResponse response;
 
         Log.Info("Signing file '{0}'", info.FullName);
 
@@ -112,6 +105,7 @@ public sealed class SigningClient : IDisposable
             {
                 var sw = new Stopwatch();
                 sw.Start();
+                SignFileResponse response;
                 using (var request = new SignFileRequest
                        {
                            FileName = info.Name,
@@ -224,15 +218,15 @@ public sealed class SigningClient : IDisposable
             OpenTimeout = _timeout,
             SendTimeout = _timeout,
             ReceiveTimeout = _timeout,
-            CloseTimeout = _timeout
+            CloseTimeout = _timeout,
+            Security = { Mode = SecurityMode.None }
         };
-        binding.Security.Mode = SecurityMode.None;
 
         _clientFactory = new ChannelFactory<ISigningServer>(binding, new EndpointAddress(_signingServer));
         _client = _clientFactory.CreateChannel();
 
-        var channel = _client as IClientChannel;
-        if (channel != null)
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        if (_client is IClientChannel channel)
         {
             var sw = new Stopwatch();
             sw.Start();

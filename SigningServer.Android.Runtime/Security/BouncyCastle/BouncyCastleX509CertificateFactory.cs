@@ -9,21 +9,21 @@ namespace SigningServer.Android.Security.BouncyCastle
 {
     internal class BouncyCastleX509CertificateFactory : CertificateFactory
     {
-        private readonly X509CertificateParser mParser;
+        private readonly X509CertificateParser _parser;
 
         public BouncyCastleX509CertificateFactory()
         {
-            mParser = new X509CertificateParser();
+            _parser = new X509CertificateParser();
         }
         
         public override X509Certificate GenerateCertificate(InputStream input)
         {
-            return new BouncyCastleX509Certificate(mParser.ReadCertificate(input.AsStream()));
+            return new BouncyCastleX509Certificate(_parser.ReadCertificate(input.AsStream()));
         }
 
         public override Collection<Certificate> GenerateCertificates(InputStream input)
         {
-            return new List<Certificate>(mParser.ReadCertificates(input.AsStream()).OfType<Org.BouncyCastle.X509.X509Certificate>()
+            return new List<Certificate>(_parser.ReadCertificates(input.AsStream()).OfType<Org.BouncyCastle.X509.X509Certificate>()
                 .Select(c => new BouncyCastleX509Certificate(c)));
         }
     }

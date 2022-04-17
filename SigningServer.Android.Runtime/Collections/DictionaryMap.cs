@@ -7,59 +7,59 @@ namespace SigningServer.Android.Collections
 {
     public class DictionaryMap<TKey, TValue> : Map<TKey, TValue>
     {
-        private readonly IDictionary<TKey, TValue> mDictionary;
+        private readonly IDictionary<TKey, TValue> _dictionary;
         
         public DictionaryMap()
         {
-            mDictionary = new Dictionary<TKey, TValue>();
+            _dictionary = new Dictionary<TKey, TValue>();
         }
 
         public TValue this[TKey index]
         {
-            get => mDictionary[index];
-            set => mDictionary[index] = value;
+            get => _dictionary[index];
+            set => _dictionary[index] = value;
         }
         
         public int Size()
         {
-            return mDictionary.Count;
+            return _dictionary.Count;
         }
 
         protected DictionaryMap(IDictionary<TKey, TValue> storage)
         {
-            mDictionary = storage;
+            _dictionary = storage;
         }
 
         public DictionaryMap(int capacity)
         {
-            mDictionary = new Dictionary<TKey, TValue>(capacity);
+            _dictionary = new Dictionary<TKey, TValue>(capacity);
         }
 
         public void Clear()
         {
-            mDictionary.Clear();
+            _dictionary.Clear();
         }
 
         public bool ContainsKey(TKey key)
         {
-            return mDictionary.ContainsKey(key);
+            return _dictionary.ContainsKey(key);
         }
 
-        public bool Remove(TKey key)
+        public void Remove(TKey key)
         {
-            return mDictionary.Remove(key);
+            _dictionary.Remove(key);
         }
 
         public TValue Get(TKey key)
         {
-            mDictionary.TryGetValue(key, out var v);
+            _dictionary.TryGetValue(key, out var v);
             return v;
         }
 
         public TValue Put(TKey key, TValue value)
         {
-            mDictionary.TryGetValue(key, out var v);
-            mDictionary[key] = value;
+            _dictionary.TryGetValue(key, out var v);
+            _dictionary[key] = value;
             return v;
         }
 
@@ -70,16 +70,16 @@ namespace SigningServer.Android.Collections
 
         private class EntrySetImpl : Set<MapEntry<TKey, TValue>>
         {
-            private readonly DictionaryMap<TKey, TValue> mDictionaryMap;
+            private readonly DictionaryMap<TKey, TValue> _dictionaryMap;
 
             public EntrySetImpl(DictionaryMap<TKey, TValue> dictionaryMap)
             {
-                mDictionaryMap = dictionaryMap;
+                _dictionaryMap = dictionaryMap;
             }
 
             public IEnumerator<MapEntry<TKey, TValue>> GetEnumerator()
             {
-                return mDictionaryMap.mDictionary.Select(kvp => new MapEntry<TKey, TValue>(kvp)).GetEnumerator();
+                return _dictionaryMap._dictionary.Select(kvp => new MapEntry<TKey, TValue>(kvp)).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -99,12 +99,12 @@ namespace SigningServer.Android.Collections
 
             public bool IsEmpty()
             {
-                return mDictionaryMap.IsEmpty();
+                return _dictionaryMap.IsEmpty();
             }
 
             public bool Contains(MapEntry<TKey, TValue> value)
             {
-                return mDictionaryMap.mDictionary.TryGetValue(value.GetKey(), out var v) && v.Equals(value);
+                return _dictionaryMap._dictionary.TryGetValue(value.GetKey(), out var v) && v.Equals(value);
             }
 
             public bool ContainsAll(Collection<MapEntry<TKey, TValue>> other)
@@ -114,12 +114,12 @@ namespace SigningServer.Android.Collections
 
             public MapEntry<TKey, TValue>[] ToArray(MapEntry<TKey, TValue>[] empty)
             {
-                return mDictionaryMap.mDictionary.Select(kvp => new MapEntry<TKey, TValue>(kvp)).ToArray();
+                return _dictionaryMap._dictionary.Select(kvp => new MapEntry<TKey, TValue>(kvp)).ToArray();
             }
 
             public int Size()
             {
-                return mDictionaryMap.mDictionary.Count;
+                return _dictionaryMap._dictionary.Count;
             }
 
 
@@ -152,12 +152,12 @@ namespace SigningServer.Android.Collections
 
         public IEnumerable<TValue> Values()
         {
-            return mDictionary.Values;
+            return _dictionary.Values;
         }
 
         public bool IsEmpty()
         {
-            return mDictionary.Count == 0;
+            return _dictionary.Count == 0;
         }
 
         public Set<TKey> KeySet()
@@ -167,16 +167,16 @@ namespace SigningServer.Android.Collections
 
         private class KeySetImpl : Set<TKey>
         {
-            private readonly DictionaryMap<TKey, TValue> mDictionaryMap;
+            private readonly DictionaryMap<TKey, TValue> _dictionaryMap;
 
             public KeySetImpl(DictionaryMap<TKey, TValue> dictionaryMap)
             {
-                mDictionaryMap = dictionaryMap;
+                _dictionaryMap = dictionaryMap;
             }
 
             public IEnumerator<TKey> GetEnumerator()
             {
-                return mDictionaryMap.mDictionary.Keys.GetEnumerator();
+                return _dictionaryMap._dictionary.Keys.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -196,12 +196,12 @@ namespace SigningServer.Android.Collections
 
             public bool IsEmpty()
             {
-                return mDictionaryMap.IsEmpty();
+                return _dictionaryMap.IsEmpty();
             }
 
             public bool Contains(TKey value)
             {
-                return mDictionaryMap.mDictionary.ContainsKey(value);
+                return _dictionaryMap._dictionary.ContainsKey(value);
             }
 
             public bool ContainsAll(Collection<TKey> other)
@@ -211,12 +211,12 @@ namespace SigningServer.Android.Collections
 
             public TKey[] ToArray(TKey[] empty)
             {
-                return mDictionaryMap.mDictionary.Keys.ToArray();
+                return _dictionaryMap._dictionary.Keys.ToArray();
             }
 
             public int Size()
             {
-                return mDictionaryMap.mDictionary.Count;
+                return _dictionaryMap._dictionary.Count;
             }
 
 

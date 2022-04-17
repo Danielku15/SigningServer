@@ -2,31 +2,31 @@
 {
     internal class Inflater
     {
-        private readonly ICSharpCode.SharpZipLib.Zip.Compression.Inflater mInflater;
+        private readonly ICSharpCode.SharpZipLib.Zip.Compression.Inflater _inflater;
 
         public Inflater(bool nowrap)
         {
-            mInflater = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater(nowrap);
+            _inflater = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater(nowrap);
         }
 
         public void SetInput(byte[] buf, int offset, int length)
         {
-            mInflater.SetInput(buf, offset, length);
+            _inflater.SetInput(buf, offset, length);
         }
 
         public bool Finished()
         {
-            return mInflater.IsFinished;
+            return _inflater.IsFinished;
         }
 
         public int Inflate(byte[] outputBuffer)
         {
-            return mInflater.Inflate(outputBuffer);
+            return _inflater.Inflate(outputBuffer);
         }
 
         public void End()
         {
-            mInflater.Reset();
+            _inflater.Reset();
         }
     }
 }

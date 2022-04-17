@@ -6,38 +6,38 @@ namespace SigningServer.Android.IO
 {
     public class RandomAccessFile : IDisposable
     {
-        private readonly FileStream mStream;
-        private FileChannel mFileChannel;
+        private readonly FileStream _stream;
+        private FileChannel _fileChannel;
 
         public RandomAccessFile(FileInfo file, string mode)
         {
             if (mode == "r")
             {
-                mStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                _stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             }
             else if (mode == "rw")
             {
-                mStream = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+                _stream = file.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
             }
         }
 
         public void Dispose()
         {
-            mStream.Dispose();
+            _stream.Dispose();
         }
 
         public FileChannel GetChannel()
         {
-            var channel = mFileChannel;
+            var channel = _fileChannel;
             if (channel == null)
             {
                 lock (this)
                 {
-                    channel = mFileChannel;
+                    channel = _fileChannel;
                     if (channel == null)
                     {
-                        channel = new FileChannel(mStream);
-                        mFileChannel = channel;
+                        channel = new FileChannel(_stream);
+                        _fileChannel = channel;
                     }
                 }
             }
@@ -48,7 +48,7 @@ namespace SigningServer.Android.IO
 
         public void Seek(long position)
         {
-            mStream.Seek(position, SeekOrigin.Begin);
+            _stream.Seek(position, SeekOrigin.Begin);
         }
 
         public void Write(byte[] buf, int offset, int length)
@@ -57,27 +57,27 @@ namespace SigningServer.Android.IO
             {
                 throw new IndexOutOfRangeException();
             }
-            mStream.Write(buf, offset, length);
+            _stream.Write(buf, offset, length);
         }
 
         public void Write(byte[] buf)
         {
-            mStream.Write(buf, 0, buf.Length);
+            _stream.Write(buf, 0, buf.Length);
         }
 
         public long Length()
         {
-            return mStream.Length;
+            return _stream.Length;
         }
 
         public void SetLength(int i)
         {
-            mStream.SetLength(i);
+            _stream.SetLength(i);
         }
 
         public void ReadFully(byte[] contents)
         {
-            mStream.Read(contents, 0, contents.Length);
+            var unused = _stream.Read(contents, 0, contents.Length);
         }
     }
 }

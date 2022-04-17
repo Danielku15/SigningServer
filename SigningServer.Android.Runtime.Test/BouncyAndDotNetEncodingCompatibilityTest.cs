@@ -11,24 +11,24 @@ public class BouncyAndDotNetEncodingCompatibilityTest
     [TestMethod]
     public void RsaCert()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyRsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetRsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyRsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetRsaCertificate);
         dotNet.GetEncoded().Should().Equal(bouncy.GetEncoded());
     }
 
     [TestMethod]
     public void DsaCert()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyDsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetDsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyDsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetDsaCertificate);
         dotNet.GetEncoded().Should().Equal(bouncy.GetEncoded());
     }
 
     [TestMethod]
     public void ECDsaCert()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyECDsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetECDsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyECDsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetECDsaCertificate);
         dotNet.GetEncoded().Should().Equal(bouncy.GetEncoded());
     }
         
@@ -59,24 +59,24 @@ public class BouncyAndDotNetEncodingCompatibilityTest
     [TestMethod]
     public void RsaSerialNumber()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyRsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetRsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyRsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetRsaCertificate);
         dotNet.GetSerialNumber().Should().Be(bouncy.GetSerialNumber());
     }
 
     [TestMethod]
     public void DsaSerialNumber()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyDsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetDsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyDsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetDsaCertificate);
         dotNet.GetSerialNumber().Should().Be(bouncy.GetSerialNumber());
     }
 
     [TestMethod]
     public void ECDsaSerialNumber()
     {
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyECDsaCertificate);
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetECDsaCertificate);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.BouncyECDsaCertificate);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateCertificate(BouncyAndDotNetCompatibilityTestData.DotNetECDsaCertificate);
         dotNet.GetSerialNumber().Should().Be(bouncy.GetSerialNumber());
     }
 }

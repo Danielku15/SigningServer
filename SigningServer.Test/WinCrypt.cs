@@ -8,7 +8,7 @@ namespace SigningServer.Test;
 public class CertificateHelper
 {
     [DllImport("crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern Boolean CryptQueryObject(
+    private static extern bool CryptQueryObject(
         int dwObjectType,
         IntPtr pvObject,
         int dwExpectedContentTypeFlags,
@@ -21,20 +21,24 @@ public class CertificateHelper
         ref IntPtr phMsg,
         ref IntPtr ppvContext);
 
-    public const int CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED = (1 << 8);
-    public const int CERT_QUERY_CONTENT_FLAG_PKCS7_UNSIGNED = (1 << 9);
-    public const int CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED = (1 << 10);
-    public const int CERT_QUERY_FORMAT_FLAG_BINARY = (1 << 1);
-    public const int CERT_QUERY_FORMAT_FLAG_BASE64_ENCODED = (1 << 2);
-    public const int CERT_QUERY_FORMAT_FLAG_ASN_ASCII_HEX_ENCODED = (1 << 3);
+    // ReSharper disable InconsistentNaming
+    private const int CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED = 1 << 8;
+    private const int CERT_QUERY_CONTENT_FLAG_PKCS7_UNSIGNED = 1 << 9;
+    private const int CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED = 1 << 10;
+    private const int CERT_QUERY_FORMAT_FLAG_BINARY = 1 << 1;
+    private const int CERT_QUERY_FORMAT_FLAG_BASE64_ENCODED = 1 << 2;
+    private const int CERT_QUERY_FORMAT_FLAG_ASN_ASCII_HEX_ENCODED = 1 << 3;
 
-    public const int CERT_QUERY_FORMAT_FLAG_ALL =
+    private const int CERT_QUERY_FORMAT_FLAG_ALL =
         CERT_QUERY_FORMAT_FLAG_BINARY |
         CERT_QUERY_FORMAT_FLAG_BASE64_ENCODED |
         CERT_QUERY_FORMAT_FLAG_ASN_ASCII_HEX_ENCODED;
-    public const int CMSG_ENCODED_MESSAGE = 29;
+    private const int CMSG_ENCODED_MESSAGE = 29;
+    
+    // ReSharper restore InconsistentNaming
+
     [DllImport("crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern Boolean CryptMsgGetParam(
+    private static extern bool CryptMsgGetParam(
         IntPtr hCryptMsg,
         int dwParamType,
         int dwIndex,
@@ -43,7 +47,7 @@ public class CertificateHelper
     );
 
     [DllImport("crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern Boolean CryptMsgGetParam(
+    private static extern bool CryptMsgGetParam(
         IntPtr hCryptMsg,
         int dwParamType,
         int dwIndex,
@@ -53,24 +57,21 @@ public class CertificateHelper
 
     public static SignedCms GetDigitalCertificate(string filename)
     {
-        int encodingType;
-        int contentType;
-        int formatType;
-        IntPtr certStore = IntPtr.Zero;
-        IntPtr cryptMsg = IntPtr.Zero;
-        IntPtr context = IntPtr.Zero;
+        var certStore = IntPtr.Zero;
+        var cryptMsg = IntPtr.Zero;
+        var context = IntPtr.Zero;
 
         if (!CryptQueryObject(
                 0x00000001,
                 Marshal.StringToHGlobalUni(filename),
-                (CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED
-                 | CERT_QUERY_CONTENT_FLAG_PKCS7_UNSIGNED
-                 | CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED), // <-- These are the attributes that makes it fast!!
+                CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED
+                | CERT_QUERY_CONTENT_FLAG_PKCS7_UNSIGNED
+                | CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED, // <-- These are the attributes that makes it fast!!
                 CERT_QUERY_FORMAT_FLAG_ALL,
                 0,
-                out encodingType,
-                out contentType,
-                out formatType,
+                out _,
+                out _,
+                out _,
                 ref certStore,
                 ref cryptMsg,
                 ref context))
@@ -79,7 +80,7 @@ public class CertificateHelper
         }
 
         // Get size of the encoded message.
-        int cbData = 0;
+        var cbData = 0;
         if (!CryptMsgGetParam(
                 cryptMsg,
                 CMSG_ENCODED_MESSAGE,

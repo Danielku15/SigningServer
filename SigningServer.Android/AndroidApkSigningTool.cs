@@ -82,10 +82,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(privateKey),
+                        DotNetCryptographyProvider.Instance.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            DotNetCryptographyProvider.INSTANCE.CreateCertificate(certificate)
+                            DotNetCryptographyProvider.Instance.CreateCertificate(certificate)
                         }, false)
                 };
 

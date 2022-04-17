@@ -5,11 +5,11 @@ namespace SigningServer.Android.Security.DotNet
 {
     internal class DotNetDsaPrivateKey : DotNetPrivateKey
     {
-        private readonly DSA mPrivateKey;
+        private readonly DSA _privateKey;
 
         public DotNetDsaPrivateKey(DSA privateKey)
         {
-            mPrivateKey = privateKey;
+            _privateKey = privateKey;
         }
         public byte[] GetEncoded()
         {
@@ -28,9 +28,9 @@ namespace SigningServer.Android.Security.DotNet
 
         public byte[] SignHash(byte[] digest, HashAlgorithmName hashAlgorithmName)
         {
-            return mPrivateKey.CreateSignature(digest);
+            return _privateKey.CreateSignature(digest);
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
     }
 }

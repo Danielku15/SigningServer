@@ -21,7 +21,7 @@ namespace SigningServer.Android.Core
             return string.Format(ConvertFormat(format), args);
         }
 
-        private static readonly Regex FORMAT_SPECIFIER
+        private static readonly Regex FormatSpecifier
             = new Regex("%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])", RegexOptions.Compiled);
 
         private static string ConvertFormat(string format)
@@ -31,7 +31,7 @@ namespace SigningServer.Android.Core
             var autoIndex = 0;
             for (var i = 0; i < format.Length;)
             {
-                var m = FORMAT_SPECIFIER.Match(format, i);
+                var m = FormatSpecifier.Match(format, i);
                 if (m.Success)
                 {
                     if (m.Index != i)

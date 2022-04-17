@@ -3,73 +3,72 @@ namespace SigningServer.Android.Core
 {
     internal class StringBuilder
     {
-        private readonly global::System.Text.StringBuilder mBuilder;
+        private readonly global::System.Text.StringBuilder _builder;
 
         public StringBuilder()
         {
-            mBuilder = new global::System.Text.StringBuilder();
+            _builder = new global::System.Text.StringBuilder();
         }
 
         public StringBuilder(string initial)
         {
-            mBuilder = new global::System.Text.StringBuilder(initial);
+            _builder = new global::System.Text.StringBuilder(initial);
         }
 
         public StringBuilder(int capacity)
         {
-            mBuilder = new global::System.Text.StringBuilder(capacity);
+            _builder = new global::System.Text.StringBuilder(capacity);
         }
 
         public StringBuilder Append(long v)
         {
-            mBuilder.Append(v);
+            _builder.Append(v);
             return this;
         }
 
         public StringBuilder Append(char c)
         {
-            mBuilder.Append(c);
+            _builder.Append(c);
             return this;
         }
         
         public StringBuilder Append(int v)
         {
-            mBuilder.Append(v);
+            _builder.Append(v);
             return this;
         }
 
         public StringBuilder Append(byte v)
         {
-            mBuilder.Append(v);
+            _builder.Append(v);
             return this;
         }
 
         public StringBuilder Append(string s)
         {
-            mBuilder.Append(s);
+            _builder.Append(s);
             return this;
         }
 
-        public StringBuilder Append(string s, int start, int end)
+        public void Append(string s, int start, int end)
         {
-            mBuilder.Append(s, start, end - start);
-            return this;
+            _builder.Append(s, start, end - start);
         }
 
         public StringBuilder Append(object c)
         {
-            mBuilder.Append(c);
+            _builder.Append(c);
             return this;
         }
 
         public int Length()
         {
-            return mBuilder.Length;
+            return _builder.Length;
         }
 
         public override string ToString()
         {
-            return mBuilder.ToString();
+            return _builder.ToString();
         }
     }
 }

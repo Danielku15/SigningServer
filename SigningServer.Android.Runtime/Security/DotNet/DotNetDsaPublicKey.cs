@@ -5,23 +5,23 @@ namespace SigningServer.Android.Security.DotNet
 {
     internal class DotNetDsaPublicKey : DotNetPublicKey, DSAKey
     {
-        private readonly byte[] mEncoded;
-        private readonly DSA mPublicKey;
+        private readonly byte[] _encoded;
+        private readonly DSA _publicKey;
 
         public DotNetDsaPublicKey(byte[] encoded, DSA publicKey)
         {
-            mEncoded = encoded;
-            mPublicKey = publicKey;
+            _encoded = encoded;
+            _publicKey = publicKey;
         }
 
         public bool VerifyHash(byte[] digest, HashAlgorithmName digestName, byte[] signature)
         {
-            return mPublicKey.VerifySignature(digest, signature);
+            return _publicKey.VerifySignature(digest, signature);
         }
 
         public byte[] GetEncoded()
         {
-            return mEncoded;
+            return _encoded;
         }
 
         public string GetFormat()
@@ -34,6 +34,6 @@ namespace SigningServer.Android.Security.DotNet
             return "DSA";
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
     }
 }

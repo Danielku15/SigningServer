@@ -4,21 +4,21 @@ namespace SigningServer.Android.IO
 {
     public class ByteBuffer
     {
-        private byte[] mRaw;
-        private int mOffset;
-        private readonly int mCapacity;
-        private int mMark = -1;
-        private int mPosition;
-        private int mLimit;
+        private readonly byte[] _raw;
+        private readonly int _offset;
+        private readonly int _capacity;
+        private int _mark = -1;
+        private int _position;
+        private int _limit;
 
         public int Capacity()
         {
-            return mCapacity;
+            return _capacity;
         }
 
         public int Limit()
         {
-            return mLimit;
+            return _limit;
         }
 
         private ByteBuffer(byte[] buf,
@@ -40,8 +40,8 @@ namespace SigningServer.Android.IO
         protected ByteBuffer(int mark, int pos, int lim, int cap, byte[] hb, int offset)
             : this(mark, pos, lim, cap)
         {
-            mRaw = hb;
-            mOffset = offset;
+            _raw = hb;
+            _offset = offset;
         }
 
         protected ByteBuffer(int mark, int pos, int lim, int cap)
@@ -51,7 +51,7 @@ namespace SigningServer.Android.IO
                 throw CreateCapacityException(cap);
             }
 
-            mCapacity = cap;
+            _capacity = cap;
             Limit(lim);
             Position(pos);
             if (mark >= 0)
@@ -59,39 +59,39 @@ namespace SigningServer.Android.IO
                 if (mark > pos)
                     throw new ArgumentException("mark > position: ("
                                                 + mark + " > " + pos + ")");
-                mMark = mark;
+                _mark = mark;
             }
         }
 
         public void Limit(int newLimit)
         {
-            if (newLimit > mCapacity | newLimit < 0)
+            if (newLimit > _capacity | newLimit < 0)
                 throw CreateLimitException(newLimit);
-            mLimit = newLimit;
-            if (mPosition > newLimit) mPosition = newLimit;
-            if (mMark > newLimit) mMark = -1;
+            _limit = newLimit;
+            if (_position > newLimit) _position = newLimit;
+            if (_mark > newLimit) _mark = -1;
         }
 
         public int Position()
         {
-            return mPosition;
+            return _position;
         }
 
         public void Position(int newPosition)
         {
-            if (newPosition > mLimit | newPosition < 0)
+            if (newPosition > _limit | newPosition < 0)
                 throw CreatePositionException(newPosition);
-            if (mMark > newPosition) mMark = -1;
-            mPosition = newPosition;
+            if (_mark > newPosition) _mark = -1;
+            _position = newPosition;
         }
 
         private ArgumentException CreatePositionException(int newPosition)
         {
-            String msg;
+            string msg;
 
-            if (newPosition > mLimit)
+            if (newPosition > _limit)
             {
-                msg = "newPosition > limit: (" + newPosition + " > " + mLimit + ")";
+                msg = "newPosition > limit: (" + newPosition + " > " + _limit + ")";
             }
             else
             {
@@ -104,11 +104,11 @@ namespace SigningServer.Android.IO
 
         private ArgumentException CreateLimitException(int newLimit)
         {
-            String msg = null;
+            string msg = null;
 
-            if (newLimit > mCapacity)
+            if (newLimit > _capacity)
             {
-                msg = "newLimit > capacity: (" + newLimit + " > " + mCapacity + ")";
+                msg = "newLimit > capacity: (" + newLimit + " > " + _capacity + ")";
             }
             else
             {
@@ -119,7 +119,7 @@ namespace SigningServer.Android.IO
             return new ArgumentException(msg);
         }
 
-        static ArgumentException CreateCapacityException(int capacity)
+        private static ArgumentException CreateCapacityException(int capacity)
         {
             return new ArgumentException("capacity < 0: ("
                                          + capacity + " < 0)");
@@ -128,26 +128,26 @@ namespace SigningServer.Android.IO
 
         public int Remaining()
         {
-            var rem = mLimit - mPosition;
+            var rem = _limit - _position;
             return rem > 0 ? rem : 0;
         }
 
 
         public int NextGetIndex()
         {
-            var p = mPosition;
-            if (p >= mLimit)
+            var p = _position;
+            if (p >= _limit)
             {
                 throw new BufferUnderflowException();
             }
 
-            mPosition = p + 1;
+            _position = p + 1;
             return p;
         }
 
         protected int CheckIndex(int i)
         {
-            if (i < 0 || i >= mLimit)
+            if (i < 0 || i >= _limit)
             {
                 throw new IndexOutOfRangeException();
             }
@@ -157,19 +157,20 @@ namespace SigningServer.Android.IO
 
         protected int NextGetIndex(int nb)
         {
-            var p = mPosition;
-            if (mLimit - p < nb)
+            var p = _position;
+            if (_limit - p < nb)
             {
                 throw new BufferUnderflowException();
             }
 
-            mPosition = p + nb;
+            _position = p + nb;
             return p;
         }
 
+        // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
         protected int CheckIndex(int i, int nb)
         {
-            if (i < 0 || (nb > mLimit - i))
+            if (i < 0 || (nb > _limit - i))
             {
                 throw new IndexOutOfRangeException();
             }
@@ -179,54 +180,54 @@ namespace SigningServer.Android.IO
 
         public void Flip()
         {
-            mLimit = mPosition;
-            mPosition = 0;
-            mMark = 0;
+            _limit = _position;
+            _position = 0;
+            _mark = 0;
         }
 
         public bool HasRemaining()
         {
-            return mPosition < mLimit;
+            return _position < _limit;
         }
 
         public void Rewind()
         {
-            mPosition = 0;
-            mMark = -1;
+            _position = 0;
+            _mark = -1;
         }
 
         public void Clear()
         {
-            mPosition = 0;
-            mLimit = mCapacity;
-            mMark = -1;
+            _position = 0;
+            _limit = _capacity;
+            _mark = -1;
         }
 
         public void Mark()
         {
-            mMark = mPosition;
+            _mark = _position;
         }
 
         public void Reset()
         {
-            var m = mMark;
+            var m = _mark;
             if (m < 0)
             {
                 throw new InvalidOperationException();
             }
 
-            mPosition = m;
+            _position = m;
         }
 
         protected int NextPutIndex()
         {
-            var p = mPosition;
-            if (p >= mLimit)
+            var p = _position;
+            if (p >= _limit)
             {
                 throw new BufferOverflowException();
             }
 
-            mPosition = p + 1;
+            _position = p + 1;
             return p;
         }
 
@@ -241,47 +242,47 @@ namespace SigningServer.Android.IO
             var pos = Position();
             var lim = Limit();
             var rem = (pos <= lim ? lim - pos : 0);
-            return new ByteBuffer(mRaw,
+            return new ByteBuffer(_raw,
                 -1,
                 0,
                 rem,
                 rem,
-                pos + mOffset);
+                pos + _offset);
         }
 
         public byte Get()
         {
-            return mRaw[Index(NextGetIndex())];
+            return _raw[Index(NextGetIndex())];
         }
 
         public byte Get(int i)
         {
-            return mRaw[Index(CheckIndex(i))];
+            return _raw[Index(CheckIndex(i))];
         }
 
         private int Index(int i)
         {
-            return i + mOffset;
+            return i + _offset;
         }
 
         public long GetLong()
         {
-            return BitConverter.ToInt64(mRaw, Index(NextGetIndex(8)));
+            return BitConverter.ToInt64(_raw, Index(NextGetIndex(8)));
         }
 
         public short GetShort()
         {
-            return BitConverter.ToInt16(mRaw, Index(NextGetIndex(2)));
+            return BitConverter.ToInt16(_raw, Index(NextGetIndex(2)));
         }
 
         public int GetInt()
         {
-            return BitConverter.ToInt32(mRaw, Index(NextGetIndex(4)));
+            return BitConverter.ToInt32(_raw, Index(NextGetIndex(4)));
         }
 
         public long GetLong(int offset)
         {
-            return BitConverter.ToInt64(mRaw, Index(CheckIndex(offset, 8)));
+            return BitConverter.ToInt64(_raw, Index(CheckIndex(offset, 8)));
         }
 
         public void Get(byte[] dst)
@@ -291,12 +292,12 @@ namespace SigningServer.Android.IO
 
         public int GetInt(int i)
         {
-            return BitConverter.ToInt32(mRaw, Index(CheckIndex(i, 4)));
+            return BitConverter.ToInt32(_raw, Index(CheckIndex(i, 4)));
         }
 
         public short GetShort(int i)
         {
-            return BitConverter.ToInt16(mRaw, Index(CheckIndex(i, 2)));
+            return BitConverter.ToInt16(_raw, Index(CheckIndex(i, 2)));
         }
 
 
@@ -308,7 +309,7 @@ namespace SigningServer.Android.IO
                 throw new BufferUnderflowException();
             }
 
-            System.Buffer.BlockCopy(mRaw, Index(pos), dst, offset, length);
+            Buffer.BlockCopy(_raw, Index(pos), dst, offset, length);
             Position(pos + length);
         }
 
@@ -324,8 +325,8 @@ namespace SigningServer.Android.IO
             var n = src.Limit() - sbpos;
             if (n > Limit() - pos)
                 throw new BufferOverflowException();
-            System.Buffer.BlockCopy(src.mRaw, src.Index(sbpos),
-                mRaw, Index(pos), n);
+            Buffer.BlockCopy(src._raw, src.Index(sbpos),
+                _raw, Index(pos), n);
             src.Position(sbpos + n);
             Position(pos + n);
         }
@@ -333,30 +334,30 @@ namespace SigningServer.Android.IO
 
         public void Put(byte[] src, int offset, int length)
         {
-            var pos = mPosition;
-            if (length > mLimit - pos)
+            var pos = _position;
+            if (length > _limit - pos)
             {
                 throw new BufferOverflowException();
             }
 
             if (offset > src.Length || offset + length > src.Length || offset < 0)
             {
-                throw new System.IndexOutOfRangeException();
+                throw new IndexOutOfRangeException();
             }
 
-            System.Buffer.BlockCopy(src, offset, mRaw, Index(pos), length);
+            Buffer.BlockCopy(src, offset, _raw, Index(pos), length);
             Position(pos + length);
         }
 
         private void Put(int dstOffset, byte[] src, int offset, int length)
         {
             var pos = dstOffset;
-            if (length > mLimit - pos)
+            if (length > _limit - pos)
             {
                 throw new BufferOverflowException();
             }
 
-            System.Buffer.BlockCopy(src, offset, mRaw, Index(pos), length);
+            Buffer.BlockCopy(src, offset, _raw, Index(pos), length);
         }
 
         public void PutShort(int offset, short value)
@@ -389,18 +390,18 @@ namespace SigningServer.Android.IO
         public ByteBuffer Duplicate()
         {
             return new ByteBuffer(
-                mRaw,
-                mMark,
-                mPosition,
-                mLimit,
-                mCapacity,
-                mOffset);
+                _raw,
+                _mark,
+                _position,
+                _limit,
+                _capacity,
+                _offset);
         }
 
 
         public void Put(byte x)
         {
-            mRaw[Index(NextPutIndex())] = x;
+            _raw[Index(NextPutIndex())] = x;
         }
 
 
@@ -416,17 +417,17 @@ namespace SigningServer.Android.IO
 
         public bool HasArray()
         {
-            return mRaw != null;
+            return _raw != null;
         }
 
         public byte[] Array()
         {
-            return mRaw;
+            return _raw;
         }
 
         public int ArrayOffset()
         {
-            return mOffset;
+            return _offset;
         }
 
         public void Put(byte[] src)

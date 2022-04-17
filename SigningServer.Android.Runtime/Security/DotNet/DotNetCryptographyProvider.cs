@@ -6,7 +6,7 @@ namespace SigningServer.Android.Security.DotNet
 {
     public class DotNetCryptographyProvider : CryptographyProvider
     {
-        public static readonly DotNetCryptographyProvider INSTANCE = new DotNetCryptographyProvider();
+        public static readonly DotNetCryptographyProvider Instance = new DotNetCryptographyProvider();
 
         public Signature CreateSignature(string jcaSignatureAlgorithm)
         {

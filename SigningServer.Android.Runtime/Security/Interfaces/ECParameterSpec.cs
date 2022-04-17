@@ -4,16 +4,16 @@ namespace SigningServer.Android.Security.Interfaces
 {
     public class ECParameterSpec
     {
-        private readonly BigInteger mOrder;
+        private readonly BigInteger _order;
 
         public ECParameterSpec(BigInteger order)
         {
-            mOrder = order;
+            _order = order;
         }
 
         public BigInteger GetOrder()
         {
-            return mOrder;
+            return _order;
         }
     }
 }

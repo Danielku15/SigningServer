@@ -2,16 +2,16 @@
 {
     internal class ZipEntry
     {
-        private readonly ICSharpCode.SharpZipLib.Zip.ZipEntry mEntry;
+        private readonly ICSharpCode.SharpZipLib.Zip.ZipEntry _entry;
 
         public ZipEntry(ICSharpCode.SharpZipLib.Zip.ZipEntry entry)
         {
-            mEntry = entry;
+            _entry = entry;
         }
 
         public string GetName()
         {
-            return mEntry.Name;
+            return _entry.Name;
         }
     }
 }

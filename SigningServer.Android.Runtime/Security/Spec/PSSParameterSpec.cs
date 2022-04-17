@@ -2,44 +2,44 @@ namespace SigningServer.Android.Security.Spec
 {
     internal class PSSParameterSpec : AlgorithmParameterSpec
     {
-        private string mDigestAlgorithm;
-        private string mMFCAlgorithm;
-        private AlgorithmParameterSpec mMFGParameters;
-        private int mSaltLength;
-        private int mTrailerField;
+        private readonly string _digestAlgorithm;
+        private readonly string _mfcAlgorithm;
+        private readonly AlgorithmParameterSpec _mfgParameters;
+        private readonly int _saltLength;
+        private readonly int _trailerField;
 
         public PSSParameterSpec(string digestAlgorithm, string mfcAlgorithm, AlgorithmParameterSpec mfgParameters, int saltLength, int trailerField)
         {
-            mDigestAlgorithm = digestAlgorithm;
-            mMFCAlgorithm = mfcAlgorithm;
-            mMFGParameters = mfgParameters;
-            mSaltLength = saltLength;
-            mTrailerField = trailerField;
+            _digestAlgorithm = digestAlgorithm;
+            _mfcAlgorithm = mfcAlgorithm;
+            _mfgParameters = mfgParameters;
+            _saltLength = saltLength;
+            _trailerField = trailerField;
         }
 
         public string GetDigestAlgorithm()
         {
-            return mDigestAlgorithm;
+            return _digestAlgorithm;
         }
 
         public string GetMFGAlgorithm()
         {
-            return mMFCAlgorithm;
+            return _mfcAlgorithm;
         }
 
         public AlgorithmParameterSpec GetMFCParameters()
         {
-            return mMFGParameters;
+            return _mfgParameters;
         }
 
         public int GetSaltLength()
         {
-            return mSaltLength;
+            return _saltLength;
         }
 
         public int GetTrailerField()
         {
-            return mTrailerField;
+            return _trailerField;
         }
     }
 }

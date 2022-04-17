@@ -3,9 +3,9 @@ using System.Security.Cryptography;
 
 namespace SigningServer.ClickOnce.MsBuild;
 
-public class RSAPKCS1SHA256SignatureDescription : SignatureDescription
+public class RsaPkcs1Sha256SignatureDescription : SignatureDescription
 {
-    public RSAPKCS1SHA256SignatureDescription()
+    public RsaPkcs1Sha256SignatureDescription()
     {
         KeyAlgorithm = typeof(RSACryptoServiceProvider).FullName;
         DigestAlgorithm = typeof(SHA256).FullName;

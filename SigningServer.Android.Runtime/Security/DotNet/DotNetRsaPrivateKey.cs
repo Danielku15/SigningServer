@@ -5,15 +5,14 @@ namespace SigningServer.Android.Security.DotNet
 {
     internal class DotNetRsaPrivateKey : DotNetPrivateKey
     {
-        private readonly RSA mPrivateKey;
-        private readonly RSASignaturePadding mPadding;
+        private readonly RSASignaturePadding _padding;
 
-        public RSA PrivateKey => mPrivateKey;
+        public RSA PrivateKey { get; }
 
         public DotNetRsaPrivateKey(RSA privateKey, RSASignaturePadding padding)
         {
-            mPrivateKey = privateKey;
-            mPadding = padding;
+            PrivateKey = privateKey;
+            _padding = padding;
         }
 
         public byte[] GetEncoded()
@@ -33,9 +32,9 @@ namespace SigningServer.Android.Security.DotNet
 
         public byte[] SignHash(byte[] digest, HashAlgorithmName hashAlgorithmName)
         {
-            return mPrivateKey.SignHash(digest, hashAlgorithmName, mPadding);
+            return PrivateKey.SignHash(digest, hashAlgorithmName, _padding);
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
     }
 }

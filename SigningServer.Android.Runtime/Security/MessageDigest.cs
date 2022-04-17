@@ -8,18 +8,18 @@ namespace SigningServer.Android.Security
 {
     public class MessageDigest
     {
-        private readonly IDigest mDigest;
+        private readonly IDigest _digest;
 
         public MessageDigest(IDigest digest)
         {
-            mDigest = digest;
+            _digest = digest;
         }
 
         public void Update(ByteBuffer data)
         {
             if (data.HasArray())
             {
-                mDigest.BlockUpdate(data.Array(), data.ArrayOffset() + data.Position(),
+                _digest.BlockUpdate(data.Array(), data.ArrayOffset() + data.Position(),
                     data.Limit() - data.Position());
             }
             else
@@ -30,22 +30,22 @@ namespace SigningServer.Android.Security
 
         public void Update(byte[] data)
         {
-            mDigest.BlockUpdate(data, 0, data.Length);
+            _digest.BlockUpdate(data, 0, data.Length);
         }
 
         public byte[] Digest()
         {
-            var result = new byte[mDigest.GetDigestSize()];
-            mDigest.DoFinal(result, 0);
-            mDigest.Reset();
+            var result = new byte[_digest.GetDigestSize()];
+            _digest.DoFinal(result, 0);
+            _digest.Reset();
             return result;
         }
 
         public int Digest(byte[] data, int offset, int length)
         {
-            mDigest.DoFinal(data, offset);
-            mDigest.Reset();
-            return mDigest.GetDigestSize();
+            _digest.DoFinal(data, offset);
+            _digest.Reset();
+            return _digest.GetDigestSize();
         }
 
         public byte[] Digest(byte[] data)
@@ -68,22 +68,22 @@ namespace SigningServer.Android.Security
 
         public void Update(byte[] data, int offset, int length)
         {
-            mDigest.BlockUpdate(data, offset, length);
+            _digest.BlockUpdate(data, offset, length);
         }
 
         public string GetAlgorithm()
         {
-            return mDigest.AlgorithmName;
+            return _digest.AlgorithmName;
         }
 
         public int GetDigestLength()
         {
-            return mDigest.GetDigestSize();
+            return _digest.GetDigestSize();
         }
 
         public void Reset()
         {
-            mDigest.Reset();
+            _digest.Reset();
         }
 
         public MessageDigest Clone()

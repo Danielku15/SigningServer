@@ -5,7 +5,7 @@ namespace SigningServer.Android.Security.BouncyCastle
 {
     public class BouncyCastleCryptographyProvider : CryptographyProvider
     {
-        public static readonly BouncyCastleCryptographyProvider INSTANCE = new BouncyCastleCryptographyProvider();
+        public static readonly BouncyCastleCryptographyProvider Instance = new BouncyCastleCryptographyProvider();
 
         public Signature CreateSignature(string jcaSignatureAlgorithm)
         {

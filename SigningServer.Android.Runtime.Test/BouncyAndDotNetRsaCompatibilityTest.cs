@@ -47,12 +47,12 @@ public class BouncyAndDotNetRsaCompatibilityTest
         var input = new byte[1024];
         random.NextBytes(input, 0, input.Length);
 
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateSignature(signatureAlg);
         bouncy.InitSign(bouncyKey);
         bouncy.Update(input);
         var bouncySignature = bouncy.Sign();
 
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateSignature(signatureAlg);
         dotNet.InitSign(dotNetKey);
         dotNet.Update(input);
         var dotNetSignature = dotNet.Sign();
@@ -66,12 +66,12 @@ public class BouncyAndDotNetRsaCompatibilityTest
         var input = new byte[1024];
         random.NextBytes(input, 0, input.Length);
 
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateSignature(signatureAlg);
         bouncy.InitSign(bouncyKey);
         bouncy.Update(input);
         var bouncySignature = bouncy.Sign();
 
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateSignature(signatureAlg);
         dotNet.InitVerify(dotNetKey);
         dotNet.Update(input);
         var verified = dotNet.Verify(bouncySignature);
@@ -85,12 +85,12 @@ public class BouncyAndDotNetRsaCompatibilityTest
         var input = new byte[1024];
         random.NextBytes(input, 0, input.Length);
 
-        var dotNet = DotNetCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var dotNet = DotNetCryptographyProvider.Instance.CreateSignature(signatureAlg);
         dotNet.InitSign(dotNetKey);
         dotNet.Update(input);
         var dotNetSignature = dotNet.Sign();
 
-        var bouncy = BouncyCastleCryptographyProvider.INSTANCE.CreateSignature(signatureAlg);
+        var bouncy = BouncyCastleCryptographyProvider.Instance.CreateSignature(signatureAlg);
         bouncy.InitVerify(bouncyKey);
         bouncy.Update(input);
         var verified = bouncy.Verify(dotNetSignature);

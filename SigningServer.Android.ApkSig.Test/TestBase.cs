@@ -24,7 +24,7 @@ public class TestBase
         return new FileInfo(Path.Combine(Path.GetTempPath(), name + Guid.NewGuid().ToString("N") + extension));
     }
 
-    protected static void AssumeNoException(Exception e)
+    protected static void AssumeNoException(Exception _)
     {
         // Nothing to do
     }

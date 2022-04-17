@@ -2,16 +2,16 @@
 {
     internal class PKCS8EncodedKeySpec : KeySpec
     {
-        private readonly byte[] mData;
+        private readonly byte[] _data;
 
         public PKCS8EncodedKeySpec(byte[] data)
         {
-            mData = data;
+            _data = data;
         }
 
         public byte[] GetEncoded()
         {
-            return (byte[])mData.Clone();
+            return (byte[])_data.Clone();
         }
     }
 }

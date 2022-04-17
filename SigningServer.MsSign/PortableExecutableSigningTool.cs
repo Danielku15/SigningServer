@@ -35,7 +35,7 @@ public class PortableExecutableSigningTool : ISigningTool
                 ["MD5"] = (Win32.CALG_MD5, Win32.OID_RSA_MD5, HashAlgorithmName.MD5),
                 ["SHA256"] = (Win32.CALG_SHA_256, Win32.OID_OIWSEC_SHA256, HashAlgorithmName.SHA256),
                 ["SHA384"] = (Win32.CALG_SHA_384, Win32.OID_OIWSEC_SHA384, HashAlgorithmName.SHA384),
-                ["SHA512"] = (Win32.CALG_SHA_512, Win32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512),
+                ["SHA512"] = (Win32.CALG_SHA_512, Win32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512)
             };
 
     private readonly ILogger _logger;

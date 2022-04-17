@@ -23,26 +23,26 @@ public class BouncyAndDotNetCompatibilityTestData
 
     // due to the indeterministic nature of DSA/ECdsa we focus here on RSA compat
 
-    public static X509Certificate BouncyRsaCertificate;
-    public static X509Certificate2 DotNetRsaCertificate;
-    public static PrivateKey BouncyRsaPrivateKey;
-    public static PrivateKey DotNetRsaPrivateKey;
-    public static PublicKey BouncyRsaPublicKey;
-    public static PublicKey DotNetRsaPublicKey;
+    public static X509Certificate BouncyRsaCertificate { get; private set; }
+    public static X509Certificate2 DotNetRsaCertificate { get; private set; }
+    public static PrivateKey BouncyRsaPrivateKey { get; private set; }
+    public static PrivateKey DotNetRsaPrivateKey { get; private set; }
+    public static PublicKey BouncyRsaPublicKey { get; private set; }
+    public static PublicKey DotNetRsaPublicKey { get; private set; }
 
-    public static X509Certificate BouncyDsaCertificate;
-    public static X509Certificate2 DotNetDsaCertificate;
-    public static PrivateKey BouncyDsaPrivateKey;
-    public static PrivateKey DotNetDsaPrivateKey;
-    public static PublicKey BouncyDsaPublicKey;
-    public static PublicKey DotNetDsaPublicKey;
+    public static X509Certificate BouncyDsaCertificate { get; private set; }
+    public static X509Certificate2 DotNetDsaCertificate { get; private set; }
+    public static PrivateKey BouncyDsaPrivateKey { get; private set; }
+    public static PrivateKey DotNetDsaPrivateKey { get; private set; }
+    public static PublicKey BouncyDsaPublicKey { get; private set; }
+    public static PublicKey DotNetDsaPublicKey { get; private set; }
 
-    public static X509Certificate BouncyECDsaCertificate;
-    public static X509Certificate2 DotNetECDsaCertificate;
-    public static PrivateKey BouncyECDsaPrivateKey;
-    public static PrivateKey DotNetECDsaPrivateKey;
-    public static PublicKey BouncyECDsaPublicKey;
-    public static PublicKey DotNetECDsaPublicKey;
+    public static X509Certificate BouncyECDsaCertificate { get; private set; }
+    public static X509Certificate2 DotNetECDsaCertificate { get; private set; }
+    public static PrivateKey BouncyECDsaPrivateKey { get; private set; }
+    public static PrivateKey DotNetECDsaPrivateKey { get; private set; }
+    public static PublicKey BouncyECDsaPublicKey { get; private set; }
+    public static PublicKey DotNetECDsaPublicKey { get; private set; }
 
     [AssemblyInitialize]
     public static void SetUp(TestContext context)
@@ -54,50 +54,50 @@ public class BouncyAndDotNetCompatibilityTestData
         var rsaDotNet = new X509Certificate2(rsaCert);
         rsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetRsaCertificate = rsaDotNet;
-        DotNetRsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(rsaDotNet);
-        DotNetRsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(rsaDotNet.GetPrivateKey());
+        DotNetRsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(rsaDotNet);
+        DotNetRsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(rsaDotNet.GetPrivateKey());
 
         var rsaBouncy = new Pkcs12Store(new MemoryStream(rsaCert), Array.Empty<char>());
         var alias = rsaBouncy.Aliases.OfType<string>().First();
         BouncyRsaCertificate = rsaBouncy.GetCertificate(alias).Certificate;
         BouncyRsaPublicKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePublicKey(BouncyRsaCertificate);
+            BouncyCastleCryptographyProvider.Instance.CreatePublicKey(BouncyRsaCertificate);
         BouncyRsaPrivateKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePrivateKey(rsaBouncy.GetKey(alias).Key);
+            BouncyCastleCryptographyProvider.Instance.CreatePrivateKey(rsaBouncy.GetKey(alias).Key);
 
         var dsaDotNet = new X509Certificate2(dsaCert);
         dsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetDsaCertificate = dsaDotNet;
-        DotNetDsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(dsaDotNet);
-        DotNetDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(dsaDotNet.GetPrivateKey());
+        DotNetDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(dsaDotNet);
+        DotNetDsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(dsaDotNet.GetPrivateKey());
 
         var dsaBouncy = new Pkcs12Store(new MemoryStream(dsaCert), Array.Empty<char>());
         alias = dsaBouncy.Aliases.OfType<string>().First();
         BouncyDsaCertificate = dsaBouncy.GetCertificate(alias).Certificate;
         BouncyDsaPublicKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePublicKey(BouncyDsaCertificate);
+            BouncyCastleCryptographyProvider.Instance.CreatePublicKey(BouncyDsaCertificate);
         BouncyDsaPrivateKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePrivateKey(dsaBouncy.GetKey(alias).Key);
+            BouncyCastleCryptographyProvider.Instance.CreatePrivateKey(dsaBouncy.GetKey(alias).Key);
 
         var ecdsaDotNet = new X509Certificate2(ecdsaCert);
         ecdsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetECDsaCertificate = ecdsaDotNet;
-        DotNetECDsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(ecdsaDotNet);
-        DotNetECDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(ecdsaDotNet.GetPrivateKey());
+        DotNetECDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(ecdsaDotNet);
+        DotNetECDsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(ecdsaDotNet.GetPrivateKey());
 
         var ecdsaBouncy = new Pkcs12Store(new MemoryStream(ecdsaCert), Array.Empty<char>());
         alias = ecdsaBouncy.Aliases.OfType<string>().First();
         BouncyECDsaCertificate = ecdsaBouncy.GetCertificate(alias).Certificate;
         BouncyECDsaPublicKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePublicKey(BouncyECDsaCertificate);
+            BouncyCastleCryptographyProvider.Instance.CreatePublicKey(BouncyECDsaCertificate);
         BouncyECDsaPrivateKey =
-            BouncyCastleCryptographyProvider.INSTANCE.CreatePrivateKey(ecdsaBouncy.GetKey(alias).Key);
+            BouncyCastleCryptographyProvider.Instance.CreatePrivateKey(ecdsaBouncy.GetKey(alias).Key);
     }
 
     private static byte[] LoadCertBytes(string resourceName)
     {
         var asm = typeof(BouncyAndDotNetCompatibilityTestData).Assembly;
-        var name = asm.GetManifestResourceNames().First(n=>n.EndsWith("Certificates." + resourceName));
+        var name = asm.GetManifestResourceNames().First(n => n.EndsWith("Certificates." + resourceName));
         using var ms = new MemoryStream();
         using var r = typeof(BouncyAndDotNetCompatibilityTestData).Assembly.GetManifestResourceStream(name);
         r.CopyTo(ms);

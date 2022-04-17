@@ -27,17 +27,17 @@ public class DeploymentItemAttribute : Attribute
     public void Deploy()
     {
         // Escape input-path to correct back-slashes for Windows
-        string filePath = _path.Replace("/", "\\");
+        var filePath = _path.Replace("/", "\\");
 
         // Look up where we are right now
-        DirectoryInfo environmentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+        var environmentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
         // Get the full path and name of the deployment item
-        string itemPath = new Uri(Path.Combine(environmentDir.FullName, filePath)).LocalPath;
-        string itemName = Path.GetFileName(itemPath);
+        var itemPath = new Uri(Path.Combine(environmentDir.FullName, filePath)).LocalPath;
+        var itemName = Path.GetFileName(itemPath);
 
         // Get the target-path where to copy the deployment item to
-        string binFolderPath = environmentDir.ToString();
+        var binFolderPath = environmentDir.ToString();
 
         // NUnit uses an obscure ShadowCopyCache directory which can be hard to find, so let's output it so the poor developer can get at it more easily
         Debug.WriteLine("DeploymentItem: Copying " + itemPath + " to " + binFolderPath);
@@ -61,7 +61,7 @@ public class DeploymentItemAttribute : Attribute
         if (File.Exists(itemPath)) // It's a file
         {
             // Assemble the parent folder path (because the item might be in multiple sub-folders.
-            string parentFolderPathInBin = new DirectoryInfo(itemPathInBin).Parent.FullName;
+            var parentFolderPathInBin = new DirectoryInfo(itemPathInBin).Parent.FullName;
 
             // If the target directory does not exist, create it
             if (!Directory.Exists(parentFolderPathInBin))
@@ -73,7 +73,7 @@ public class DeploymentItemAttribute : Attribute
             File.Copy(itemPath, itemPathInBin, true);
 
             // We must allow the destination file to be deletable
-            FileAttributes fileAttributes = File.GetAttributes(itemPathInBin);
+            var fileAttributes = File.GetAttributes(itemPathInBin);
             if ((fileAttributes & FileAttributes.ReadOnly) != 0)
             {
                 File.SetAttributes(itemPathInBin, fileAttributes & ~FileAttributes.ReadOnly);
@@ -91,9 +91,9 @@ public class DeploymentItemAttribute : Attribute
             Directory.CreateDirectory(itemPathInBin);
 
             // Now Create all of the sub-directories
-            foreach (string dirPath in Directory.GetDirectories(itemPath, "*", SearchOption.AllDirectories))
+            foreach (var dirPath in Directory.GetDirectories(itemPath, "*", SearchOption.AllDirectories))
             {
-                for (int i = 0; i < 5; i++)
+                for (var i = 0; i < 5; i++)
                 {
                     try
                     {
@@ -109,13 +109,13 @@ public class DeploymentItemAttribute : Attribute
             }
 
             //Copy all the files & Replace any files with the same name
-            foreach (string sourcePath in Directory.GetFiles(itemPath, "*.*", SearchOption.AllDirectories))
+            foreach (var sourcePath in Directory.GetFiles(itemPath, "*.*", SearchOption.AllDirectories))
             {
-                string destinationPath = sourcePath.Replace(itemPath, itemPathInBin);
+                var destinationPath = sourcePath.Replace(itemPath, itemPathInBin);
                 File.Copy(sourcePath, destinationPath, true);
 
                 // We must allow the destination file to be deletable
-                FileAttributes fileAttributes = File.GetAttributes(destinationPath);
+                var fileAttributes = File.GetAttributes(destinationPath);
                 if ((fileAttributes & FileAttributes.ReadOnly) != 0)
                 {
                     File.SetAttributes(destinationPath, fileAttributes & ~FileAttributes.ReadOnly);

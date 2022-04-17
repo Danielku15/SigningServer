@@ -6,23 +6,23 @@ namespace SigningServer.Android.Security.DotNet
 {
     internal class DotNetECDsaPublicKey : DotNetPublicKey, ECKey
     {
-        private readonly byte[] mEncoded;
-        private readonly ECDsa mPublicKey;
+        private readonly byte[] _encoded;
+        private readonly ECDsa _publicKey;
 
         public DotNetECDsaPublicKey(byte[] encoded, ECDsa publicKey)
         {
-            mEncoded = encoded;
-            mPublicKey = publicKey;
+            _encoded = encoded;
+            _publicKey = publicKey;
         }
 
         public bool VerifyHash(byte[] digest, HashAlgorithmName digestName, byte[] signature)
         {
-            return mPublicKey.VerifyHash(digest, signature);
+            return _publicKey.VerifyHash(digest, signature);
         }
 
         public byte[] GetEncoded()
         {
-            return mEncoded;
+            return _encoded;
         }
 
         public string GetFormat()
@@ -35,11 +35,11 @@ namespace SigningServer.Android.Security.DotNet
             return "EC";
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
 
         public ECParameterSpec GetParams()
         {
-            var p = mPublicKey.ExportParameters(false);
+            var p = _publicKey.ExportParameters(false);
             return new ECParameterSpec(new BigInteger(p.Curve.Order));
         }
     }

@@ -202,7 +202,7 @@ internal static class Win32
 
     public enum WinTrustDataStateAction : uint
     {
-        Verify = 0x00000001,
+        Verify = 0x00000001
     }
 
     [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
@@ -222,17 +222,17 @@ internal static class Win32
 
     public enum WinTrustDataUIChoice : uint
     {
-        None = 2,
+        None = 2
     }
 
     public enum WinTrustDataRevocationChecks : uint
     {
-        None = 0x00000000,
+        None = 0x00000000
     }
 
     public enum WinTrustDataUnionChoice : uint
     {
-        File = 1,
+        File = 1
     }
 
     [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]

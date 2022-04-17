@@ -131,7 +131,7 @@ public class SignedCmiManifest2
         signedXml.ComputeSignature();
 
         // Get the XML representation
-        XmlElement xmlDigitalSignature = signedXml.GetXml();
+        var xmlDigitalSignature = signedXml.GetXml();
         xmlDigitalSignature.SetAttribute("Id", "AuthenticodeSignature");
 
         // Insert the signature node under the issuer element.
@@ -232,7 +232,7 @@ public class SignedCmiManifest2
                     rng.GetBytes(nonce);
                 }
 
-                var para = new Win32.CRYPT_TIMESTAMP_PARA { fRequestCerts = true, pszTSAPolicyId = IntPtr.Zero, };
+                var para = new Win32.CRYPT_TIMESTAMP_PARA { fRequestCerts = true, pszTSAPolicyId = IntPtr.Zero };
 
                 fixed (byte* pbNonce = nonce)
                 {
@@ -359,7 +359,7 @@ public class SignedCmiManifest2
         signedXml.ComputeSignature();
 
         // Get the XML representation
-        XmlElement xmlDigitalSignature = signedXml.GetXml();
+        var xmlDigitalSignature = signedXml.GetXml();
         xmlDigitalSignature.SetAttribute("Id", "StrongNameSignature");
 
         // Insert the signature now.

@@ -2,6 +2,7 @@
 {
     public enum ByteOrder
     {
-        LITTLE_ENDIAN = 0,
+        // ReSharper disable once InconsistentNaming
+        LITTLE_ENDIAN = 0
     }
 }

@@ -8,42 +8,42 @@ namespace SigningServer.Android.Util.Zip
     {
         // NOTE: SharpZipLib deflater delivers different results than libs using ZLib. need 1:1 binary
         // equality with ZLib for golden tests.
-        private ArraySegment<byte> mInput;
-        private readonly ZOutputStream mDeflater;
-        private readonly MemoryStream mOut;
+        private ArraySegment<byte> _input;
+        private readonly ZOutputStream _deflater;
+        private readonly MemoryStream _out;
+        private bool _finished;
 
         public Deflater(int level, bool nowrap)
         {
-            mOut = new MemoryStream();
-            mDeflater = new ZOutputStream(mOut, level, nowrap);
+            _out = new MemoryStream();
+            _deflater = new ZOutputStream(_out, level, nowrap);
         }
 
         public void SetInput(byte[] inputBuf, int inputOffset, int inputLength)
         {
-            mInput = new ArraySegment<byte>(inputBuf, inputOffset, inputLength);
+            _input = new ArraySegment<byte>(inputBuf, inputOffset, inputLength);
         }
 
         public void Finish()
         {
-            mDeflater.Write(mInput.Array, mInput.Offset, mInput.Count);
-            mDeflater.Finish();
-            mOut.Position = 0;
-            mFinished = mOut.Position >= mOut.Length;
+            _deflater.Write(_input.Array, _input.Offset, _input.Count);
+            _deflater.Finish();
+            _out.Position = 0;
+            _finished = _out.Position >= _out.Length;
         }
 
-        private bool mFinished = false;
         public bool Finished()
         {
-            return mFinished;
+            return _finished;
         }
 
         public int Deflate(byte[] buf)
         {
-            var c = mOut.Read(buf, 0, buf.Length);
-            if (mOut.Position >= mOut.Length)
+            var c = _out.Read(buf, 0, buf.Length);
+            if (_out.Position >= _out.Length)
             {
-                mFinished = true;
-                mDeflater.Dispose();
+                _finished = true;
+                _deflater.Dispose();
             }
 
             return c;

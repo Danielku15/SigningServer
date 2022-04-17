@@ -1,4 +1,5 @@
 ﻿using System.Text;
+// ReSharper disable InconsistentNaming
 
 namespace SigningServer.Android.IO.Charset
 {

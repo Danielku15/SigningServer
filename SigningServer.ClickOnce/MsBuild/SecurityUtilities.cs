@@ -42,7 +42,7 @@ public class SecurityUtilities
     
     static SecurityUtilities()
     {
-        CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription),
+        CryptoConfig.AddAlgorithm(typeof(RsaPkcs1Sha256SignatureDescription),
             Sha256SignatureMethodUri);
 #pragma warning disable SYSLIB0021 // Need to provide implementation
         CryptoConfig.AddAlgorithm(typeof(SHA256Managed),

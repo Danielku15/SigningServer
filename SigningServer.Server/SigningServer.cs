@@ -120,6 +120,7 @@ namespace SigningServer.Server
             return _signingToolProvider.SupportedHashAlgorithms;
         }
 
+        [OperationBehavior(AutoDisposeParameters = true)]
         public SignFileResponse SignFile(SignFileRequest signFileRequest)
         {
             var signFileResponse = new SignFileResponse();

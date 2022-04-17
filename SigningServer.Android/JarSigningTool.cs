@@ -115,44 +115,42 @@ namespace SigningServer.Android
 
         public bool IsFileSigned(string inputFileName)
         {
-            using (var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
+            using var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
+            // Android manifest does not need to exist if we have a jar
+            var manifestExists = Path.GetExtension(inputFileName) == ".jar";
+            var signatureExists = false;
+            var signatureBlockExists = false;
+
+            ZipEntry entry;
+            while ((entry = inputJar.GetNextEntry()) != null)
             {
-                // Android manifest does not need to exist if we have a jar
-                var manifestExists = Path.GetExtension(inputFileName) == ".jar";
-                var signatureExists = false;
-                var signatureBlockExists = false;
-
-                ZipEntry entry;
-                while ((entry = inputJar.GetNextEntry()) != null)
+                if (entry.IsFile)
                 {
-                    if (entry.IsFile)
+                    if (ApkUtils.ANDROID_MANIFEST_ZIP_ENTRY_NAME.Equals(entry.Name,
+                            StringComparison.OrdinalIgnoreCase))
                     {
-                        if (ApkUtils.ANDROID_MANIFEST_ZIP_ENTRY_NAME.Equals(entry.Name,
-                                StringComparison.OrdinalIgnoreCase))
-                        {
-                            manifestExists = true;
-                        }
-                        else if (entry.Name.StartsWith("META-INF", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (entry.Name.EndsWith(".SF", StringComparison.OrdinalIgnoreCase))
-                            {
-                                signatureExists = true;
-                            }
-                            else if (entry.Name.EndsWith(".RSA", StringComparison.OrdinalIgnoreCase))
-                            {
-                                signatureBlockExists = true;
-                            }
-                        }
+                        manifestExists = true;
                     }
-
-                    if (manifestExists && signatureExists && signatureBlockExists)
+                    else if (entry.Name.StartsWith("META-INF", StringComparison.OrdinalIgnoreCase))
                     {
-                        return true;
+                        if (entry.Name.EndsWith(".SF", StringComparison.OrdinalIgnoreCase))
+                        {
+                            signatureExists = true;
+                        }
+                        else if (entry.Name.EndsWith(".RSA", StringComparison.OrdinalIgnoreCase))
+                        {
+                            signatureBlockExists = true;
+                        }
                     }
                 }
 
-                return false;
+                if (manifestExists && signatureExists && signatureBlockExists)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         /// <inheritdoc />

@@ -1,9 +1,8 @@
-﻿namespace SigningServer.Contracts
+﻿namespace SigningServer.Contracts;
+
+public interface ISigningToolProvider
 {
-    public interface ISigningToolProvider
-    {
-        ISigningTool GetSigningTool(string fileName);
-        string[] SupportedFileExtensions { get; }
-        string[] SupportedHashAlgorithms { get; }
-    }
+    ISigningTool GetSigningTool(string fileName);
+    string[] SupportedFileExtensions { get; }
+    string[] SupportedHashAlgorithms { get; }
 }

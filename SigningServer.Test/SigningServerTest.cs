@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
@@ -13,8 +14,8 @@ namespace SigningServer.Test
         private ISigningToolProvider CreateEmptySigningToolProvider()
         {
             var mockedSigningToolProvider = new Mock<ISigningToolProvider>();
-            mockedSigningToolProvider.Setup(m => m.SupportedFileExtensions).Returns(new string[0]);
-            mockedSigningToolProvider.Setup(m => m.SupportedHashAlgorithms).Returns(new string[0]);
+            mockedSigningToolProvider.Setup(m => m.SupportedFileExtensions).Returns(Array.Empty<string>());
+            mockedSigningToolProvider.Setup(m => m.SupportedHashAlgorithms).Returns(Array.Empty<string>());
             mockedSigningToolProvider.Setup(m => m.GetSigningTool(It.IsAny<string>())).Returns((ISigningTool)null);
             return mockedSigningToolProvider.Object;
         }
@@ -23,7 +24,9 @@ namespace SigningServer.Test
         public void TestNoCertificatesThrowsError()
         {
             var emptyConfig = new SigningServerConfiguration();
-            var error = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            var error = Assert.ThrowsException<InvalidConfigurationException>(() =>
+                new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                    emptyConfig, CreateEmptySigningToolProvider()));
             Assert.AreEqual(InvalidConfigurationException.NoValidCertificatesMessage, error.Message);
         }
 
@@ -32,17 +35,20 @@ namespace SigningServer.Test
         {
             var emptyConfig = new SigningServerConfiguration
             {
-                Certificates = new[]
-                {
-                    new CertificateConfiguration
+                Certificates =
+                    new[]
                     {
-                        Certificate = AssemblyEvents.Certificate
-                    }
-                },
+                        new CertificateConfiguration
+                        {
+                            Certificate = AssemblyEvents.Certificate, PrivateKey = AssemblyEvents.PrivateKey
+                        }
+                    },
                 WorkingDirectory = "T:\\NotExisting"
             };
 
-            var exception = Assert.ThrowsException<InvalidConfigurationException>(() => new Server.SigningServer(emptyConfig, CreateEmptySigningToolProvider()));
+            var exception = Assert.ThrowsException<InvalidConfigurationException>(() =>
+                new Server.SigningServer(new NullLogger<Server.SigningServer>(), emptyConfig,
+                    CreateEmptySigningToolProvider()));
             Assert.AreEqual(InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, exception.Message);
         }
 
@@ -55,12 +61,13 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate, PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
             };
-            var server = new Server.SigningServer(config, CreateEmptySigningToolProvider());
+            var unused = new Server.SigningServer(new NullLogger<Server.SigningServer>(), config,
+                CreateEmptySigningToolProvider());
             Assert.IsTrue(Directory.Exists(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory)));
             Directory.Delete(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory), true);
         }
@@ -74,7 +81,8 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate, 
+                        PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
@@ -83,7 +91,8 @@ namespace SigningServer.Test
             Directory.CreateDirectory("WorkingDirectory");
             File.WriteAllText("WorkingDirectory/test.txt", "test");
 
-            var server = new Server.SigningServer(config, CreateEmptySigningToolProvider());
+            var unused = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                config, CreateEmptySigningToolProvider());
             Assert.IsTrue(Directory.Exists(Path.Combine(Environment.CurrentDirectory, config.WorkingDirectory)));
 
             Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length);
@@ -100,12 +109,14 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate, 
+                        PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
                 WorkingDirectory = temp
             };
-            var server = new Server.SigningServer(config, CreateEmptySigningToolProvider());
+            var unused = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                config, CreateEmptySigningToolProvider());
             Assert.IsTrue(Directory.Exists(temp));
             Directory.Delete(temp, true);
         }

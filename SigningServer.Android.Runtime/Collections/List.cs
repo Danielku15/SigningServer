@@ -94,7 +94,7 @@ namespace SigningServer.Android.Collections
 
             public T Next()
             {
-                int i = mCursor;
+                var i = mCursor;
                 if (i >= mList.Count)
                     throw new IndexOutOfRangeException();
                 mCursor = i + 1;

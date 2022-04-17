@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
-using NLog;
+using CoreWCF;
+using CoreWCF.Channels;
+using Microsoft.Extensions.Logging;
 using SigningServer.Contracts;
 using SigningServer.Server.Configuration;
 
@@ -14,27 +14,28 @@ namespace SigningServer.Server
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class SigningServer : ISigningServer
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private HardwareCertificateUnlocker _hardwareCertificateUnlocker;
+        private readonly ILogger<SigningServer> _logger;
+        private SigningServerConfiguration _configuration;
+        private readonly ISigningToolProvider _signingToolProvider;
 
-        public SigningServerConfiguration Configuration { get; private set; }
-        public ISigningToolProvider SigningToolProvider { get; }
-
-        public SigningServer(SigningServerConfiguration configuration, ISigningToolProvider signingToolProvider)
+        public SigningServer(
+            ILogger<SigningServer> logger,
+            SigningServerConfiguration configuration, ISigningToolProvider signingToolProvider)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            SigningToolProvider = signingToolProvider;
+            _logger = logger;
+            _signingToolProvider = signingToolProvider;
             Initialize(configuration);
         }
 
         private void Initialize(SigningServerConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
 
-            Log.Info("Validating configuration");
-            Configuration = new SigningServerConfiguration
+            _logger.LogInformation("Validating configuration");
+            _configuration = new SigningServerConfiguration
             {
-                LegacyPort = configuration.LegacyPort,
                 Port = configuration.Port,
                 TimestampServer = configuration.TimestampServer ?? "",
                 Sha1TimestampServer = configuration.TimestampServer ?? "",
@@ -47,7 +48,7 @@ namespace SigningServer.Server
 
             _hardwareCertificateUnlocker =
                 new HardwareCertificateUnlocker(
-                    TimeSpan.FromSeconds(Configuration.HardwareCertificateUnlockIntervalInSeconds));
+                    TimeSpan.FromSeconds(_configuration.HardwareCertificateUnlockIntervalInSeconds));
 
             var list = new List<CertificateConfiguration>();
             if (configuration.Certificates != null)
@@ -62,18 +63,18 @@ namespace SigningServer.Server
 
                     try
                     {
-                        Log.Info("Loading certificate '{0}'", certificateConfiguration.Thumbprint);
+                        _logger.LogInformation("Loading certificate '{0}'", certificateConfiguration.Thumbprint);
                         certificateConfiguration.LoadCertificate(_hardwareCertificateUnlocker);
                         list.Add(certificateConfiguration);
                     }
                     catch (CryptographicException e)
                     {
-                        Log.Error(e,
+                        _logger.LogError(e,
                             $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e, $"Certificate loading failed: {e.Message}");
+                        _logger.LogError(e, $"Certificate loading failed: {e.Message}");
                     }
                 }
             }
@@ -84,18 +85,18 @@ namespace SigningServer.Server
             }
 
 
-            Configuration.Certificates = list.ToArray();
+            _configuration.Certificates = list.ToArray();
 
             try
             {
-                if (Directory.Exists(Configuration.WorkingDirectory))
+                if (Directory.Exists(_configuration.WorkingDirectory))
                 {
-                    Log.Info("Working directory exists, cleaning");
-                    Directory.Delete(Configuration.WorkingDirectory, true);
+                    _logger.LogInformation("Working directory exists, cleaning");
+                    Directory.Delete(_configuration.WorkingDirectory, true);
                 }
 
-                Directory.CreateDirectory(Configuration.WorkingDirectory);
-                Log.Info("Working directory created");
+                Directory.CreateDirectory(_configuration.WorkingDirectory);
+                _logger.LogInformation("Working directory created");
             }
             catch (Exception e)
             {
@@ -103,45 +104,39 @@ namespace SigningServer.Server
                     InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, e);
             }
 
-            Log.Info("Working directory: {0}", Configuration.WorkingDirectory);
-            Log.Info("Certificates loaded: {0}", list.Count);
+            _logger.LogInformation("Working directory: {0}", _configuration.WorkingDirectory);
+            _logger.LogInformation("Certificates loaded: {0}", list.Count);
         }
 
         public string[] GetSupportedFileExtensions()
         {
             var remoteIp = RemoteIp;
-            Log.Trace($"[{remoteIp}] Requesting supported file extensions");
-            return SigningToolProvider.SupportedFileExtensions;
+            _logger.LogTrace($"[{remoteIp}] Requesting supported file extensions");
+            return _signingToolProvider.SupportedFileExtensions;
         }
 
         public string[] GetSupportedHashAlgorithms()
         {
-            return SigningToolProvider.SupportedHashAlgorithms;
+            return _signingToolProvider.SupportedHashAlgorithms;
         }
 
         public SignFileResponse SignFile(SignFileRequest signFileRequest)
         {
             var signFileResponse = new SignFileResponse();
-            signFileResponse.DeleteFailed += (response, file, exception) =>
+            signFileResponse.DeleteFailed += (_, file, exception) =>
             {
-                Log.Error(exception, $"Failed to delete file '{file}'");
+                _logger.LogError(exception, $"Failed to delete file '{file}'");
             };
-            signFileResponse.DeleteSkipped += (response, file) => { Log.Warn($"Skipped file delete '{file}'"); };
-            signFileResponse.DeleteSuccess += (response, file) => { Log.Trace($"Successfully deleted file '{file}'"); };
+            signFileResponse.DeleteSkipped += (_, file) => { _logger.LogWarning($"Skipped file delete '{file}'"); };
+            signFileResponse.DeleteSuccess += (_, file) => { _logger.LogTrace($"Successfully deleted file '{file}'"); };
 
             var remoteIp = RemoteIp;
-            var isLegacy = IsLegacyEndpoint;
             string inputFileName = null;
             try
             {
                 //
                 // validate input
-                if (isLegacy)
-                {
-                    Log.Warn($"[{remoteIp}] Client is using legacy endpoint!");
-                }
-
-                Log.Info(
+                _logger.LogInformation(
                     $"[{remoteIp}] New sign request for file {signFileRequest.FileName} by {remoteIp} ({signFileRequest.FileSize} bytes)");
                 if (signFileRequest.FileSize == 0 || signFileRequest.FileContent == null)
                 {
@@ -155,24 +150,24 @@ namespace SigningServer.Server
                 CertificateConfiguration certificate;
                 if (string.IsNullOrWhiteSpace(signFileRequest.Username))
                 {
-                    certificate = Configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+                    certificate = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
                 }
                 else
                 {
-                    certificate = Configuration.Certificates.FirstOrDefault(
+                    certificate = _configuration.Certificates.FirstOrDefault(
                         c => c.IsAuthorized(signFileRequest.Username, signFileRequest.Password));
                 }
 
                 if (certificate == null)
                 {
-                    Log.Warn("Unauthorized signing request");
+                    _logger.LogWarning("Unauthorized signing request");
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedUnauthorized;
                     return signFileResponse;
                 }
 
                 // 
                 // find compatible signing tool
-                var signingTool = SigningToolProvider.GetSigningTool(signFileRequest.FileName);
+                var signingTool = _signingToolProvider.GetSigningTool(signFileRequest.FileName);
                 if (signingTool == null)
                 {
                     signFileResponse.Result = SignFileResponseResult.FileNotSignedUnsupportedFormat;
@@ -185,7 +180,7 @@ namespace SigningServer.Server
                 inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" +
                                 Path.GetFileNameWithoutExtension(inputFileName) + "_" + Guid.NewGuid() +
                                 (Path.GetExtension(inputFileName));
-                inputFileName = Path.Combine(Configuration.WorkingDirectory, inputFileName);
+                inputFileName = Path.Combine(_configuration.WorkingDirectory, inputFileName);
                 using (var targetFile = new FileStream(inputFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
                     signFileRequest.FileContent.CopyTo(targetFile);
@@ -194,12 +189,15 @@ namespace SigningServer.Server
                 //
                 // sign file
                 var timestampServer = "SHA1".Equals(signFileRequest.HashAlgorithm, StringComparison.OrdinalIgnoreCase)
-                    ? Configuration.Sha1TimestampServer
-                    : Configuration.TimestampServer;
-                signingTool.SignFile(inputFileName, certificate.Certificate, timestampServer,
+                    ? _configuration.Sha1TimestampServer
+                    : _configuration.TimestampServer;
+                signingTool.SignFile(inputFileName, 
+                    certificate.Certificate,
+                    certificate.PrivateKey,
+                    timestampServer,
                     signFileRequest, signFileResponse);
 
-                Log.Info(
+                _logger.LogInformation(
                     $"[{remoteIp}] New sign request for file {signFileRequest.FileName} finished ({signFileRequest.FileSize} bytes)");
 
                 switch (signFileResponse.Result)
@@ -212,22 +210,22 @@ namespace SigningServer.Server
                     case SignFileResponseResult.FileNotSignedError:
                     case SignFileResponseResult.FileNotSignedUnauthorized:
                         // ensure input file is cleaned in error cases where the sign tool does not have a result
-                        if (!(signFileResponse.FileContent is FileStream))
+                        if (signFileResponse.FileContent is not FileStream)
                         {
                             try
                             {
-                                Log.Trace($"Deleting file {inputFileName}");
+                                _logger.LogTrace($"Deleting file {inputFileName}");
                                 File.Delete(inputFileName);
-                                Log.Trace($"File successfully deleted {inputFileName}");
+                                _logger.LogTrace($"File successfully deleted {inputFileName}");
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "Could not delete input file for failed request");
+                                _logger.LogError(e, "Could not delete input file for failed request");
                             }
                         }
                         else
                         {
-                            Log.Trace(
+                            _logger.LogTrace(
                                 $"Delete file skipped for failed request {signFileResponse.Result} {inputFileName}, {signFileResponse.FileContent.GetType()}");
                         }
 
@@ -236,7 +234,7 @@ namespace SigningServer.Server
             }
             catch (Exception e)
             {
-                Log.Error(e, $"[{remoteIp}] Signing of {signFileRequest.FileName} failed: {e.Message}");
+                _logger.LogError(e, $"[{remoteIp}] Signing of {signFileRequest.FileName} failed: {e.Message}");
                 signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
                 signFileResponse.ErrorMessage = e.Message;
                 if (!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName))
@@ -247,29 +245,12 @@ namespace SigningServer.Server
                     }
                     catch (Exception fileException)
                     {
-                        Log.Error(fileException, $"[{remoteIp}] Failed to delete file {inputFileName}");
+                        _logger.LogError(fileException, $"[{remoteIp}] Failed to delete file {inputFileName}");
                     }
                 }
             }
 
             return signFileResponse;
-        }
-
-        private bool IsLegacyEndpoint
-        {
-            get
-            {
-                try
-                {
-                    var context = OperationContext.Current;
-                    return context.IncomingMessageProperties.Via.Port == Configuration.LegacyPort;
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e, "Could not check for legacy enpdoint");
-                    return false;
-                }
-            }
         }
 
         private string RemoteIp
@@ -289,7 +270,7 @@ namespace SigningServer.Server
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e, "Could not load remote IP");
+                    _logger.LogError(e, "Could not load remote IP");
                     return "Unknown";
                 }
             }

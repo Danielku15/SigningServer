@@ -4,7 +4,7 @@ using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetRsaPublicKey : DotNetPublicKey, RSAKey
+    internal class DotNetRsaPublicKey : DotNetPublicKey, RSAKey
     {
         private readonly byte[] mEncoded;
         private readonly RSA mPublicKey;

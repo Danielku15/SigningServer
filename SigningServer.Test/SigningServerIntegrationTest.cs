@@ -3,18 +3,24 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using CoreWCF.Configuration;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
+using SigningServer.Contracts;
 using SigningServer.Server;
 using SigningServer.Server.Configuration;
-using Task = System.Threading.Tasks.Task;
 
 namespace SigningServer.Test
 {
     [TestClass]
     public class SigningServerIntegrationTest : UnitTestBase
     {
-        private static SigningServerService _service;
+        private static IWebHost _service;
 
         [ClassInitialize]
         public static void Setup(TestContext _)
@@ -28,20 +34,28 @@ namespace SigningServer.Test
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate,
+                        PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
             };
-
-            _service = new SigningServerService(configuration);
-            _service.ConsoleStart();
+            var builder = WebHost.CreateDefaultBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(configuration);
+                })
+                .UseKestrel()
+                .UseNetTcp(configuration.Port)
+                .UseStartup<Startup>();
+            _service = builder.Build();
+            _service.Start();
         }
 
         [ClassCleanup]
-        public static void TearDown()
+        public static async Task TearDown()
         {
-            _service.ConsoleStop();
+            await _service.StopAsync();
         }
 
         [TestMethod]
@@ -59,7 +73,7 @@ namespace SigningServer.Test
             Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
 
             var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
-            var signingTools = _service.SigningServer.SigningToolProvider;
+            var signingTools = _service.Services.GetRequiredService<ISigningToolProvider>();
 
             foreach (var signedFile in signedFiles)
             {
@@ -103,7 +117,7 @@ namespace SigningServer.Test
 
             // check for successful signing
             var signedFiles = Directory.GetFiles(testDir, "*.ps1");
-            var signingTools = _service.SigningServer.SigningToolProvider;
+            var signingTools = _service.Services.GetRequiredService<ISigningToolProvider>();
             foreach (var signedFile in signedFiles)
             {
                 var tool = signingTools.GetSigningTool(signedFile);
@@ -127,15 +141,13 @@ namespace SigningServer.Test
 
         private string GenerateLargeTestFile(string path)
         {
-            using (var writer = new FileStream(path, FileMode.Create, FileAccess.Write))
+            using var writer = new FileStream(path, FileMode.Create, FileAccess.Write);
+            var size = 100 * 1024 * 1024;
+            var simpleLine = Encoding.UTF8.GetBytes("Write-Host Hello World" + Environment.NewLine);
+            while (size > 0)
             {
-                int size = 100 * 1024 * 1024;
-                var simpleLine = Encoding.UTF8.GetBytes("Write-Host Hello World" + Environment.NewLine);
-                while (size > 0)
-                {
-                    writer.Write(simpleLine, 0, simpleLine.Length);
-                    size -= simpleLine.Length;
-                }
+                writer.Write(simpleLine, 0, simpleLine.Length);
+                size -= simpleLine.Length;
             }
 
             return path;

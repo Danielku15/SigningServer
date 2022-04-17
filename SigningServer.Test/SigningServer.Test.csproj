@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>
@@ -7,13 +8,15 @@
 		<ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Moq" Version="4.17.2" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Moq" Version="4.17.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NLog" Version="4.7.14" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
 		<PackageReference Include="FluentAssertions" Version="6.6.0" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="TestFiles/**/*">
@@ -25,9 +28,5 @@
 		<None Update="NLog.config">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-	<ItemGroup>
-	  <Reference Include="System.Security" />
-	  <Reference Include="System.ServiceProcess" />
 	</ItemGroup>
 </Project>

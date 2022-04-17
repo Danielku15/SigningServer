@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public interface DotNetPublicKey : PublicKey, CryptographyProviderAccessor
+    internal interface DotNetPublicKey : PublicKey, CryptographyProviderAccessor
     {
         bool VerifyHash(byte[] digest, HashAlgorithmName digestName, byte[] signature);
     }

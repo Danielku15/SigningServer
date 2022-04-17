@@ -1,25 +1,22 @@
-﻿using SigningServer.Android;
+﻿using Microsoft.Extensions.Logging;
+using SigningServer.Android;
 using SigningServer.ClickOnce;
 using SigningServer.Contracts;
 using SigningServer.MsSign;
-using SigningServer.Server.SigningTool;
 
-namespace SigningServer.Server
+namespace SigningServer.Server.SigningTool
 {
     public class DefaultSigningToolProvider : EnumerableSigningToolProvider
     {
-        private static readonly ISigningTool[] SigningTools =
-        {
-            new PortableExecutableSigningTool(),
-            new AndroidApkSigningTool(),
-            new JarSigningTool(),
-            new AppxSigningTool(),
-            new ClickOnceSigningTool(),
-            new PowerShellSigningTool()
-        };
-
-        public DefaultSigningToolProvider()
-            : base(SigningTools)
+        public DefaultSigningToolProvider(ILoggerFactory loggerFactory)
+            : base(new ISigningTool[]
+            {
+                new PortableExecutableSigningTool(loggerFactory.CreateLogger<PortableExecutableSigningTool>()),
+                new AndroidApkSigningTool(), new JarSigningTool(),
+                new AppxSigningTool(loggerFactory.CreateLogger<AppxSigningTool>()),
+                new ClickOnceSigningTool(loggerFactory.CreateLogger<ClickOnceSigningTool>()),
+                new PowerShellSigningTool(loggerFactory.CreateLogger<PowerShellSigningTool>())
+            })
         {
         }
     }

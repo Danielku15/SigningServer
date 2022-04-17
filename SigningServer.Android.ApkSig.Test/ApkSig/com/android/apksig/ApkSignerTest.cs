@@ -43,11 +43,11 @@ namespace SigningServer.Android.Com.Android.Apksig
             mTemporaryFolder = CreateTemporaryFolder();
         }
         
-        public static void Main(string[] parameters)
-        {
-            System.IO.FileInfo outDir = (parameters.Length > 0) ? new System.IO.FileInfo(parameters[0]) : new System.IO.FileInfo(".");
-            SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GenerateGoldenFiles(outDir);
-        }
+        // public static void Main(string[] parameters)
+        // {
+        //     System.IO.FileInfo outDir = (parameters.Length > 0) ? new System.IO.FileInfo(parameters[0]) : new System.IO.FileInfo(".");
+        //     SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GenerateGoldenFiles(outDir);
+        // }
         
         internal static void GenerateGoldenFiles(System.IO.FileInfo outDir)
         {

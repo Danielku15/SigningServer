@@ -4,8 +4,7 @@
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 		
-		<TargetFramework>net48</TargetFramework>
-		<LangVersion>7.3</LangVersion>
+		<TargetFramework>net6.0</TargetFramework>
 
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>

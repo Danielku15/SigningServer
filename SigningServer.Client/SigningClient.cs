@@ -105,7 +105,7 @@ namespace SigningServer.Client
                 info.Attributes &= ~FileAttributes.ReadOnly;
             }
 
-            int retry = _configuration.Retry;
+            var retry = _configuration.Retry;
             do
             {
                 try
@@ -228,7 +228,7 @@ namespace SigningServer.Client
             };
             binding.Security.Mode = SecurityMode.None;
 
-            _clientFactory = new ChannelFactory<ISigningServer>(binding, _signingServer.ToString());
+            _clientFactory = new ChannelFactory<ISigningServer>(binding, new EndpointAddress(_signingServer));
             _client = _clientFactory.CreateChannel();
 
             var channel = _client as IClientChannel;

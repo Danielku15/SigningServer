@@ -1,6 +1,5 @@
 ﻿using System;
 using SigningServer.Android.IO;
-using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security

@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetECDsaPrivateKey : DotNetPrivateKey
+    internal class DotNetECDsaPrivateKey : DotNetPrivateKey
     {
         private readonly ECDsa mPrivateKey;
 

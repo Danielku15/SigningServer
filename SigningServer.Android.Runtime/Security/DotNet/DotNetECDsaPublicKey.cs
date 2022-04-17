@@ -4,7 +4,7 @@ using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetECDsaPublicKey : DotNetPublicKey, ECKey
+    internal class DotNetECDsaPublicKey : DotNetPublicKey, ECKey
     {
         private readonly byte[] mEncoded;
         private readonly ECDsa mPublicKey;

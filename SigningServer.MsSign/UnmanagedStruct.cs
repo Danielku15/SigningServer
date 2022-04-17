@@ -13,11 +13,6 @@ namespace SigningServer.MsSign
             Pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
         }
 
-        private UnmanagedStruct(IntPtr pointer)
-        {
-            Pointer = pointer;
-        }
-
         public void Fill(T value)
         {
             Marshal.StructureToPtr(value, Pointer, false);

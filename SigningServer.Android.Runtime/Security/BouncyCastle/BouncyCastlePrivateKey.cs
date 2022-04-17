@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 
 namespace SigningServer.Android.Security.BouncyCastle
 {
-    public class BouncyCastlePrivateKey : PrivateKey, CryptographyProviderAccessor
+    internal class BouncyCastlePrivateKey : PrivateKey, CryptographyProviderAccessor
     {
         public AsymmetricKeyParameter KeyParameter { get; }
 

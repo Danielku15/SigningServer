@@ -5,7 +5,7 @@ using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetSignature : Signature
+    internal class DotNetSignature : Signature
     {
         private DotNetPublicKey mPublicKey;
         private DotNetPrivateKey mPrivateKey;

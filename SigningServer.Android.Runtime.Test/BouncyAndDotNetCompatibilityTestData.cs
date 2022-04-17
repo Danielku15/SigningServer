@@ -55,7 +55,7 @@ namespace SigningServer.Android.Runtime.Test
             rsaDotNet.HasPrivateKey.Should().BeTrue();
             DotNetRsaCertificate = rsaDotNet;
             DotNetRsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(rsaDotNet);
-            DotNetRsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(rsaDotNet);
+            DotNetRsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(rsaDotNet.GetPrivateKey());
 
             var rsaBouncy = new Pkcs12Store(new MemoryStream(rsaCert), Array.Empty<char>());
             var alias = rsaBouncy.Aliases.OfType<string>().First();
@@ -69,7 +69,7 @@ namespace SigningServer.Android.Runtime.Test
             dsaDotNet.HasPrivateKey.Should().BeTrue();
             DotNetDsaCertificate = dsaDotNet;
             DotNetDsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(dsaDotNet);
-            DotNetDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(dsaDotNet);
+            DotNetDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(dsaDotNet.GetPrivateKey());
 
             var dsaBouncy = new Pkcs12Store(new MemoryStream(dsaCert), Array.Empty<char>());
             alias = dsaBouncy.Aliases.OfType<string>().First();
@@ -83,7 +83,7 @@ namespace SigningServer.Android.Runtime.Test
             ecdsaDotNet.HasPrivateKey.Should().BeTrue();
             DotNetECDsaCertificate = ecdsaDotNet;
             DotNetECDsaPublicKey = DotNetCryptographyProvider.INSTANCE.CreatePublicKey(ecdsaDotNet);
-            DotNetECDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(ecdsaDotNet);
+            DotNetECDsaPrivateKey = DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(ecdsaDotNet.GetPrivateKey());
 
             var ecdsaBouncy = new Pkcs12Store(new MemoryStream(ecdsaCert), Array.Empty<char>());
             alias = ecdsaBouncy.Aliases.OfType<string>().First();

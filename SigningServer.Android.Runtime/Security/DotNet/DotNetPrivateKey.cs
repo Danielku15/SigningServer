@@ -2,7 +2,7 @@
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public interface DotNetPrivateKey : PrivateKey, CryptographyProviderAccessor
+    internal interface DotNetPrivateKey : PrivateKey, CryptographyProviderAccessor
     {
         byte[] SignHash(byte[] digest, HashAlgorithmName digestName);
     }

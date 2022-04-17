@@ -22,7 +22,7 @@ namespace SigningServer.Server
             }
 
             var data = ms.ToArray();
-            ProtectedMemory.Protect(data, MemoryProtectionScope.SameLogon);
+            ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
             return Convert.ToBase64String(data);
         }
 
@@ -39,7 +39,7 @@ namespace SigningServer.Server
                 return encoded;
             }
 
-            ProtectedMemory.Unprotect(raw, MemoryProtectionScope.SameLogon);
+            ProtectedData.Unprotect(raw, null, DataProtectionScope.CurrentUser);
             var ms = new MemoryStream(raw);
             var reader = new BinaryReader(ms);
             return reader.ReadString();

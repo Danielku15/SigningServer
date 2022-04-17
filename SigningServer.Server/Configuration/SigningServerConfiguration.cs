@@ -2,7 +2,6 @@
 {
     public class SigningServerConfiguration
     {
-        public int LegacyPort { get; set; }
         public int Port { get; set; }
         public int HardwareCertificateUnlockIntervalInSeconds { get; set; }
         public string TimestampServer { get; set; }

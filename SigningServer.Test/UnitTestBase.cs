@@ -19,14 +19,13 @@ namespace SigningServer.Test
             var response = new SignFileResponse();
             var request = new SignFileRequest
             {
-                FileName = fileName,
-                OverwriteSignature = false,
-                HashAlgorithm = hashAlgorithm
+                FileName = fileName, OverwriteSignature = false, HashAlgorithm = hashAlgorithm
             };
             var timestampServer = "SHA1".Equals(hashAlgorithm, StringComparison.OrdinalIgnoreCase)
                 ? Sha1TimestampServer
                 : TimestampServer;
-            signingTool.SignFile(fileName, AssemblyEvents.Certificate, timestampServer, request, response);
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, timestampServer,
+                request, response);
 
             Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
             Assert.IsTrue(signingTool.IsFileSigned(fileName));
@@ -44,6 +43,7 @@ namespace SigningServer.Test
 
 
         public const string Sha1Oid = "1.3.14.3.2.26";
+
         public void EnsureSignature(string fileName, string hashAlgorithmOid)
         {
             var signerInfo = CertificateHelper.GetDigitalCertificate(fileName);
@@ -58,12 +58,9 @@ namespace SigningServer.Test
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
-            var request = new SignFileRequest
-            {
-                FileName = fileName,
-                OverwriteSignature = true
-            };
-            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request, response);
+            var request = new SignFileRequest { FileName = fileName, OverwriteSignature = true };
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, TimestampServer,
+                request, response);
 
             try
             {
@@ -91,12 +88,9 @@ namespace SigningServer.Test
             Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
             var response = new SignFileResponse();
-            var request = new SignFileRequest
-            {
-                FileName = fileName,
-                OverwriteSignature = false
-            };
-            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request, response);
+            var request = new SignFileRequest { FileName = fileName, OverwriteSignature = false };
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, TimestampServer,
+                request, response);
 
             Trace.WriteLine(response);
             try

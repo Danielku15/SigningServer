@@ -1,10 +1,9 @@
 ﻿using System.Security.Cryptography;
-using Org.BouncyCastle.Asn1;
 using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetDsaPublicKey : DotNetPublicKey, DSAKey
+    internal class DotNetDsaPublicKey : DotNetPublicKey, DSAKey
     {
         private readonly byte[] mEncoded;
         private readonly DSA mPublicKey;

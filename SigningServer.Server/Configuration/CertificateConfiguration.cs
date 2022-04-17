@@ -3,13 +3,14 @@ using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NLog;
-using SigningServer.Server.SigningTool;
+using RSAKeyVaultProvider;
 
 namespace SigningServer.Server.Configuration
 {
@@ -34,6 +35,7 @@ namespace SigningServer.Server.Configuration
         public AzureKeyVaultConfiguration Azure { get; set; }
 
         [JsonIgnore] public X509Certificate2 Certificate { get; set; }
+        [JsonIgnore] public AsymmetricAlgorithm PrivateKey { get; set; }
 
         [JsonIgnore] public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
@@ -66,9 +68,8 @@ namespace SigningServer.Server.Configuration
 
             var client = new CertificateClient(new Uri(Azure.KeyVaultUrl), credentials);
             var azureCertificate = client.GetCertificate(Azure.CertificateName).Value;
-            var certificate = new AzureX509Certificate2(azureCertificate.Cer);
-            certificate.SetAzurePrivateKey(credentials, azureCertificate.KeyId);
-
+            var certificate = new X509Certificate2(azureCertificate.Cer);
+            PrivateKey = RSAFactory.Create(credentials, azureCertificate.KeyId, certificate);
             Certificate = certificate;
         }
 
@@ -80,7 +81,7 @@ namespace SigningServer.Server.Configuration
                 store.Open(OpenFlags.ReadOnly);
 
                 var certificates =
-                    store.Certificates.OfType<X509Certificate2>()
+                    store.Certificates
                         .Where(c => Thumbprint.Equals(c.Thumbprint, StringComparison.InvariantCultureIgnoreCase))
                         .ToArray();
                 if (certificates.Length == 0)
@@ -89,17 +90,19 @@ namespace SigningServer.Server.Configuration
                 }
 
                 var certificate = certificates.FirstOrDefault(c => c.HasPrivateKey);
-                if (certificate == null)
-                {
-                    throw new CertificateNotFoundException(
-                        $"Certificate with thumbprint '{Thumbprint}' has no private key");
-                }
 
-                // TODO: Cng support
-                if (certificate.PrivateKey is RSACryptoServiceProvider rsaCsp)
+                Certificate = certificate ?? throw new CertificateNotFoundException(
+                    $"Certificate with thumbprint '{Thumbprint}' has no private key");
+                
+                PrivateKey = certificate.GetECDsaPrivateKey() ??
+                             certificate.GetRSAPrivateKey() ??
+                             (AsymmetricAlgorithm)certificate.GetDSAPrivateKey();
+
+                var rsa = Certificate.GetRSAPrivateKey();
+                switch (rsa)
                 {
                     // For SmartCards/Hardware dongles we create a new RSACryptoServiceProvider with the corresponding pin
-                    if (!string.IsNullOrEmpty(TokenPin) && rsaCsp.CspKeyContainerInfo.HardwareDevice)
+                    case RSACryptoServiceProvider rsaCsp when !string.IsNullOrEmpty(TokenPin):
                     {
                         Log.Info("Patching RsaCsp for Hardware Token with pin");
                         var keyPassword = new SecureString();
@@ -111,30 +114,38 @@ namespace SigningServer.Server.Configuration
 
                         var csp = new CspParameters(1 /*RSA*/,
                             rsaCsp.CspKeyContainerInfo.ProviderName,
-                            rsaCsp.CspKeyContainerInfo.KeyContainerName,
-                            new System.Security.AccessControl.CryptoKeySecurity(),
-                            keyPassword);
-                        var oldCert = certificate;
-                        certificate = new X509Certificate2(oldCert.RawData)
+                            rsaCsp.CspKeyContainerInfo.KeyContainerName)
                         {
-                            PrivateKey = new RSACryptoServiceProvider(csp)
+                            KeyPassword = keyPassword
                         };
-                        oldCert.Dispose();
+                        csp.Flags |= CspProviderFlags.NoPrompt;
+                        
+                        PrivateKey = new RSACryptoServiceProvider(csp);
                         unlocker?.RegisterForUpdate(this);
+                        break;
                     }
                     // For normal Certs we patch the Hash Support if needed.
-                    else
+                    case RSACryptoServiceProvider rsaCsp:
                     {
-                        var oldCert = certificate;
-                        certificate = new X509Certificate2(oldCert.RawData)
-                        {
-                            PrivateKey = PatchHashSupport(rsaCsp)
-                        };
-                        oldCert.Dispose();
+                        PrivateKey = PatchHashSupport(rsaCsp);
+                        break;
+                    }
+                    case RSACng cng when !string.IsNullOrEmpty(TokenPin):
+                    {
+                        var decrypted = DataProtector.UnprotectData(TokenPin);
+                        // https://docs.microsoft.com/en-us/windows/win32/seccng/key-storage-property-identifiers
+                        const string NCRYPT_PIN_PROPERTY = "SmartCardPin";
+                        // get bytes with null terminator
+                        var propertyBytes = new byte[Encoding.Unicode.GetByteCount(decrypted) + 2];
+                        Encoding.Unicode.GetBytes(decrypted, 0, decrypted.Length, propertyBytes, 0);
+                        cng.Key.SetProperty(new CngProperty(
+                            NCRYPT_PIN_PROPERTY,
+                            propertyBytes,
+                            CngPropertyOptions.None
+                        ));
+                        break;
                     }
                 }
-
-                Certificate = certificate;
             }
         }
 
@@ -142,13 +153,15 @@ namespace SigningServer.Server.Configuration
         {
             return string.Equals(Username, username, StringComparison.CurrentCultureIgnoreCase) && Password == password;
         }
-        
+
         public static RSACryptoServiceProvider PatchHashSupport(RSACryptoServiceProvider orgKey)
         {
             var newKey = orgKey;
             try
             {
-                const int PROV_RSA_AES = 24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
+                const int
+                    PROV_RSA_AES =
+                        24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
 
                 // ProviderType == 1(PROV_RSA_FULL) and providerType == 12(PROV_RSA_SCHANNEL) are provider types that only support SHA1.
                 // Change them to PROV_RSA_AES=24 that supports SHA2 also. Only levels up if the associated key is not a hardware key.
@@ -158,7 +171,7 @@ namespace SigningServer.Server.Configuration
                 {
                     Log.Info("Patching RsaCsp for Hash Support");
 
-                    CspParameters csp = new CspParameters
+                    var csp = new CspParameters
                     {
                         ProviderType = PROV_RSA_AES,
                         KeyContainerName = orgKey.CspKeyContainerInfo.KeyContainerName,

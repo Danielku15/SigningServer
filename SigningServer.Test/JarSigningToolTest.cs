@@ -77,7 +77,9 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = false
             };
-            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request, response);
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate,
+                AssemblyEvents.PrivateKey,
+                TimestampServer, request, response);
 
             Trace.WriteLine(response);
             try

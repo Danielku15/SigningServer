@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android;
@@ -122,7 +123,9 @@ namespace SigningServer.Test
                 FileName = fileName,
                 OverwriteSignature = false
             };
-            signingTool.SignFile(fileName, AssemblyEvents.Certificate, TimestampServer, request, response);
+            signingTool.SignFile(fileName, AssemblyEvents.Certificate,
+                AssemblyEvents.PrivateKey,
+                TimestampServer, request, response);
 
             Trace.WriteLine(response);
             try

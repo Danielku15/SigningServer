@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -6,12 +7,14 @@ using Microsoft.Win32.SafeHandles;
 // ReSharper disable InconsistentNaming
 // ReSharper disable MemberCanBePrivate.Global
 
+[assembly: InternalsVisibleTo("SigningServer.ClickOnce")]
+
 namespace SigningServer.MsSign
 {
     internal static class Win32
     {
         public const uint SIGN_CALLBACK_UNDOCUMENTED = 0x400;
-        
+
         public const string OID_OIWSEC_SHA1 = "1.3.14.3.2.26";
         public const string OID_RSA_MD5 = "1.2.840.113549.2.5";
         public const string OID_OIWSEC_SHA256 = "2.16.840.1.101.3.4.2.1";
@@ -130,7 +133,7 @@ namespace SigningServer.MsSign
             [In] /*SIGN_INFO*/IntPtr pSignInfo,
             [Optional] IntPtr pReserved
         );
-        
+
         [StructLayout(LayoutKind.Sequential)]
         public struct SIGN_INFO
         {
@@ -273,17 +276,18 @@ namespace SigningServer.MsSign
             public IntPtr pCryptoPolicy;
             public IntPtr pReserved;
         }
-        
+
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]
         public delegate int SignCallback(
             [In, MarshalAs(UnmanagedType.SysInt)] IntPtr pCertContext,
             [In, MarshalAs(UnmanagedType.SysInt)] IntPtr pvExtra,
             [In, MarshalAs(UnmanagedType.U4)] uint algId,
-            [In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 4)] byte[] pDigestToSign,
+            [In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 4)]
+            byte[] pDigestToSign,
             [In, MarshalAs(UnmanagedType.U4)] uint dwDigestToSign,
             [In, Out] ref CRYPTOAPI_BLOB blob
         );
-        
+
         [StructLayout(LayoutKind.Sequential)]
         public struct CRYPTOAPI_BLOB
         {
@@ -297,5 +301,100 @@ namespace SigningServer.MsSign
             public /*PSIGNER_SIGN_EX2_PARAMS or PSIGNER_SIGN_EX3_PARAMS*/ IntPtr pSignerParams;
             public /*LPVOID*/ IntPtr pAppxSipState;
         }
+
+        public const int NTE_BAD_KEY = unchecked((int)0x80090003);
+        public const int TRUST_E_SUBJECT_FORM_UNKNOWN = unchecked((int)0x800B0003);
+        public const int TRUST_E_BAD_DIGEST = unchecked((int)0x80096010);
+        public const uint LOAD_LIBRARY_AS_DATAFILE = 0x00000002;
+        public const string szOID_OIWSEC_sha1 = "1.3.14.3.2.26";
+        public const string szOID_NIST_sha256 = "2.16.840.1.101.3.4.2.1";
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern int SetDllDirectoryW(string strPathName);
+
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr LoadLibraryExW(string strFileName, IntPtr hFile, uint ulFlags);
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        public static extern bool FreeLibrary(IntPtr hModule);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct CRYPT_DATA_BLOB
+        {
+            internal uint cbData;
+            internal IntPtr pbData;
+        }
+
+        [DllImport("clr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int _AxlPublicKeyBlobToPublicKeyToken(
+            [In] ref CRYPT_DATA_BLOB pCspPublicKeyBlob,
+            [In, Out] ref IntPtr ppwszPublicKeyToken);
+
+
+        [DllImport("clr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int _AxlGetIssuerPublicKeyHash(
+            [In] IntPtr pCertContext,
+            [In, Out] ref IntPtr ppwszPublicKeyHash);
+
+        [DllImport("clr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int CertTimestampAuthenticodeLicense(
+            [In] ref CRYPT_DATA_BLOB pSignedLicenseBlob,
+            [In] string pwszTimestampURI,
+            [In, Out] ref CRYPT_DATA_BLOB pTimestampSignatureBlob);
+
+        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool HeapFree(
+            [In] IntPtr hHeap,
+            [In] uint dwFlags,
+            [In] IntPtr lpMem);
+
+        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr GetProcessHeap();
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct CRYPT_TIMESTAMP_PARA
+        {
+            public IntPtr pszTSAPolicyId;
+            public bool fRequestCerts;
+            public CRYPTOAPI_BLOB Nonce;
+            public int cExtension;
+            public IntPtr rgExtension;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct CRYPT_TIMESTAMP_CONTEXT
+        {
+            public uint cbEncoded;
+            public IntPtr pbEncoded;
+            public IntPtr pTimeStamp;
+        }
+
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi)]
+        public static extern void CryptMemFree(IntPtr pv);
+
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern bool CertFreeCertificateContext(IntPtr pCertContext);
+        
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern bool CertCloseStore(IntPtr pCertContext, int dwFlags);
+        
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CryptRetrieveTimeStamp(
+            [In] [MarshalAs(UnmanagedType.LPWStr)] string wszUrl,
+            [In] uint dwRetrievalFlags,
+            [In] int dwTimeout,
+            [In] [MarshalAs(UnmanagedType.LPStr)] string pszHashId,
+            [In, Out] ref CRYPT_TIMESTAMP_PARA pPara,
+            [In] byte[] pbData,
+            [In] int cbData,
+            [In, Out] ref IntPtr ppTsContext,
+            [In, Out] ref IntPtr ppTsSigner,
+            [In, Out] ref IntPtr phStore);
     }
 }

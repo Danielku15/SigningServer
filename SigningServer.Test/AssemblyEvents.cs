@@ -15,13 +15,11 @@ namespace SigningServer.Test
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         internal static X509Certificate2 Certificate;
+        internal static AsymmetricAlgorithm PrivateKey;
 
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext context)
         {
-            // Enforce certificate.PrivateKey raw access, GetRSAPrivateKey would clone it but for azure certs we cannot clone the CSP params into a new RSACryptoServiceProvider
-            AppContext.SetSwitch("Switch.System.Security.Cryptography.X509Certificates.RSACertificateExtensions.DontReliablyClonePrivateKey", true);
-
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.config");
 
             var certificatePath = Path.Combine(UnitTestBase.ExecutionDirectory, "Certificates",
@@ -31,11 +29,9 @@ namespace SigningServer.Test
             Log.Info("Loading certificate");
 
             Certificate = new X509Certificate2(certificatePath, certificatePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet | X509KeyStorageFlags.PersistKeySet);
-            if (Certificate.PrivateKey is RSACryptoServiceProvider rsaCsp)
-            {
-                Certificate.PrivateKey = CertificateConfiguration.PatchHashSupport(rsaCsp);
-            }
-
+            PrivateKey = Certificate.GetECDsaPrivateKey() ??
+                         Certificate.GetRSAPrivateKey() ??
+                         ((AsymmetricAlgorithm)Certificate.GetDSAPrivateKey());
             Log.Info("Certificate loaded");
         }
 

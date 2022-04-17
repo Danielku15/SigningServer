@@ -8,7 +8,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
-using SigningServer.Android.Security;
 using SigningServer.Android.Security.DotNet;
 using SigningServer.Contracts;
 using X509Certificate = SigningServer.Android.Security.Cert.X509Certificate;
@@ -41,10 +40,12 @@ namespace SigningServer.Android
             return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate, 
+            AsymmetricAlgorithm privateKey,
+            string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
-            SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
+            var successResult = SignFileResponseResult.FileSigned;
 
             if (IsFileSigned(inputFileName))
             {
@@ -62,8 +63,6 @@ namespace SigningServer.Android
             var outputFileName = inputFileName + ".signed";
             try
             {
-                var androidCertificate = new DotNetX509Certificate(certificate);
-
                 var name = certificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
@@ -81,10 +80,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        androidCertificate.GetPrivateKey(),
+                        DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            androidCertificate
+                            DotNetCryptographyProvider.INSTANCE.CreateCertificate(certificate),
                         }, false)
                 };
                 

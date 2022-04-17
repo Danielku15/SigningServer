@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
@@ -41,10 +42,12 @@ namespace SigningServer.Android
             return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate,
+            AsymmetricAlgorithm privateKey,
+            string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
-            SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
+            var successResult = SignFileResponseResult.FileSigned;
 
             if (IsFileSigned(inputFileName))
             {
@@ -62,8 +65,6 @@ namespace SigningServer.Android
             var outputFileName = inputFileName + ".signed";
             try
             {
-                var androidCertificate = new DotNetX509Certificate(certificate);
-
                 var name = certificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
@@ -81,14 +82,14 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        androidCertificate.GetPrivateKey(),
+                        DotNetCryptographyProvider.INSTANCE.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            androidCertificate
+                            DotNetCryptographyProvider.INSTANCE.CreateCertificate(certificate)
                         }, false)
                 };
 
-                ApkSigner.Builder apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
+                var apkSignerBuilder = new ApkSigner.Builder(signerConfigs)
                         .SetInputApk(new FileInfo(inputFileName))
                         .SetOutputApk(new FileInfo(outputFileName))
                         .SetOtherSignersSignaturesPreserved(false)

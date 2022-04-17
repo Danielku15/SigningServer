@@ -2,22 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace SigningServer.MsSign
 {
     public class PowerShellSigningTool : PortableExecutableSigningTool
     {
         private static readonly HashSet<string> PowerShellSupportedExtension =
-            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-            {
-                ".ps1",
-                ".psm1"
-            };
+            new(StringComparer.InvariantCultureIgnoreCase) { ".ps1", ".psm1" };
 
         private static readonly string[] PowerShellSupportedHashAlgorithms = { "SHA256" };
 
         public override string[] SupportedFileExtensions => PowerShellSupportedExtension.ToArray();
         public override string[] SupportedHashAlgorithms => PowerShellSupportedHashAlgorithms;
+
+        public PowerShellSigningTool(ILogger<PowerShellSigningTool> logger) : base(logger)
+        {
+        }
 
         public override bool IsFileSupported(string fileName)
         {

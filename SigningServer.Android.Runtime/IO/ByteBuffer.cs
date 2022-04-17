@@ -220,7 +220,7 @@ namespace SigningServer.Android.IO
 
         protected int NextPutIndex()
         {
-            int p = mPosition;
+            var p = mPosition;
             if (p >= mLimit)
             {
                 throw new BufferOverflowException();
@@ -238,9 +238,9 @@ namespace SigningServer.Android.IO
 
         public ByteBuffer Slice()
         {
-            int pos = Position();
-            int lim = Limit();
-            int rem = (pos <= lim ? lim - pos : 0);
+            var pos = Position();
+            var lim = Limit();
+            var rem = (pos <= lim ? lim - pos : 0);
             return new ByteBuffer(mRaw,
                 -1,
                 0,
@@ -302,7 +302,7 @@ namespace SigningServer.Android.IO
 
         public void Get(byte[] dst, int offset, int length)
         {
-            int pos = Position();
+            var pos = Position();
             if (length > Limit() - pos)
             {
                 throw new BufferUnderflowException();
@@ -319,9 +319,9 @@ namespace SigningServer.Android.IO
 
         public void Put(ByteBuffer src)
         {
-            int pos = Position();
-            int sbpos = src.Position();
-            int n = src.Limit() - sbpos;
+            var pos = Position();
+            var sbpos = src.Position();
+            var n = src.Limit() - sbpos;
             if (n > Limit() - pos)
                 throw new BufferOverflowException();
             System.Buffer.BlockCopy(src.mRaw, src.Index(sbpos),
@@ -451,14 +451,14 @@ namespace SigningServer.Android.IO
 
         public int CompareTo(ByteBuffer that)
         {
-            int thisPos = Position();
-            int thisRem = Limit() - thisPos;
-            int thatPos = that.Position();
-            int thatRem = that.Limit() - thatPos;
-            int length = System.Math.Min(thisRem, thatRem);
+            var thisPos = Position();
+            var thisRem = Limit() - thisPos;
+            var thatPos = that.Position();
+            var thatRem = that.Limit() - thatPos;
+            var length = System.Math.Min(thisRem, thatRem);
             if (length < 0)
                 return -1;
-            int i = Mismatch(this, thisPos,
+            var i = Mismatch(this, thisPos,
                 that, thatPos,
                 length);
             if (i >= 0)
@@ -472,7 +472,7 @@ namespace SigningServer.Android.IO
 
         private int Mismatch(ByteBuffer a, int aOff, ByteBuffer b, int bOff, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 if (a.Get(aOff + i) != b.Get(bOff + i))
                 {

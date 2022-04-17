@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
@@ -21,13 +23,15 @@ namespace SigningServer.Test
         {
             _configuration = new SigningServerConfiguration
             {
-                Certificates = new[]
-                {
-                    new CertificateConfiguration
+                Certificates =
+                    new[]
                     {
-                        Certificate = AssemblyEvents.Certificate
-                    }
-                },
+                        new CertificateConfiguration
+                        {
+                            Certificate = AssemblyEvents.Certificate,
+                            PrivateKey = AssemblyEvents.PrivateKey
+                        }
+                    },
                 WorkingDirectory = "WorkingDirectory"
             };
 
@@ -38,8 +42,11 @@ namespace SigningServer.Test
             simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest request, SignFileResponse response) =>
+            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(),
+                It.IsAny<AsymmetricAlgorithm>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(),
+                It.IsAny<SignFileResponse>())).Callback(
+                (string file, X509Certificate2 _, AsymmetricAlgorithm _, string _, SignFileRequest _,
+                    SignFileResponse response) =>
                 {
                     response.Result = SignFileResponseResult.FileSigned;
                     var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
@@ -53,29 +60,18 @@ namespace SigningServer.Test
         [TestMethod]
         public void SignFile_EmptyFile_Fails()
         {
-            var server = new Server.SigningServer(_configuration, _emptySigningToolProvider);
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                _configuration, _emptySigningToolProvider);
 
-            var request = new SignFileRequest
-            {
-                FileSize = 0,
-                FileContent = null
-            };
+            var request = new SignFileRequest { FileSize = 0, FileContent = null };
             var response = server.SignFile(request);
             Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
 
-            request = new SignFileRequest
-            {
-                FileSize = 100,
-                FileContent = null
-            };
+            request = new SignFileRequest { FileSize = 100, FileContent = null };
             response = server.SignFile(request);
             Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
 
-            request = new SignFileRequest
-            {
-                FileSize = 0,
-                FileContent = new MemoryStream()
-            };
+            request = new SignFileRequest { FileSize = 0, FileContent = new MemoryStream() };
             response = server.SignFile(request);
             Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
         }
@@ -91,20 +87,22 @@ namespace SigningServer.Test
                     {
                         Username = "SignUser",
                         Password = "SignPass",
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate,
+                        PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
                 WorkingDirectory = "WorkingDirectory"
             };
 
-            var server = new Server.SigningServer(configuration, _emptySigningToolProvider);
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                configuration, _emptySigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+            var testData =
+                new MemoryStream(
+                    File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
+                FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
             };
 
             var response = server.SignFile(request);
@@ -114,14 +112,15 @@ namespace SigningServer.Test
         [TestMethod]
         public void SignFile_UnsupportedFormat_Fails()
         {
-            var server = new Server.SigningServer(_configuration, _emptySigningToolProvider);
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                _configuration, _emptySigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+            var testData =
+                new MemoryStream(
+                    File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
+                FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
             };
 
             var response = server.SignFile(request);
@@ -131,14 +130,15 @@ namespace SigningServer.Test
         [TestMethod]
         public void SignFile_UploadsFileToWorkingDirectory()
         {
-            var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                _configuration, _simultateSigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+            var testData =
+                new MemoryStream(
+                    File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
+                FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
             };
 
             var response = server.SignFile(request);
@@ -151,14 +151,15 @@ namespace SigningServer.Test
         [TestMethod]
         public void SignFile_ResponseDisposeCleansFile()
         {
-            var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                _configuration, _simultateSigningToolProvider);
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+            var testData =
+                new MemoryStream(
+                    File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
             var request = new SignFileRequest
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
+                FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
             };
 
             var response = server.SignFile(request);
@@ -172,19 +173,21 @@ namespace SigningServer.Test
             files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
             Assert.AreEqual(0, files.Length);
         }
-        
-        
+
+
         [TestMethod]
         public void SignFile_AlreadySigned_ResponseDisposeCleansFile()
         {
-
             var simulateSigningTool = new Mock<ISigningTool>();
             simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
             simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
             simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest rq, SignFileResponse rs) =>
+            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(),
+                It.IsAny<AsymmetricAlgorithm>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(),
+                It.IsAny<SignFileResponse>())).Callback(
+                (string file, X509Certificate2 _, AsymmetricAlgorithm _, string _, SignFileRequest _,
+                    SignFileResponse rs) =>
                 {
                     rs.Result = SignFileResponseResult.FileAlreadySigned;
                     var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
@@ -193,16 +196,15 @@ namespace SigningServer.Test
                 });
 
             var simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
-  
 
-            var server = new Server.SigningServer(_configuration, simultateSigningToolProvider);
+
+            var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+                _configuration, simultateSigningToolProvider);
 
             var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
             var request = new SignFileRequest
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
+                FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
             };
 
             var response = server.SignFile(request);

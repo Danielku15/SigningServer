@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetRsaPrivateKey : DotNetPrivateKey
+    internal class DotNetRsaPrivateKey : DotNetPrivateKey
     {
         private readonly RSA mPrivateKey;
         private readonly RSASignaturePadding mPadding;

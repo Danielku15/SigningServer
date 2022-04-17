@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.DotNet;
 
-namespace SigningServer.Android
+namespace SigningServer.Android.Runtime.Test
 {
     [TestClass]
     public class BouncyAndDotNetEncodingCompatibilityTest

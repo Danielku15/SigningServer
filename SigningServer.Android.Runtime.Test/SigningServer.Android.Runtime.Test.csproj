@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Title>SigningServer Android Test</Title>
-		<RootNamespace>SigningServer.Android</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle" Version="1.8.9" />

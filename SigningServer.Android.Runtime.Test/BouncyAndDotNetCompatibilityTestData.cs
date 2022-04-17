@@ -11,7 +11,7 @@ using SigningServer.Android.Security.DotNet;
 using PublicKey = SigningServer.Android.Security.PublicKey;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
-namespace SigningServer.Android
+namespace SigningServer.Android.Runtime.Test
 {
     [TestClass]
     public class BouncyAndDotNetCompatibilityTestData
@@ -96,9 +96,10 @@ namespace SigningServer.Android
 
         private static byte[] LoadCertBytes(string resourceName)
         {
+            var asm = typeof(BouncyAndDotNetCompatibilityTestData).Assembly;
+            var name = asm.GetManifestResourceNames().First(n=>n.EndsWith("Certificates." + resourceName));
             using (var ms = new MemoryStream())
-            using (var r = typeof(BouncyAndDotNetCompatibilityTestData).Assembly.GetManifestResourceStream(
-                       "SigningServer.Android.Certificates." + resourceName))
+            using (var r = typeof(BouncyAndDotNetCompatibilityTestData).Assembly.GetManifestResourceStream(name))
             {
                 r.CopyTo(ms);
                 return ms.ToArray();

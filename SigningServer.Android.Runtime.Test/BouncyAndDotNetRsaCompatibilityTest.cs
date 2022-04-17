@@ -6,7 +6,7 @@ using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.DotNet;
 using PublicKey = SigningServer.Android.Security.PublicKey;
 
-namespace SigningServer.Android
+namespace SigningServer.Android.Runtime.Test
 {
     [TestClass]
     public class BouncyAndDotNetRsaCompatibilityTest

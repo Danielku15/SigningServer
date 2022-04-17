@@ -26,7 +26,7 @@ namespace SigningServer.Android
         private static readonly HashSet<string> ApkSupportedExtension =
             new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
             {
-                ".jar", ".apk", ".aab"
+                ".apk", ".aab"
             };
 
         private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms =

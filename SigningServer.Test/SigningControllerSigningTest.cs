@@ -73,11 +73,11 @@ public class SigningControllerSigningTest : UnitTestBase
             FileToSign = new FormFile(new MemoryStream(), 0, 0, "FileToSign", "file.txt")
         };
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedError);
+        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
 
         request = new SignFileRequest { FileToSign = null };
         response = await server.SignFileAsync(request, CancellationToken.None);
-        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedError);
+        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedUnauthorized);
+        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnauthorized);
     }
 
     private static ControllerContext CreateEmptyControllerContext()
@@ -145,7 +145,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedUnsupportedFormat);
+        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnsupportedFormat);
     }
 
     [TestMethod]
@@ -166,7 +166,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileSigned);
+        response.Response.Status.Should().Be(SignFileResponseStatus.FileSigned);
         var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
         files.Length.Should().Be(1);
     }

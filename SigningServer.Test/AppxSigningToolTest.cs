@@ -57,7 +57,7 @@ public class AppxSigningToolTest : UnitTestBase
         };
         var response = signingTool.SignFile(request);
         Trace.WriteLine(response);
-        AssertionExtensions.Should(response.Status).Be(SignFileResponseStatus.FileNotSignedError);
+        response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
         signingTool.IsFileSigned(fileName).Should().BeFalse();
         response.ResultFiles.Should().BeNull();
     }
@@ -85,7 +85,7 @@ public class AppxSigningToolTest : UnitTestBase
             OverwriteSignature = true
         };
         var response = signingTool.SignFile(request);
-        AssertionExtensions.Should(response.Status).Be(SignFileResponseStatus.FileResigned);
+        response.Status.Should().Be(SignFileResponseStatus.FileResigned);
         signingTool.IsFileSigned(fileName).Should().BeTrue();
         response.ResultFiles.Count.Should().Be(1);
     }

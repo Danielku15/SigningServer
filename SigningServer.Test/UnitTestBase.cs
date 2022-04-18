@@ -30,7 +30,7 @@ public class UnitTestBase
         };
         var response = signingTool.SignFile(request);
 
-        AssertionExtensions.Should(response.Status).Be(SignFileResponseStatus.FileSigned);
+        response.Status.Should().Be(SignFileResponseStatus.FileSigned);
         signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
@@ -62,7 +62,7 @@ public class UnitTestBase
         };
         var response = signingTool.SignFile(request);
 
-        AssertionExtensions.Should(response.Status).Be(SignFileResponseStatus.FileResigned);
+        response.Status.Should().Be(SignFileResponseStatus.FileResigned);
         signingTool.IsFileSigned(fileName).Should().BeTrue();
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
@@ -83,7 +83,7 @@ public class UnitTestBase
         var response = signingTool.SignFile(request);
 
         Trace.WriteLine(response);
-        AssertionExtensions.Should(response.Status).Be(SignFileResponseStatus.FileAlreadySigned);
+        response.Status.Should().Be(SignFileResponseStatus.FileAlreadySigned);
         signingTool.IsFileSigned(fileName).Should().BeTrue();
         response.ResultFiles.Should().BeNull();
     }

@@ -4,29 +4,29 @@ using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetRsaPublicKey : DotNetPublicKey, RSAKey
+    internal class DotNetRsaPublicKey : DotNetPublicKey, RSAKey
     {
-        private readonly byte[] mEncoded;
-        private readonly RSA mPublicKey;
-        private readonly RSASignaturePadding mRsaSignaturePadding;
+        private readonly byte[] _encoded;
+        private readonly RSA _publicKey;
+        private readonly RSASignaturePadding _rsaSignaturePadding;
 
         public DotNetRsaPublicKey(
             byte[] encoded,
             RSA publicKey, RSASignaturePadding rsaSignaturePadding)
         {
-            mEncoded = encoded;
-            mPublicKey = publicKey;
-            mRsaSignaturePadding = rsaSignaturePadding;
+            _encoded = encoded;
+            _publicKey = publicKey;
+            _rsaSignaturePadding = rsaSignaturePadding;
         }
 
         public bool VerifyHash(byte[] digest, HashAlgorithmName digestName, byte[] signature)
         {
-            return mPublicKey.VerifyHash(digest, signature, digestName, mRsaSignaturePadding);
+            return _publicKey.VerifyHash(digest, signature, digestName, _rsaSignaturePadding);
         }
 
         public byte[] GetEncoded()
         {
-            return mEncoded;
+            return _encoded;
         }
 
         public string GetFormat()
@@ -41,10 +41,10 @@ namespace SigningServer.Android.Security.DotNet
 
         public BigInteger GetModulus()
         {
-            var key = mPublicKey.ExportParameters(false);
+            var key = _publicKey.ExportParameters(false);
             return new BigInteger(key.Modulus);
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
     }
 }

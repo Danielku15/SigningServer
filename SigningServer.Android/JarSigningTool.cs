@@ -8,7 +8,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
-using SigningServer.Android.Security;
 using SigningServer.Android.Security.DotNet;
 using SigningServer.Contracts;
 using X509Certificate = SigningServer.Android.Security.Cert.X509Certificate;
@@ -41,10 +40,12 @@ namespace SigningServer.Android
             return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
+        public void SignFile(string inputFileName, X509Certificate2 certificate, 
+            AsymmetricAlgorithm privateKey,
+            string timestampServer,
             SignFileRequest signFileRequest, SignFileResponse signFileResponse)
         {
-            SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
+            var successResult = SignFileResponseResult.FileSigned;
 
             if (IsFileSigned(inputFileName))
             {
@@ -62,8 +63,6 @@ namespace SigningServer.Android
             var outputFileName = inputFileName + ".signed";
             try
             {
-                var androidCertificate = new DotNetX509Certificate(certificate);
-
                 var name = certificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
@@ -81,10 +80,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        androidCertificate.GetPrivateKey(),
+                        DotNetCryptographyProvider.Instance.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            androidCertificate
+                            DotNetCryptographyProvider.Instance.CreateCertificate(certificate)
                         }, false)
                 };
                 
@@ -116,44 +115,42 @@ namespace SigningServer.Android
 
         public bool IsFileSigned(string inputFileName)
         {
-            using (var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
+            using var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
+            // Android manifest does not need to exist if we have a jar
+            var manifestExists = Path.GetExtension(inputFileName) == ".jar";
+            var signatureExists = false;
+            var signatureBlockExists = false;
+
+            ZipEntry entry;
+            while ((entry = inputJar.GetNextEntry()) != null)
             {
-                // Android manifest does not need to exist if we have a jar
-                var manifestExists = Path.GetExtension(inputFileName) == ".jar";
-                var signatureExists = false;
-                var signatureBlockExists = false;
-
-                ZipEntry entry;
-                while ((entry = inputJar.GetNextEntry()) != null)
+                if (entry.IsFile)
                 {
-                    if (entry.IsFile)
+                    if (ApkUtils.ANDROID_MANIFEST_ZIP_ENTRY_NAME.Equals(entry.Name,
+                            StringComparison.OrdinalIgnoreCase))
                     {
-                        if (ApkUtils.ANDROID_MANIFEST_ZIP_ENTRY_NAME.Equals(entry.Name,
-                                StringComparison.OrdinalIgnoreCase))
-                        {
-                            manifestExists = true;
-                        }
-                        else if (entry.Name.StartsWith("META-INF", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (entry.Name.EndsWith(".SF", StringComparison.OrdinalIgnoreCase))
-                            {
-                                signatureExists = true;
-                            }
-                            else if (entry.Name.EndsWith(".RSA", StringComparison.OrdinalIgnoreCase))
-                            {
-                                signatureBlockExists = true;
-                            }
-                        }
+                        manifestExists = true;
                     }
-
-                    if (manifestExists && signatureExists && signatureBlockExists)
+                    else if (entry.Name.StartsWith("META-INF", StringComparison.OrdinalIgnoreCase))
                     {
-                        return true;
+                        if (entry.Name.EndsWith(".SF", StringComparison.OrdinalIgnoreCase))
+                        {
+                            signatureExists = true;
+                        }
+                        else if (entry.Name.EndsWith(".RSA", StringComparison.OrdinalIgnoreCase))
+                        {
+                            signatureBlockExists = true;
+                        }
                     }
                 }
 
-                return false;
+                if (manifestExists && signatureExists && signatureBlockExists)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         /// <inheritdoc />

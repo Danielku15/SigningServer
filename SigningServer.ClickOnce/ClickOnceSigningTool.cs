@@ -2,107 +2,98 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
-using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
-using NLog;
+using Microsoft.Extensions.Logging;
+using SigningServer.ClickOnce.MsBuild;
 using SigningServer.Contracts;
 
-namespace SigningServer.ClickOnce
+namespace SigningServer.ClickOnce;
+
+public class ClickOnceSigningTool : ISigningTool
 {
-    public class ClickOnceSigningTool : ISigningTool
+    private static readonly HashSet<string> ClickOnceSupportedExtension =
+        new(StringComparer.InvariantCultureIgnoreCase) { ".application", ".manifest" };
+
+    private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
+
+    private readonly ILogger<ClickOnceSigningTool> _logger;
+
+    public ClickOnceSigningTool(ILogger<ClickOnceSigningTool> logger)
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        _logger = logger;
+    }
 
-        private static readonly HashSet<string> ClickOnceSupportedExtension =
-            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-            {
-                ".application",
-                ".manifest"
-            };
+    public bool IsFileSupported(string fileName)
+    {
+        return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
+    }
 
-        private static readonly string[] ClickOnceSupportedHashAlgorithms = { "SHA256" };
+    public void SignFile(string inputFileName, X509Certificate2 certificate,
+        AsymmetricAlgorithm privateKey,
+        string timestampServer,
+        SignFileRequest signFileRequest, SignFileResponse signFileResponse)
+    {
+        var successResult = SignFileResponseResult.FileSigned;
 
-        public bool IsFileSupported(string fileName)
+        if (IsFileSigned(inputFileName))
         {
-            return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
-        }
-
-        public void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,
-            SignFileRequest signFileRequest, SignFileResponse signFileResponse)
-        {
-            SignFileResponseResult successResult = SignFileResponseResult.FileSigned;
-
-            if (IsFileSigned(inputFileName))
+            if (signFileRequest.OverwriteSignature)
             {
-                if (signFileRequest.OverwriteSignature)
-                {
-                    UnsignFile(inputFileName);
-                    successResult = SignFileResponseResult.FileResigned;
-                }
-                else
-                {
-                    signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
-                    return;
-                }
+                UnsignFile(inputFileName);
+                successResult = SignFileResponseResult.FileResigned;
             }
-
-            try
+            else
             {
-                SecurityUtilities.SignFile(certificate,
-                    string.IsNullOrEmpty(timestampServer) ? null : new Uri(timestampServer), inputFileName);
-                signFileResponse.Result = successResult;
-                signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-                signFileResponse.FileSize = signFileResponse.FileContent.Length;
-            }
-            catch (Exception ex)
-            {
-                signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
-                signFileResponse.ErrorMessage = ex.Message;
-                Log.Error($"{inputFileName} signing failed {signFileResponse.ErrorMessage}");
+                signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
+                return;
             }
         }
 
-        public bool IsFileSigned(string inputFileName)
-        {
-            try
-            {
-                var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
-                if (xml.Root == null)
-                {
-                    return false;
-                }
+        SecurityUtilities.SignFile(certificate, privateKey, timestampServer, inputFileName);
+        signFileResponse.Result = successResult;
+        signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
+        signFileResponse.FileSize = signFileResponse.FileContent.Length;
+    }
 
-                if (xml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
-                {
-                    return true;
-                }
-            }
-            catch (Exception e)
+
+    public bool IsFileSigned(string inputFileName)
+    {
+        try
+        {
+            var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
+            if (xml.Root == null)
             {
-                Log.Error(e, "Could not load Click Once Application");
                 return false;
             }
 
+            if (xml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
+            {
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Could not load Click Once Application");
             return false;
         }
 
-        public void UnsignFile(string inputFileName)
-        {
-            var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
-            if (xml.Root != null)
-            {
-                xml.Root.Elements()
-                    .Where(e => e.Name.LocalName == "publisherIdentity" || e.Name.LocalName == "Signature")
-                    .Remove();
-            }
-
-            File.WriteAllText(inputFileName, xml.ToString(SaveOptions.DisableFormatting));
-        }
-
-        /// <inheritdoc />
-        public string[] SupportedFileExtensions => ClickOnceSupportedExtension.ToArray();
-
-        public string[] SupportedHashAlgorithms => ClickOnceSupportedHashAlgorithms;
+        return false;
     }
+
+    public void UnsignFile(string inputFileName)
+    {
+        var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
+        xml.Root?.Elements()
+            .Where(e => e.Name.LocalName is "publisherIdentity" or "Signature")
+            .Remove();
+
+        File.WriteAllText(inputFileName, xml.ToString(SaveOptions.DisableFormatting));
+    }
+
+    /// <inheritdoc />
+    public string[] SupportedFileExtensions => ClickOnceSupportedExtension.ToArray();
+
+    public string[] SupportedHashAlgorithms => ClickOnceSupportedHashAlgorithms;
 }

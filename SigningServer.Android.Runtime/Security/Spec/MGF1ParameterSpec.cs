@@ -7,16 +7,16 @@ namespace SigningServer.Android.Security.Spec
         public static readonly MGF1ParameterSpec SHA384 = new MGF1ParameterSpec("SHA-384");
         public static readonly MGF1ParameterSpec SHA512 = new MGF1ParameterSpec("SHA-512");
         
-        private readonly string mDigestAlgorithm;
+        private readonly string _digestAlgorithm;
         
         public MGF1ParameterSpec(string mdName)
         {
-            mDigestAlgorithm = mdName;
+            _digestAlgorithm = mdName;
         }
 
         public string GetDigestAlgorithm()
         {
-            return mDigestAlgorithm;
+            return _digestAlgorithm;
         }
     }
 }

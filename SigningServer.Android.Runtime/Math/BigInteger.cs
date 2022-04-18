@@ -4,37 +4,38 @@ namespace SigningServer.Android.Math
 {
     public class BigInteger : IComparable<BigInteger>
     {
-        private readonly Org.BouncyCastle.Math.BigInteger mValue;
+        private readonly Org.BouncyCastle.Math.BigInteger _value;
+        // ReSharper disable once InconsistentNaming
         public static readonly BigInteger ZERO = new BigInteger(Org.BouncyCastle.Math.BigInteger.Zero); 
 
         public BigInteger(Org.BouncyCastle.Math.BigInteger value)
         {
-            mValue = value;
+            _value = value;
         }
 
         public BigInteger(byte[] encoded)
         {
-            mValue = new Org.BouncyCastle.Math.BigInteger(encoded);
+            _value = new Org.BouncyCastle.Math.BigInteger(encoded);
         }
 
         public int BitLength()
         {
-            return mValue.BitLength;
+            return _value.BitLength;
         }
 
         public byte[] ToByteArray()
         {
-            return mValue.ToByteArray();
+            return _value.ToByteArray();
         }
 
         public int CompareTo(BigInteger other)
         {
-            return mValue.CompareTo(other.mValue);
+            return _value.CompareTo(other._value);
         }
 
         public long LongValue()
         {
-            return mValue.LongValue;
+            return _value.LongValue;
         }
 
         public static BigInteger ValueOf(long v)
@@ -44,12 +45,12 @@ namespace SigningServer.Android.Math
 
         public int IntValue()
         {
-            return mValue.IntValue;
+            return _value.IntValue;
         }
 
         protected bool Equals(BigInteger other)
         {
-            return Equals(mValue, other.mValue);
+            return Equals(_value, other._value);
         }
 
         public override bool Equals(object obj)
@@ -62,12 +63,12 @@ namespace SigningServer.Android.Math
 
         public override int GetHashCode()
         {
-            return (mValue != null ? mValue.GetHashCode() : 0);
+            return (_value != null ? _value.GetHashCode() : 0);
         }
 
         public override string ToString()
         {
-            return mValue.ToString();
+            return _value.ToString();
         }
     }
 }

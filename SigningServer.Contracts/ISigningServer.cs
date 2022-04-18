@@ -1,15 +1,14 @@
 ﻿using System.ServiceModel;
 
-namespace SigningServer.Contracts
+namespace SigningServer.Contracts;
+
+[ServiceContract]
+public interface ISigningServer
 {
-    [ServiceContract]
-    public interface ISigningServer
-    {
-        [OperationContract]
-        string[] GetSupportedFileExtensions();
-        [OperationContract]
-        string[] GetSupportedHashAlgorithms();
-        [OperationContract]
-        SignFileResponse SignFile(SignFileRequest signFileRequest);
-    }
+    [OperationContract]
+    string[] GetSupportedFileExtensions();
+    [OperationContract]
+    string[] GetSupportedHashAlgorithms();
+    [OperationContract]
+    SignFileResponse SignFile(SignFileRequest signFileRequest);
 }

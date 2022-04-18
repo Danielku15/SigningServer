@@ -1,14 +1,17 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
-namespace SigningServer.Contracts
+namespace SigningServer.Contracts;
+
+public interface ISigningTool
 {
-    public interface ISigningTool
-    {
-        bool IsFileSupported(string fileName);
-        string[] SupportedFileExtensions { get; }
-        string[] SupportedHashAlgorithms { get; }
+    bool IsFileSupported(string fileName);
+    string[] SupportedFileExtensions { get; }
+    string[] SupportedHashAlgorithms { get; }
 
-        void SignFile(string inputFileName, X509Certificate2 certificate, string timestampServer,SignFileRequest signFileRequest, SignFileResponse signFileResponse);
-        bool IsFileSigned(string inputFileName);
-    }
+    void SignFile(string inputFileName, X509Certificate2 certificate,
+        AsymmetricAlgorithm privateKey, string timestampServer,
+        SignFileRequest signFileRequest, SignFileResponse signFileResponse);
+
+    bool IsFileSigned(string inputFileName);
 }

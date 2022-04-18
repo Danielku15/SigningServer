@@ -1,46 +1,59 @@
 ﻿using System;
-using System.Configuration.Install;
-using System.Reflection;
-using System.ServiceProcess;
+using CoreWCF.Configuration;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Web;
+using SigningServer.Server.Configuration;
 
-namespace SigningServer.Server
+namespace SigningServer.Server;
+
+class Program
 {
-    class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        if (Environment.UserInteractive)
         {
-            // Enforce certificate.PrivateKey raw access, GetRSAPrivateKey would clone it but for azure certs we cannot clone the CSP params into a new RSACryptoServiceProvider
-            AppContext.SetSwitch("Switch.System.Security.Cryptography.X509Certificates.RSACertificateExtensions.DontReliablyClonePrivateKey", true);
-            
-            var server = new SigningServerService();
-            if (Environment.UserInteractive)
+            if (args.Length > 0)
             {
-                if (args.Length > 0)
+                switch (args[0])
                 {
-                    switch (args[0])
-                    {
-                        case "-install":
-                            Console.WriteLine("Installing Windows Service");
-                            ManagedInstallerClass.InstallHelper(new[] { Assembly.GetExecutingAssembly().Location });
-                            return;
-                        case "-remove":
-                            Console.WriteLine("Removing Windows Service");
-                            ManagedInstallerClass.InstallHelper(new[] { "/u", Assembly.GetExecutingAssembly().Location });
-                            return;
-                        case "-encode":
-                            Console.WriteLine("Original data: " + args[1]);
-                            Console.WriteLine("Encrypted data: " + DataProtector.ProtectData(args[1]));
-                            return;
-                    }
+                    case "-encode":
+                        Console.WriteLine("Original data: " + args[1]);
+                        Console.WriteLine("Encrypted data: " + DataProtector.ProtectData(args[1]));
+                        return;
                 }
-
-                server.ConsoleStart();
-                Console.ReadLine();
-            }
-            else
-            {
-                ServiceBase.Run(server);
             }
         }
+            
+        var host = CreateWebHostBuilder(args).Build();
+        host.Run();
+    }
+
+    private static IWebHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        // Workaround to load config
+        var builder = WebHost.CreateDefaultBuilder(args);
+        builder.Configure(_ => { });
+        var configuration = builder.Build().Services.GetRequiredService<IConfiguration>();
+        var signingServerConfiguration = new SigningServerConfiguration();
+        configuration.GetSection("SigningServer").Bind(signingServerConfiguration);
+
+        return WebHost.CreateDefaultBuilder(args)
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton(signingServerConfiguration);
+            })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.SetMinimumLevel(LogLevel.Trace);
+            })
+            .UseNLog()
+            .UseKestrel()
+            .UseNetTcp(signingServerConfiguration.Port)
+            .UseStartup<Startup>();
     }
 }

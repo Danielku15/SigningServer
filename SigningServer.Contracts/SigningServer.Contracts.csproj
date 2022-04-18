@@ -4,6 +4,6 @@
 		<Description>This library contains the common interfaces for server and client implementations of the signing server.</Description>
 	</PropertyGroup>
 	<ItemGroup>
-		<Reference Include="System.ServiceModel" />
+	  <PackageReference Include="System.ServiceModel.Primitives" Version="4.9.0" />
 	</ItemGroup>
 </Project>

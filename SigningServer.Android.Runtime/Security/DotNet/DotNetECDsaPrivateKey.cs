@@ -3,13 +3,13 @@ using System.Security.Cryptography;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetECDsaPrivateKey : DotNetPrivateKey
+    internal class DotNetECDsaPrivateKey : DotNetPrivateKey
     {
-        private readonly ECDsa mPrivateKey;
+        private readonly ECDsa _privateKey;
 
         public DotNetECDsaPrivateKey(ECDsa privateKey)
         {
-            mPrivateKey = privateKey;
+            _privateKey = privateKey;
         }
 
         public byte[] GetEncoded()
@@ -29,9 +29,9 @@ namespace SigningServer.Android.Security.DotNet
 
         public byte[] SignHash(byte[] digest, HashAlgorithmName hashAlgorithmName)
         {
-            return mPrivateKey.SignHash(digest);
+            return _privateKey.SignHash(digest);
         }
 
-        public CryptographyProvider Provider => DotNetCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => DotNetCryptographyProvider.Instance;
     }
 }

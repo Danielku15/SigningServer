@@ -1,220 +1,221 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Contracts;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 
-namespace SigningServer.Test
+namespace SigningServer.Test;
+
+[TestClass]
+public class SigningServerSigningTest : UnitTestBase
 {
-    [TestClass]
-    public class SigningServerSigningTest : UnitTestBase
+    private static SigningServerConfiguration _configuration;
+    private static ISigningToolProvider _emptySigningToolProvider;
+    private static ISigningToolProvider _simultateSigningToolProvider;
+
+    [ClassInitialize]
+    public static void Setup(TestContext _)
     {
-        private static SigningServerConfiguration _configuration;
-        private static ISigningToolProvider _emptySigningToolProvider;
-        private static ISigningToolProvider _simultateSigningToolProvider;
-
-        [ClassInitialize]
-        public static void Setup(TestContext _)
+        _configuration = new SigningServerConfiguration
         {
-            _configuration = new SigningServerConfiguration
-            {
-                Certificates = new[]
+            Certificates =
+                new[]
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate
+                        Certificate = AssemblyEvents.Certificate,
+                        PrivateKey = AssemblyEvents.PrivateKey
                     }
                 },
-                WorkingDirectory = "WorkingDirectory"
-            };
+            WorkingDirectory = "WorkingDirectory"
+        };
 
-            _emptySigningToolProvider = new EnumerableSigningToolProvider(Enumerable.Empty<ISigningTool>());
+        _emptySigningToolProvider = new EnumerableSigningToolProvider(Enumerable.Empty<ISigningTool>());
 
-            var simulateSigningTool = new Mock<ISigningTool>();
-            simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
-            simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
-            simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest request, SignFileResponse response) =>
+        var simulateSigningTool = new Mock<ISigningTool>();
+        simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
+        simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
+        simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
+        simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
+        simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(),
+            It.IsAny<AsymmetricAlgorithm>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(),
+            It.IsAny<SignFileResponse>())).Callback(
+            (string file, X509Certificate2 _, AsymmetricAlgorithm _, string _, SignFileRequest _,
+                SignFileResponse response) =>
+            {
+                response.Result = SignFileResponseResult.FileSigned;
+                var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+                response.FileContent = fs;
+                response.FileSize = fs.Length;
+            });
+
+        _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
+    }
+
+    [TestMethod]
+    public void SignFile_EmptyFile_Fails()
+    {
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            _configuration, _emptySigningToolProvider);
+
+        var request = new SignFileRequest { FileSize = 0, FileContent = null };
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+
+        request = new SignFileRequest { FileSize = 100, FileContent = null };
+        response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+
+        request = new SignFileRequest { FileSize = 0, FileContent = new MemoryStream() };
+        response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+    }
+
+    [TestMethod]
+    public void SignFile_NoAnonymousSigning_Fails()
+    {
+        var configuration = new SigningServerConfiguration
+        {
+            Certificates = new[]
+            {
+                new CertificateConfiguration
                 {
-                    response.Result = SignFileResponseResult.FileSigned;
-                    var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
-                    response.FileContent = fs;
-                    response.FileSize = fs.Length;
-                });
+                    Username = "SignUser",
+                    Password = "SignPass",
+                    Certificate = AssemblyEvents.Certificate,
+                    PrivateKey = AssemblyEvents.PrivateKey
+                }
+            },
+            WorkingDirectory = "WorkingDirectory"
+        };
 
-            _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
-        }
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            configuration, _emptySigningToolProvider);
 
-        [TestMethod]
-        public void SignFile_EmptyFile_Fails()
+        var testData =
+            new MemoryStream(
+                File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+        var request = new SignFileRequest
         {
-            var server = new Server.SigningServer(_configuration, _emptySigningToolProvider);
+            FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
+        };
 
-            var request = new SignFileRequest
-            {
-                FileSize = 0,
-                FileContent = null
-            };
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileNotSignedUnauthorized, response.Result);
+    }
 
-            request = new SignFileRequest
-            {
-                FileSize = 100,
-                FileContent = null
-            };
-            response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+    [TestMethod]
+    public void SignFile_UnsupportedFormat_Fails()
+    {
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            _configuration, _emptySigningToolProvider);
 
-            request = new SignFileRequest
-            {
-                FileSize = 0,
-                FileContent = new MemoryStream()
-            };
-            response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
-        }
-
-        [TestMethod]
-        public void SignFile_NoAnonymousSigning_Fails()
+        var testData =
+            new MemoryStream(
+                File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+        var request = new SignFileRequest
         {
-            var configuration = new SigningServerConfiguration
-            {
-                Certificates = new[]
-                {
-                    new CertificateConfiguration
-                    {
-                        Username = "SignUser",
-                        Password = "SignPass",
-                        Certificate = AssemblyEvents.Certificate
-                    }
-                },
-                WorkingDirectory = "WorkingDirectory"
-            };
+            FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
+        };
 
-            var server = new Server.SigningServer(configuration, _emptySigningToolProvider);
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileNotSignedUnsupportedFormat, response.Result);
+    }
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-            var request = new SignFileRequest
-            {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
-            };
+    [TestMethod]
+    public void SignFile_UploadsFileToWorkingDirectory()
+    {
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            _configuration, _simultateSigningToolProvider);
 
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedUnauthorized, response.Result);
-        }
-
-        [TestMethod]
-        public void SignFile_UnsupportedFormat_Fails()
+        var testData =
+            new MemoryStream(
+                File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+        var request = new SignFileRequest
         {
-            var server = new Server.SigningServer(_configuration, _emptySigningToolProvider);
+            FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
+        };
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-            var request = new SignFileRequest
-            {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
-            };
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
+        var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+        Assert.AreEqual(1, files.Length);
+        response.Dispose();
+    }
 
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileNotSignedUnsupportedFormat, response.Result);
-        }
+    [TestMethod]
+    public void SignFile_ResponseDisposeCleansFile()
+    {
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            _configuration, _simultateSigningToolProvider);
 
-        [TestMethod]
-        public void SignFile_UploadsFileToWorkingDirectory()
+        var testData =
+            new MemoryStream(
+                File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
+        var request = new SignFileRequest
         {
-            var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
+            FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
+        };
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-            var request = new SignFileRequest
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
+
+        var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+        Assert.AreEqual(1, files.Length);
+
+        response.Dispose();
+
+        files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+        Assert.AreEqual(0, files.Length);
+    }
+
+
+    [TestMethod]
+    public void SignFile_AlreadySigned_ResponseDisposeCleansFile()
+    {
+        var simulateSigningTool = new Mock<ISigningTool>();
+        simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
+        simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
+        simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
+        simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
+        simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(),
+            It.IsAny<AsymmetricAlgorithm>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(),
+            It.IsAny<SignFileResponse>())).Callback(
+            (string file, X509Certificate2 _, AsymmetricAlgorithm _, string _, SignFileRequest _,
+                SignFileResponse rs) =>
             {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
-            };
+                rs.Result = SignFileResponseResult.FileAlreadySigned;
+                var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+                rs.FileContent = fs;
+                rs.FileSize = fs.Length;
+            });
 
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
-            var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-            Assert.AreEqual(1, files.Length);
-            response.Dispose();
-        }
+        var simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
 
-        [TestMethod]
-        public void SignFile_ResponseDisposeCleansFile()
+
+        var server = new Server.SigningServer(new NullLogger<Server.SigningServer>(),
+            _configuration, simultateSigningToolProvider);
+
+        var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
+        var request = new SignFileRequest
         {
-            var server = new Server.SigningServer(_configuration, _simultateSigningToolProvider);
+            FileName = "unsigned.exe", FileSize = testData.Length, FileContent = testData
+        };
 
-            var testData = new MemoryStream(File.ReadAllBytes(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-            var request = new SignFileRequest
-            {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
-            };
+        var response = server.SignFile(request);
+        Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
 
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
+        var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+        Assert.AreEqual(1, files.Length);
 
-            var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-            Assert.AreEqual(1, files.Length);
+        response.Dispose();
 
-            response.Dispose();
-
-            files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-            Assert.AreEqual(0, files.Length);
-        }
-        
-        
-        [TestMethod]
-        public void SignFile_AlreadySigned_ResponseDisposeCleansFile()
-        {
-
-            var simulateSigningTool = new Mock<ISigningTool>();
-            simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
-            simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
-            simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-            simulateSigningTool.Setup(t => t.SignFile(It.IsAny<string>(), It.IsAny<X509Certificate2>(), It.IsAny<string>(), It.IsAny<SignFileRequest>(), It.IsAny<SignFileResponse>())).Callback(
-                (string file, X509Certificate2 cert, string timestampserver, SignFileRequest rq, SignFileResponse rs) =>
-                {
-                    rs.Result = SignFileResponseResult.FileAlreadySigned;
-                    var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
-                    rs.FileContent = fs;
-                    rs.FileSize = fs.Length;
-                });
-
-            var simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
-  
-
-            var server = new Server.SigningServer(_configuration, simultateSigningToolProvider);
-
-            var testData = new MemoryStream(File.ReadAllBytes("TestFiles/unsigned/unsigned.exe"));
-            var request = new SignFileRequest
-            {
-                FileName = "unsigned.exe",
-                FileSize = testData.Length,
-                FileContent = testData
-            };
-
-            var response = server.SignFile(request);
-            Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
-
-            var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-            Assert.AreEqual(1, files.Length);
-
-            response.Dispose();
-
-            files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-            Assert.AreEqual(0, files.Length);
-        }
+        files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
+        Assert.AreEqual(0, files.Length);
     }
 }

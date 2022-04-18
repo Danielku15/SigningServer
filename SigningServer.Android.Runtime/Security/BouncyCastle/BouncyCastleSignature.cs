@@ -10,7 +10,7 @@ namespace SigningServer.Android.Security.BouncyCastle
 {
     internal class BouncyCastleSignature : Signature
     {
-        private readonly ISigner mSigner;
+        private readonly ISigner _signer;
 
         public BouncyCastleSignature(string jcaSignatureAlgorithm)
         {
@@ -22,41 +22,41 @@ namespace SigningServer.Android.Security.BouncyCastle
                 case "DETDSA":
                 case "SHA1WITHDETDSA":
                 case "SHA1WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha1Digest())), new Sha1Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha1Digest())), new Sha1Digest());
                     break;
                 case "SHA224WITHDETDSA":
                 case "SHA224WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha224Digest())), new Sha224Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha224Digest())), new Sha224Digest());
                     break;
                 case "SHA256WITHDETDSA":
                 case "SHA256WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha256Digest())), new Sha256Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha256Digest())), new Sha256Digest());
                     break;
                 case "SHA384WITHDETDSA":
                 case "SHA384WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha384Digest())), new Sha384Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha384Digest())), new Sha384Digest());
                     break;
                 case "SHA512WITHDETDSA":
                 case "SHA512WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha512Digest())), new Sha512Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha512Digest())), new Sha512Digest());
                     break;
                 case "SHA3-224WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(224))), new Sha3Digest(224));
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(224))), new Sha3Digest(224));
                     break;
                 case "SHA3-256WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(256))), new Sha3Digest(256));
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(256))), new Sha3Digest(256));
                     break;
                 case "SHA3-384WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(384))), new Sha3Digest(384));
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(384))), new Sha3Digest(384));
                     break;
                 case "SHA3-512WITHDDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(512))), new Sha3Digest(512));
+                    _signer = new DsaDigestSigner(new DsaSigner(new HMacDsaKCalculator(new Sha3Digest(512))), new Sha3Digest(512));
                     break;
                 case "MD5WITHDSA":
-                    mSigner = new DsaDigestSigner(new DsaSigner(), new MD5Digest());
+                    _signer = new DsaDigestSigner(new DsaSigner(), new MD5Digest());
                     break;
                 default:
-                    mSigner = SignerUtilities.GetSigner(jcaSignatureAlgorithm);
+                    _signer = SignerUtilities.GetSigner(jcaSignatureAlgorithm);
                     break;
             }
         }
@@ -68,7 +68,7 @@ namespace SigningServer.Android.Security.BouncyCastle
                 throw new ArgumentException("Need bouncy castle public key");
             }
 
-            mSigner.Init(false, bouncyPublic.KeyParameter);
+            _signer.Init(false, bouncyPublic.KeyParameter);
         }
 
         public override void InitSign(PrivateKey privateKey)
@@ -78,7 +78,7 @@ namespace SigningServer.Android.Security.BouncyCastle
                 throw new ArgumentException("Need bouncy castle public key");
             }
 
-            mSigner.Init(true, bouncyPrivate.KeyParameter);
+            _signer.Init(true, bouncyPrivate.KeyParameter);
         }
 
         public override void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams)
@@ -88,14 +88,14 @@ namespace SigningServer.Android.Security.BouncyCastle
 
         public override void Update(byte data)
         {
-            mSigner.Update(data);
+            _signer.Update(data);
         }
 
         public override void Update(ByteBuffer data)
         {
             if (data.HasArray())
             {
-                mSigner.BlockUpdate(data.Array(), data.ArrayOffset() + data.Position(),
+                _signer.BlockUpdate(data.Array(), data.ArrayOffset() + data.Position(),
                     data.Limit() - data.Position());
             }
             else
@@ -106,17 +106,17 @@ namespace SigningServer.Android.Security.BouncyCastle
 
         public override void Update(byte[] data)
         {
-            mSigner.BlockUpdate(data, 0, data.Length);
+            _signer.BlockUpdate(data, 0, data.Length);
         }
 
         public override bool Verify(byte[] signature)
         {
-            return mSigner.VerifySignature(signature);
+            return _signer.VerifySignature(signature);
         }
 
         public override byte[] Sign()
         {
-            return mSigner.GenerateSignature();
+            return _signer.GenerateSignature();
         }
     }
 }

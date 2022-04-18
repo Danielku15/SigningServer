@@ -1,6 +1,5 @@
 ﻿using System;
 using SigningServer.Android.IO;
-using SigningServer.Android.Security.BouncyCastle;
 using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security
@@ -24,20 +23,20 @@ namespace SigningServer.Android.Security
     
     internal class KeyBasedSignature : Signature
     {
-        private readonly string mJcaSignatureAlgorithm;
-        private Signature mSignature;
+        private readonly string _jcaSignatureAlgorithm;
+        private Signature _signature;
 
         public KeyBasedSignature(string jcaSignatureAlgorithm)
         {
-            mJcaSignatureAlgorithm = jcaSignatureAlgorithm;
+            _jcaSignatureAlgorithm = jcaSignatureAlgorithm;
         }
 
         public override void InitVerify(PublicKey publicKey)
         {
             if (publicKey is CryptographyProviderAccessor accessor)
             {
-                mSignature = accessor.Provider.CreateSignature(mJcaSignatureAlgorithm);
-                mSignature.InitVerify(publicKey);
+                _signature = accessor.Provider.CreateSignature(_jcaSignatureAlgorithm);
+                _signature.InitVerify(publicKey);
             }
             else
             {
@@ -49,8 +48,8 @@ namespace SigningServer.Android.Security
         {
             if (privateKey is CryptographyProviderAccessor accessor)
             {
-                mSignature = accessor.Provider.CreateSignature(mJcaSignatureAlgorithm);
-                mSignature.InitSign(privateKey);
+                _signature = accessor.Provider.CreateSignature(_jcaSignatureAlgorithm);
+                _signature.InitSign(privateKey);
             }
             else
             {
@@ -60,32 +59,32 @@ namespace SigningServer.Android.Security
 
         public override void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams)
         {
-            mSignature.SetParameter(signatureAlgorithmParams);
+            _signature.SetParameter(signatureAlgorithmParams);
         }
 
         public override void Update(byte data)
         {
-            mSignature.Update(data);
+            _signature.Update(data);
         }
 
         public override void Update(ByteBuffer data)
         {
-            mSignature.Update(data);
+            _signature.Update(data);
         }
 
         public override void Update(byte[] data)
         {
-            mSignature.Update(data);
+            _signature.Update(data);
         }
 
         public override bool Verify(byte[] signature)
         {
-            return mSignature.Verify(signature);
+            return _signature.Verify(signature);
         }
 
         public override byte[] Sign()
         {
-            return mSignature.Sign();
+            return _signature.Sign();
         }
     }
 }

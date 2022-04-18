@@ -8,8 +8,7 @@ namespace SigningServer.Android.Util
         {
             public string EncodeToString(byte[] entryDigest)
             {
-                var unsigned = (byte[])(object)entryDigest;
-                return Convert.ToBase64String(unsigned);
+                return Convert.ToBase64String(entryDigest);
             }
         }
 
@@ -17,22 +16,21 @@ namespace SigningServer.Android.Util
         {
             public byte[] Decode(string digestBase64)
             {
-                var unsigned = Convert.FromBase64String(digestBase64);
-                return (byte[])(object)unsigned;
+                return Convert.FromBase64String(digestBase64);
             }
         }
 
-        private static readonly Encoder ENCODER = new Encoder();
-        private static readonly Decoder DECODER = new Decoder();
+        private static readonly Encoder EncoderInstance = new Encoder();
+        private static readonly Decoder DecoderInstance = new Decoder();
 
         public static Encoder GetEncoder()
         {
-            return ENCODER;
+            return EncoderInstance;
         }
 
         public static Decoder GetDecoder()
         {
-            return DECODER;
+            return DecoderInstance;
         }
     }
 }

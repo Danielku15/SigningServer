@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
+// ReSharper disable once CheckNamespace
 namespace SigningServer.Android.Com.Android.Apksig.Internal.Util
 {
     internal static class Pair

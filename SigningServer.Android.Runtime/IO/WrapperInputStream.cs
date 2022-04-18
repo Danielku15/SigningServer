@@ -4,27 +4,27 @@ namespace SigningServer.Android.IO
 {
     internal class WrapperInputStream : InputStream
     {
-        private readonly Stream mIn;
+        private readonly Stream _in;
 
         public WrapperInputStream(Stream @in)
         {
-            mIn = @in;
+            _in = @in;
         }
         
         public void Dispose()
         {
-            mIn.Dispose();
+            _in.Dispose();
         }
 
         public int Read(byte[] buffer, int offset, int len)
         {
-            var count = mIn.Read(buffer, offset, len);
+            var count = _in.Read(buffer, offset, len);
             return count == 0 ? -1 : count;
         }
 
         public int Read()
         {
-            return mIn.ReadByte();
+            return _in.ReadByte();
         }
 
         public int Read(byte[] b)
@@ -34,14 +34,14 @@ namespace SigningServer.Android.IO
 
         public long Skip(long n)
         {
-            var pos = mIn.Position;
-            var newPos = mIn.Seek(n, SeekOrigin.Current);
+            var pos = _in.Position;
+            var newPos = _in.Seek(n, SeekOrigin.Current);
             return newPos - pos;
         }
 
         public int Available()
         {
-            return (int)(mIn.Length - mIn.Position);
+            return (int)(_in.Length - _in.Position);
         }
 
         public void Mark(int readlimit)
@@ -60,7 +60,7 @@ namespace SigningServer.Android.IO
 
         public Stream AsStream()
         {
-            return mIn;
+            return _in;
         }
     }
 }

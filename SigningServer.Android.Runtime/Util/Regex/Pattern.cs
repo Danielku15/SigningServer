@@ -5,11 +5,11 @@ namespace SigningServer.Android.Util.Regex
 {
     public class Pattern
     {
-        private readonly System.Text.RegularExpressions.Regex mRegex;
+        private readonly System.Text.RegularExpressions.Regex _regex;
 
         private Pattern(System.Text.RegularExpressions.Regex regex)
         {
-            mRegex = regex;
+            _regex = regex;
         }
 
         public static Pattern Compile(string pattern)
@@ -19,7 +19,7 @@ namespace SigningServer.Android.Util.Regex
 
         public Matcher Matcher(string input)
         {
-            return new Matcher(mRegex, input);
+            return new Matcher(_regex, input);
         }
     }
 }

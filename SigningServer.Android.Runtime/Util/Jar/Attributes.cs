@@ -6,24 +6,26 @@ namespace SigningServer.Android.Util.Jar
     {
         public class Name
         {
+            // ReSharper disable InconsistentNaming
             public static readonly Name MANIFEST_VERSION = new Name("Manifest-Version");
             public static readonly Name SIGNATURE_VERSION = new Name("Signature-Version");
+            // ReSharper restore InconsistentNaming
 
-            private readonly string mName;
+            private readonly string _name;
 
             public Name(string name)
             {
-                mName = name;
+                _name = name;
             }
 
             public override string ToString()
             {
-                return mName;
+                return _name;
             }
 
             protected bool Equals(Name other)
             {
-                return mName == other.mName;
+                return _name == other._name;
             }
 
             public override bool Equals(object obj)
@@ -36,7 +38,7 @@ namespace SigningServer.Android.Util.Jar
 
             public override int GetHashCode()
             {
-                return (mName != null ? mName.GetHashCode() : 0);
+                return (_name != null ? _name.GetHashCode() : 0);
             }
         }
 

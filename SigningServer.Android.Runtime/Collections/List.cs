@@ -67,39 +67,39 @@ namespace SigningServer.Android.Collections
 
         public class ListIteratorImpl : Iterator<T>
         {
-            private readonly List<T> mList;
-            private int mCursor = 0;
-            private int mLastRet = -1; // index of last element returned; -1 if no such
+            private readonly List<T> _list;
+            private int _cursor;
+            private int _lastRet = -1; // index of last element returned; -1 if no such
 
             public ListIteratorImpl(List<T> list)
             {
-                mList = list;
+                _list = list;
             }
 
             public void Remove()
             {
-                if (mLastRet < 0)
+                if (_lastRet < 0)
                     throw new InvalidOperationException();
 
-                mList.Remove(mLastRet);
-                mCursor = mLastRet;
-                mLastRet = -1;
+                _list.Remove(_lastRet);
+                _cursor = _lastRet;
+                _lastRet = -1;
             }
 
 
             public bool HasNext()
             {
-                return mCursor != mList.Count;
+                return _cursor != _list.Count;
             }
 
             public T Next()
             {
-                int i = mCursor;
-                if (i >= mList.Count)
+                var i = _cursor;
+                if (i >= _list.Count)
                     throw new IndexOutOfRangeException();
-                mCursor = i + 1;
+                _cursor = i + 1;
 
-                return mList[mLastRet = i];
+                return _list[_lastRet = i];
             }
         }
 

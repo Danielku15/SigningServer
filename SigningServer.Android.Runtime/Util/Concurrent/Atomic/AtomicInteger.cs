@@ -4,15 +4,15 @@ namespace SigningServer.Android.Util.Concurrent.Atomic
 {
     internal class AtomicInteger
     {
-        private int mValue;
+        private int _value;
         public AtomicInteger(int i)
         {
-            mValue = i;
+            _value = i;
         }
 
         public int GetAndIncrement()
         {
-            return Interlocked.Increment(ref mValue) - 1;
+            return Interlocked.Increment(ref _value) - 1;
         }
     }
 }

@@ -5,29 +5,29 @@ using SigningServer.Android.Security.Spec;
 
 namespace SigningServer.Android.Security.DotNet
 {
-    public class DotNetSignature : Signature
+    internal class DotNetSignature : Signature
     {
-        private DotNetPublicKey mPublicKey;
-        private DotNetPrivateKey mPrivateKey;
-        private readonly MessageDigest mMessageDigest;
+        private DotNetPublicKey _publicKey;
+        private DotNetPrivateKey _privateKey;
+        private readonly MessageDigest _messageDigest;
 
         public DotNetSignature(string jcaSignatureAlgorithm)
         {
             if (jcaSignatureAlgorithm.StartsWith("SHA512", StringComparison.OrdinalIgnoreCase))
             {
-                mMessageDigest = MessageDigest.GetInstance("SHA-512");
+                _messageDigest = MessageDigest.GetInstance("SHA-512");
             }
             else if (jcaSignatureAlgorithm.StartsWith("SHA256", StringComparison.OrdinalIgnoreCase))
             {
-                mMessageDigest = MessageDigest.GetInstance("SHA-256");
+                _messageDigest = MessageDigest.GetInstance("SHA-256");
             }
             else if (jcaSignatureAlgorithm.StartsWith("SHA1", StringComparison.OrdinalIgnoreCase))
             {
-                mMessageDigest = MessageDigest.GetInstance("SHA-1");
+                _messageDigest = MessageDigest.GetInstance("SHA-1");
             }
             else if (jcaSignatureAlgorithm.StartsWith("MD5", StringComparison.OrdinalIgnoreCase))
             {
-                mMessageDigest = MessageDigest.GetInstance("MD5");
+                _messageDigest = MessageDigest.GetInstance("MD5");
             }
             else
             {
@@ -42,7 +42,7 @@ namespace SigningServer.Android.Security.DotNet
                 throw new ArgumentException("Need DotNet public key");
             }
 
-            mPublicKey = dotNetPublic;
+            _publicKey = dotNetPublic;
         }
 
         public override void InitSign(PrivateKey privateKey)
@@ -52,7 +52,7 @@ namespace SigningServer.Android.Security.DotNet
                 throw new ArgumentException("Need DotNet private key");
             }
 
-            mPrivateKey = dotNetPrivate;
+            _privateKey = dotNetPrivate;
         }
 
         public override void SetParameter(AlgorithmParameterSpec signatureAlgorithmParams)
@@ -62,22 +62,22 @@ namespace SigningServer.Android.Security.DotNet
 
         public override void Update(byte data)
         {
-            mMessageDigest.Update(new[] { data });
+            _messageDigest.Update(new[] { data });
         }
 
         public override void Update(ByteBuffer data)
         {
-            mMessageDigest.Update(data);
+            _messageDigest.Update(data);
         }
 
         public override void Update(byte[] data)
         {
-            mMessageDigest.Update(data);
+            _messageDigest.Update(data);
         }
 
         public override bool Verify(byte[] signature)
         {
-            return mPublicKey.VerifyHash(mMessageDigest.Digest(), GetHashAlgorithmName(mMessageDigest), signature);
+            return _publicKey.VerifyHash(_messageDigest.Digest(), GetHashAlgorithmName(_messageDigest), signature);
         }
 
         private HashAlgorithmName GetHashAlgorithmName(MessageDigest messageDigest)
@@ -101,7 +101,7 @@ namespace SigningServer.Android.Security.DotNet
 
         public override byte[] Sign()
         {
-            return mPrivateKey.SignHash(mMessageDigest.Digest(), GetHashAlgorithmName(mMessageDigest));
+            return _privateKey.SignHash(_messageDigest.Digest(), GetHashAlgorithmName(_messageDigest));
         }
     }
 }

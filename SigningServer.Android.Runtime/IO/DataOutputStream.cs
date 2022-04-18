@@ -2,39 +2,39 @@
 {
     internal class DataOutputStream : OutputStream
     {
-        private readonly OutputStream mOutput;
+        private readonly OutputStream _output;
 
         public DataOutputStream(OutputStream output)
         {
-            mOutput = output;
+            _output = output;
         }
 
         public void Write(int v)
         {
-            mOutput.Write(v);
+            _output.Write(v);
         }
         
         public void WriteInt(int v)
         {
-            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v, 24) & 0xFF));
-            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v, 16) & 0xFF));
-            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v,  8) & 0xFF));
-            mOutput.Write((byte)(TypeUtils.UnsignedRightShift(v,  0) & 0xFF));
+            _output.Write((byte)(TypeUtils.UnsignedRightShift(v, 24) & 0xFF));
+            _output.Write((byte)(TypeUtils.UnsignedRightShift(v, 16) & 0xFF));
+            _output.Write((byte)(TypeUtils.UnsignedRightShift(v,  8) & 0xFF));
+            _output.Write((byte)(TypeUtils.UnsignedRightShift(v,  0) & 0xFF));
         }
 
         public void Dispose()
         {
-            mOutput.Dispose();
+            _output.Dispose();
         }
 
         public void Write(byte[] bytes)
         {
-            mOutput.Write(bytes);
+            _output.Write(bytes);
         }
 
         public void Write(byte[] bytes, int offset, int length)
         {
-            mOutput.Write(bytes, offset, length);
+            _output.Write(bytes, offset, length);
         }
     }
 }

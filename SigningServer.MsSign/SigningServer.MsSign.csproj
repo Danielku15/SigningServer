@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="NLog" Version="4.7.14" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />

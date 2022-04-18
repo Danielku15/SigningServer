@@ -6,21 +6,21 @@ using SigningServer.Android.Security.Interfaces;
 
 namespace SigningServer.Android.Security.BouncyCastle
 {
-    public class BouncyCastlePublicKey : PublicKey, RSAKey, DSAKey, ECKey, CryptographyProviderAccessor
+    internal class BouncyCastlePublicKey : PublicKey, RSAKey, DSAKey, ECKey, CryptographyProviderAccessor
     {
-        private readonly byte[] mEncoded;
+        private readonly byte[] _encoded;
 
         public AsymmetricKeyParameter KeyParameter { get; }
 
         public BouncyCastlePublicKey(byte[] encoded, AsymmetricKeyParameter key)
         {
-            mEncoded = encoded;
+            _encoded = encoded;
             KeyParameter = key;
         }
 
         public byte[] GetEncoded()
         {
-            return mEncoded;
+            return _encoded;
         }
 
         public string GetFormat()
@@ -59,6 +59,6 @@ namespace SigningServer.Android.Security.BouncyCastle
             throw new InvalidOperationException();
         }
 
-        public CryptographyProvider Provider => BouncyCastleCryptographyProvider.INSTANCE;
+        public CryptographyProvider Provider => BouncyCastleCryptographyProvider.Instance;
     }
 }

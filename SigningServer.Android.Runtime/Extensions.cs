@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -9,6 +11,28 @@ namespace SigningServer.Android
 {
     internal static class Extensions
     {
+        public static AsymmetricAlgorithm GetPrivateKey(this X509Certificate2 certificate)
+        {
+            return certificate.GetECDsaPrivateKey() ??
+                   certificate.GetRSAPrivateKey() ??
+                   (AsymmetricAlgorithm)certificate.GetDSAPrivateKey() ??
+#pragma warning disable SYSLIB0028 Fallback only
+                   certificate.PrivateKey
+#pragma warning restore SYSLIB0028
+                   ;
+        }
+        
+        public static AsymmetricAlgorithm GetPublicKey(this X509Certificate2 certificate)
+        {
+           return certificate.GetECDsaPublicKey() ??
+                certificate.GetRSAPublicKey() ??
+                (AsymmetricAlgorithm)certificate.GetDSAPublicKey() ??
+#pragma warning disable SYSLIB0027 Fallback only
+                certificate.PublicKey.Key
+#pragma warning restore SYSLIB0027
+                ;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string SubstringIndex(this string s, int start)
         {

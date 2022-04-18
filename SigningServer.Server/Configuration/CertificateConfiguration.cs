@@ -4,11 +4,10 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using NLog;
 using RSAKeyVaultProvider;
 
@@ -22,13 +21,10 @@ public class CertificateConfiguration
 
     public string Thumbprint { get; set; }
 
-
     // Local Certificate
-    [JsonConverter(typeof(StringEnumConverter))]
-    public StoreName StoreName { get; set; }
+    public string StoreName { get; set; }
 
-    [JsonConverter(typeof(StringEnumConverter))]
-    public StoreLocation StoreLocation { get; set; }
+    public string StoreLocation { get; set; }
 
     public string TokenPin { get; set; }
 
@@ -76,7 +72,16 @@ public class CertificateConfiguration
     private void LoadCertificateFromLocalMachine(HardwareCertificateUnlocker unlocker)
     {
         Log.Info("Loading Certificate from local machine");
-        using var store = new X509Store(StoreName, StoreLocation);
+        if (!Enum.TryParse(StoreName, out StoreName storeName))
+        {
+            throw new FormatException($"Invalid Store Name '{StoreName}' in configuration");
+        }
+        if (!Enum.TryParse(StoreLocation, out StoreLocation storeLocation))
+        {
+            throw new FormatException($"Invalid Store Location '{StoreLocation}' in configuration");
+        }
+        
+        using var store = new X509Store(storeName, storeLocation);
         store.Open(OpenFlags.ReadOnly);
 
         var certificates =

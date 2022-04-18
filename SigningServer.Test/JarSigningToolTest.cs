@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android;
 using SigningServer.Android.Com.Android.Apksig;
-using SigningServer.Contracts;
+using SigningServer.Core;
 
 namespace SigningServer.Test;
 
@@ -59,6 +58,7 @@ public class JarSigningToolTest : UnitTestBase
             {
                 Assert.Fail(string.Join(Environment.NewLine, result.GetAllErrors()));
             }
+
             result.IsVerifiedUsingV1Scheme().Should().BeTrue();
             result.IsVerifiedUsingV2Scheme().Should().BeFalse();
             result.IsVerifiedUsingV3Scheme().Should().BeFalse();
@@ -71,32 +71,23 @@ public class JarSigningToolTest : UnitTestBase
         var signingTool = new JarSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var response = new SignFileResponse();
         var request = new SignFileRequest
         {
-            FileName = fileName,
+            InputFilePath = fileName,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = TimestampServer,
             OverwriteSignature = false
         };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate,
-            AssemblyEvents.PrivateKey,
-            TimestampServer, request, response);
+        var response = signingTool.SignFile(request);
+        response.Status.Should().Be(SignFileResponseStatus.FileSigned);
+        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
 
-        Trace.WriteLine(response);
-        try
-        {
-            response.Result.Should().Be(SignFileResponseResult.FileSigned);
-            signingTool.IsFileSigned(fileName).Should().BeTrue();
+        var builder = new ApkVerifier.Builder(new FileInfo(response.ResultFiles[0].OutputFilePath))
+            .SetMinCheckedPlatformVersion(0)
+            .SetMaxCheckedPlatformVersion(0);
+        var result = builder.Build().Verify();
 
-            var builder = new ApkVerifier.Builder(new FileInfo(fileName))
-                .SetMinCheckedPlatformVersion(0)
-                .SetMaxCheckedPlatformVersion(0);
-            var result = builder.Build().Verify();
-
-            action(result);
-        }
-        finally
-        {
-            response.Dispose();
-        }
+        action(result);
     }
 }

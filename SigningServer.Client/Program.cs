@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.ServiceModel.Security;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
 using NLog;
 
 namespace SigningServer.Client;
@@ -12,7 +12,7 @@ internal class Program
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         if (args.Length == 0)
         {
@@ -47,11 +47,12 @@ internal class Program
         try
         {
             Log.Info("Loading config");
-            configuration = JsonConvert.DeserializeObject<SigningClientConfiguration>(File.ReadAllText(configFile));
+            configuration = JsonSerializer.Deserialize<SigningClientConfiguration>(await File.ReadAllTextAsync(configFile))!;
             if (configuration.Retry == 0)
             {
                 configuration.Retry = 3;
             }
+
             Log.Info("Configuration loaded");
         }
         catch (Exception e)
@@ -66,6 +67,7 @@ internal class Program
         {
             Log.Info("Creating client");
             client = new SigningClient(configuration);
+            await client.ConnectAsync();
             Log.Info("connected to server");
         }
         catch (Exception e)
@@ -79,16 +81,12 @@ internal class Program
         {
             foreach (var arg in args)
             {
-                client.SignFile(arg);
+                await client.SignFileAsync(arg);
             }
         }
         catch (UnauthorizedAccessException)
         {
             Environment.ExitCode = ErrorCodes.Unauthorized;
-        }
-        catch (SecurityNegotiationException)
-        {
-            Environment.ExitCode = ErrorCodes.SecurityNegotiationFailed;
         }
         catch (UnsupportedFileFormatException)
         {
@@ -119,7 +117,7 @@ internal static class ErrorCodes
     public const int Unauthorized = 5;
     public const int InvalidConfiguration = 6;
     public const int CommunicationError = 7;
-    public const int SecurityNegotiationFailed = 8;
+    // public const int SecurityNegotiationFailed = 8; -> Phased out
 }
 
 public class SigningClientConfiguration

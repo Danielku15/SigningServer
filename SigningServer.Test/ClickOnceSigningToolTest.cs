@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.ClickOnce;
 
@@ -20,7 +20,7 @@ public class ClickOnceSigningToolTest : UnitTestBase
 
     private static ClickOnceSigningTool CreateSignTool()
     {
-        return new ClickOnceSigningTool(new NullLogger<ClickOnceSigningTool>());
+        return new ClickOnceSigningTool(AssemblyEvents.LoggerProvider.CreateLogger<ClickOnceSigningTool>());
     }
 
     [TestMethod]

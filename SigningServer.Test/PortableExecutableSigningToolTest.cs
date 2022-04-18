@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.MsSign;
 
@@ -18,7 +18,7 @@ public class PortableExecutableSigningToolTest : UnitTestBase
 
     private static PortableExecutableSigningTool CreateSignTool()
     {
-        return new PortableExecutableSigningTool(new NullLogger<PortableExecutableSigningTool>());
+        return new PortableExecutableSigningTool(AssemblyEvents.LoggerProvider.CreateLogger<PortableExecutableSigningTool>());
     }
 
     [TestMethod]

@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SigningServer.Contracts;
+using SigningServer.Core;
 using SigningServer.MsSign;
 
 namespace SigningServer.Test;
@@ -20,7 +22,7 @@ public class AppxSigningToolTest : UnitTestBase
 
     private static AppxSigningTool CreateSignTool()
     {
-        return new AppxSigningTool(new NullLogger<AppxSigningTool>());
+        return new AppxSigningTool(AssemblyEvents.LoggerProvider.CreateLogger<AppxSigningTool>());
     }
 
     [TestMethod]
@@ -46,22 +48,19 @@ public class AppxSigningToolTest : UnitTestBase
         var signingTool = CreateSignTool();
         var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
         Assert.IsTrue(signingTool.IsFileSupported(fileName));
-        var response = new SignFileResponse();
         var request = new SignFileRequest
         {
-            FileName = fileName,
+            InputFilePath = fileName,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = TimestampServer,
             OverwriteSignature = true
         };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate, 
-            AssemblyEvents.PrivateKey,
-            TimestampServer, request,
-            response);
+        var response = signingTool.SignFile(request);
         Trace.WriteLine(response);
-        Assert.AreEqual(SignFileResponseResult.FileNotSignedError, response.Result);
+        Assert.AreEqual(SignFileResponseStatus.FileNotSignedError, response.Status);
         Assert.IsFalse(signingTool.IsFileSigned(fileName));
-        Assert.IsInstanceOfType(response.FileContent, typeof(MemoryStream));
-        Assert.AreEqual(response.FileSize, response.FileContent.Length);
-        Assert.AreEqual(0, response.FileSize);
+        Assert.IsNull(response.ResultFiles);
     }
 
     [TestMethod]
@@ -79,19 +78,16 @@ public class AppxSigningToolTest : UnitTestBase
         var signingTool = CreateSignTool();
         var fileName = "NoResign_Works/signed/signed.appx";
         Assert.IsTrue(signingTool.IsFileSupported(fileName));
-        var response = new SignFileResponse();
         var request = new SignFileRequest
         {
-            FileName = fileName,
+            InputFilePath = fileName,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
             OverwriteSignature = true
         };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate, 
-            AssemblyEvents.PrivateKey,
-            TimestampServer, request,
-            response);
-        Trace.WriteLine(response);
-        Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
+        var response = signingTool.SignFile(request);
+        Assert.AreEqual(SignFileResponseStatus.FileResigned, response.Status);
         Assert.IsTrue(signingTool.IsFileSigned(fileName));
-        Assert.IsInstanceOfType(response.FileContent, typeof(FileStream));
-    } 
+        response.ResultFiles.Count.Should().Be(1);
+    }
 }

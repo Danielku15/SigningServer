@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SigningServer.Android;
 using SigningServer.ClickOnce;
-using SigningServer.Contracts;
+using SigningServer.Core;
 using SigningServer.MsSign;
 
 namespace SigningServer.Server.SigningTool;

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SigningServer.Contracts;
+using SigningServer.Core;
 
 namespace SigningServer.Test;
 
 public class UnitTestBase
 {
-    internal static string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
+    internal static readonly string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
     protected static string TimestampServer = "http://timestamp.globalsign.com/tsa/r6advanced1";
     protected static string Sha1TimestampServer = "http://timestamp.sectigo.com";
 
@@ -16,33 +16,31 @@ public class UnitTestBase
     {
         Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
-        var response = new SignFileResponse();
-        var request = new SignFileRequest
-        {
-            FileName = fileName, OverwriteSignature = false, HashAlgorithm = hashAlgorithm
-        };
         var timestampServer = "SHA1".Equals(hashAlgorithm, StringComparison.OrdinalIgnoreCase)
             ? Sha1TimestampServer
             : TimestampServer;
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, timestampServer,
-            request, response);
 
-        Assert.AreEqual(SignFileResponseResult.FileSigned, response.Result);
-        Assert.IsTrue(signingTool.IsFileSigned(fileName));
-        Assert.IsNotNull(response.FileContent);
-        Assert.IsTrue(response.FileSize > 0);
-        using var data = new MemoryStream();
-        using (response.FileContent)
+        var request = new SignFileRequest
         {
-            response.FileContent.CopyTo(data);
-            Assert.AreEqual(response.FileSize, data.ToArray().Length);
-        }
+            InputFilePath = fileName,
+            OverwriteSignature = false,
+            HashAlgorithm = hashAlgorithm,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = timestampServer
+        };
+        var response = signingTool.SignFile(request);
+
+        Assert.AreEqual(SignFileResponseStatus.FileSigned, response.Status);
+        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
+        response.ResultFiles.Should().NotBeNull();
+        response.ResultFiles.Count.Should().BeGreaterThan(0);
     }
 
 
-    public const string Sha1Oid = "1.3.14.3.2.26";
+    protected const string Sha1Oid = "1.3.14.3.2.26";
 
-    public void EnsureSignature(string fileName, string hashAlgorithmOid)
+    protected void EnsureSignature(string fileName, string hashAlgorithmOid)
     {
         var signerInfo = CertificateHelper.GetDigitalCertificate(fileName);
         Assert.IsNotNull(signerInfo);
@@ -55,49 +53,39 @@ public class UnitTestBase
     {
         Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
-        var response = new SignFileResponse();
-        var request = new SignFileRequest { FileName = fileName, OverwriteSignature = true };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, TimestampServer,
-            request, response);
+        var request = new SignFileRequest
+        {
+            InputFilePath = fileName,
+            OverwriteSignature = true,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = TimestampServer
+        };
+        var response = signingTool.SignFile(request);
 
-        try
-        {
-            Assert.AreEqual(SignFileResponseResult.FileResigned, response.Result);
-            Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.IsNotNull(response.FileContent);
-            Assert.IsTrue(response.FileSize > 0);
-            using var data = new MemoryStream();
-            using (response.FileContent)
-            {
-                response.FileContent.CopyTo(data);
-                Assert.AreEqual(response.FileSize, data.ToArray().Length);
-            }
-        }
-        finally
-        {
-            response.Dispose();
-        }
+        Assert.AreEqual(SignFileResponseStatus.FileResigned, response.Status);
+        Assert.IsTrue(signingTool.IsFileSigned(fileName));
+        response.ResultFiles.Should().NotBeNull();
+        response.ResultFiles.Count.Should().BeGreaterThan(0);
     }
 
     protected void CannotResign(ISigningTool signingTool, string fileName)
     {
         Assert.IsTrue(signingTool.IsFileSupported(fileName));
 
-        var response = new SignFileResponse();
-        var request = new SignFileRequest { FileName = fileName, OverwriteSignature = false };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate, AssemblyEvents.PrivateKey, TimestampServer,
-            request, response);
+        var request = new SignFileRequest
+        {
+            InputFilePath = fileName,
+            OverwriteSignature = false,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = TimestampServer
+        };
+        var response = signingTool.SignFile(request);
 
         Trace.WriteLine(response);
-        try
-        {
-            Assert.AreEqual(SignFileResponseResult.FileAlreadySigned, response.Result);
-            Assert.IsTrue(signingTool.IsFileSigned(fileName));
-            Assert.AreEqual(0, response.FileSize);
-        }
-        finally
-        {
-            response.Dispose();
-        }
+        Assert.AreEqual(SignFileResponseStatus.FileAlreadySigned, response.Status);
+        Assert.IsTrue(signingTool.IsFileSigned(fileName));
+        response.ResultFiles.Should().BeNull();
     }
 }

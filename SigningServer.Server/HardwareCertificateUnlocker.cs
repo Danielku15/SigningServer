@@ -1,22 +1,38 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using NLog;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server;
 
-public sealed class HardwareCertificateUnlocker : IDisposable
+public sealed class HardwareCertificateUnlocker : IHostedService
 {
-    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-        
-    private readonly Timer _refreshTimer;
-    private readonly ConcurrentBag<CertificateConfiguration> _certificatesToRefresh; 
+    private readonly ILogger<HardwareCertificateUnlocker> _logger;
+    private Timer _refreshTimer;
+    private readonly ConcurrentBag<CertificateConfiguration> _certificatesToRefresh;
+    private readonly TimeSpan _refreshTime;
 
-    public HardwareCertificateUnlocker(TimeSpan refreshTime)
+    public HardwareCertificateUnlocker(ILogger<HardwareCertificateUnlocker> logger,
+        SigningServerConfiguration configuration)
     {
+        _logger = logger;
+        _refreshTime = TimeSpan.FromSeconds(configuration.HardwareCertificateUnlockIntervalInSeconds);
         _certificatesToRefresh = new ConcurrentBag<CertificateConfiguration>();
-        _refreshTimer = new Timer(UnlockAllTokens, null, refreshTime, refreshTime);
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _refreshTimer = new Timer(UnlockAllTokens, null, _refreshTime, _refreshTime);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _refreshTimer?.Dispose();
+        return Task.CompletedTask;
     }
 
     private void UnlockAllTokens(object state)
@@ -30,19 +46,13 @@ public sealed class HardwareCertificateUnlocker : IDisposable
             }
             catch (Exception e)
             {
-                Log.Error(e, "Failed to refresh certificate");
+                _logger.LogError(e, "Failed to refresh certificate");
             }
         }
-    }
-
-    public void Dispose()
-    {
-        _refreshTimer?.Dispose();
     }
 
     public void RegisterForUpdate(CertificateConfiguration certificateConfiguration)
     {
         _certificatesToRefresh.Add(certificateConfiguration);
     }
-
 }

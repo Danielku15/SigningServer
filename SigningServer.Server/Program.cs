@@ -1,7 +1,7 @@
 ﻿using System;
-using CoreWCF.Configuration;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server;
 
-class Program
+public class Program
 {
     public static void Main(string[] args)
     {
@@ -27,9 +27,16 @@ class Program
                 }
             }
         }
-            
+
         var host = CreateWebHostBuilder(args).Build();
-        host.Run();
+        if (Environment.UserInteractive)
+        {
+            host.Run();
+        }
+        else
+        {
+            host.RunAsService();
+        }
     }
 
     private static IWebHostBuilder CreateWebHostBuilder(string[] args)
@@ -53,7 +60,6 @@ class Program
             })
             .UseNLog()
             .UseKestrel()
-            .UseNetTcp(signingServerConfiguration.Port)
             .UseStartup<Startup>();
     }
 }

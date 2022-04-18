@@ -8,7 +8,7 @@
 
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-		<Version>1.3.0.$(BuildNumber)</Version>
+		<Version>2.0.0.$(BuildNumber)</Version>
 		<Company>Daniel Kuschny</Company>
 		<Copyright>Copyright © 2022 Daniel Kuschny</Copyright>
 		<Product>CoderLine SigningServer</Product>

@@ -46,6 +46,7 @@ public class SigningController : Controller
         _logger.LogTrace($"[{remoteIp}] Requesting supported file extensions");
         return Ok(new ServerCapabilitiesResponse
         {
+            MaxDegreeOfParallelismPerClient = _configuration.MaxDegreeOfParallelismPerClient,
             SupportedFormats = _signingToolProvider.AllTools.Select(tool => new ServerSupportedFormat
             {
                 Name = tool.FormatName,

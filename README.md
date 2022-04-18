@@ -32,7 +32,9 @@ specific settings are nested in the `"SigningServer` key.
         "Sha1TimestampServer": "https://timestamp.sectigo.com",
         // The interval in which the HSM certificates should be reloaded
         // to avoid unexpected  
-        "HardwareCertificateUnlockIntervalInSeconds": "3600",
+        "HardwareCertificateUnlockIntervalInSeconds": 3600,
+        // The maximum degree of parallelism allowed per individual client.
+        "MaxDegreeOfParallelismPerClient": 4,
         // An array of certificates which should be loaded and made available
         "Certificates": [
             // Example for a certificate from the local windows certificate store

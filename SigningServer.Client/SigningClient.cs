@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -22,6 +23,7 @@ public sealed class SigningClient : IDisposable
 
     private readonly SigningClientConfiguration _configuration;
     private readonly HttpClient _client;
+    private ServerCapabilitiesResponse _serverCapabilities;
     private readonly HashSet<string> _supportedFileFormats = new(StringComparer.OrdinalIgnoreCase);
 
     public SigningClient(SigningClientConfiguration configuration)
@@ -45,11 +47,11 @@ public sealed class SigningClient : IDisposable
     {
         Log.Info("Connecting to signing server");
 
-        var capabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities");
+        _serverCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities");
         Log.Info("Server Capabilities loaded");
 
         Log.Info("Supported Formats:");
-        foreach (var supportedFormat in capabilities!.SupportedFormats)
+        foreach (var supportedFormat in _serverCapabilities!.SupportedFormats)
         {
             Log.Info($"  {supportedFormat.Name}");
             Log.Info("    Supported Extensions: {fileExtensions}",
@@ -63,9 +65,12 @@ public sealed class SigningClient : IDisposable
         }
     }
 
-    public SigningClient(HttpClient client)
+    public SigningClient(HttpClient client, params string[] sources)
     {
-        _configuration = new SigningClientConfiguration();
+        _configuration = new SigningClientConfiguration
+        {
+            Sources = sources
+        };
         _client = client;
     }
 
@@ -74,36 +79,69 @@ public sealed class SigningClient : IDisposable
         _client?.Dispose();
     }
 
-    public async Task SignFileAsync(string path)
+    public async Task SignFilesAsync()
     {
-        // Sometimes via MSBuild there are quotes on the path, here we clean them. 
-        path = path.Trim('"');
-        Log.Info("Signing '{0}'", path);
-        var full = Path.GetFullPath(path);
-        if (Directory.Exists(full))
+        Log.Info("Collecting all files");
+        var allFiles = _configuration.Sources.SelectMany(source =>
         {
-            var files = Directory.EnumerateFiles(full, "*", SearchOption.AllDirectories)
-                .Where(f => _supportedFileFormats.Contains(Path.GetExtension(f))).ToArray();
-            Log.Info("Processing directory '{0}'", full);
-            Log.Info("  Found {0} files", files.Length);
-            foreach (var file in files)
+            if (File.Exists(source))
             {
-                await InternalSignFileAsync(file);
+                return new[] { source };
             }
-        }
-        else if (File.Exists(full))
+
+            return Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories)
+                .Where(f => _supportedFileFormats.Contains(Path.GetExtension(f)))
+                .ToArray();
+        });
+        var processingQueue = new ConcurrentQueue<string>(allFiles);
+
+        var numberOfWorkers = Math.Min(Math.Max(1, _configuration.Parallel ?? Environment.ProcessorCount),
+            _serverCapabilities.MaxDegreeOfParallelismPerClient);
+
+        Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers}", processingQueue.Count,
+            numberOfWorkers);
+
+        var cancellationSource = new CancellationTokenSource();
+        Exception mainException = null;
+        var tasks = Enumerable.Range(0, numberOfWorkers)
+            .Select(_ => Task.Factory.StartNew(async () =>
+            {
+                try
+                {
+                    await SignFilesAsync(processingQueue, cancellationSource.Token);
+                }
+                catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
+                {
+                    // Ignore "official" cancellations
+                }
+                catch (Exception e) when (!cancellationSource.IsCancellationRequested)
+                {
+                    mainException = e;
+                    cancellationSource.Cancel();
+                }
+                catch
+                {
+                    // Ignore other exceptions when we already cancelled.
+                }
+            }, cancellationSource.Token));
+
+        await Task.WhenAll(tasks);
+
+        if (mainException != null)
         {
-            Log.Info("Processing file '{0}'", full);
-            await InternalSignFileAsync(full);
-        }
-        else
-        {
-            Log.Error("File or directory '{0}' not found", full);
-            throw new FileNotFoundException(path);
+            throw mainException;
         }
     }
 
-    private async Task InternalSignFileAsync(string file)
+    private async Task SignFilesAsync(ConcurrentQueue<string> processingQueue, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested && processingQueue.TryDequeue(out var nextFile))
+        {
+            await SignFileAsync(nextFile, cancellationToken);
+        }
+    }
+
+    private async Task SignFileAsync(string file, CancellationToken cancellationToken)
     {
         var info = new FileInfo(file);
 
@@ -147,7 +185,7 @@ public sealed class SigningClient : IDisposable
                 await using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     content.Add(new StreamContent(fs, 1024 * 1024), "FileToSign", Path.GetFileName(file));
-                    response = await _client.PostAsync("signing/sign", content);
+                    response = await _client.PostAsync("signing/sign", content, cancellationToken);
                 }
 
                 var contentType = response.Content.Headers.TryGetValues("Content-Type", out var contentTypes)
@@ -165,7 +203,7 @@ public sealed class SigningClient : IDisposable
                 }
 
 
-                await using (var stream = await response.Content.ReadAsStreamAsync())
+                await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
                 {
                     var reader = new MultipartReader(boundary, stream);
 
@@ -232,7 +270,7 @@ public sealed class SigningClient : IDisposable
                         }
                     }
 
-                    while (await reader.ReadNextSectionAsync() is { } section)
+                    while (await reader.ReadNextSectionAsync(cancellationToken) is { } section)
                     {
                         if (!section.Headers.TryGetValue("Content-Disposition", out var contentDispositionValue))
                         {
@@ -307,7 +345,7 @@ public sealed class SigningClient : IDisposable
                                     await using var targetFile = new FileStream(targetFileName, FileMode.Create,
                                         FileAccess.ReadWrite,
                                         FileShare.None);
-                                    await section.Body.CopyToAsync(targetFile);
+                                    await section.Body.CopyToAsync(targetFile, cancellationToken);
                                     downloadWatch.Stop();
                                     Log.Info("Downloaded file {fileName} in {downloadTime}ms", fileName,
                                         downloadWatch.ElapsedMilliseconds);

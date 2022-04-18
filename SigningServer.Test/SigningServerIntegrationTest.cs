@@ -52,10 +52,11 @@ public class SigningServerIntegrationTest : UnitTestBase
     [DeploymentItem("TestFiles", "IntegrationTestFiles")]
     public async Task ValidTestRun()
     {
-        using (var client = new SigningClient(_application.CreateClient()))
+        using (var client = new SigningClient(_application.CreateClient(),
+                   Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned")))
         {
             await client.ConnectAsync();
-            await client.SignFileAsync(Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned"));
+            await client.SignFilesAsync();
         }
 
         Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
@@ -91,10 +92,11 @@ public class SigningServerIntegrationTest : UnitTestBase
         {
             await Task.Delay(i * 50); // slight delay to trigger not exactly the same time 
             var sw = Stopwatch.StartNew();
-            using (var client = new SigningClient(_application.CreateClient()))
+            using (var client = new SigningClient(_application.CreateClient(), f))
             {
-                await client.SignFileAsync(f);
+                await client.SignFilesAsync();
             }
+
             return sw.Elapsed;
         })).ToArray();
 
@@ -123,15 +125,16 @@ public class SigningServerIntegrationTest : UnitTestBase
             }
         }
     }
-    
+
     [TestMethod]
     [DeploymentItem("TestFiles", "ApkIdSig")]
     public async Task TestIdSigIsDownloadedAlongApkg()
     {
-        using (var client = new SigningClient(_application.CreateClient()))
+        using (var client = new SigningClient(_application.CreateClient(),
+                   Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk")))
         {
             await client.ConnectAsync();
-            await client.SignFileAsync(Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk"));
+            await client.SignFilesAsync();
         }
 
         Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
@@ -141,7 +144,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         File.Exists(apk).Should().BeTrue();
         File.Exists(idsig).Should().BeTrue();
     }
-    
+
     private string GenerateLargeTestFile(string path)
     {
         using var writer = new FileStream(path, FileMode.Create, FileAccess.Write);

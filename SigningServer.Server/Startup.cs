@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Net;
-using CoreWCF;
-using CoreWCF.Configuration;
+using System.IO;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using SigningServer.Contracts;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 
@@ -12,45 +13,116 @@ namespace SigningServer.Server;
 
 public class Startup
 {
-    private readonly SigningServerConfiguration _signingServerConfiguration;
+    private readonly SigningServerConfiguration _configuration;
 
-    public Startup(SigningServerConfiguration signingServerConfiguration)
+    public Startup(SigningServerConfiguration configuration)
     {
-        _signingServerConfiguration = signingServerConfiguration;
+        _configuration = configuration;
+        configuration.TimestampServer ??= "";
+        configuration.Sha1TimestampServer ??= configuration.TimestampServer ?? "";
+        configuration.WorkingDirectory ??= configuration.WorkingDirectory ?? "";
+        configuration.HardwareCertificateUnlockIntervalInSeconds =
+            configuration.HardwareCertificateUnlockIntervalInSeconds > 0
+                ? configuration.HardwareCertificateUnlockIntervalInSeconds
+                : 60 * 60;
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddServiceModelServices();
+        services.AddSingleton<HardwareCertificateUnlocker>();
+        services.AddTransient<IHostedService>(sp => sp.GetRequiredService<HardwareCertificateUnlocker>());
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
-        services.AddSingleton<SigningServer>();
+
+        services.AddControllers();
+        services.AddEndpointsApiExplorer();
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.SetIsOriginAllowed(_ => true) 
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app,
+        ILogger<Startup> logger,
+        HardwareCertificateUnlocker unlocker)
     {
-        app.UseServiceModel(builder =>
+        ValidateConfiguration(logger, unlocker);
+        PrepareWorkingDirectory(logger);
+
+        app.UseCors();
+        app.UseHttpsRedirection();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            builder.AddService<SigningServer>();
-            var uri = new UriBuilder
-            {
-                Scheme = "net.tcp", Host = Dns.GetHostName(), Port = _signingServerConfiguration.Port
-            };
-            var binding = new NetTcpBinding
-            {
-                TransferMode = TransferMode.Streamed,
-                MaxReceivedMessageSize = int.MaxValue,
-                MaxBufferSize = int.MaxValue,
-                OpenTimeout = TimeSpan.FromMinutes(5),
-                CloseTimeout = TimeSpan.FromMinutes(5),
-                SendTimeout = TimeSpan.FromMinutes(60),
-                ReceiveTimeout = TimeSpan.FromMinutes(60),
-                MaxConnections = int.MaxValue,
-                Security =
-                {
-                    Mode = SecurityMode.None
-                }
-            };
-            builder.AddServiceEndpoint<SigningServer, ISigningServer>(binding, uri.Uri);
+            endpoints.MapControllers();
         });
+    }
+
+    private void PrepareWorkingDirectory(ILogger<Startup> logger)
+    {
+        try
+        {
+            if (Directory.Exists(_configuration.WorkingDirectory))
+            {
+                logger.LogInformation("Working directory exists, cleaning");
+                Directory.Delete(_configuration.WorkingDirectory, true);
+            }
+
+            Directory.CreateDirectory(_configuration.WorkingDirectory);
+            logger.LogInformation("Working directory created");
+        }
+        catch (Exception e)
+        {
+            throw new InvalidConfigurationException(
+                InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, e);
+        }
+
+        logger.LogInformation("Working directory: {0}", _configuration.WorkingDirectory);
+    }
+
+    private void ValidateConfiguration(ILogger<Startup> logger, HardwareCertificateUnlocker unlocker)
+    {
+        logger.LogInformation("Validating configuration");
+        var list = new List<CertificateConfiguration>();
+        if (_configuration.Certificates != null)
+        {
+            foreach (var certificateConfiguration in _configuration.Certificates)
+            {
+                if (certificateConfiguration.Certificate != null)
+                {
+                    list.Add(certificateConfiguration);
+                    continue;
+                }
+
+                try
+                {
+                    logger.LogInformation("Loading certificate '{0}'", certificateConfiguration.Thumbprint);
+                    certificateConfiguration.LoadCertificate(unlocker);
+                    list.Add(certificateConfiguration);
+                }
+                catch (CryptographicException e)
+                {
+                    logger.LogError(e,
+                        $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, $"Certificate loading failed: {e.Message}");
+                }
+            }
+        }
+
+        if (list.Count == 0)
+        {
+            throw new InvalidConfigurationException(InvalidConfigurationException.NoValidCertificatesMessage);
+        }
+
+        _configuration.Certificates = list.ToArray();
+        logger.LogInformation("Certificates loaded: {0}", list.Count);
     }
 }

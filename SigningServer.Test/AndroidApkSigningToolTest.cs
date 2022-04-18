@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android;
 using SigningServer.Android.Com.Android.Apksig;
-using SigningServer.Contracts;
+using SigningServer.Core;
 
 namespace SigningServer.Test;
 
@@ -26,13 +25,6 @@ public class AndroidApkSigningToolTest : UnitTestBase
         var signingTool = new AndroidApkSigningTool();
         Assert.IsTrue(File.Exists("TestFiles/signed/signed-aligned.apk"));
         Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed-aligned.apk"));
-    }
-
-    [TestMethod]
-    [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_Jar_Works()
-    {
-        CanSign(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-aligned.apk");
     }
 
     [TestMethod]
@@ -87,6 +79,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
             {
                 Assert.Fail(string.Join(Environment.NewLine, result.GetAllErrors()));
             }
+
             result.IsVerifiedUsingV1Scheme().Should().BeTrue();
             result.IsVerifiedUsingV2Scheme().Should().BeTrue();
             result.IsVerifiedUsingV3Scheme().Should().BeTrue();
@@ -104,6 +97,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
             {
                 Assert.Fail(string.Join(Environment.NewLine, result.GetAllErrors()));
             }
+
             result.IsVerifiedUsingV1Scheme().Should().BeTrue();
             result.IsVerifiedUsingV2Scheme().Should().BeTrue();
             result.IsVerifiedUsingV3Scheme().Should().BeTrue();
@@ -116,30 +110,22 @@ public class AndroidApkSigningToolTest : UnitTestBase
         var signingTool = new AndroidApkSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var response = new SignFileResponse();
         var request = new SignFileRequest
         {
-            FileName = fileName,
-            OverwriteSignature = false
+            InputFilePath = fileName,
+            OverwriteSignature = false,
+            Certificate = AssemblyEvents.Certificate,
+            PrivateKey = AssemblyEvents.PrivateKey,
+            TimestampServer = TimestampServer
         };
-        signingTool.SignFile(fileName, AssemblyEvents.Certificate,
-            AssemblyEvents.PrivateKey,
-            TimestampServer, request, response);
+        var response = signingTool.SignFile(request);
 
-        Trace.WriteLine(response);
-        try
-        {
-            response.Result.Should().Be(SignFileResponseResult.FileSigned);
-            signingTool.IsFileSigned(fileName).Should().BeTrue();
+        response.Status.Should().Be(SignFileResponseStatus.FileSigned);
+        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
 
-            var builder = new ApkVerifier.Builder(new FileInfo(fileName));
-            var result = builder.Build().Verify();
+        var builder = new ApkVerifier.Builder(new FileInfo(response.ResultFiles[0].OutputFilePath));
+        var result = builder.Build().Verify();
 
-            action(result);
-        }
-        finally
-        {
-            response.Dispose();
-        }
+        action(result);
     }
 }

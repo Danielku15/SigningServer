@@ -5,10 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using SigningServer.Contracts;
+using SigningServer.Core;
 
 namespace SigningServer.MsSign;
 
@@ -39,6 +38,8 @@ public class PortableExecutableSigningTool : ISigningTool
             };
 
     private readonly ILogger _logger;
+
+    public virtual string Name => "Windows Portable Executables (PE)";
 
     public virtual string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
     public virtual string[] SupportedHashAlgorithms => PeSupportedHashAlgorithms.Keys.ToArray();
@@ -122,26 +123,24 @@ public class PortableExecutableSigningTool : ISigningTool
         }
     }
 
-    public void SignFile(string inputFileName, X509Certificate2 certificate,
-        AsymmetricAlgorithm privateKey,
-        string timestampServer,
-        SignFileRequest signFileRequest, SignFileResponse signFileResponse)
+    public SignFileResponse SignFile(SignFileRequest signFileRequest)
     {
-        var successResult = SignFileResponseResult.FileSigned;
+        var signFileResponse = new SignFileResponse();
+        var successResult = SignFileResponseStatus.FileSigned;
 
-        if (IsFileSigned(inputFileName))
+        if (IsFileSigned(signFileRequest.InputFilePath))
         {
             if (signFileRequest.OverwriteSignature)
             {
-                _logger.LogTrace($"File {inputFileName} is already signed, removing signature");
-                UnsignFile(inputFileName);
-                successResult = SignFileResponseResult.FileResigned;
+                _logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, removing signature");
+                UnsignFile(signFileRequest.InputFilePath);
+                successResult = SignFileResponseStatus.FileResigned;
             }
             else
             {
-                _logger.LogTrace($"File {inputFileName} is already signed, abort signing");
-                signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
-                return;
+                _logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, abort signing");
+                signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
+                return signFileResponse;
             }
         }
 
@@ -154,7 +153,7 @@ public class PortableExecutableSigningTool : ISigningTool
         using var signerFileInfo = new UnmanagedStruct<Win32.SIGNER_FILE_INFO>(new Win32.SIGNER_FILE_INFO
         {
             cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_FILE_INFO>(),
-            pwszFileName = inputFileName,
+            pwszFileName = signFileRequest.InputFilePath,
             hFile = IntPtr.Zero
         });
         using var dwIndex = new UnmanagedStruct<uint>(0);
@@ -170,7 +169,7 @@ public class PortableExecutableSigningTool : ISigningTool
             new Win32.SIGNER_CERT_STORE_INFO
             {
                 cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_CERT_STORE_INFO>(),
-                pSigningCert = certificate.Handle,
+                pSigningCert = signFileRequest.Certificate.Handle,
                 dwCertPolicy = Win32.SIGNER_CERT_POLICY_CHAIN,
                 hCertStore = IntPtr.Zero
             });
@@ -195,24 +194,24 @@ public class PortableExecutableSigningTool : ISigningTool
         var (hr, tshr) = SignAndTimestamp(
             algId.algName,
             algId.algOid,
-            inputFileName, timestampServer, signerSubjectInfo.Pointer,
+            signFileRequest.InputFilePath, signFileRequest.TimestampServer, signerSubjectInfo.Pointer,
             signerCert.Pointer,
-            signerSignatureInfo.Pointer, privateKey
+            signerSignatureInfo.Pointer, signFileRequest.PrivateKey
         );
 
         if (hr == Win32.S_OK && tshr == Win32.S_OK)
         {
-            _logger.LogTrace($"{inputFileName} successfully signed");
-            signFileResponse.Result = successResult;
-            signFileResponse.FileContent = new FileStream(inputFileName,
-                FileMode.Open,
-                FileAccess.Read);
-            signFileResponse.FileSize = signFileResponse.FileContent.Length;
+            _logger.LogTrace($"{signFileRequest.InputFilePath} successfully signed");
+            signFileResponse.Status = successResult;
+            signFileResponse.ResultFiles = new[]
+            {
+                new SignFileResponseFileInfo(signFileRequest.InputRawFileName, signFileRequest.InputFilePath)
+            };
         }
         else if (hr != Win32.S_OK)
         {
             var exception = new Win32Exception(hr);
-            signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
+            signFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             signFileResponse.ErrorMessage = !string.IsNullOrEmpty(exception.Message)
                 ? exception.Message
                 : $"signing file failed (0x{hr:x})";
@@ -220,21 +219,23 @@ public class PortableExecutableSigningTool : ISigningTool
             if ((uint)hr == 0x8007000B)
             {
                 signFileResponse.ErrorMessage =
-                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{certificate.SubjectName}\" .. />.";
+                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.SubjectName}\" .. />.";
             }
 
-            _logger.LogError($"{inputFileName} signing failed {signFileResponse.ErrorMessage}");
+            _logger.LogError($"{signFileRequest.InputFilePath} signing failed {signFileResponse.ErrorMessage}");
         }
         else
         {
             var errorText = new Win32Exception(tshr).Message;
-            signFileResponse.Result = SignFileResponseResult.FileNotSignedError;
+            signFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             signFileResponse.ErrorMessage = !string.IsNullOrEmpty(errorText)
                 ? errorText
                 : $"timestamping failed (0x{hr:x})";
 
-            _logger.LogError($"{inputFileName} timestamping failed {signFileResponse.ErrorMessage}");
+            _logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {signFileResponse.ErrorMessage}");
         }
+
+        return signFileResponse;
     }
 
     private protected virtual (int hr, int tshr) SignAndTimestamp(

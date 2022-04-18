@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using SigningServer.ClickOnce.MsBuild;
-using SigningServer.Contracts;
+using SigningServer.Core;
 
 namespace SigningServer.ClickOnce;
 
@@ -20,6 +18,8 @@ public class ClickOnceSigningTool : ISigningTool
 
     private readonly ILogger<ClickOnceSigningTool> _logger;
 
+    public string Name => "Microsoft ClickOnce";
+
     public ClickOnceSigningTool(ILogger<ClickOnceSigningTool> logger)
     {
         _logger = logger;
@@ -30,31 +30,33 @@ public class ClickOnceSigningTool : ISigningTool
         return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
     }
 
-    public void SignFile(string inputFileName, X509Certificate2 certificate,
-        AsymmetricAlgorithm privateKey,
-        string timestampServer,
-        SignFileRequest signFileRequest, SignFileResponse signFileResponse)
+    public SignFileResponse SignFile(SignFileRequest signFileRequest)
     {
-        var successResult = SignFileResponseResult.FileSigned;
+        var signFileResponse = new SignFileResponse();
+        var successResult = SignFileResponseStatus.FileSigned;
 
-        if (IsFileSigned(inputFileName))
+        if (IsFileSigned(signFileRequest.InputFilePath))
         {
             if (signFileRequest.OverwriteSignature)
             {
-                UnsignFile(inputFileName);
-                successResult = SignFileResponseResult.FileResigned;
+                UnsignFile(signFileRequest.InputFilePath);
+                successResult = SignFileResponseStatus.FileResigned;
             }
             else
             {
-                signFileResponse.Result = SignFileResponseResult.FileAlreadySigned;
-                return;
+                signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
+                return signFileResponse;
             }
         }
 
-        SecurityUtilities.SignFile(certificate, privateKey, timestampServer, inputFileName);
-        signFileResponse.Result = successResult;
-        signFileResponse.FileContent = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-        signFileResponse.FileSize = signFileResponse.FileContent.Length;
+        SecurityUtilities.SignFile(signFileRequest.Certificate, signFileRequest.PrivateKey,
+            signFileRequest.TimestampServer, signFileRequest.InputFilePath);
+        signFileResponse.Status = successResult;
+        signFileResponse.ResultFiles = new[]
+        {
+            new SignFileResponseFileInfo(signFileRequest.InputRawFileName, signFileRequest.InputFilePath)
+        };
+        return signFileResponse;
     }
 
 

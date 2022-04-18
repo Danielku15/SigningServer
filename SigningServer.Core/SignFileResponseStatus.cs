@@ -1,6 +1,6 @@
-﻿namespace SigningServer.Contracts;
+﻿namespace SigningServer.Core;
 
-public enum SignFileResponseResult
+public enum SignFileResponseStatus
 {
     /// <summary>
     /// File was successfully signed

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.ClickOnce;
@@ -14,8 +15,8 @@ public class ClickOnceSigningToolTest : UnitTestBase
     public void Application_IsFileSigned_UnsignedFile_ReturnsFalse_Application()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.application"));
-        Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.application"));
+        File.Exists("TestFiles/unsigned/unsigned.application").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.application").Should().BeFalse();
     }
 
     private static ClickOnceSigningTool CreateSignTool()
@@ -27,8 +28,8 @@ public class ClickOnceSigningToolTest : UnitTestBase
     public void Application_IsFileSigned_SignedFile_ReturnsTrue_Application()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/signed/signed.application"));
-        Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.application"));
+        File.Exists("TestFiles/signed/signed.application").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/signed/signed.application").Should().BeTrue();
     }
 
     [TestMethod]
@@ -37,9 +38,9 @@ public class ClickOnceSigningToolTest : UnitTestBase
     {
         var signingTool = CreateSignTool();
         {
-            Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.application"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.application").Should().BeTrue();
             signingTool.UnsignFile("Unsign_Works/signed/signed.application");
-            Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.application"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.application").Should().BeFalse();
         }
     }
 
@@ -75,16 +76,16 @@ public class ClickOnceSigningToolTest : UnitTestBase
     public void Manifest_IsFileSigned_UnsignedFile_ReturnsFalse_Manifest()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.exe.manifest"));
-        Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.exe.manifest"));
+        File.Exists("TestFiles/unsigned/unsigned.exe.manifest").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.exe.manifest").Should().BeFalse();
     }
 
     [TestMethod]
     public void Manifest_IsFileSigned_SignedFile_ReturnsTrue_Manifest()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/signed/signed.exe.manifest"));
-        Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.exe.manifest"));
+        File.Exists("TestFiles/signed/signed.exe.manifest").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/signed/signed.exe.manifest").Should().BeTrue();
     }
 
     [TestMethod]
@@ -93,9 +94,9 @@ public class ClickOnceSigningToolTest : UnitTestBase
     {
         var signingTool = CreateSignTool();
         {
-            Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest").Should().BeTrue();
             signingTool.UnsignFile("Unsign_Works/signed/signed.exe.manifest");
-            Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.exe.manifest").Should().BeFalse();
         }
     }
 

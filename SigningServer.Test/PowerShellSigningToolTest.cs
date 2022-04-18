@@ -1,6 +1,6 @@
 ﻿using System.IO;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.MsSign;
 
@@ -13,8 +13,8 @@ public class PowerShellSigningToolTest : UnitTestBase
     public void IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.ps1"));
-        Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.ps1"));
+        File.Exists("TestFiles/unsigned/unsigned.ps1").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.ps1").Should().BeFalse();
     }
 
     private static PowerShellSigningTool CreateSignTool()
@@ -26,8 +26,8 @@ public class PowerShellSigningToolTest : UnitTestBase
     public void IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists("TestFiles/signed/signed.ps1"));
-        Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.ps1"));
+        File.Exists("TestFiles/signed/signed.ps1").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/signed/signed.ps1").Should().BeTrue();
     }
 
     [TestMethod]
@@ -36,9 +36,9 @@ public class PowerShellSigningToolTest : UnitTestBase
     {
         var signingTool = CreateSignTool();
         {
-            Assert.IsTrue(signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1").Should().BeTrue();
             signingTool.UnsignFile("Unsign_Works/signed/signed.ps1");
-            Assert.IsFalse(signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1"));
+            signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1").Should().BeFalse();
         }
     }
 

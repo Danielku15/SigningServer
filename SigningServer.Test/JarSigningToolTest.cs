@@ -15,16 +15,16 @@ public class JarSigningToolTest : UnitTestBase
     public void IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = new JarSigningTool();
-        Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned.jar"));
-        Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned.jar"));
+        File.Exists("TestFiles/unsigned/unsigned.jar").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.jar").Should().BeFalse();
     }
 
     [TestMethod]
     public void IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = new JarSigningTool();
-        Assert.IsTrue(File.Exists("TestFiles/signed/signed.jar"));
-        Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed.jar"));
+        File.Exists("TestFiles/signed/signed.jar").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/signed/signed.jar").Should().BeTrue();
     }
 
     [TestMethod]

@@ -39,10 +39,10 @@ public class PortableExecutableSigningTool : ISigningTool
 
     private readonly ILogger _logger;
 
-    public virtual string Name => "Windows Portable Executables (PE)";
+    public virtual string FormatName => "Windows Portable Executables (PE)";
 
-    public virtual string[] SupportedFileExtensions => PeSupportedExtensions.ToArray();
-    public virtual string[] SupportedHashAlgorithms => PeSupportedHashAlgorithms.Keys.ToArray();
+    public virtual IReadOnlyList<string> SupportedFileExtensions => PeSupportedExtensions.ToArray();
+    public virtual IReadOnlyList<string> SupportedHashAlgorithms => PeSupportedHashAlgorithms.Keys.ToArray();
 
     public PortableExecutableSigningTool(ILogger<PortableExecutableSigningTool> logger)
     {
@@ -205,7 +205,7 @@ public class PortableExecutableSigningTool : ISigningTool
             signFileResponse.Status = successResult;
             signFileResponse.ResultFiles = new[]
             {
-                new SignFileResponseFileInfo(signFileRequest.InputRawFileName, signFileRequest.InputFilePath)
+                new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath)
             };
         }
         else if (hr != Win32.S_OK)

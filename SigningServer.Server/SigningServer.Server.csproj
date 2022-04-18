@@ -4,8 +4,6 @@
 		<Title>SigningServer Server</Title>
 		<Description>This is the server side component for running a signing server.</Description>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-		<SelfContained>false</SelfContained>
 		<TargetFramework>net6.0-windows</TargetFramework>
   </PropertyGroup>
 	<ItemGroup>

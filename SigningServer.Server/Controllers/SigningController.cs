@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
+using SigningServer.Server.Util;
 
 namespace SigningServer.Server.Controllers;
 
@@ -45,9 +46,10 @@ public class SigningController : Controller
         _logger.LogTrace($"[{remoteIp}] Requesting supported file extensions");
         return Ok(new ServerCapabilitiesResponse
         {
+            MaxDegreeOfParallelismPerClient = _configuration.MaxDegreeOfParallelismPerClient,
             SupportedFormats = _signingToolProvider.AllTools.Select(tool => new ServerSupportedFormat
             {
-                Name = tool.Name,
+                Name = tool.FormatName,
                 SupportedFileExtensions = tool.SupportedFileExtensions,
                 SupportedHashAlgorithms = tool.SupportedHashAlgorithms,
             }).ToList()
@@ -168,7 +170,7 @@ public class SigningController : Controller
             coreSignFileResponse = signingTool.SignFile(new SignFileRequest
             {
                 InputFilePath = inputFileName,
-                InputRawFileName = signFileRequest.FileToSign.FileName,
+                OriginalFileName = signFileRequest.FileToSign.FileName,
                 HashAlgorithm = signFileRequest.HashAlgorithm,
                 Certificate = certificate.Certificate,
                 PrivateKey = certificate.PrivateKey,

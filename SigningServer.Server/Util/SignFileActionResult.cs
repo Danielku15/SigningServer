@@ -8,8 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SigningServer.Core;
 
-namespace SigningServer.Server;
+namespace SigningServer.Server.Util;
 
+/// <summary>
+/// An ActionResult implementation which sends a <see cref="SignFileResponse"/>
+/// correctly to the client as multipart/form-data encoded response.
+/// </summary>
 public class SignFileActionResult : ActionResult, IStatusCodeActionResult
 {
     private readonly IList<SignFileResponseFileInfo> _files;
@@ -50,12 +54,13 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
 
         var boundary = Guid.NewGuid().ToString("N");
         response.ContentType = "multipart/form-data; boundary=" + boundary;
-        await response.StartAsync();
         
         var openedStreams = new Android.Collections.List<Stream>();
         try
         {
             var content = new MultipartFormDataContent(boundary);
+         
+            // Fill Base information
             content.Add(new StringContent(Response.Status.ToString()),
                 nameof(Models.SignFileResponse.Status));
             if (!string.IsNullOrEmpty(Response.ErrorMessage))
@@ -67,6 +72,8 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
                 nameof(Models.SignFileResponse.UploadTimeInMilliseconds));
             content.Add(new StringContent(Response.SignTimeInMilliseconds.ToString()),
                 nameof(Models.SignFileResponse.SignTimeInMilliseconds));
+            
+            // Fill Files
             if (_files != null)
             {
                 foreach (var file in _files)
@@ -80,6 +87,7 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
                 }
             }
             
+            // Stream to client
             await content.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
         }
         catch (OperationCanceledException)

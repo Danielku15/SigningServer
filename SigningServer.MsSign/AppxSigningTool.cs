@@ -17,9 +17,9 @@ public class AppxSigningTool : PortableExecutableSigningTool
             ".msix", ".emsix", ".msixbundle", ".emsixbundle"
         };
 
-    public override string Name => "Universal Windows Platform";
+    public override string FormatName => "Universal Windows Platform";
 
-    public override string[] SupportedFileExtensions => AppxSupportedExtensions.ToArray();
+    public override IReadOnlyList<string> SupportedFileExtensions => AppxSupportedExtensions.ToArray();
         
 
     public AppxSigningTool(ILogger<AppxSigningTool> logger) : base(logger)

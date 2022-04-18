@@ -15,16 +15,16 @@ public class AndroidApkSigningToolTest : UnitTestBase
     public void IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = new AndroidApkSigningTool();
-        Assert.IsTrue(File.Exists("TestFiles/unsigned/unsigned-aligned.apk"));
-        Assert.IsFalse(signingTool.IsFileSigned("TestFiles/unsigned/unsigned-aligned.apk"));
+        File.Exists("TestFiles/unsigned/unsigned-aligned.apk").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/unsigned/unsigned-aligned.apk").Should().BeFalse();
     }
 
     [TestMethod]
     public void IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = new AndroidApkSigningTool();
-        Assert.IsTrue(File.Exists("TestFiles/signed/signed-aligned.apk"));
-        Assert.IsTrue(signingTool.IsFileSigned("TestFiles/signed/signed-aligned.apk"));
+        File.Exists("TestFiles/signed/signed-aligned.apk").Should().BeTrue();
+        signingTool.IsFileSigned("TestFiles/signed/signed-aligned.apk").Should().BeTrue();
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
             result.IsVerifiedUsingV1Scheme().Should().BeTrue();
             result.IsVerifiedUsingV2Scheme().Should().BeTrue();
             result.IsVerifiedUsingV3Scheme().Should().BeTrue();
-            result.IsVerifiedUsingV4Scheme().Should().BeFalse();
+            result.IsVerifiedUsingV4Scheme().Should().BeTrue();
         });
     }
 
@@ -101,7 +101,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
             result.IsVerifiedUsingV1Scheme().Should().BeTrue();
             result.IsVerifiedUsingV2Scheme().Should().BeTrue();
             result.IsVerifiedUsingV3Scheme().Should().BeTrue();
-            result.IsVerifiedUsingV4Scheme().Should().BeFalse();
+            result.IsVerifiedUsingV4Scheme().Should().BeTrue();
         });
     }
 
@@ -124,6 +124,12 @@ public class AndroidApkSigningToolTest : UnitTestBase
         signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
 
         var builder = new ApkVerifier.Builder(new FileInfo(response.ResultFiles[0].OutputFilePath));
+
+        if (response.ResultFiles.Count > 1)
+        {
+            builder.SetV4SignatureFile(new FileInfo(response.ResultFiles[1].OutputFilePath));
+        }
+        
         var result = builder.Build().Verify();
 
         action(result);

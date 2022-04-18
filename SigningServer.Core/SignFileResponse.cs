@@ -2,10 +2,13 @@
 
 namespace SigningServer.Core;
 
+/// <summary>
+/// Describes the result of a signing operation.
+/// </summary>
 public class SignFileResponse
 {
     /// <summary>
-    /// The result of the signing
+    /// The result status of the signing
     /// </summary>
     public SignFileResponseStatus Status { get; set; }
 

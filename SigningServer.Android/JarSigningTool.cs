@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
-using SigningServer.Android.Com.Android.Apksig.Apk;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
 using SigningServer.Android.Security.DotNet;
 using SigningServer.Core;
@@ -29,7 +28,7 @@ namespace SigningServer.Android
                 ["SHA1"] = DigestAlgorithm.SHA1, ["SHA256"] = DigestAlgorithm.SHA256
             };
 
-        public string Name => "Java Applications";
+        public string FormatName => "Java Applications";
 
         public bool IsFileSupported(string fileName)
         {
@@ -92,7 +91,7 @@ namespace SigningServer.Android
                 signFileResponse.Status = successResult;
                 signFileResponse.ResultFiles = new List<SignFileResponseFileInfo>
                 {
-                    new SignFileResponseFileInfo(signFileRequest.InputRawFileName, outputFileName),
+                    new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName),
                 };
                 return signFileResponse;
             }
@@ -142,8 +141,8 @@ namespace SigningServer.Android
         }
 
         /// <inheritdoc />
-        public string[] SupportedFileExtensions => JarSupportedExtension.ToArray();
+        public IReadOnlyList<string> SupportedFileExtensions => JarSupportedExtension.ToArray();
 
-        public string[] SupportedHashAlgorithms => JarSupportedHashAlgorithms.Keys.ToArray();
+        public IReadOnlyList<string> SupportedHashAlgorithms => JarSupportedHashAlgorithms.Keys.ToArray();
     }
 }

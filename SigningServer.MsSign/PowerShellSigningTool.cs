@@ -13,9 +13,9 @@ public class PowerShellSigningTool : PortableExecutableSigningTool
 
     private static readonly string[] PowerShellSupportedHashAlgorithms = { "SHA256" };
 
-    public override string Name => "PowerShell";
-    public override string[] SupportedFileExtensions => PowerShellSupportedExtension.ToArray();
-    public override string[] SupportedHashAlgorithms => PowerShellSupportedHashAlgorithms;
+    public override string FormatName => "PowerShell";
+    public override IReadOnlyList<string> SupportedFileExtensions => PowerShellSupportedExtension.ToArray();
+    public override IReadOnlyList<string> SupportedHashAlgorithms => PowerShellSupportedHashAlgorithms;
 
     public PowerShellSigningTool(ILogger<PowerShellSigningTool> logger) : base(logger)
     {

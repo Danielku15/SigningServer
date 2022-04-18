@@ -32,7 +32,7 @@ namespace SigningServer.Android
                 ["SHA1"] = DigestAlgorithm.SHA1, ["SHA256"] = DigestAlgorithm.SHA256
             };
 
-        public string Name => "Android Application Packages";
+        public string FormatName => "Android Application Packages";
         
         public bool IsFileSupported(string fileName)
         {
@@ -107,12 +107,12 @@ namespace SigningServer.Android
                 signFileResponse.Status = successResult;
                 signFileResponse.ResultFiles = new List<SignFileResponseFileInfo>
                 {
-                    new SignFileResponseFileInfo(signFileRequest.InputRawFileName, outputFileName),
+                    new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName),
                 };
                 if (File.Exists(outputSignatureFileName))
                 {
                     signFileResponse.ResultFiles.Add(
-                        new SignFileResponseFileInfo(signFileRequest.InputRawFileName + ".idsig",
+                        new SignFileResponseFileInfo(signFileRequest.OriginalFileName + ".idsig",
                             outputSignatureFileName));
                 }
 
@@ -173,8 +173,8 @@ namespace SigningServer.Android
         }
 
         /// <inheritdoc />
-        public string[] SupportedFileExtensions => ApkSupportedExtension.ToArray();
+        public IReadOnlyList<string> SupportedFileExtensions => ApkSupportedExtension.ToArray();
 
-        public string[] SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
+        public IReadOnlyList<string> SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
     }
 }

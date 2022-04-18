@@ -11,7 +11,7 @@
 		<Version>2.0.0.$(BuildNumber)</Version>
 		<Company>Daniel Kuschny</Company>
 		<Copyright>Copyright © 2022 Daniel Kuschny</Copyright>
-		<Product>CoderLine SigningServer</Product>
+		<Product>SigningServer</Product>
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>

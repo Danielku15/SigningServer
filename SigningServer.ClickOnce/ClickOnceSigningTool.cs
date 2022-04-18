@@ -18,7 +18,7 @@ public class ClickOnceSigningTool : ISigningTool
 
     private readonly ILogger<ClickOnceSigningTool> _logger;
 
-    public string Name => "Microsoft ClickOnce";
+    public string FormatName => "Microsoft ClickOnce";
 
     public ClickOnceSigningTool(ILogger<ClickOnceSigningTool> logger)
     {
@@ -54,7 +54,7 @@ public class ClickOnceSigningTool : ISigningTool
         signFileResponse.Status = successResult;
         signFileResponse.ResultFiles = new[]
         {
-            new SignFileResponseFileInfo(signFileRequest.InputRawFileName, signFileRequest.InputFilePath)
+            new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath)
         };
         return signFileResponse;
     }
@@ -95,7 +95,7 @@ public class ClickOnceSigningTool : ISigningTool
     }
 
     /// <inheritdoc />
-    public string[] SupportedFileExtensions => ClickOnceSupportedExtension.ToArray();
+    public IReadOnlyList<string> SupportedFileExtensions => ClickOnceSupportedExtension.ToArray();
 
-    public string[] SupportedHashAlgorithms => ClickOnceSupportedHashAlgorithms;
+    public IReadOnlyList<string> SupportedHashAlgorithms => ClickOnceSupportedHashAlgorithms;
 }

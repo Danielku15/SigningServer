@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Core;
 
 namespace SigningServer.Test;
@@ -14,7 +13,7 @@ public class UnitTestBase
 
     protected void CanSign(ISigningTool signingTool, string fileName, string hashAlgorithm = null)
     {
-        Assert.IsTrue(signingTool.IsFileSupported(fileName));
+        signingTool.IsFileSupported(fileName).Should().BeTrue();
 
         var timestampServer = "SHA1".Equals(hashAlgorithm, StringComparison.OrdinalIgnoreCase)
             ? Sha1TimestampServer
@@ -31,7 +30,7 @@ public class UnitTestBase
         };
         var response = signingTool.SignFile(request);
 
-        Assert.AreEqual(SignFileResponseStatus.FileSigned, response.Status);
+        response.Status.Should().Be(SignFileResponseStatus.FileSigned);
         signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
@@ -43,15 +42,15 @@ public class UnitTestBase
     protected void EnsureSignature(string fileName, string hashAlgorithmOid)
     {
         var signerInfo = CertificateHelper.GetDigitalCertificate(fileName);
-        Assert.IsNotNull(signerInfo);
-        Assert.AreEqual(1, signerInfo.SignerInfos.Count);
+        signerInfo.Should().NotBeNull();
+        signerInfo.SignerInfos.Count.Should().Be(1);
 
-        Assert.AreEqual(hashAlgorithmOid, signerInfo.SignerInfos[0].DigestAlgorithm.Value);
+        signerInfo.SignerInfos[0].DigestAlgorithm.Value.Should().Be(hashAlgorithmOid);
     }
 
     protected void CanResign(ISigningTool signingTool, string fileName)
     {
-        Assert.IsTrue(signingTool.IsFileSupported(fileName));
+        signingTool.IsFileSupported(fileName).Should().BeTrue();
 
         var request = new SignFileRequest
         {
@@ -63,15 +62,15 @@ public class UnitTestBase
         };
         var response = signingTool.SignFile(request);
 
-        Assert.AreEqual(SignFileResponseStatus.FileResigned, response.Status);
-        Assert.IsTrue(signingTool.IsFileSigned(fileName));
+        response.Status.Should().Be(SignFileResponseStatus.FileResigned);
+        signingTool.IsFileSigned(fileName).Should().BeTrue();
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
     }
 
     protected void CannotResign(ISigningTool signingTool, string fileName)
     {
-        Assert.IsTrue(signingTool.IsFileSupported(fileName));
+        signingTool.IsFileSupported(fileName).Should().BeTrue();
 
         var request = new SignFileRequest
         {
@@ -84,8 +83,8 @@ public class UnitTestBase
         var response = signingTool.SignFile(request);
 
         Trace.WriteLine(response);
-        Assert.AreEqual(SignFileResponseStatus.FileAlreadySigned, response.Status);
-        Assert.IsTrue(signingTool.IsFileSigned(fileName));
+        response.Status.Should().Be(SignFileResponseStatus.FileAlreadySigned);
+        signingTool.IsFileSigned(fileName).Should().BeTrue();
         response.ResultFiles.Should().BeNull();
     }
 }

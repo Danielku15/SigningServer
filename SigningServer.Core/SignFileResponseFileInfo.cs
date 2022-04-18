@@ -1,5 +1,8 @@
 namespace SigningServer.Core;
 
+/// <summary>
+/// Describes a single output file of a signing operation.
+/// </summary>
 public class SignFileResponseFileInfo
 {
     /// <summary>

@@ -27,5 +27,5 @@ public class SigningServerConfiguration
     /// <summary>
     /// The maximum degree of parallelism allowed per individual client.
     /// </summary>
-    public int MaxDegreeOfParallelismPerClient { get; set; }
+    public int MaxDegreeOfParallelismPerClient { get; set; } = 4;
 }

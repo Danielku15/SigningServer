@@ -74,6 +74,32 @@ public class SigningServerIntegrationTest : UnitTestBase
     }
 
     [TestMethod]
+    [DeploymentItem("TestFiles", "Parallel")]
+    public async Task ParallelSigning()
+    {
+        using (var client = new SigningClient(_application.CreateClient(),
+                   Path.Combine(ExecutionDirectory, "Parallel/unsigned")))
+        {
+            client.Configuration.Parallel = 4;
+            await client.ConnectAsync();
+            await client.SignFilesAsync();
+        }
+
+        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+
+        var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
+        var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();
+
+        foreach (var signedFile in signedFiles)
+        {
+            var tool = signingTools.GetSigningTool(signedFile);
+            tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
+
+            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
+        }
+    }
+
+    [TestMethod]
     public void ConcurrentSigning()
     {
         var testDir = Path.Combine(ExecutionDirectory, "IntegrationTestFiles/large");
@@ -94,6 +120,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var sw = Stopwatch.StartNew();
             using (var client = new SigningClient(_application.CreateClient(), f))
             {
+                await client.ConnectAsync();
                 await client.SignFilesAsync();
             }
 

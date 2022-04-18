@@ -21,10 +21,11 @@ public sealed class SigningClient : IDisposable
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-    private readonly SigningClientConfiguration _configuration;
     private readonly HttpClient _client;
     private ServerCapabilitiesResponse _serverCapabilities;
     private readonly HashSet<string> _supportedFileFormats = new(StringComparer.OrdinalIgnoreCase);
+
+    public SigningClientConfiguration Configuration { get; }
 
     public SigningClient(SigningClientConfiguration configuration)
     {
@@ -67,7 +68,7 @@ public sealed class SigningClient : IDisposable
 
     public SigningClient(HttpClient client, params string[] sources)
     {
-        _configuration = new SigningClientConfiguration
+        Configuration = new SigningClientConfiguration
         {
             Sources = sources
         };
@@ -82,20 +83,20 @@ public sealed class SigningClient : IDisposable
     public async Task SignFilesAsync()
     {
         Log.Info("Collecting all files");
-        var allFiles = _configuration.Sources.SelectMany(source =>
+        var allFiles = Configuration.Sources.SelectMany(source =>
         {
             if (File.Exists(source))
             {
                 return new[] { source };
             }
 
-            return Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(source!, "*", SearchOption.AllDirectories)
                 .Where(f => _supportedFileFormats.Contains(Path.GetExtension(f)))
                 .ToArray();
         });
         var processingQueue = new ConcurrentQueue<string>(allFiles);
 
-        var numberOfWorkers = Math.Min(Math.Max(1, _configuration.Parallel ?? Environment.ProcessorCount),
+        var numberOfWorkers = Math.Min(Math.Max(1, Configuration.Parallel ?? Environment.ProcessorCount),
             _serverCapabilities.MaxDegreeOfParallelismPerClient);
 
         Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers}", processingQueue.Count,
@@ -104,7 +105,7 @@ public sealed class SigningClient : IDisposable
         var cancellationSource = new CancellationTokenSource();
         Exception mainException = null;
         var tasks = Enumerable.Range(0, numberOfWorkers)
-            .Select(_ => Task.Factory.StartNew(async () =>
+            .Select(_ => Task.Run(async () =>
             {
                 try
                 {
@@ -153,7 +154,7 @@ public sealed class SigningClient : IDisposable
             info.Attributes &= ~FileAttributes.ReadOnly;
         }
 
-        var retry = _configuration.Retry;
+        var retry = Configuration.Retry;
         do
         {
             try
@@ -162,21 +163,21 @@ public sealed class SigningClient : IDisposable
                 sw.Start();
 
                 var content = new MultipartFormDataContent(Guid.NewGuid().ToString("N"));
-                if (!string.IsNullOrEmpty(_configuration.Username))
+                if (!string.IsNullOrEmpty(Configuration.Username))
                 {
-                    content.Add(new StringContent(_configuration.Username), "Username");
+                    content.Add(new StringContent(Configuration.Username), "Username");
                 }
 
-                if (!string.IsNullOrEmpty(_configuration.Password))
+                if (!string.IsNullOrEmpty(Configuration.Password))
                 {
-                    content.Add(new StringContent(_configuration.Password), "Password");
+                    content.Add(new StringContent(Configuration.Password), "Password");
                 }
 
-                content.Add(new StringContent(_configuration.OverwriteSignatures.ToString().ToLowerInvariant()),
+                content.Add(new StringContent(Configuration.OverwriteSignatures.ToString().ToLowerInvariant()),
                     "OverwriteSignature");
-                if (!string.IsNullOrEmpty(_configuration.HashAlgorithm))
+                if (!string.IsNullOrEmpty(Configuration.HashAlgorithm))
                 {
-                    content.Add(new StringContent(_configuration.HashAlgorithm.ToLowerInvariant()),
+                    content.Add(new StringContent(Configuration.HashAlgorithm.ToLowerInvariant()),
                         "HashAlgorithm");
                 }
 
@@ -239,7 +240,7 @@ public sealed class SigningClient : IDisposable
                                 Log.Info(
                                     "File is already signed and was therefore skipped (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
-                                if (!_configuration.IgnoreExistingSignatures)
+                                if (!Configuration.IgnoreExistingSignatures)
                                 {
                                     Log.Error("Signing failed");
                                     throw new FileAlreadySignedException();
@@ -249,7 +250,7 @@ public sealed class SigningClient : IDisposable
                                 break;
                             case SignFileResponseStatus.FileNotSignedUnsupportedFormat:
                                 Log.Warn("File is not supported for signing");
-                                if (!_configuration.IgnoreUnsupportedFiles)
+                                if (!Configuration.IgnoreUnsupportedFiles)
                                 {
                                     Log.Error("Signing failed");
                                     throw new UnsupportedFileFormatException();

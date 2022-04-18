@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -31,7 +32,6 @@ public class SigningServerIntegrationTest : UnitTestBase
                     services.Replace(ServiceDescriptor.Singleton(
                         new SigningServerConfiguration
                         {
-                            Port = 4711,
                             TimestampServer = TimestampServer,
                             Sha1TimestampServer = Sha1TimestampServer,
                             Certificates = new[]
@@ -58,7 +58,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.SignFileAsync(Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned"));
         }
 
-        Assert.AreEqual(0, Directory.GetFiles("WorkingDirectory").Length, "Server Side file cleanup failed");
+        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
 
         var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
         var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();
@@ -66,9 +66,9 @@ public class SigningServerIntegrationTest : UnitTestBase
         foreach (var signedFile in signedFiles)
         {
             var tool = signingTools.GetSigningTool(signedFile);
-            Assert.IsNotNull(tool, "Could not find signing tool for file {0}", signedFile);
+            tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
+            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
         }
     }
 
@@ -106,9 +106,9 @@ public class SigningServerIntegrationTest : UnitTestBase
         foreach (var signedFile in signedFiles)
         {
             var tool = signingTools.GetSigningTool(signedFile);
-            Assert.IsNotNull(tool, "Could not find signing tool for file {0}", signedFile);
+            tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            Assert.IsTrue(tool.IsFileSigned(signedFile), "File {0} was not signed", signedFile);
+            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
         }
 
         var times = tasks.Select(t => t.Result).ToArray();
@@ -122,6 +122,24 @@ public class SigningServerIntegrationTest : UnitTestBase
                     $"Performance test failed, needed {times[i].TotalMilliseconds}ms for file {testFiles[i]} with average of {average} and threshold of {threshold}");
             }
         }
+    }
+    
+    [TestMethod]
+    [DeploymentItem("TestFiles", "ApkIdSig")]
+    public async Task TestIdSigIsDownloadedAlongApkg()
+    {
+        using (var client = new SigningClient(_application.CreateClient()))
+        {
+            await client.ConnectAsync();
+            await client.SignFileAsync(Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk"));
+        }
+
+        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+
+        var apk = Path.Combine(ExecutionDirectory, "ApkIdSig", "unsigned", "unsigned-aligned.apk");
+        var idsig = Path.Combine(ExecutionDirectory, "ApkIdSig", "unsigned", "unsigned-aligned.apk.idsig");
+        File.Exists(apk).Should().BeTrue();
+        File.Exists(idsig).Should().BeTrue();
     }
     
     private string GenerateLargeTestFile(string path)

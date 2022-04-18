@@ -15,10 +15,10 @@ public class ServerSupportedFormat
     /// <summary>
     /// The supported file extensions of this format.
     /// </summary>
-    public IList<string> SupportedFileExtensions { get; set; }
+    public IReadOnlyList<string> SupportedFileExtensions { get; set; }
     
     /// <summary>
     /// The supported hash algorithms of this format.
     /// </summary>
-    public IList<string> SupportedHashAlgorithms { get; set; }
+    public IReadOnlyList<string> SupportedHashAlgorithms { get; set; }
 }

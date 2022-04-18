@@ -10,11 +10,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.WebUtilities;
 using NLog;
-using NLog.Internal;
 using SigningServer.Core;
-using ContentDispositionHeaderValue = System.Net.Http.Headers.ContentDispositionHeaderValue;
 
 namespace SigningServer.Client;
 
@@ -169,7 +167,7 @@ public sealed class SigningClient : IDisposable
 
                 await using (var stream = await response.Content.ReadAsStreamAsync())
                 {
-                    var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, stream);
+                    var reader = new MultipartReader(boundary, stream);
 
                     var status = SignFileResponseStatus.FileSigned;
                     var errorMessage = string.Empty;
@@ -309,7 +307,7 @@ public sealed class SigningClient : IDisposable
                                     await using var targetFile = new FileStream(targetFileName, FileMode.Create,
                                         FileAccess.ReadWrite,
                                         FileShare.None);
-                                    section.Body.Copy(targetFile);
+                                    await section.Body.CopyToAsync(targetFile);
                                     downloadWatch.Stop();
                                     Log.Info("Downloaded file {fileName} in {downloadTime}ms", fileName,
                                         downloadWatch.ElapsedMilliseconds);

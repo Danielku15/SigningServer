@@ -6,7 +6,7 @@ using SigningServer.MsSign;
 
 namespace SigningServer.Server.SigningTool;
 
-public class DefaultSigningToolProvider : EnumerableSigningToolProvider
+internal class DefaultSigningToolProvider : EnumerableSigningToolProvider
 {
     public DefaultSigningToolProvider(ILoggerFactory loggerFactory)
         : base(new ISigningTool[]

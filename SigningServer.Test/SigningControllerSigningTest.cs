@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -72,11 +73,11 @@ public class SigningControllerSigningTest : UnitTestBase
             FileToSign = new FormFile(new MemoryStream(), 0, 0, "FileToSign", "file.txt")
         };
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        Assert.AreEqual(SignFileResponseStatus.FileNotSignedError, response.Response.Status);
+        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedError);
 
         request = new SignFileRequest { FileToSign = null };
         response = await server.SignFileAsync(request, CancellationToken.None);
-        Assert.AreEqual(SignFileResponseStatus.FileNotSignedError, response.Response.Status);
+        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedError);
     }
 
     [TestMethod]
@@ -112,7 +113,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        Assert.AreEqual(SignFileResponseStatus.FileNotSignedUnauthorized, response.Response.Status);
+        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedUnauthorized);
     }
 
     private static ControllerContext CreateEmptyControllerContext()
@@ -144,7 +145,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        Assert.AreEqual(SignFileResponseStatus.FileNotSignedUnsupportedFormat, response.Response.Status);
+        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileNotSignedUnsupportedFormat);
     }
 
     [TestMethod]
@@ -165,8 +166,8 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        Assert.AreEqual(SignFileResponseStatus.FileSigned, response.Response.Status);
+        AssertionExtensions.Should(response.Response.Status).Be(SignFileResponseStatus.FileSigned);
         var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
-        Assert.AreEqual(1, files.Length);
+        files.Length.Should().Be(1);
     }
 }

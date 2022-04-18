@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using SigningServer.Server.Configuration;
+using SigningServer.Server.Util;
 
 namespace SigningServer.Server;
 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
+using SigningServer.Server.Util;
 
 namespace SigningServer.Server;
 
@@ -39,7 +40,7 @@ public class Startup
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.SetIsOriginAllowed(_ => true) 
+                policy.SetIsOriginAllowed(_ => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
@@ -49,15 +50,16 @@ public class Startup
 
     public void Configure(IApplicationBuilder app,
         ILogger<Startup> logger,
+        ILogger<CertificateConfiguration> certConfigurationLogger,
         HardwareCertificateUnlocker unlocker,
         IHostApplicationLifetime lifetime)
     {
         lifetime.ApplicationStarted.Register(() =>
         {
-            ValidateConfiguration(logger, unlocker);
+            ValidateConfiguration(logger, certConfigurationLogger, unlocker);
             PrepareWorkingDirectory(logger);
         });
-        
+
         app.UseCors();
         app.UseHttpsRedirection();
         app.UseRouting();
@@ -89,7 +91,9 @@ public class Startup
         logger.LogInformation("Working directory: {0}", _configuration.WorkingDirectory);
     }
 
-    private void ValidateConfiguration(ILogger<Startup> logger, HardwareCertificateUnlocker unlocker)
+    private void ValidateConfiguration(ILogger<Startup> logger,
+        ILogger<CertificateConfiguration> certConfigurationLogger,
+        HardwareCertificateUnlocker unlocker)
     {
         logger.LogInformation("Validating configuration");
         var list = new List<CertificateConfiguration>();
@@ -105,14 +109,9 @@ public class Startup
 
                 try
                 {
-                    logger.LogInformation("Loading certificate '{0}'", certificateConfiguration.Thumbprint);
-                    certificateConfiguration.LoadCertificate(unlocker);
+                    logger.LogInformation("Loading certificate '{certificateConfiguration}'", certificateConfiguration);
+                    certificateConfiguration.LoadCertificate(certConfigurationLogger, unlocker);
                     list.Add(certificateConfiguration);
-                }
-                catch (CryptographicException e)
-                {
-                    logger.LogError(e,
-                        $"Certificate for thumbprint {certificateConfiguration.Thumbprint} in {certificateConfiguration.StoreLocation}/{certificateConfiguration.StoreName} could not be loaded: 0x{e.HResult:X}");
                 }
                 catch (Exception e)
                 {

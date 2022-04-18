@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace SigningServer.Server;
+namespace SigningServer.Server.Util;
 
 /// <summary>
 /// A utility class to protect/unprotect any strings using the data projection API.

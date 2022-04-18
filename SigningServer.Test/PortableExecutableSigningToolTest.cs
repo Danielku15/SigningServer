@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.MsSign;
@@ -12,8 +13,8 @@ public class PortableExecutableSigningToolTest : UnitTestBase
     public void IsFileSigned_Dll_UnsignedFile_ReturnsFalse()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
-        Assert.IsFalse(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")));
+        File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")).Should().BeTrue();
+        signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.dll")).Should().BeFalse();
     }
 
     private static PortableExecutableSigningTool CreateSignTool()
@@ -25,8 +26,8 @@ public class PortableExecutableSigningToolTest : UnitTestBase
     public void IsFileSigned_Dll_SignedFile_ReturnsTrue()
     {
         var signingTool = CreateSignTool();
-        Assert.IsTrue(File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
-        Assert.IsTrue(signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")));
+        File.Exists(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")).Should().BeTrue();
+        signingTool.IsFileSigned(Path.Combine(ExecutionDirectory, "TestFiles/signed/signed.dll")).Should().BeTrue();
     }
 
     [TestMethod]
@@ -35,9 +36,9 @@ public class PortableExecutableSigningToolTest : UnitTestBase
     {
         var signingTool = CreateSignTool();
         var file = Path.Combine(ExecutionDirectory, "Unsign_Works/signed/signed.dll");
-        Assert.IsTrue(signingTool.IsFileSigned(file));
+        signingTool.IsFileSigned(file).Should().BeTrue();
         signingTool.UnsignFile(file);
-        Assert.IsFalse(signingTool.IsFileSigned(file));
+        signingTool.IsFileSigned(file).Should().BeFalse();
     }
 
     #region Signing Works

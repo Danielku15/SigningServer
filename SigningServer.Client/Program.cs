@@ -1,17 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using NLog;
+using NLog.Targets;
 
 namespace SigningServer.Client;
 
 internal class Program
 {
-    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
     private static async Task Main(string[] args)
     {
         if (args.Length == 0)
@@ -19,6 +17,10 @@ internal class Program
             Console.WriteLine("usage: SigningServer.Client.exe [--config File] Source1 [Source2 Source3 ...]");
             return;
         }
+
+        SetupLogging();
+
+        var log = LogManager.GetCurrentClassLogger();
 
         string configFile = null;
         if (args.Length > 2)
@@ -29,35 +31,35 @@ internal class Program
                 args = args.Skip(2).ToArray();
             }
         }
-
-
+        
         if (string.IsNullOrEmpty(configFile))
         {
-            configFile = Path.Combine(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName,
+            configFile = Path.Combine(AppContext.BaseDirectory,
                 "config.json");
         }
 
         if (!File.Exists(configFile))
         {
-            Log.Fatal("Could not find config.json beside executable");
+            log.Fatal("Could not find config.json beside executable");
             return;
         }
 
         SigningClientConfiguration configuration;
         try
         {
-            Log.Info("Loading config");
-            configuration = JsonSerializer.Deserialize<SigningClientConfiguration>(await File.ReadAllTextAsync(configFile))!;
+            log.Info("Loading config");
+            configuration =
+                JsonSerializer.Deserialize<SigningClientConfiguration>(await File.ReadAllTextAsync(configFile))!;
             if (configuration.Retry == 0)
             {
                 configuration.Retry = 3;
             }
 
-            Log.Info("Configuration loaded");
+            log.Info("Configuration loaded");
         }
         catch (Exception e)
         {
-            Log.Error(e, "Config could not be loaded");
+            log.Error(e, "Config could not be loaded");
             Environment.ExitCode = ErrorCodes.InvalidConfiguration;
             return;
         }
@@ -65,14 +67,14 @@ internal class Program
         SigningClient client;
         try
         {
-            Log.Info("Creating client");
+            log.Info("Creating client");
             client = new SigningClient(configuration);
             await client.ConnectAsync();
-            Log.Info("connected to server");
+            log.Info("connected to server");
         }
         catch (Exception e)
         {
-            Log.Error(e, "Could not create signing client");
+            log.Error(e, "Could not create signing client");
             Environment.ExitCode = ErrorCodes.CommunicationError;
             return;
         }
@@ -102,9 +104,29 @@ internal class Program
         }
         catch (Exception e)
         {
-            Log.Fatal(e, "Unexpected error happened");
+            log.Fatal(e, "Unexpected error happened");
             Environment.ExitCode = ErrorCodes.UnexpectedError;
         }
+    }
+
+    private static void SetupLogging()
+    {
+        if (File.Exists(Path.Combine(AppContext.BaseDirectory, "nlog.config")))
+        {
+            return;
+        }
+
+        var configuration = new NLog.Config.LoggingConfiguration();
+        const string Format = "${longdate} ${level} - ${message} ${exception:format=ToString}";
+        var console = new ColoredConsoleTarget("console") { Layout = Format };
+        var debugger = new DebuggerTarget("debug") { Layout = Format };
+        configuration.AddTarget(console);
+        configuration.AddTarget(debugger);
+
+        configuration.AddRule(LogLevel.Trace, LogLevel.Off, console);
+        configuration.AddRule(LogLevel.Trace, LogLevel.Off, debugger);
+        LogManager.Configuration = configuration;
+        LogManager.ReconfigExistingLoggers();
     }
 }
 
@@ -116,6 +138,7 @@ internal static class ErrorCodes
     public const int UnsupportedFileFormat = 4;
     public const int Unauthorized = 5;
     public const int InvalidConfiguration = 6;
+
     public const int CommunicationError = 7;
     // public const int SecurityNegotiationFailed = 8; -> Phased out
 }

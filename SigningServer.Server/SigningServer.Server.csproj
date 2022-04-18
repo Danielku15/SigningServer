@@ -12,9 +12,6 @@
 		<None Include="NLog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Include="NLog.xsd">
-			<SubType>Designer</SubType>
-		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Azure.Identity" Version="1.6.0" />

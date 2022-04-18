@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -62,7 +63,7 @@ public class SigningControllerSigningTest : UnitTestBase
     [TestMethod]
     public async Task SignFile_EmptyFile_Fails()
     {
-        var server = new SigningController(new NullLogger<SigningController>(),
+        var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
@@ -98,7 +99,7 @@ public class SigningControllerSigningTest : UnitTestBase
             WorkingDirectory = "WorkingDirectory"
         };
 
-        var server = new SigningController(new NullLogger<SigningController>(),
+        var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
@@ -130,7 +131,7 @@ public class SigningControllerSigningTest : UnitTestBase
     [TestMethod]
     public async Task SignFile_UnsupportedFormat_Fails()
     {
-        var server = new SigningController(new NullLogger<SigningController>(),
+        var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
@@ -151,7 +152,7 @@ public class SigningControllerSigningTest : UnitTestBase
     [TestMethod]
     public async Task SignFile_UploadsFileToWorkingDirectory()
     {
-        var server = new SigningController(new NullLogger<SigningController>(),
+        var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _simultateSigningToolProvider, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()

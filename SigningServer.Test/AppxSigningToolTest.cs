@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Core;
@@ -21,7 +22,7 @@ public class AppxSigningToolTest : UnitTestBase
 
     private static AppxSigningTool CreateSignTool()
     {
-        return new AppxSigningTool(new NullLogger<AppxSigningTool>());
+        return new AppxSigningTool(AssemblyEvents.LoggerProvider.CreateLogger<AppxSigningTool>());
     }
 
     [TestMethod]

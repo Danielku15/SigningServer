@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.MsSign;
@@ -18,7 +19,7 @@ public class PowerShellSigningToolTest : UnitTestBase
 
     private static PowerShellSigningTool CreateSignTool()
     {
-        return new PowerShellSigningTool(new NullLogger<PowerShellSigningTool>());
+        return new PowerShellSigningTool(AssemblyEvents.LoggerProvider.CreateLogger<PowerShellSigningTool>());
     }
 
     [TestMethod]

@@ -189,19 +189,19 @@ public sealed class SigningClient : IDisposable
                         {
                             case SignFileResponseStatus.FileSigned:
                                 Log.Info(
-                                    "File successfully signed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms",
+                                    "File successfully signed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 retry = 0;
                                 break;
                             case SignFileResponseStatus.FileResigned:
                                 Log.Info(
-                                    "File signed and old signature was removed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms",
+                                    "File signed and old signature was removed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 retry = 0;
                                 break;
                             case SignFileResponseStatus.FileAlreadySigned:
                                 Log.Info(
-                                    "File is already signed and was therefore skipped (upload time: {uploadTime}ms, sign time: {signTime}ms",
+                                    "File is already signed and was therefore skipped (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 if (!_configuration.IgnoreExistingSignatures)
                                 {
@@ -224,7 +224,7 @@ public sealed class SigningClient : IDisposable
                                 break;
                             case SignFileResponseStatus.FileNotSignedError:
                                 var error =
-                                    $"Signing Failed with error '{errorMessage}' (upload time: {uploadTime.TotalMilliseconds:0}ms, sign time: {signTime.TotalMilliseconds:0}ms";
+                                    $"Signing Failed with error '{errorMessage}' (upload time: {uploadTime.TotalMilliseconds:0}ms, sign time: {signTime.TotalMilliseconds:0}ms)";
                                 throw new SigningFailedException(error);
                             case SignFileResponseStatus.FileNotSignedUnauthorized:
                                 Log.Error("The specified username and password are not recognized on the server");

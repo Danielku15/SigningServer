@@ -49,11 +49,15 @@ public class Startup
 
     public void Configure(IApplicationBuilder app,
         ILogger<Startup> logger,
-        HardwareCertificateUnlocker unlocker)
+        HardwareCertificateUnlocker unlocker,
+        IHostApplicationLifetime lifetime)
     {
-        ValidateConfiguration(logger, unlocker);
-        PrepareWorkingDirectory(logger);
-
+        lifetime.ApplicationStarted.Register(() =>
+        {
+            ValidateConfiguration(logger, unlocker);
+            PrepareWorkingDirectory(logger);
+        });
+        
         app.UseCors();
         app.UseHttpsRedirection();
         app.UseRouting();

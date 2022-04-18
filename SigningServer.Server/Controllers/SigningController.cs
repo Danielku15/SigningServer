@@ -66,7 +66,7 @@ public class SigningController : Controller
         CancellationToken cancellationToken)
     {
         var apiSignFileResponse = new Models.SignFileResponse();
-        Core.SignFileResponse coreSignFileResponse = null;
+        SignFileResponse coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
         try
@@ -75,7 +75,7 @@ public class SigningController : Controller
             //
             // validate input
             _logger.LogInformation(
-                $"[{remoteIp}] [Begin] New sign request for file {signFileRequest.FileToSign.FileName} ({signFileRequest.FileToSign.Length} bytes)");
+                $"[{remoteIp}] [Begin] New sign request for file '{signFileRequest.FileToSign?.FileName ?? "missing"}' ({signFileRequest.FileToSign?.Length ?? 0} bytes)");
             if (signFileRequest.FileToSign == null || signFileRequest.FileToSign.Length == 0)
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
@@ -120,6 +120,18 @@ public class SigningController : Controller
                             Path.GetExtension(inputFileName);
             inputFileName = Path.Combine(_configuration.WorkingDirectory, inputFileName);
 
+            if (!Directory.Exists(_configuration.WorkingDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(_configuration.WorkingDirectory);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Could not create working directory");
+                }
+            }
+            
             await using (var targetFile = new FileStream(inputFileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 await signFileRequest.FileToSign.CopyToAsync(targetFile, cancellationToken);
@@ -153,7 +165,7 @@ public class SigningController : Controller
                 ? _configuration.Sha1TimestampServer
                 : _configuration.TimestampServer;
 
-            coreSignFileResponse = signingTool.SignFile(new Core.SignFileRequest
+            coreSignFileResponse = signingTool.SignFile(new SignFileRequest
             {
                 InputFilePath = inputFileName,
                 InputRawFileName = signFileRequest.FileToSign.FileName,

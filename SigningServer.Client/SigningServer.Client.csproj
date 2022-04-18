@@ -3,7 +3,7 @@
 		<OutputType>Exe</OutputType>
 		<Title>SigningServer Client</Title>
 		<Description>This is the client for signing files on a signing server.</Description>
-  </PropertyGroup>
+    </PropertyGroup>
 	<ItemGroup>
 		<None Include="config.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

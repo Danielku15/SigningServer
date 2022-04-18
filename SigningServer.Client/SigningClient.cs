@@ -40,6 +40,7 @@ public sealed class SigningClient : IDisposable
                 nameof(configuration));
         }
 
+        Configuration = configuration;
         var timeout = TimeSpan.FromSeconds(configuration.Timeout > 0 ? configuration.Timeout : 60);
         _client = new HttpClient { BaseAddress = signingServerUri, Timeout = timeout };
     }
@@ -47,17 +48,16 @@ public sealed class SigningClient : IDisposable
     public async Task ConnectAsync()
     {
         Log.Info("Connecting to signing server");
-
         _serverCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities");
         Log.Info("Server Capabilities loaded");
 
-        Log.Info("Supported Formats:");
+        Log.Trace("Supported Formats:");
         foreach (var supportedFormat in _serverCapabilities!.SupportedFormats)
         {
-            Log.Info($"  {supportedFormat.Name}");
-            Log.Info("    Supported Extensions: {fileExtensions}",
+            Log.Trace($"  {supportedFormat.Name}");
+            Log.Trace("    Supported Extensions: {fileExtensions}",
                 string.Join(", ", supportedFormat.SupportedFileExtensions));
-            Log.Info("    Supported Hash Algorithms: {hashAlgorithms}",
+            Log.Trace("    Supported Hash Algorithms: {hashAlgorithms}",
                 string.Join(", ", supportedFormat.SupportedHashAlgorithms));
             foreach (var extension in supportedFormat.SupportedFileExtensions)
             {
@@ -82,12 +82,13 @@ public sealed class SigningClient : IDisposable
 
     public async Task SignFilesAsync()
     {
-        Log.Info("Collecting all files");
+        Log.Trace("Collecting all files");
         var allFiles = Configuration.Sources.SelectMany(source =>
         {
-            if (File.Exists(source))
+            var fileInfo = new FileInfo(source);
+            if (fileInfo.Exists)
             {
-                return new[] { source };
+                return new[] { fileInfo.FullName };
             }
 
             return Directory.EnumerateFiles(source!, "*", SearchOption.AllDirectories)
@@ -99,9 +100,11 @@ public sealed class SigningClient : IDisposable
         var numberOfWorkers = Math.Min(Math.Max(1, Configuration.Parallel ?? Environment.ProcessorCount),
             _serverCapabilities.MaxDegreeOfParallelismPerClient);
 
-        Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers}", processingQueue.Count,
+        var numberOfFiles = processingQueue.Count;
+        Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers}", numberOfFiles,
             numberOfWorkers);
 
+        var sw = Stopwatch.StartNew();
         var cancellationSource = new CancellationTokenSource();
         Exception mainException = null;
         var tasks = Enumerable.Range(0, numberOfWorkers)
@@ -128,6 +131,11 @@ public sealed class SigningClient : IDisposable
 
         await Task.WhenAll(tasks);
 
+        sw.Stop();
+        var timeNeeded = sw.ElapsedMilliseconds;
+        Log.Info("Finished signing of {numberOfFiles} files in {timeNeeded}ms", numberOfFiles,
+            timeNeeded);
+
         if (mainException != null)
         {
             throw mainException;
@@ -146,11 +154,11 @@ public sealed class SigningClient : IDisposable
     {
         var info = new FileInfo(file);
 
-        Log.Info("Signing file '{0}'", info.FullName);
+        Log.Trace("Signing file '{0}'", info.FullName);
 
         if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
         {
-            Log.Info("File was readonly, cleaned readonly flag");
+            Log.Trace("File was readonly, cleaned readonly flag");
             info.Attributes &= ~FileAttributes.ReadOnly;
         }
 
@@ -225,19 +233,19 @@ public sealed class SigningClient : IDisposable
                         switch (status)
                         {
                             case SignFileResponseStatus.FileSigned:
-                                Log.Info(
+                                Log.Trace(
                                     "File successfully signed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 retry = 0;
                                 break;
                             case SignFileResponseStatus.FileResigned:
-                                Log.Info(
+                                Log.Trace(
                                     "File signed and old signature was removed, will start download (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 retry = 0;
                                 break;
                             case SignFileResponseStatus.FileAlreadySigned:
-                                Log.Info(
+                                Log.Trace(
                                     "File is already signed and was therefore skipped (upload time: {uploadTime}ms, sign time: {signTime}ms)",
                                     uploadTime.TotalMilliseconds, signTime.TotalMilliseconds);
                                 if (!Configuration.IgnoreExistingSignatures)
@@ -348,7 +356,7 @@ public sealed class SigningClient : IDisposable
                                         FileShare.None);
                                     await section.Body.CopyToAsync(targetFile, cancellationToken);
                                     downloadWatch.Stop();
-                                    Log.Info("Downloaded file {fileName} in {downloadTime}ms", fileName,
+                                    Log.Trace("Downloaded file {fileName} in {downloadTime}ms", fileName,
                                         downloadWatch.ElapsedMilliseconds);
                                 }
                                 else
@@ -406,7 +414,11 @@ public sealed class SigningClient : IDisposable
 
     private string Sanitize(string fileName)
     {
-        return Path.GetFileName(fileName); // should be sufficient to avoid unexpected side effects
+        if (string.IsNullOrEmpty(fileName))
+        {
+            return fileName;
+        }
+        return new FileInfo(fileName.Trim('"')).Name; // should be sufficient to avoid unexpected side effects
     }
 
     private async Task<string> ReadAsStringAsync(Stream sectionBody)

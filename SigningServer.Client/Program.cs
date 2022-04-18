@@ -111,10 +111,10 @@ internal class Program
         SigningClient client;
         try
         {
-            log.Info("Creating client");
+            log.Trace("Creating client");
             client = new SigningClient(configuration);
             await client.ConnectAsync();
-            log.Info("connected to server");
+            log.Trace("connected to server");
         }
         catch (Exception e)
         {
@@ -183,11 +183,11 @@ internal class Program
                         {
                             try
                             {
-                                log.Info("Loading config");
+                                log.Trace("Loading config");
                                 configuration =
                                     JsonSerializer.Deserialize<SigningClientConfiguration>(
                                         await File.ReadAllTextAsync(args[i + 1]))!;
-                                log.Info("Configuration loaded");
+                                log.Trace("Configuration loaded");
                             }
                             catch (Exception e)
                             {
@@ -310,23 +310,28 @@ internal class Program
 
                         break;
                     default:
-                        if (File.Exists(arg) || Directory.Exists(arg))
-                        {
-                            configuration.Sources.Add(arg);
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: File or Directory not found '{file}'", arg);
-                            Environment.ExitCode = ErrorCodes.FileNotFound;
-                            return null;
-                        }
-
+                        log.Error("Unknown option '{file}'", arg);
+                        Environment.ExitCode = ErrorCodes.InvalidConfiguration;
+                        return null;
                         break;
+                }
+            }
+            else
+            {
+                if (File.Exists(arg) || Directory.Exists(arg))
+                {
+                    configuration.Sources.Add(arg);
+                }
+                else
+                {
+                    log.Error("Config could not be loaded: File or Directory not found '{file}'", arg);
+                    Environment.ExitCode = ErrorCodes.FileNotFound;
+                    return null;
                 }
             }
         }
 
-        return null;
+        return configuration;
     }
 
     private static async Task<SigningClientConfiguration> LoadDefaultConfigurationAsync(ILogger log)
@@ -337,11 +342,11 @@ internal class Program
         {
             try
             {
-                log.Info("Loading config");
+                log.Trace("Loading config");
                 var configuration =
                     JsonSerializer.Deserialize<SigningClientConfiguration>(
                         await File.ReadAllTextAsync(defaultConfigFilePath))!;
-                log.Info("Configuration loaded");
+                log.Trace("Configuration loaded");
                 return configuration;
             }
             catch (Exception e)

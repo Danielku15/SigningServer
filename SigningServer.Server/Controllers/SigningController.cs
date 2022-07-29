@@ -23,15 +23,18 @@ public class SigningController : Controller
 {
     private readonly ILogger<SigningController> _logger;
     private readonly ISigningToolProvider _signingToolProvider;
+    private readonly IHashSigningTool _hashSigningTool;
     private readonly SigningServerConfiguration _configuration;
 
     public SigningController(
         ILogger<SigningController> logger,
         ISigningToolProvider signingToolProvider,
+        IHashSigningTool hashSigningTool,
         SigningServerConfiguration configuration)
     {
         _logger = logger;
         _signingToolProvider = signingToolProvider;
+        _hashSigningTool = hashSigningTool;
         _configuration = configuration;
     }
 
@@ -218,6 +221,86 @@ public class SigningController : Controller
 
         return new SignFileActionResult(apiSignFileResponse, coreSignFileResponse?.ResultFiles);
     }
+    
+    /// <summary>
+    /// Signs the given input hash.
+    /// </summary>
+    /// <param name="signHashRequest"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPost("signhash")]
+    [Produces("application/json", Type = typeof(Models.SignHashResponse))]
+    public ActionResult<SignHashActionResult> SignHashAsync([FromBody, Required] Models.SignHashRequest signHashRequest)
+    {
+        var apiSignHashResponse = new Models.SignHashResponse();
+        var remoteIp = RemoteIp;
+        string inputFileName;
+        try
+        {
+            //
+            // validate input
+            _logger.LogInformation(
+                $"[{remoteIp}] [Begin] New sign request for hash '{signHashRequest.Hash}' ({signHashRequest.HashAlgorithm})");
+            if (!HexEncoder.TryDecode(signHashRequest.Hash, out var hashBytes))
+            {
+                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
+                apiSignHashResponse.ErrorMessage = "No hex encoded bytes were received";
+                return new SignHashActionResult(apiSignHashResponse);
+            }
 
+            //
+            // find certificate
+            CertificateConfiguration certificate;
+            if (string.IsNullOrWhiteSpace(signHashRequest.Username))
+            {
+                certificate = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+            }
+            else
+            {
+                certificate = _configuration.Certificates.FirstOrDefault(
+                    c => c.IsAuthorized(signHashRequest.Username, signHashRequest.Password));
+            }
+
+            if (certificate == null)
+            {
+                _logger.LogWarning("Unauthorized signing request");
+                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedUnauthorized;
+                return new SignHashActionResult(apiSignHashResponse);
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            stopwatch.Restart();
+
+            //
+            // sign hash
+            var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest
+            {
+                InputHash = hashBytes,
+                HashAlgorithm = signHashRequest.HashAlgorithm,
+                Certificate = certificate.Certificate,
+                PrivateKey = certificate.PrivateKey
+            });
+
+            stopwatch.Stop();
+            apiSignHashResponse.Status = coreSignFileResponse.Status;
+            apiSignHashResponse.Signature = Core.HexEncoder.Encode(coreSignFileResponse.Signature);
+            apiSignHashResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
+
+            _logger.LogInformation(
+                $"[{remoteIp}] [Finished] request for hash '{signHashRequest.Hash}' finished ({signHashRequest.HashAlgorithm}, signed in {apiSignHashResponse.SignTimeInMilliseconds})");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequest.Hash}' failed: {e.Message}");
+            apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
+            apiSignHashResponse.ErrorMessage = e.Message;
+        }
+
+        return new SignHashActionResult(apiSignHashResponse);
+    }
+
+
+
+    
     private string RemoteIp => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 }

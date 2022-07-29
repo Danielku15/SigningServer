@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -31,7 +32,7 @@ public sealed class SigningClient : IDisposable
     {
         if (string.IsNullOrWhiteSpace(configuration.SigningServer))
         {
-            throw new ArgumentException("Empty SigningServer in configuraiton", nameof(configuration));
+            throw new ArgumentException("Empty SigningServer in configuration", nameof(configuration));
         }
 
         if (!Uri.TryCreate(configuration.SigningServer, UriKind.Absolute, out var signingServerUri))
@@ -68,10 +69,7 @@ public sealed class SigningClient : IDisposable
 
     public SigningClient(HttpClient client, params string[] sources)
     {
-        Configuration = new SigningClientConfiguration
-        {
-            Sources = sources
-        };
+        Configuration = new SigningClientConfiguration { Sources = sources };
         _client = client;
     }
 
@@ -146,8 +144,93 @@ public sealed class SigningClient : IDisposable
     {
         while (!cancellationToken.IsCancellationRequested && processingQueue.TryDequeue(out var nextFile))
         {
-            await SignFileAsync(nextFile, cancellationToken);
+            if (!string.IsNullOrEmpty(Configuration.SignHashFileExtension))
+            {
+                await SignHashAsync(nextFile, cancellationToken);
+            }
+            else
+            {
+                await SignFileAsync(nextFile, cancellationToken);
+            }
         }
+    }
+
+    private async Task SignHashAsync(string file, CancellationToken cancellationToken)
+    {
+        var info = new FileInfo(file);
+
+        Log.Trace("Signing hash of file '{0}'", info.FullName);
+
+        var retry = Configuration.Retry;
+        do
+        {
+            try
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var hashBytes = await HashFileAsync(file, cancellationToken);
+
+                var response = await _client.PostAsJsonAsync("signing/signhash",
+                    new
+                    {
+                        username = Configuration.Username,
+                        password = Configuration.Password,
+                        hashAlgorithm = Configuration.HashAlgorithm,
+                        hash = HexEncoder.Encode(hashBytes)
+                    }, cancellationToken);
+
+                // TODO: handle response
+            }
+            catch (FileAlreadySignedException)
+            {
+                // no need for retry with already signed error
+                throw;
+            }
+            catch (UnsupportedFileFormatException)
+            {
+                // no need for retry with unsupported file
+                throw;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // no need for retry with wrong credentials
+                throw;
+            }
+            catch (Exception)
+            {
+                // wait 1sec if we haf 
+                if (retry > 0)
+                {
+                    Log.Error("Waiting 1sec, then retry signing");
+                    Thread.Sleep(1000);
+                    try
+                    {
+                        Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Warn(e, "Cleanup of existing connection failed");
+                    }
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        } while (retry-- > 0);
+    }
+
+    private async Task<byte[]> HashFileAsync(string file, CancellationToken cancellationToken)
+    {
+        using var hashAlg = HashAlgorithm.Create(Configuration.HashAlgorithm ?? "SHA256");
+        if (hashAlg == null)
+        {
+            throw new UnsupportedFileFormatException($"Unsupported hash algorithm {Configuration.HashAlgorithm}");
+        }
+
+        await using var stream = File.OpenRead(file);
+        return await hashAlg.ComputeHashAsync(stream, cancellationToken);
     }
 
     private async Task SignFileAsync(string file, CancellationToken cancellationToken)
@@ -418,6 +501,7 @@ public sealed class SigningClient : IDisposable
         {
             return fileName;
         }
+
         return new FileInfo(fileName.Trim('"')).Name; // should be sufficient to avoid unexpected side effects
     }
 

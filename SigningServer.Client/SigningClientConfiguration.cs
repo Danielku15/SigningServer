@@ -59,6 +59,12 @@ public class SigningClientConfiguration
     public int? Parallel { get; set; } = 1;
 
     /// <summary>
+    /// If this extension is set, the files will be hashed locally and the hash is sent to the server
+    /// for signing. The hash will be written hex encoded to a file with this file extension (at the input file location).
+    /// </summary>
+    public string SignHashFileExtension { get; set; } = null;
+
+    /// <summary>
     /// The sources (files and directories) to sign.
     /// </summary>
     [JsonIgnore]

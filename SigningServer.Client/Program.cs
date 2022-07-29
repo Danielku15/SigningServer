@@ -79,6 +79,12 @@ internal class Program
             Console.WriteLine("      Leave value empty (or null in config.json) for auto detection.");
             Console.WriteLine("      Config.json Key: \"Parallel\": 4");
 
+            Console.WriteLine("  --sign-hash SignatureExtension");
+            Console.WriteLine("      Instead of uploading the file and signing it according to the known file");
+            Console.WriteLine("      format. The file will be hashed locally, and the hash is sent to the ");
+            Console.WriteLine("      server for signing. The signature will be written hex encoded to the");
+            Console.WriteLine("      same paths as the input file with the extension changed to the provided file extension");
+
             Console.WriteLine();
 
             Console.WriteLine("sources: ");

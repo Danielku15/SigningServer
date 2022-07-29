@@ -25,7 +25,7 @@ public class SigningControllerSigningTest : UnitTestBase
 {
     private static SigningServerConfiguration _configuration;
     private static ISigningToolProvider _emptySigningToolProvider;
-    private static ISigningToolProvider _simultateSigningToolProvider;
+    private static ISigningToolProvider _simulateSigningToolProvider;
 
     [ClassInitialize]
     public static void Setup(TestContext _)
@@ -56,14 +56,14 @@ public class SigningControllerSigningTest : UnitTestBase
                 Status = SignFileResponseStatus.FileSigned,
                 ResultFiles = new List<SignFileResponseFileInfo> { new SignFileResponseFileInfo("output", "file") }
             });
-        _simultateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
+        _simulateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
     }
 
     [TestMethod]
     public async Task SignFile_EmptyFile_Fails()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, _configuration)
+            _emptySigningToolProvider, null, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -99,7 +99,7 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, configuration)
+            _emptySigningToolProvider, null, configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -131,7 +131,7 @@ public class SigningControllerSigningTest : UnitTestBase
     public async Task SignFile_UnsupportedFormat_Fails()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, _configuration)
+            _emptySigningToolProvider, null, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -152,7 +152,7 @@ public class SigningControllerSigningTest : UnitTestBase
     public async Task SignFile_UploadsFileToWorkingDirectory()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _simultateSigningToolProvider, _configuration)
+            _simulateSigningToolProvider, null, _configuration)
         {
             ControllerContext = CreateEmptyControllerContext()
         };

@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
-namespace SigningServer.Server.Models;
+namespace SigningServer.Server.Dtos;
 
-public class SignHashRequest
+public class SignFileRequestDto
 {
     /// <summary>
     /// The username to authenticate the signing
@@ -15,14 +16,18 @@ public class SignHashRequest
     public string Password { get; set; }
 
     /// <summary>
+    /// If the input file is already signed, signing will be skipped unless this flag is set. 
+    /// </summary>
+    public bool OverwriteSignature { get; set; }
+
+    /// <summary>
     /// The hash algorithm to use for signing
     /// </summary>
-    [Required]
     public string HashAlgorithm { get; set; }
 
     /// <summary>
-    /// The hex encoded raw hash bytes to sign.
+    /// The individual file to sign.
     /// </summary>
     [Required]
-    public string Hash { get; set; }
+    public IFormFile FileToSign { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -70,6 +71,38 @@ public class SigningServerIntegrationTest : UnitTestBase
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
             tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
+        }
+    }
+
+    [TestMethod]
+    [DeploymentItem("TestFiles", "HashIntegrationTestFiles")]
+    public async Task ValidTestRunHashing()
+    {
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "unsigned")))
+        {
+            using var client = new SigningClient(_application.CreateClient(), file);
+            client.Configuration.SignHashFileExtension = Path.GetExtension(file) + ".sig";
+            client.Configuration.HashAlgorithm = "SHA256";
+            await client.ConnectAsync();
+            await client.SignFilesAsync();
+        }
+       
+        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+
+        var referenceFiles =
+            new HashSet<string>(
+                Directory.GetFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "hashes"), "*.sig"));
+
+        foreach (var referenceFile in referenceFiles.ToArray())
+        {
+            var signedFile = Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "unsigned",
+                Path.GetFileName(referenceFile));
+            File.Exists(signedFile).Should().BeTrue();
+            referenceFiles.Remove(referenceFile);
+
+            var actualBytes = await File.ReadAllBytesAsync(signedFile);
+            var expectedBytes = await File.ReadAllBytesAsync(referenceFile);
+            actualBytes.Should().Equal(expectedBytes);
         }
     }
 
@@ -155,7 +188,7 @@ public class SigningServerIntegrationTest : UnitTestBase
 
     [TestMethod]
     [DeploymentItem("TestFiles", "ApkIdSig")]
-    public async Task TestIdSigIsDownloadedAlongApkg()
+    public async Task TestIdSigIsDownloadedAlongApk()
     {
         using (var client = new SigningClient(_application.CreateClient(),
                    Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk")))

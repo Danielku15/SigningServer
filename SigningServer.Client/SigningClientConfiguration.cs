@@ -60,7 +60,7 @@ public class SigningClientConfiguration
 
     /// <summary>
     /// If this extension is set, the files will be hashed locally and the hash is sent to the server
-    /// for signing. The hash will be written hex encoded to a file with this file extension (at the input file location).
+    /// for signing. The hash will be written raw-byte encoded to a file with this file extension (at the input file location).
     /// </summary>
     public string SignHashFileExtension { get; set; } = null;
 

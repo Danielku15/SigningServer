@@ -1,8 +1,8 @@
 ﻿using SigningServer.Core;
 
-namespace SigningServer.Server.Models;
+namespace SigningServer.Server.Dtos;
 
-public class SignHashResponse
+public class SignHashResponseDto
 {
     /// <summary>
     /// The result of the signing

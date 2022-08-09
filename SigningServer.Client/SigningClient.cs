@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using NLog;
 using SigningServer.Core;
+using SigningServer.Server.Dtos;
 
 namespace SigningServer.Client;
 
@@ -172,15 +174,53 @@ public sealed class SigningClient : IDisposable
                 var hashBytes = await HashFileAsync(file, cancellationToken);
 
                 var response = await _client.PostAsJsonAsync("signing/signhash",
-                    new
+                    new SignHashRequestDto
                     {
-                        username = Configuration.Username,
-                        password = Configuration.Password,
-                        hashAlgorithm = Configuration.HashAlgorithm,
-                        hash = HexEncoder.Encode(hashBytes)
+                        Username = Configuration.Username,
+                        Password = Configuration.Password,
+                        HashAlgorithm = Configuration.HashAlgorithm,
+                        Hash = Convert.ToBase64String(hashBytes)
                     }, cancellationToken);
 
-                // TODO: handle response
+                var responseDto =
+                    await response.Content.ReadFromJsonAsync<SignHashResponseDto>(cancellationToken: cancellationToken);
+                if (responseDto == null)
+                {
+                    throw response.StatusCode switch
+                    {
+                        HttpStatusCode.OK => new InvalidOperationException("No response body"),
+                        HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
+                        HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
+                        HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                        _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
+                    };
+                }
+
+                switch (responseDto.Status)
+                {
+                    case SignHashResponseStatus.HashSigned:
+                        var extension = Configuration.SignHashFileExtension;
+                        if (!extension.StartsWith("."))
+                        {
+                            extension = "." + extension;
+                        }
+                        
+                        var signatureFile = Path.ChangeExtension(info.FullName, extension);
+                        await File.WriteAllBytesAsync(signatureFile, Convert.FromBase64String(responseDto.Signature), cancellationToken);
+                        Log.Info($"Hash successfully signed, ((sign time: {responseDto.SignTimeInMilliseconds:0}ms)");
+                        break;
+                    case SignHashResponseStatus.HashNotSignedUnsupportedFormat:
+                        throw new UnsupportedFileFormatException(responseDto.ErrorMessage);
+                    case SignHashResponseStatus.HashNotSignedError:
+                        var error =
+                            $"Signing Failed with error '{responseDto.ErrorMessage}' (sign time: {responseDto.SignTimeInMilliseconds:0}ms)";
+                        throw new SigningFailedException(error);
+                    case SignHashResponseStatus.HashNotSignedUnauthorized:
+                        Log.Error("The specified username and password are not recognized on the server");
+                        throw new UnauthorizedAccessException();
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
             catch (FileAlreadySignedException)
             {
@@ -454,6 +494,9 @@ public sealed class SigningClient : IDisposable
                                 break;
                         }
                     }
+
+                    // ensure response is written
+                    WriteResponseInfo();
                 }
             }
             catch (FileAlreadySignedException)

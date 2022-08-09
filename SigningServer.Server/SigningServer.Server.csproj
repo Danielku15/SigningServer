@@ -25,7 +25,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
 		<ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj" />
-		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
 		<ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
 		<ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
 	</ItemGroup>

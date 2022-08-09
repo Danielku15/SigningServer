@@ -15,8 +15,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Controllers;
+using SigningServer.Server.Dtos;
 using SigningServer.Server.SigningTool;
-using SignFileRequest = SigningServer.Server.Models.SignFileRequest;
+using SignFileResponse = SigningServer.Core.SignFileResponse;
 
 namespace SigningServer.Test;
 
@@ -68,16 +69,16 @@ public class SigningControllerSigningTest : UnitTestBase
             ControllerContext = CreateEmptyControllerContext()
         };
 
-        var request = new SignFileRequest
+        var request = new SignFileRequestDto
         {
             FileToSign = new FormFile(new MemoryStream(), 0, 0, "FileToSign", "file.txt")
         };
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
+        response.ResponseDto.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
 
-        request = new SignFileRequest { FileToSign = null };
+        request = new SignFileRequestDto { FileToSign = null };
         response = await server.SignFileAsync(request, CancellationToken.None);
-        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
+        response.ResponseDto.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
     }
 
     [TestMethod]
@@ -107,13 +108,13 @@ public class SigningControllerSigningTest : UnitTestBase
         var testData =
             new MemoryStream(
                 await File.ReadAllBytesAsync(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-        var request = new SignFileRequest
+        var request = new SignFileRequestDto
         {
             FileToSign = new FormFile(testData, 0, testData.Length, "FileToSign", "unsigned.exe")
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnauthorized);
+        response.ResponseDto.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnauthorized);
     }
 
     private static ControllerContext CreateEmptyControllerContext()
@@ -139,13 +140,13 @@ public class SigningControllerSigningTest : UnitTestBase
         var testData =
             new MemoryStream(
                 await File.ReadAllBytesAsync(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-        var request = new SignFileRequest
+        var request = new SignFileRequestDto
         {
             FileToSign = new FormFile(testData, 0, testData.Length, "FileToSign", "unsigned.exe")
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        response.Response.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnsupportedFormat);
+        response.ResponseDto.Status.Should().Be(SignFileResponseStatus.FileNotSignedUnsupportedFormat);
     }
 
     [TestMethod]
@@ -160,13 +161,13 @@ public class SigningControllerSigningTest : UnitTestBase
         var testData =
             new MemoryStream(
                 await File.ReadAllBytesAsync(Path.Combine(ExecutionDirectory, "TestFiles/unsigned/unsigned.exe")));
-        var request = new SignFileRequest
+        var request = new SignFileRequestDto
         {
             FileToSign = new FormFile(testData, 0, testData.Length, "FileToSign", "unsigned.exe")
         };
 
         var response = await server.SignFileAsync(request, CancellationToken.None);
-        response.Response.Status.Should().Be(SignFileResponseStatus.FileSigned);
+        response.ResponseDto.Status.Should().Be(SignFileResponseStatus.FileSigned);
         var files = Directory.GetFileSystemEntries(_configuration.WorkingDirectory).ToArray();
         files.Length.Should().Be(1);
     }

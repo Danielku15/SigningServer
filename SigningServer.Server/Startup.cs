@@ -33,6 +33,7 @@ public class Startup
         services.AddSingleton<HardwareCertificateUnlocker>();
         services.AddTransient<IHostedService>(sp => sp.GetRequiredService<HardwareCertificateUnlocker>());
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
+        services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();

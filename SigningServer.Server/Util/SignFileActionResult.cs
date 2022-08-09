@@ -22,7 +22,7 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
     {
         get
         {
-            return Response.Status switch
+            return ResponseDto.Status switch
             {
                 SignFileResponseStatus.FileSigned => StatusCodes.Status200OK,
                 SignFileResponseStatus.FileResigned => StatusCodes.Status200OK,
@@ -35,11 +35,11 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
         }
     }
 
-    public Models.SignFileResponse Response { get; }
+    public Dtos.SignFileResponseDto ResponseDto { get; }
 
-    public SignFileActionResult(Models.SignFileResponse apiSignFileResponse, IList<SignFileResponseFileInfo> files)
+    public SignFileActionResult(Dtos.SignFileResponseDto apiSignFileResponseDto, IList<SignFileResponseFileInfo> files)
     {
-        Response = apiSignFileResponse;
+        ResponseDto = apiSignFileResponseDto;
         _files = files;
     }
 
@@ -61,17 +61,17 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
             var content = new MultipartFormDataContent(boundary);
          
             // Fill Base information
-            content.Add(new StringContent(Response.Status.ToString()),
-                nameof(Models.SignFileResponse.Status));
-            if (!string.IsNullOrEmpty(Response.ErrorMessage))
+            content.Add(new StringContent(ResponseDto.Status.ToString()),
+                nameof(Dtos.SignFileResponseDto.Status));
+            if (!string.IsNullOrEmpty(ResponseDto.ErrorMessage))
             {
-                content.Add(new StringContent(Response.ErrorMessage),
-                    nameof(Models.SignFileResponse.ErrorMessage));
+                content.Add(new StringContent(ResponseDto.ErrorMessage),
+                    nameof(Dtos.SignFileResponseDto.ErrorMessage));
             }
-            content.Add(new StringContent(Response.UploadTimeInMilliseconds.ToString()),
-                nameof(Models.SignFileResponse.UploadTimeInMilliseconds));
-            content.Add(new StringContent(Response.SignTimeInMilliseconds.ToString()),
-                nameof(Models.SignFileResponse.SignTimeInMilliseconds));
+            content.Add(new StringContent(ResponseDto.UploadTimeInMilliseconds.ToString()),
+                nameof(Dtos.SignFileResponseDto.UploadTimeInMilliseconds));
+            content.Add(new StringContent(ResponseDto.SignTimeInMilliseconds.ToString()),
+                nameof(Dtos.SignFileResponseDto.SignTimeInMilliseconds));
             
             // Fill Files
             if (_files != null)
@@ -82,7 +82,7 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
                         FileShare.Read | FileShare.Delete);
                     openedStreams.Add(stream);
                     content.Add(new StreamContent(stream, 1024 * 1024),
-                        nameof(Models.SignFileResponse.ResultFiles),
+                        nameof(Dtos.SignFileResponseDto.ResultFiles),
                         file.FileName);
                 }
             }

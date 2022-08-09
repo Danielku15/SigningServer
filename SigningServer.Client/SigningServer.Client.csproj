@@ -19,4 +19,12 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Compile Include="..\SigningServer.Server\Dtos\SignHashRequestDto.cs">
+	    <Link>SignHashRequestDto.cs</Link>
+	  </Compile>
+	  <Compile Include="..\SigningServer.Server\Dtos\SignHashResponseDto.cs">
+	    <Link>SignHashResponseDto.cs</Link>
+	  </Compile>
+	</ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace SigningServer.Server.Models;
+namespace SigningServer.Server.Dtos;
 
-public class SignFileRequest
+public class SignFileRequestDto
 {
     /// <summary>
     /// The username to authenticate the signing

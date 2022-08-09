@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
+using SigningServer.Server.Dtos;
 using SigningServer.Server.SigningTool;
 using SigningServer.Server.Util;
 
@@ -23,15 +24,18 @@ public class SigningController : Controller
 {
     private readonly ILogger<SigningController> _logger;
     private readonly ISigningToolProvider _signingToolProvider;
+    private readonly IHashSigningTool _hashSigningTool;
     private readonly SigningServerConfiguration _configuration;
 
     public SigningController(
         ILogger<SigningController> logger,
         ISigningToolProvider signingToolProvider,
+        IHashSigningTool hashSigningTool,
         SigningServerConfiguration configuration)
     {
         _logger = logger;
         _signingToolProvider = signingToolProvider;
+        _hashSigningTool = hashSigningTool;
         _configuration = configuration;
     }
 
@@ -63,11 +67,11 @@ public class SigningController : Controller
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("sign")]
-    [Produces("multipart/form-data", Type = typeof(Models.SignFileResponse))]
-    public async Task<SignFileActionResult> SignFileAsync([FromForm, Required] Models.SignFileRequest signFileRequest,
+    [Produces("multipart/form-data", Type = typeof(SignFileResponseDto))]
+    public async Task<SignFileActionResult> SignFileAsync([FromForm, Required] SignFileRequestDto signFileRequest,
         CancellationToken cancellationToken)
     {
-        var apiSignFileResponse = new Models.SignFileResponse();
+        var apiSignFileResponse = new SignFileResponseDto();
         SignFileResponse coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
@@ -217,6 +221,86 @@ public class SigningController : Controller
         }
 
         return new SignFileActionResult(apiSignFileResponse, coreSignFileResponse?.ResultFiles);
+    }
+    
+    /// <summary>
+    /// Signs the given input hash.
+    /// </summary>
+    /// <param name="signHashRequestDto"></param>
+    /// <returns></returns>
+    [HttpPost("signhash")]
+    [Produces("application/json", Type = typeof(SignHashResponseDto))]
+    public SignHashActionResult SignHashAsync([FromBody, Required] SignHashRequestDto signHashRequestDto)
+    {
+        var apiSignHashResponse = new SignHashResponseDto();
+        var remoteIp = RemoteIp;
+        try
+        {
+            //
+            // validate input
+            _logger.LogInformation(
+                $"[{remoteIp}] [Begin] New sign request for hash '{signHashRequestDto.Hash}' ({signHashRequestDto.HashAlgorithm})");
+            byte[] hashBytes;
+            try
+            {
+                hashBytes = Convert.FromBase64String(signHashRequestDto.Hash);
+            }
+            catch
+            {
+                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
+                apiSignHashResponse.ErrorMessage = "No base64 encoded bytes were received";
+                return new SignHashActionResult(apiSignHashResponse);
+            }
+
+            //
+            // find certificate
+            CertificateConfiguration certificate;
+            if (string.IsNullOrWhiteSpace(signHashRequestDto.Username))
+            {
+                certificate = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+            }
+            else
+            {
+                certificate = _configuration.Certificates.FirstOrDefault(
+                    c => c.IsAuthorized(signHashRequestDto.Username, signHashRequestDto.Password));
+            }
+
+            if (certificate == null)
+            {
+                _logger.LogWarning("Unauthorized signing request");
+                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedUnauthorized;
+                return new SignHashActionResult(apiSignHashResponse);
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            stopwatch.Restart();
+
+            //
+            // sign hash
+            var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest
+            {
+                InputHash = hashBytes,
+                HashAlgorithm = signHashRequestDto.HashAlgorithm,
+                Certificate = certificate.Certificate,
+                PrivateKey = certificate.PrivateKey
+            });
+
+            stopwatch.Stop();
+            apiSignHashResponse.Status = coreSignFileResponse.Status;
+            apiSignHashResponse.Signature = Convert.ToBase64String(coreSignFileResponse.Signature);
+            apiSignHashResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
+
+            _logger.LogInformation(
+                $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {apiSignHashResponse.SignTimeInMilliseconds})");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
+            apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
+            apiSignHashResponse.ErrorMessage = e.Message;
+        }
+
+        return new SignHashActionResult(apiSignHashResponse);
     }
 
     private string RemoteIp => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";

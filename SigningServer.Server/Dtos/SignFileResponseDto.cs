@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using SigningServer.Core;
 
-namespace SigningServer.Server.Models;
+namespace SigningServer.Server.Dtos;
 
-public class SignFileResponse
+public class SignFileResponseDto
 {
     /// <summary>
     /// The result of the signing

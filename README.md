@@ -89,7 +89,9 @@ The client can be launched with
 `SigningServer.Client.exe [--config config.json] <Files or Folders>`
 You can specify multiple files or folders with multiple arguments.
 
-The client is configured using a `config.json` which can also be changed through command line parameter .
+The client is configured using a `config.json` which can also be changed through command line parameter. Call `SigningServer.Client.exe --help` for the full client documentation.
+Under Linux use `dotnet SigningServer.Client.dll` instead of the executable.
+
 
 ```json
 {

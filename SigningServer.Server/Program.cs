@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
@@ -29,6 +30,7 @@ public class Program
             }
         }
 
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         var host = CreateWebHostBuilder(args).Build();
         if (Environment.UserInteractive)
         {

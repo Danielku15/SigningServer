@@ -237,21 +237,13 @@ public sealed class SigningClient : IDisposable
                 // no need for retry with wrong credentials
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // wait 1sec if we haf 
                 if (retry > 0)
                 {
-                    Log.Error("Waiting 1sec, then retry signing");
+                    Log.Error(e ,"Waiting 1sec, then retry signing");
                     Thread.Sleep(1000);
-                    try
-                    {
-                        Dispose();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warn(e, "Cleanup of existing connection failed");
-                    }
                 }
                 else
                 {
@@ -514,21 +506,13 @@ public sealed class SigningClient : IDisposable
                 // no need for retry with wrong credentials
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // wait 1sec if we haf 
                 if (retry > 0)
                 {
-                    Log.Error("Waiting 1sec, then retry signing");
+                    Log.Error(e, "Waiting 1sec, then retry signing");
                     Thread.Sleep(1000);
-                    try
-                    {
-                        Dispose();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warn(e, "Cleanup of existing connection failed");
-                    }
                 }
                 else
                 {

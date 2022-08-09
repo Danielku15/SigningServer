@@ -98,7 +98,7 @@ public class Startup
     {
         logger.LogInformation("Validating configuration");
         var list = new List<CertificateConfiguration>();
-        if (_configuration.Certificates != null)
+        if (_configuration.Certificates is { Length: > 0 })
         {
             foreach (var certificateConfiguration in _configuration.Certificates)
             {
@@ -119,6 +119,10 @@ public class Startup
                     logger.LogError(e, $"Certificate loading failed: {e.Message}");
                 }
             }
+        }
+        else
+        {
+            logger.LogError("No certificates configured in appsettings");
         }
 
         if (list.Count == 0)

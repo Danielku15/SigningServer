@@ -324,6 +324,11 @@ internal class Program
                             {
                                 configuration.SignHashFileExtension = "." + configuration.SignHashFileExtension;
                             }
+
+                            if (string.IsNullOrEmpty(configuration.HashAlgorithm))
+                            {
+                                configuration.HashAlgorithm = "SHA256";
+                            }
                         }
                         else
                         {
@@ -337,7 +342,6 @@ internal class Program
                         log.Error("Unknown option '{file}'", arg);
                         Environment.ExitCode = ErrorCodes.InvalidConfiguration;
                         return null;
-                        break;
                 }
             }
             else

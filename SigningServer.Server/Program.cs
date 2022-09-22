@@ -62,7 +62,12 @@ public class Program
                 logging.SetMinimumLevel(LogLevel.Trace);
             })
             .UseNLog()
-            .UseKestrel()
+            .UseKestrel(options =>
+            {
+                options.Limits.MaxRequestBufferSize = null;
+                options.Limits.MaxRequestBodySize = null;
+                options.Limits.MaxResponseBufferSize = null;
+            })
             .UseStartup<Startup>();
     }
 }

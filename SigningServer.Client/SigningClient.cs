@@ -101,7 +101,7 @@ public sealed class SigningClient : IDisposable
             _serverCapabilities.MaxDegreeOfParallelismPerClient);
 
         var numberOfFiles = processingQueue.Count;
-        Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers}", numberOfFiles,
+        Log.Info("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers} worker", numberOfFiles,
             numberOfWorkers);
 
         var sw = Stopwatch.StartNew();
@@ -207,7 +207,8 @@ public sealed class SigningClient : IDisposable
                         
                         var signatureFile = Path.ChangeExtension(info.FullName, extension);
                         await File.WriteAllBytesAsync(signatureFile, Convert.FromBase64String(responseDto.Signature), cancellationToken);
-                        Log.Info($"Hash successfully signed, ((sign time: {responseDto.SignTimeInMilliseconds:0}ms)");
+                        Log.Info($"Hash successfully signed, (sign time: {responseDto.SignTimeInMilliseconds:0}ms)");
+                        retry = 0;
                         break;
                     case SignHashResponseStatus.HashNotSignedUnsupportedFormat:
                         throw new UnsupportedFileFormatException(responseDto.ErrorMessage);

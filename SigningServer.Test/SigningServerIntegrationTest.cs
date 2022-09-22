@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -47,6 +48,12 @@ public class SigningServerIntegrationTest : UnitTestBase
                         }));
                 });
             });
+    }
+
+    [ClassCleanup]
+    public static void Shutdown()
+    {
+        _application?.Dispose();
     }
 
     [TestMethod]
@@ -133,7 +140,7 @@ public class SigningServerIntegrationTest : UnitTestBase
     }
 
     [TestMethod]
-    public void ConcurrentSigning()
+    public async Task ConcurrentSigning()
     {
         var testDir = Path.Combine(ExecutionDirectory, "IntegrationTestFiles/large");
         Directory.CreateDirectory(testDir);
@@ -149,18 +156,25 @@ public class SigningServerIntegrationTest : UnitTestBase
 
         var tasks = testFiles.Select((f, i) => Task.Run(async () =>
         {
-            await Task.Delay(i * 50); // slight delay to trigger not exactly the same time 
-            var sw = Stopwatch.StartNew();
-            using (var client = new SigningClient(_application.CreateClient(), f))
+            try
             {
-                await client.ConnectAsync();
-                await client.SignFilesAsync();
-            }
+                await Task.Delay(i * 50); // slight delay to trigger not exactly the same time 
+                var sw = Stopwatch.StartNew();
+                using (var client = new SigningClient(_application.CreateClient(), f))
+                {
+                    await client.ConnectAsync();
+                    await client.SignFilesAsync();
+                }
 
-            return sw.Elapsed;
+                return sw.Elapsed;
+            }
+            catch
+            {
+                return TimeSpan.MaxValue;
+            }
         })).ToArray();
 
-        Task.WaitAll(tasks.ToArray<Task>());
+        await Task.WhenAll(tasks.ToArray<Task>());
 
         // check for successful signing
         var signedFiles = Directory.GetFiles(testDir, "*.ps1");

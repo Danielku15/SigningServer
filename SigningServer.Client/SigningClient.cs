@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -204,9 +205,10 @@ public sealed class SigningClient : IDisposable
                         {
                             extension = "." + extension;
                         }
-                        
+
                         var signatureFile = Path.ChangeExtension(info.FullName, extension);
-                        await File.WriteAllBytesAsync(signatureFile, Convert.FromBase64String(responseDto.Signature), cancellationToken);
+                        await File.WriteAllBytesAsync(signatureFile, Convert.FromBase64String(responseDto.Signature),
+                            cancellationToken);
                         Log.Info($"Hash successfully signed, (sign time: {responseDto.SignTimeInMilliseconds:0}ms)");
                         retry = 0;
                         break;
@@ -243,7 +245,7 @@ public sealed class SigningClient : IDisposable
                 // wait 1sec if we haf 
                 if (retry > 0)
                 {
-                    Log.Error(e ,"Waiting 1sec, then retry signing");
+                    Log.Error(e, "Waiting 1sec, then retry signing");
                     Thread.Sleep(1000);
                 }
                 else
@@ -316,6 +318,15 @@ public sealed class SigningClient : IDisposable
                 var contentType = response.Content.Headers.TryGetValues("Content-Type", out var contentTypes)
                     ? contentTypes.FirstOrDefault() ?? string.Empty
                     : string.Empty;
+                
+                if (contentType.StartsWith("application/json") ||
+                    contentType.StartsWith("application/problem+json"))
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+                    throw new IOException(
+                        $"Could not load signing response (unexpected JSON response '{contentType}', {responseJson})");
+                }
+                
                 if (!contentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new IOException($"Could not load signing response (unexpected content type '{contentType}')");

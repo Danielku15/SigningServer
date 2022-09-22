@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,11 @@ public class Startup
         services.AddTransient<IHostedService>(sp => sp.GetRequiredService<HardwareCertificateUnlocker>());
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
         services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
+        services.Configure<FormOptions>(x =>
+        {
+            x.ValueLengthLimit = int.MaxValue;
+            x.MultipartBodyLengthLimit = long.MaxValue;
+        });
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();

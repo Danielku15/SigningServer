@@ -400,6 +400,12 @@ namespace SigningServer.Android.Com.Android.Apksig
         }
         
         [Test]
+        public virtual void TestVerifyV4()
+        {
+            Com.Android.Apksig.ApkVerifier.Result sourceStampVerificationResult = SigningServer.Android.Com.Android.Apksig.ApkSignerTest.Verify(new FileInfo(@"D:\Dev\Git\spider-xpos\.teamcity\spider-ci-shared\Tooling\SigningClient\com.leica.zenomobile.modern.apk"), null);
+        }
+        
+        [Test]
         public virtual void TestSignApk_stampBlock_noStampGenerated()
         {
             SigningServer.Android.Collections.List<Com.Android.Apksig.ApkSigner.SignerConfig> signersList = SigningServer.Android.Util.Collections.SingletonList<Com.Android.Apksig.ApkSigner.SignerConfig>(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.GetDefaultSignerConfigFromResources(SigningServer.Android.Com.Android.Apksig.ApkSignerTest.FIRST_RSA_2048_SIGNER_RESOURCE_NAME));

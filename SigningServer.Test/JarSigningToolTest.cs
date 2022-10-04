@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android;
@@ -12,47 +14,48 @@ namespace SigningServer.Test;
 public class JarSigningToolTest : UnitTestBase
 {
     [TestMethod]
-    public void IsFileSigned_UnsignedFile_ReturnsFalse()
+    public async Task IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = new JarSigningTool();
         File.Exists("TestFiles/unsigned/unsigned.jar").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.jar").Should().BeFalse();
+        (await signingTool.IsFileSignedAsync("TestFiles/unsigned/unsigned.jar", CancellationToken.None)).Should()
+            .BeFalse();
     }
 
     [TestMethod]
-    public void IsFileSigned_SignedFile_ReturnsTrue()
+    public async Task IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = new JarSigningTool();
         File.Exists("TestFiles/signed/signed.jar").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/signed/signed.jar").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/signed/signed.jar", CancellationToken.None)).Should().BeTrue();
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_Jar_Works()
+    public async Task SignFile_Unsigned_Jar_Works()
     {
-        CanSign(new JarSigningTool(), "SignFile_Works/unsigned/unsigned.jar");
+        await CanSignAsync(new JarSigningTool(), "SignFile_Works/unsigned/unsigned.jar");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Fails")]
-    public void SignFile_Signed_Jar_NoResign_Fails()
+    public async Task SignFile_Signed_Jar_NoResign_Fails()
     {
-        CannotResign(new JarSigningTool(), "NoResign_Fails/signed/signed.jar");
+        await CannotResignAsync(new JarSigningTool(), "NoResign_Fails/signed/signed.jar");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Resign_Works")]
-    public void SignFile_Signed_Jar_Resign_Works()
+    public async Task SignFile_Signed_Jar_Resign_Works()
     {
-        CanResign(new JarSigningTool(), "Resign_Works/signed/signed.jar");
+        await CanResignAsync(new JarSigningTool(), "Resign_Works/signed/signed.jar");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Jar_Verifies")]
-    public void SignFile_Jar_Verifies()
+    public async Task SignFile_Jar_Verifies()
     {
-        TestWithVerify("Jar_Verifies/unsigned/unsigned.jar", result =>
+        await TestWithVerifyAsync("Jar_Verifies/unsigned/unsigned.jar", result =>
         {
             if (!result.IsVerified())
             {
@@ -66,7 +69,7 @@ public class JarSigningToolTest : UnitTestBase
         });
     }
 
-    private void TestWithVerify(string fileName, Action<ApkVerifier.Result> action)
+    private async Task TestWithVerifyAsync(string fileName, Action<ApkVerifier.Result> action)
     {
         var signingTool = new JarSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
@@ -79,9 +82,10 @@ public class JarSigningToolTest : UnitTestBase
             TimestampServer = TimestampServer,
             OverwriteSignature = false
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
-        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(response.ResultFiles[0].OutputFilePath, CancellationToken.None)).Should()
+            .BeTrue();
 
         var builder = new ApkVerifier.Builder(new FileInfo(response.ResultFiles[0].OutputFilePath))
             .SetMinCheckedPlatformVersion(0)

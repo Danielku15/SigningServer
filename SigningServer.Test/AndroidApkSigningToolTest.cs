@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Android;
@@ -12,68 +14,70 @@ namespace SigningServer.Test;
 public class AndroidApkSigningToolTest : UnitTestBase
 {
     [TestMethod]
-    public void IsFileSigned_UnsignedFile_ReturnsFalse()
+    public async Task IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = new AndroidApkSigningTool();
         File.Exists("TestFiles/unsigned/unsigned-aligned.apk").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/unsigned/unsigned-aligned.apk").Should().BeFalse();
+        (await signingTool.IsFileSignedAsync("TestFiles/unsigned/unsigned-aligned.apk", CancellationToken.None))
+            .Should().BeFalse();
     }
 
     [TestMethod]
-    public void IsFileSigned_SignedFile_ReturnsTrue()
+    public async Task IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = new AndroidApkSigningTool();
         File.Exists("TestFiles/signed/signed-aligned.apk").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/signed/signed-aligned.apk").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/signed/signed-aligned.apk", CancellationToken.None)).Should()
+            .BeTrue();
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_ApkAligned_Works()
+    public async Task SignFile_Unsigned_ApkAligned_Works()
     {
-        CanSign(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-aligned.apk");
+        await CanSignAsync(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-aligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_ApkUnaligned_Works()
+    public async Task SignFile_Unsigned_ApkUnaligned_Works()
     {
-        CanSign(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-unaligned.apk");
+        await CanSignAsync(new AndroidApkSigningTool(), "SignFile_Works/unsigned/unsigned-unaligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Fails")]
-    public void SignFile_Signed_ApkUnaligned_NoResign_Fails()
+    public async Task SignFile_Signed_ApkUnaligned_NoResign_Fails()
     {
-        CannotResign(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-unaligned.apk");
+        await CannotResignAsync(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-unaligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Fails")]
-    public void SignFile_Signed_ApkAligned_NoResign_Fails()
+    public async Task SignFile_Signed_ApkAligned_NoResign_Fails()
     {
-        CannotResign(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-aligned.apk");
+        await CannotResignAsync(new AndroidApkSigningTool(), "NoResign_Fails/signed/signed-aligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Resign_Works")]
-    public void SignFile_Signed_ApkAligned_Resign_Works()
+    public async Task SignFile_Signed_ApkAligned_Resign_Works()
     {
-        CanResign(new AndroidApkSigningTool(), "Resign_Works/signed/signed-aligned.apk");
+        await CanResignAsync(new AndroidApkSigningTool(), "Resign_Works/signed/signed-aligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Resign_Works")]
-    public void SignFile_Signed_ApkUnaligned_Resign_Works()
+    public async Task SignFile_Signed_ApkUnaligned_Resign_Works()
     {
-        CannotResign(new AndroidApkSigningTool(), "Resign_Works/signed/signed-unaligned.apk");
+        await CannotResignAsync(new AndroidApkSigningTool(), "Resign_Works/signed/signed-unaligned.apk");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "ApkAligned_Verifies")]
-    public void SignFile_ApkAligned_Verifies()
+    public async Task SignFile_ApkAligned_Verifies()
     {
-        TestWithVerify("ApkAligned_Verifies/unsigned/unsigned-aligned.apk", result =>
+        await TestWithVerifyAsync("ApkAligned_Verifies/unsigned/unsigned-aligned.apk", result =>
         {
             if (!result.IsVerified())
             {
@@ -89,9 +93,9 @@ public class AndroidApkSigningToolTest : UnitTestBase
 
     [TestMethod]
     [DeploymentItem("TestFiles", "ApkUnaligned_Verifies")]
-    public void SignFile_ApkUnaligned_Verifies()
+    public async Task SignFile_ApkUnaligned_Verifies()
     {
-        TestWithVerify("ApkUnaligned_Verifies/unsigned/unsigned-unaligned.apk", result =>
+        await TestWithVerifyAsync("ApkUnaligned_Verifies/unsigned/unsigned-unaligned.apk", result =>
         {
             if (!result.IsVerified())
             {
@@ -105,7 +109,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
         });
     }
 
-    private void TestWithVerify(string fileName, Action<ApkVerifier.Result> action)
+    private async Task TestWithVerifyAsync(string fileName, Action<ApkVerifier.Result> action)
     {
         var signingTool = new AndroidApkSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
@@ -118,10 +122,11 @@ public class AndroidApkSigningToolTest : UnitTestBase
             PrivateKey = AssemblyEvents.PrivateKey,
             TimestampServer = TimestampServer
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
-        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(response.ResultFiles[0].OutputFilePath, CancellationToken.None)).Should()
+            .BeTrue();
 
         var builder = new ApkVerifier.Builder(new FileInfo(response.ResultFiles[0].OutputFilePath));
 
@@ -129,7 +134,7 @@ public class AndroidApkSigningToolTest : UnitTestBase
         {
             builder.SetV4SignatureFile(new FileInfo(response.ResultFiles[1].OutputFilePath));
         }
-        
+
         var result = builder.Build().Verify();
 
         action(result);

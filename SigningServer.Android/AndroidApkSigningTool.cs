@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
@@ -33,18 +35,19 @@ namespace SigningServer.Android
             };
 
         public string FormatName => "Android Application Packages";
-        
+
         public bool IsFileSupported(string fileName)
         {
             return ApkSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public SignFileResponse SignFile(SignFileRequest signFileRequest)
+        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
+            CancellationToken cancellationToken)
         {
             var signFileResponse = new SignFileResponse();
             var successResult = SignFileResponseStatus.FileSigned;
 
-            if (IsFileSigned(signFileRequest.InputFilePath))
+            if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
             {
                 if (signFileRequest.OverwriteSignature)
                 {
@@ -124,6 +127,7 @@ namespace SigningServer.Android
                 {
                     File.Delete(outputFileName);
                 }
+
                 if (File.Exists(outputSignatureFileName))
                 {
                     File.Delete(outputSignatureFileName);
@@ -134,7 +138,7 @@ namespace SigningServer.Android
         }
 
 
-        public bool IsFileSigned(string inputFileName)
+        public ValueTask<bool> IsFileSignedAsync(string inputFileName, CancellationToken cancellationToken)
         {
             using var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
             var manifestExists = false;
@@ -165,11 +169,11 @@ namespace SigningServer.Android
 
                 if (manifestExists && signatureExists && signatureBlockExists)
                 {
-                    return true;
+                    return ValueTask.FromResult(true);
                 }
             }
 
-            return false;
+            return ValueTask.FromResult(false);
         }
 
         /// <inheritdoc />

@@ -49,14 +49,14 @@ public class SigningControllerSigningTest : UnitTestBase
         var simulateSigningTool = new Mock<ISigningTool>();
         simulateSigningTool.Setup(t => t.SupportedFileExtensions).Returns(new[] { "*" });
         simulateSigningTool.Setup(t => t.SupportedHashAlgorithms).Returns(new[] { "*" });
-        simulateSigningTool.Setup(t => t.IsFileSigned(It.IsAny<string>())).Returns(true);
+        simulateSigningTool.Setup(t => t.IsFileSignedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(ValueTask.FromResult(true));
         simulateSigningTool.Setup(t => t.IsFileSupported(It.IsAny<string>())).Returns(true);
-        simulateSigningTool.Setup(t => t.SignFile(It.IsAny<Core.SignFileRequest>()))
-            .Returns(new SignFileResponse
+        simulateSigningTool.Setup(t => t.SignFileAsync(It.IsAny<SignFileRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(ValueTask.FromResult(new SignFileResponse
             {
                 Status = SignFileResponseStatus.FileSigned,
                 ResultFiles = new List<SignFileResponseFileInfo> { new SignFileResponseFileInfo("output", "file") }
-            });
+            }));
         _simulateSigningToolProvider = new EnumerableSigningToolProvider(new[] { simulateSigningTool.Object });
     }
 

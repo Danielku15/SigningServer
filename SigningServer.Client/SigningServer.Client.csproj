@@ -3,7 +3,11 @@
 		<OutputType>Exe</OutputType>
 		<Title>SigningServer Client</Title>
 		<Description>This is the client for signing files on a signing server.</Description>
-    </PropertyGroup>
+<!--    <PublishSingleFile>true</PublishSingleFile>-->
+<!--    <SelfContained>true</SelfContained>-->
+<!--    <RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
+<!--    <PublishReadyToRun>true</PublishReadyToRun>-->
+  </PropertyGroup>
 	<ItemGroup>
 		<None Include="config.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -15,7 +15,7 @@ using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace SigningServer.Server.SigningTool;
 
-internal class NuGetSigningTool : ISigningTool
+public class NuGetSigningTool : ISigningTool
 {
     private static readonly HashSet<string> NuGetSupportedExtension =
         new(StringComparer.InvariantCultureIgnoreCase) { ".nupkg" };
@@ -76,7 +76,7 @@ internal class NuGetSigningTool : ISigningTool
             signatureProvider,
             new NuGetLogger(_logger));
 
-        if (!NuGetSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm, out var hashAlg))
+        if (!NuGetSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm ?? "SHA256", out var hashAlg))
         {
             hashAlg = HashAlgorithmName.SHA256;
         }

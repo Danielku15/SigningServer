@@ -35,8 +35,14 @@ public class UnitTestBase
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
         (await signingTool.IsFileSignedAsync(response.ResultFiles[0].OutputFilePath, CancellationToken.None)).Should()
             .BeTrue();
+        await CustomFileSignVerificationAsync(response.ResultFiles[0].OutputFilePath);
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
+    }
+
+    protected virtual ValueTask CustomFileSignVerificationAsync(string outputFilePath)
+    {
+        return ValueTask.CompletedTask;
     }
 
 
@@ -67,6 +73,7 @@ public class UnitTestBase
 
         response.Status.Should().Be(SignFileResponseStatus.FileResigned);
         (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();
+        await CustomFileSignVerificationAsync(fileName);
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
     }
@@ -88,6 +95,7 @@ public class UnitTestBase
         Trace.WriteLine(response);
         response.Status.Should().Be(SignFileResponseStatus.FileAlreadySigned);
         (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();
+        await CustomFileSignVerificationAsync(fileName);
         response.ResultFiles.Should().BeNull();
     }
 }

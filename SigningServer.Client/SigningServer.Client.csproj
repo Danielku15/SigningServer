@@ -3,7 +3,7 @@
 		<OutputType>Exe</OutputType>
 		<Title>SigningServer Client</Title>
 		<Description>This is the client for signing files on a signing server.</Description>
-    </PropertyGroup>
+  </PropertyGroup>
 	<ItemGroup>
 		<None Include="config.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -14,7 +14,7 @@
 	</ItemGroup>
 	<ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="NLog" Version="4.7.15" />
+    <PackageReference Include="NLog" Version="5.0.4" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />

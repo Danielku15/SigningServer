@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -77,7 +77,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
         }
     }
 
@@ -135,7 +135,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
         }
     }
 
@@ -184,7 +184,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            tool.IsFileSigned(signedFile).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
         }
 
         var times = tasks.Select(t => t.Result).ToArray();

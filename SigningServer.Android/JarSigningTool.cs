@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
@@ -35,12 +37,12 @@ namespace SigningServer.Android
             return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public SignFileResponse SignFile(SignFileRequest signFileRequest)
+        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken)
         {
             var signFileResponse = new SignFileResponse();
             var successResult = SignFileResponseStatus.FileSigned;
 
-            if (IsFileSigned(signFileRequest.InputFilePath))
+            if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
             {
                 if (signFileRequest.OverwriteSignature)
                 {
@@ -107,7 +109,7 @@ namespace SigningServer.Android
         }
 
 
-        public bool IsFileSigned(string inputFileName)
+        public ValueTask<bool> IsFileSignedAsync(string inputFileName, CancellationToken cancellationToken)
         {
             using var inputJar = new ZipInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
             // Android manifest does not need to exist if we have a jar
@@ -133,11 +135,11 @@ namespace SigningServer.Android
 
                 if (signatureExists && signatureBlockExists)
                 {
-                    return true;
+                    return ValueTask.FromResult(true);
                 }
             }
 
-            return false;
+            return ValueTask.FromResult(false);
         }
 
         /// <inheritdoc />

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using SigningServer.ClickOnce.MsBuild;
@@ -30,12 +32,12 @@ public class ClickOnceSigningTool : ISigningTool
         return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
     }
 
-    public SignFileResponse SignFile(SignFileRequest signFileRequest)
+    public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken)
     {
         var signFileResponse = new SignFileResponse();
         var successResult = SignFileResponseStatus.FileSigned;
 
-        if (IsFileSigned(signFileRequest.InputFilePath))
+        if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
         {
             if (signFileRequest.OverwriteSignature)
             {
@@ -60,28 +62,28 @@ public class ClickOnceSigningTool : ISigningTool
     }
 
 
-    public bool IsFileSigned(string inputFileName)
+    public ValueTask<bool> IsFileSignedAsync(string inputFileName, CancellationToken cancellationToken)
     {
         try
         {
             var xml = XDocument.Parse(File.ReadAllText(inputFileName), LoadOptions.PreserveWhitespace);
             if (xml.Root == null)
             {
-                return false;
+                return ValueTask.FromResult(false);
             }
 
             if (xml.Root.Elements().Any(e => e.Name.LocalName == "Signature"))
             {
-                return true;
+                return ValueTask.FromResult(true);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Could not load Click Once Application");
-            return false;
+            return ValueTask.FromResult(false);
         }
 
-        return false;
+        return ValueTask.FromResult(false);
     }
 
     public void UnsignFile(string inputFileName)

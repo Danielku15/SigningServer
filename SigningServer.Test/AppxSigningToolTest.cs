@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,11 +14,12 @@ namespace SigningServer.Test;
 public class AppxSigningToolTest : UnitTestBase
 {
     [TestMethod]
-    public void IsFileSigned_UnsignedFile_ReturnsFalse()
+    public async Task IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = CreateSignTool();
         File.Exists("TestFiles/unsigned/unsigned.appx").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.appx").Should().BeFalse();
+        (await signingTool.IsFileSignedAsync("TestFiles/unsigned/unsigned.appx", CancellationToken.None)).Should()
+            .BeFalse();
     }
 
     private static AppxSigningTool CreateSignTool()
@@ -25,24 +28,24 @@ public class AppxSigningToolTest : UnitTestBase
     }
 
     [TestMethod]
-    public void IsFileSigned_SignedFile_ReturnsTrue()
+    public async Task IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = CreateSignTool();
         File.Exists("TestFiles/signed/signed.appx").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/signed/signed.appx").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/signed/signed.appx", CancellationToken.None)).Should().BeTrue();
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_Works()
+    public async Task SignFile_Unsigned_Works()
     {
         var signingTool = CreateSignTool();
-        CanSign(signingTool, "SignFile_Works/unsigned/unsigned.appx");
+        await CanSignAsync(signingTool, "SignFile_Works/unsigned/unsigned.appx");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Unsigned_WrongPublishedFails")]
-    public void SignFile_Unsigned_WrongPublishedFails()
+    public async Task SignFile_Unsigned_WrongPublishedFails()
     {
         var signingTool = CreateSignTool();
         var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
@@ -55,24 +58,24 @@ public class AppxSigningToolTest : UnitTestBase
             TimestampServer = TimestampServer,
             OverwriteSignature = true
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         Trace.WriteLine(response);
         response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
-        signingTool.IsFileSigned(fileName).Should().BeFalse();
+        (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeFalse();
         response.ResultFiles.Should().BeNull();
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Fails")]
-    public void SignFile_Signed_NoResign_Fails()
+    public async Task SignFile_Signed_NoResign_Fails()
     {
         var signingTool = CreateSignTool();
-        CannotResign(signingTool, "NoResign_Fails/signed/signed.appx");
+        await CannotResignAsync(signingTool, "NoResign_Fails/signed/signed.appx");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Works")]
-    public void SignFile_Signed_Resign_Works()
+    public async Task SignFile_Signed_Resign_Works()
     {
         var signingTool = CreateSignTool();
         var fileName = "NoResign_Works/signed/signed.appx";
@@ -84,9 +87,9 @@ public class AppxSigningToolTest : UnitTestBase
             PrivateKey = AssemblyEvents.PrivateKey,
             OverwriteSignature = true
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         response.Status.Should().Be(SignFileResponseStatus.FileResigned);
-        signingTool.IsFileSigned(fileName).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();
         response.ResultFiles.Count.Should().Be(1);
     }
 }

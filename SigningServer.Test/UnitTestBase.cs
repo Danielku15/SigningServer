@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using SigningServer.Core;
 
@@ -8,10 +10,10 @@ namespace SigningServer.Test;
 public class UnitTestBase
 {
     internal static readonly string ExecutionDirectory = AppDomain.CurrentDomain.BaseDirectory;
-    protected static string TimestampServer = "http://timestamp.globalsign.com/tsa/r6advanced1";
-    protected static string Sha1TimestampServer = "http://timestamp.sectigo.com";
+    protected const string TimestampServer = "http://timestamp.globalsign.com/tsa/r6advanced1";
+    protected const string Sha1TimestampServer = "http://timestamp.sectigo.com";
 
-    protected void CanSign(ISigningTool signingTool, string fileName, string hashAlgorithm = null)
+    protected async Task CanSignAsync(ISigningTool signingTool, string fileName, string hashAlgorithm = null)
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
@@ -28,12 +30,19 @@ public class UnitTestBase
             PrivateKey = AssemblyEvents.PrivateKey,
             TimestampServer = timestampServer
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
-        signingTool.IsFileSigned(response.ResultFiles[0].OutputFilePath).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(response.ResultFiles[0].OutputFilePath, CancellationToken.None)).Should()
+            .BeTrue();
+        await CustomFileSignVerificationAsync(response.ResultFiles[0].OutputFilePath);
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
+    }
+
+    protected virtual ValueTask CustomFileSignVerificationAsync(string outputFilePath)
+    {
+        return ValueTask.CompletedTask;
     }
 
 
@@ -48,7 +57,7 @@ public class UnitTestBase
         signerInfo.SignerInfos[0].DigestAlgorithm.Value.Should().Be(hashAlgorithmOid);
     }
 
-    protected void CanResign(ISigningTool signingTool, string fileName)
+    protected async Task CanResignAsync(ISigningTool signingTool, string fileName)
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
@@ -60,15 +69,16 @@ public class UnitTestBase
             PrivateKey = AssemblyEvents.PrivateKey,
             TimestampServer = TimestampServer
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileResigned);
-        signingTool.IsFileSigned(fileName).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();
+        await CustomFileSignVerificationAsync(fileName);
         response.ResultFiles.Should().NotBeNull();
         response.ResultFiles.Count.Should().BeGreaterThan(0);
     }
 
-    protected void CannotResign(ISigningTool signingTool, string fileName)
+    protected async Task CannotResignAsync(ISigningTool signingTool, string fileName)
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
@@ -80,11 +90,12 @@ public class UnitTestBase
             PrivateKey = AssemblyEvents.PrivateKey,
             TimestampServer = TimestampServer
         };
-        var response = signingTool.SignFile(request);
+        var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         Trace.WriteLine(response);
         response.Status.Should().Be(SignFileResponseStatus.FileAlreadySigned);
-        signingTool.IsFileSigned(fileName).Should().BeTrue();
+        (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();
+        await CustomFileSignVerificationAsync(fileName);
         response.ResultFiles.Should().BeNull();
     }
 }

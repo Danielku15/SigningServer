@@ -171,7 +171,7 @@ public class SigningController : Controller
                 ? _configuration.Sha1TimestampServer
                 : _configuration.TimestampServer;
 
-            coreSignFileResponse = signingTool.SignFile(new SignFileRequest
+            coreSignFileResponse = await signingTool.SignFileAsync(new SignFileRequest
             {
                 InputFilePath = inputFileName,
                 OriginalFileName = signFileRequest.FileToSign.FileName,
@@ -179,7 +179,7 @@ public class SigningController : Controller
                 Certificate = certificate.Certificate,
                 PrivateKey = certificate.PrivateKey,
                 TimestampServer = timestampServer
-            });
+            }, cancellationToken);
 
             // register for deletion of output file
             if (coreSignFileResponse.ResultFiles is { Count: > 0 })

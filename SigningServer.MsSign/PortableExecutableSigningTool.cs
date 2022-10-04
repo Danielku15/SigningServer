@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 
@@ -59,7 +60,7 @@ public class PortableExecutableSigningTool : ISigningTool
         return PeSupportedExtensions.Contains(Path.GetExtension(fileName));
     }
 
-    public bool IsFileSigned(string inputFileName)
+    public ValueTask<bool> IsFileSignedAsync(string inputFileName, CancellationToken cancellationToken)
     {
         using var winTrustFileInfo = new UnmanagedStruct<Win32.WINTRUST_FILE_INFO>(
             new Win32.WINTRUST_FILE_INFO
@@ -91,44 +92,45 @@ public class PortableExecutableSigningTool : ISigningTool
         switch (result)
         {
             case Win32.WinVerifyTrustResult.Success:
-                return true;
+                return ValueTask.FromResult(true);
             case Win32.WinVerifyTrustResult.FileNotSigned:
                 var dwLastError = (uint)Marshal.GetLastWin32Error();
                 switch (dwLastError)
                 {
                     case (uint)Win32.WinVerifyTrustResult.FileNotSigned:
-                        return false;
+                        return ValueTask.FromResult(false);
                     case (uint)Win32.WinVerifyTrustResult.SubjectFormUnknown:
-                        return true;
+                        return ValueTask.FromResult(true);
                     case (uint)Win32.WinVerifyTrustResult.ProviderUnknown:
-                        return true;
+                        return ValueTask.FromResult(true);
                     default:
-                        return false;
+                        return ValueTask.FromResult(false);
                 }
 
             case Win32.WinVerifyTrustResult.UntrustedRoot:
-                return true;
+                return ValueTask.FromResult(true);
 
             case Win32.WinVerifyTrustResult.SubjectExplicitlyDistrusted:
-                return true;
+                return ValueTask.FromResult(true);
 
             case Win32.WinVerifyTrustResult.SubjectNotTrusted:
-                return true;
+                return ValueTask.FromResult(true);
 
             case Win32.WinVerifyTrustResult.LocalSecurityOption:
-                return true;
+                return ValueTask.FromResult(true);
 
             default:
-                return false;
+                return ValueTask.FromResult(false);
         }
     }
 
-    public SignFileResponse SignFile(SignFileRequest signFileRequest)
+    public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
+        CancellationToken cancellationToken)
     {
         var signFileResponse = new SignFileResponse();
         var successResult = SignFileResponseStatus.FileSigned;
 
-        if (IsFileSigned(signFileRequest.InputFilePath))
+        if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
         {
             if (signFileRequest.OverwriteSignature)
             {

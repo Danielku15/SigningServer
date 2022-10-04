@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Server", "SigningServer.Server\SigningServer.Server.csproj", "{50287122-BA69-45AA-8EA5-974725E94949}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Test", "SigningServer.Test\SigningServer.Test.csproj", "{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Client", "SigningServer.Client\SigningServer.Client.csproj", "{70999530-7B5C-4154-8414-0717D0A9C4D6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonFiles", "CommonFiles", "{8EA70BD6-AE4B-48C4-A73D-E9A8595F8755}"
@@ -34,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{DCB3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.Runtime.Test", "SigningServer.Android.Runtime.Test\SigningServer.Android.Runtime.Test.csproj", "{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Test", "SigningServer.Test\SigningServer.Test.csproj", "{2BD0A43A-01B7-4E03-B9F0-208642042AB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,10 +56,6 @@ Global
 		{50287122-BA69-45AA-8EA5-974725E94949}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50287122-BA69-45AA-8EA5-974725E94949}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50287122-BA69-45AA-8EA5-974725E94949}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C9B1181-7E9F-45A0-8306-6FBA5C71D0A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F75114D9-AAC3-45ED-A9C8-F90A6A3B1D24}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -84,6 +80,10 @@ Global
 		{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SigningServer.Core;
 
@@ -35,17 +37,19 @@ public interface ISigningTool
     /// Might throw any exceptions describing the error during signing.
     /// </summary>
     /// <param name="signFileRequest">The request describing what to sign.</param>
+    /// <param name="cancellationToken">A token to support cancellation.</param>
     /// <returns>The result of the signing operation.</returns>
-    SignFileResponse SignFile(SignFileRequest signFileRequest);
+    ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Checks whether the given file is signed.
     /// </summary>
     /// <param name="inputFileName">The path to the file on disk.</param>
+    /// <param name="cancellationToken">A token to support cancellation.</param>
     /// <returns>true if the file is considered signed, otherwise false.</returns>
     /// <remarks>
     /// Some tools might only do a very basic check and not a full validation on whether
     /// all aspects of the signing are in place and valid.
     /// </remarks>
-    bool IsFileSigned(string inputFileName);
+    ValueTask<bool> IsFileSignedAsync(string inputFileName, CancellationToken cancellationToken);
 }

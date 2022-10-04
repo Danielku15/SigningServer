@@ -15,7 +15,8 @@ internal class DefaultSigningToolProvider : EnumerableSigningToolProvider
             new AndroidApkSigningTool(), new JarSigningTool(),
             new AppxSigningTool(loggerFactory.CreateLogger<AppxSigningTool>()),
             new ClickOnceSigningTool(loggerFactory.CreateLogger<ClickOnceSigningTool>()),
-            new PowerShellSigningTool(loggerFactory.CreateLogger<PowerShellSigningTool>())
+            new PowerShellSigningTool(loggerFactory.CreateLogger<PowerShellSigningTool>()),
+            new NuGetSigningTool(loggerFactory.CreateLogger<NuGetSigningTool>())
         })
     {
     }

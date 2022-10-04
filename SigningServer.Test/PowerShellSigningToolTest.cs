@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,11 +12,11 @@ namespace SigningServer.Test;
 public class PowerShellSigningToolTest : UnitTestBase
 {
     [TestMethod]
-    public void IsFileSigned_UnsignedFile_ReturnsFalse()
+    public async Task IsFileSigned_UnsignedFile_ReturnsFalse()
     {
         var signingTool = CreateSignTool();
         File.Exists("TestFiles/unsigned/unsigned.ps1").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/unsigned/unsigned.ps1").Should().BeFalse();
+        (await signingTool.IsFileSignedAsync("TestFiles/unsigned/unsigned.ps1", CancellationToken.None)).Should().BeFalse();
     }
 
     private static PowerShellSigningTool CreateSignTool()
@@ -23,47 +25,47 @@ public class PowerShellSigningToolTest : UnitTestBase
     }
 
     [TestMethod]
-    public void IsFileSigned_SignedFile_ReturnsTrue()
+    public async Task IsFileSigned_SignedFile_ReturnsTrue()
     {
         var signingTool = CreateSignTool();
         File.Exists("TestFiles/signed/signed.ps1").Should().BeTrue();
-        signingTool.IsFileSigned("TestFiles/signed/signed.ps1").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/signed/signed.ps1", CancellationToken.None)).Should().BeTrue();
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Unsign_Works")]
-    public void Unsign_Works()
+    public async Task Unsign_Works()
     {
         var signingTool = CreateSignTool();
         {
-            signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1").Should().BeTrue();
+            (await signingTool.IsFileSignedAsync("Unsign_Works/signed/signed.ps1", CancellationToken.None)).Should().BeTrue();
             signingTool.UnsignFile("Unsign_Works/signed/signed.ps1");
-            signingTool.IsFileSigned("Unsign_Works/signed/signed.ps1").Should().BeFalse();
+            (await signingTool.IsFileSignedAsync("Unsign_Works/signed/signed.ps1", CancellationToken.None)).Should().BeFalse();
         }
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "SignFile_Works")]
-    public void SignFile_Unsigned_Works()
+    public async Task SignFile_Unsigned_Works()
     {
         var signingTool = CreateSignTool();
-        CanSign(signingTool, "SignFile_Works/unsigned/unsigned.ps1");
+        await CanSignAsync(signingTool, "SignFile_Works/unsigned/unsigned.ps1");
     }
 
 
     [TestMethod]
     [DeploymentItem("TestFiles", "NoResign_Fails")]
-    public void SignFile_Signed_NoResign_Fails()
+    public async Task SignFile_Signed_NoResign_Fails()
     {
         var signingTool = CreateSignTool();
-        CannotResign(signingTool, "NoResign_Fails/signed/signed.ps1");
+        await CannotResignAsync(signingTool, "NoResign_Fails/signed/signed.ps1");
     }
 
     [TestMethod]
     [DeploymentItem("TestFiles", "Resign_Works")]
-    public void SignFile_Signed_Resign_Works()
+    public async Task SignFile_Signed_Resign_Works()
     {
         var signingTool = CreateSignTool();
-        CanResign(signingTool, "Resign_Works/signed/signed.ps1");
+        await CanResignAsync(signingTool, "Resign_Works/signed/signed.ps1");
     }
 }

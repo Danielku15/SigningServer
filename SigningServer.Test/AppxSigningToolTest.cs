@@ -40,7 +40,7 @@ public class AppxSigningToolTest : UnitTestBase
     public async Task SignFile_Unsigned_Works()
     {
         var signingTool = CreateSignTool();
-        CanSignAsync(signingTool, "SignFile_Works/unsigned/unsigned.appx");
+        await CanSignAsync(signingTool, "SignFile_Works/unsigned/unsigned.appx");
     }
 
     [TestMethod]

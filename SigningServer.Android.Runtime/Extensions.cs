@@ -27,7 +27,7 @@ namespace SigningServer.Android
            return certificate.GetECDsaPublicKey() ??
                 certificate.GetRSAPublicKey() ??
                 (AsymmetricAlgorithm)certificate.GetDSAPublicKey() ??
-#pragma warning disable SYSLIB0027 Fallback only
+#pragma warning disable SYSLIB0027 // Fallback only
                 certificate.PublicKey.Key
 #pragma warning restore SYSLIB0027
                 ;

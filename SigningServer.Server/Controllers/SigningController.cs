@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -132,7 +133,7 @@ public class SigningController : Controller
                     _logger.LogWarning(e, "Could not create working directory");
                 }
             }
-            
+
             await using (var targetFile = new FileStream(inputFileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 await signFileRequest.FileToSign.CopyToAsync(targetFile, cancellationToken);
@@ -177,10 +178,10 @@ public class SigningController : Controller
                     TimestampServer = timestampServer
                 }, cancellationToken);
 
-            
+
             // only return when signed
             _certificateProvider.Return(signFileRequest.Username, certificate);
-            
+
             // register for deletion of output file
             if (coreSignFileResponse.ResultFiles is { Count: > 0 })
             {
@@ -209,10 +210,10 @@ public class SigningController : Controller
 
             apiSignFileResponse.ErrorMessage = coreSignFileResponse.ErrorMessage;
             apiSignFileResponse.Status = coreSignFileResponse.Status;
-            
+
             stopwatch.Stop();
             apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
-            
+
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
         }
@@ -220,14 +221,15 @@ public class SigningController : Controller
         {
             _certificateProvider.Destroy(certificate);
 
-            _logger.LogError(e, $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
+            _logger.LogError(e,
+                $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
             apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             apiSignFileResponse.ErrorMessage = e.Message;
         }
 
         return new SignFileActionResult(apiSignFileResponse, coreSignFileResponse?.ResultFiles);
     }
-    
+
     /// <summary>
     /// Signs the given input hash.
     /// </summary>
@@ -235,7 +237,7 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("signhash")]
     [Produces("application/json", Type = typeof(SignHashResponseDto))]
-    public SignHashActionResult SignHashAsync([FromBody, Required] SignHashRequestDto signHashRequestDto)
+    public SignHashActionResult SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
     {
         var apiSignHashResponse = new SignHashResponseDto();
         var remoteIp = RemoteIp;
@@ -288,7 +290,7 @@ public class SigningController : Controller
 
             // only return when signed
             _certificateProvider.Return(signHashRequestDto.Username, certificate);
-            
+
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {apiSignHashResponse.SignTimeInMilliseconds})");
         }
@@ -301,6 +303,74 @@ public class SigningController : Controller
         }
 
         return new SignHashActionResult(apiSignHashResponse);
+    }
+
+    /// <summary>
+    /// Downloads a certificate.
+    /// </summary>
+    /// <param name="loadCertificateRequestDto"></param>
+    /// <returns></returns>
+    [HttpPost("loadcertificate")]
+    [Produces("application/json", Type = typeof(LoadCertificateActionResult))]
+    public LoadCertificateActionResult LoadCertificate(
+        [FromBody, Required] LoadCertificateRequestDto loadCertificateRequestDto)
+    {
+        var apiLoadReponse = new LoadCertificateResponseDto();
+        var remoteIp = RemoteIp;
+        var certificate =
+            _certificateProvider.Get(loadCertificateRequestDto.Username, loadCertificateRequestDto.Password);
+        try
+        {
+            if (loadCertificateRequestDto.IncludeChain)
+            {
+                using var ch = new X509Chain();
+                ch.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                ch.Build(certificate.Certificate);
+
+                var collection = new X509Certificate2Collection(ch.ChainElements
+                    .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
+                try
+                {
+                    var exported = collection.Export(loadCertificateRequestDto.ExportFormat)!;
+                    apiLoadReponse = new LoadCertificateResponseDto
+                    {
+                        Status = LoadCertificateResponseStatus.CertificateLoaded,
+                        ErrorMessage = string.Empty,
+                        CertificateData = Convert.ToBase64String(exported)
+                    };
+                }
+                finally
+                {
+                    foreach (var cert in collection)
+                    {
+                        cert.Dispose();
+                    }
+                }
+            }
+            else
+            {
+                using var copyWithoutPrivateKey = new X509Certificate2(certificate.Certificate.RawData);
+                var exported = copyWithoutPrivateKey.Export(loadCertificateRequestDto.ExportFormat)!;
+                apiLoadReponse = new LoadCertificateResponseDto
+                {
+                    Status = LoadCertificateResponseStatus.CertificateLoaded,
+                    ErrorMessage = string.Empty,
+                    CertificateData = Convert.ToBase64String(exported)
+                };
+            }
+
+            // only return when signed
+            _certificateProvider.Return(loadCertificateRequestDto.Username, certificate);
+        }
+        catch (Exception e)
+        {
+            _certificateProvider.Destroy(certificate);
+            _logger.LogError(e, $"[{remoteIp}] Loading of certificate failed: {e.Message}");
+            apiLoadReponse.Status = LoadCertificateResponseStatus.CertificateNotLoadedError;
+            apiLoadReponse.ErrorMessage = e.Message;
+        }
+
+        return new LoadCertificateActionResult(apiLoadReponse);
     }
 
     private string RemoteIp => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";

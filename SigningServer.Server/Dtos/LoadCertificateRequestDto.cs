@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SigningServer.Server.Dtos;
 
-public class SignHashRequestDto
+public class LoadCertificateRequestDto
 {
     /// <summary>
     /// The username to authenticate the signing
@@ -15,14 +15,12 @@ public class SignHashRequestDto
     public string Password { get; set; }
 
     /// <summary>
-    /// The hash algorithm to use for signing
+    /// The format into which the certificates will be encoded.
     /// </summary>
-    [Required]
-    public string HashAlgorithm { get; set; }
+    public X509ContentType ExportFormat { get; set; }
 
     /// <summary>
-    /// The base64 encoded raw hash bytes to sign.
+    /// Whether to include the full certificate chain.
     /// </summary>
-    [Required]
-    public string Hash { get; set; }
+    public bool IncludeChain { get; set; }
 }

@@ -26,5 +26,11 @@
 	  <Compile Include="..\SigningServer.Server\Dtos\SignHashResponseDto.cs">
 	    <Link>SignHashResponseDto.cs</Link>
 	  </Compile>
+	  <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateRequestDto.cs">
+	    <Link>LoadCertificateRequestDto.cs</Link>
+	  </Compile>
+	  <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateResponseDto.cs">
+	    <Link>LoadCertificateResponseDto.cs</Link>
+	  </Compile>
 	</ItemGroup>
 </Project>

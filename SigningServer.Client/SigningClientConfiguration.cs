@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 
 namespace SigningServer.Client;
@@ -32,22 +33,22 @@ public class SigningClientConfiguration
     /// Whether to ignore any existing signatures and not sign in this case.
     /// </summary>
     public bool IgnoreExistingSignatures { get; set; } = true;
-    
+
     /// <summary>
     /// Whether to ignore unsupported file formats or whether to fail when encountering them. 
     /// </summary>
     public bool IgnoreUnsupportedFiles { get; set; } = true;
-    
+
     /// <summary>
     /// The timeout of signing operations in seconds.
     /// </summary>
     public int Timeout { get; set; } = 60;
-    
+
     /// <summary>
     /// The hash algorithm to use.
     /// </summary>
     public string HashAlgorithm { get; set; }
-    
+
     /// <summary>
     /// The number of retries the client should perform before giving up failed sign operations.
     /// </summary>
@@ -69,4 +70,20 @@ public class SigningClientConfiguration
     /// </summary>
     [JsonIgnore]
     public IList<string> Sources { get; set; } = new List<string>();
+
+    /// <summary>
+    /// If a certificate download should be performed, the path to write it to.
+    /// </summary>
+    public string LoadCertificatePath { get; set; }
+
+    /// <summary>
+    /// If a certificate download should be performed, whether to load the whole chain instead of only the cert used
+    /// for signing.
+    /// </summary>
+    public bool LoadCertificateChain { get; set; }
+
+    /// <summary>
+    /// If a certificate download should be performed, the format to download.
+    /// </summary>
+    public X509ContentType? LoadCertificateExportFormat { get; set; }
 }

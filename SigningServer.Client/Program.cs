@@ -346,6 +346,7 @@ internal class Program
             }
             else
             {
+                arg = arg.Trim('"');
                 if (File.Exists(arg) || Directory.Exists(arg))
                 {
                     configuration.Sources.Add(arg);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -217,6 +218,26 @@ public class SigningServerIntegrationTest : UnitTestBase
         var idsig = Path.Combine(ExecutionDirectory, "ApkIdSig", "unsigned", "unsigned-aligned.apk.idsig");
         File.Exists(apk).Should().BeTrue();
         File.Exists(idsig).Should().BeTrue();
+    }
+
+
+    [TestMethod]
+    public async Task TestCertificateDownload()
+    {
+        using (var client = new SigningClient(_application.CreateClient()))
+        {
+            client.Configuration.LoadCertificatePath = Path.Combine("Certs","Cert.pfx");
+            client.Configuration.LoadCertificateExportFormat = X509ContentType.Pfx;
+            await client.ConnectAsync();
+            await client.SignFilesAsync();
+        }
+
+        var cert = Path.Combine(ExecutionDirectory, "Certs", "Cert.pfx");
+        File.Exists(cert).Should().BeTrue();
+
+        using var pfx = new X509Certificate2(await File.ReadAllBytesAsync(cert));
+        pfx.Thumbprint.Should().Be(AssemblyEvents.Certificate.Thumbprint);
+        pfx.HasPrivateKey.Should().BeFalse();
     }
 
     private string GenerateLargeTestFile(string path)

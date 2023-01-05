@@ -16,7 +16,7 @@ public class CertificateConfiguration
     /// The plain text username to use this certificate
     /// </summary>
     public string Username { get; set; }
-    
+
     /// <summary>
     /// The plain text password to use this certificate
     /// </summary>
@@ -35,17 +35,20 @@ public class CertificateConfiguration
     /// <summary>
     /// The loaded certificate.
     /// </summary>
-    [JsonIgnore] public X509Certificate2 Certificate { get; set; }
-    
+    [JsonIgnore]
+    public X509Certificate2 Certificate { get; set; }
+
     /// <summary>
     /// The loaded private key.
     /// </summary>
-    [JsonIgnore] public AsymmetricAlgorithm PrivateKey { get; set; }
+    [JsonIgnore]
+    public AsymmetricAlgorithm PrivateKey { get; set; }
 
     /// <summary>
     /// A value indicating whether authentication is needed for the certificate.
     /// </summary>
-    [JsonIgnore] public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
+    [JsonIgnore]
+    public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
     public void LoadCertificate(ILogger<CertificateConfiguration> logger, HardwareCertificateUnlocker unlocker)
     {
@@ -61,7 +64,7 @@ public class CertificateConfiguration
         {
             Azure.Load(logger, this);
         }
-        else if(LocalStore != null)
+        else if (LocalStore != null)
         {
             LocalStore.Load(logger, this, unlocker);
         }
@@ -83,11 +86,61 @@ public class CertificateConfiguration
         {
             return $"User: {Username}, Local: {LocalStore}";
         }
+
         if (Azure?.CertificateName != null)
         {
             return $"User: {Username}, Local: {Azure}";
         }
 
         return $"User: {Username}, Unknown certificate";
+    }
+
+    public CertificateConfiguration CloneForSigning(ILogger<CertificateConfiguration> logger,
+        HardwareCertificateUnlocker unlocker)
+    {
+        var configuration = new CertificateConfiguration
+        {
+            Username = Username, Password = Password, LocalStore = LocalStore, Azure = Azure
+        };
+
+        if (LocalStore != null || Azure != null)
+        {
+            configuration.LoadCertificate(logger, unlocker);
+        }
+        else if(Certificate != null && PrivateKey != null)
+        {
+            // NOTE: This path is mainly needed for testing and rather not in production.
+            configuration.Certificate = new X509Certificate2(Certificate);
+            switch (PrivateKey)
+            {
+                case RSACng pk:
+                    configuration.PrivateKey = new RSACng(pk.Key); 
+                    break; 
+                case DSACng pk:
+                    configuration.PrivateKey = new DSACng(pk.Key);
+                    break;
+                case ECDsaCng pk:
+                    configuration.PrivateKey = new ECDsaCng(pk.Key);
+                    break;
+                case RSACryptoServiceProvider pk:
+                    var rsaCsp = new RSACryptoServiceProvider();
+                    rsaCsp.ImportParameters(pk.ExportParameters(false));
+                    configuration.PrivateKey = rsaCsp;
+                    break;
+                case DSACryptoServiceProvider pk:
+                    var dsaCsp = new DSACryptoServiceProvider();
+                    dsaCsp.ImportParameters(pk.ExportParameters(false));
+                    configuration.PrivateKey = dsaCsp;
+                    break;
+                default:
+                    throw new InvalidConfigurationException("Cannot clone private key");
+            }
+        }
+        else
+        {
+            throw new InvalidConfigurationException("Cannot load certificate");
+        }
+
+        return configuration;
     }
 }

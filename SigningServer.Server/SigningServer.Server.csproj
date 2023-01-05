@@ -17,6 +17,7 @@
     <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="6.0.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="6.0.12" />
 		<PackageReference Include="NLog" Version="5.0.4" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
 		<PackageReference Include="NuGet.Packaging" Version="6.3.0" />

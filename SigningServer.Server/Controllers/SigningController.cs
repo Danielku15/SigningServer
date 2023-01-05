@@ -26,17 +26,20 @@ public class SigningController : Controller
     private readonly ISigningToolProvider _signingToolProvider;
     private readonly IHashSigningTool _hashSigningTool;
     private readonly SigningServerConfiguration _configuration;
+    private readonly ICertificateProvider _certificateProvider;
 
     public SigningController(
         ILogger<SigningController> logger,
         ISigningToolProvider signingToolProvider,
         IHashSigningTool hashSigningTool,
-        SigningServerConfiguration configuration)
+        SigningServerConfiguration configuration,
+        ICertificateProvider certificateProvider)
     {
         _logger = logger;
         _signingToolProvider = signingToolProvider;
         _hashSigningTool = hashSigningTool;
         _configuration = configuration;
+        _certificateProvider = certificateProvider;
     }
 
     /// <summary>
@@ -75,6 +78,7 @@ public class SigningController : Controller
         SignFileResponse coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
+        CertificateConfiguration certificate = null;
         try
         {
             var stopwatch = Stopwatch.StartNew();
@@ -91,17 +95,7 @@ public class SigningController : Controller
 
             //
             // find certificate
-            CertificateConfiguration certificate;
-            if (string.IsNullOrWhiteSpace(signFileRequest.Username))
-            {
-                certificate = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
-            }
-            else
-            {
-                certificate = _configuration.Certificates.FirstOrDefault(
-                    c => c.IsAuthorized(signFileRequest.Username, signFileRequest.Password));
-            }
-
+            certificate = _certificateProvider.Get(signFileRequest.Username, signFileRequest.Password);
             if (certificate == null)
             {
                 _logger.LogWarning("Unauthorized signing request");
@@ -115,6 +109,7 @@ public class SigningController : Controller
             if (signingTool == null)
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnsupportedFormat;
+                _certificateProvider.Return(signFileRequest.Username, certificate);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
 
@@ -171,16 +166,21 @@ public class SigningController : Controller
                 ? _configuration.Sha1TimestampServer
                 : _configuration.TimestampServer;
 
-            coreSignFileResponse = await signingTool.SignFileAsync(new SignFileRequest
-            {
-                InputFilePath = inputFileName,
-                OriginalFileName = signFileRequest.FileToSign.FileName,
-                HashAlgorithm = signFileRequest.HashAlgorithm,
-                Certificate = certificate.Certificate,
-                PrivateKey = certificate.PrivateKey,
-                TimestampServer = timestampServer
-            }, cancellationToken);
+            coreSignFileResponse = await signingTool.SignFileAsync(
+                new SignFileRequest
+                {
+                    InputFilePath = inputFileName,
+                    OriginalFileName = signFileRequest.FileToSign.FileName,
+                    HashAlgorithm = signFileRequest.HashAlgorithm,
+                    Certificate = certificate.Certificate,
+                    PrivateKey = certificate.PrivateKey,
+                    TimestampServer = timestampServer
+                }, cancellationToken);
 
+            
+            // only return when signed
+            _certificateProvider.Return(signFileRequest.Username, certificate);
+            
             // register for deletion of output file
             if (coreSignFileResponse.ResultFiles is { Count: > 0 })
             {
@@ -207,15 +207,20 @@ public class SigningController : Controller
                 });
             }
 
+            apiSignFileResponse.ErrorMessage = coreSignFileResponse.ErrorMessage;
+            apiSignFileResponse.Status = coreSignFileResponse.Status;
+            
             stopwatch.Stop();
             apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
-
+            
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message}");
+            _certificateProvider.Destroy(certificate);
+
+            _logger.LogError(e, $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
             apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             apiSignFileResponse.ErrorMessage = e.Message;
         }
@@ -234,6 +239,7 @@ public class SigningController : Controller
     {
         var apiSignHashResponse = new SignHashResponseDto();
         var remoteIp = RemoteIp;
+        var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
         try
         {
             //
@@ -254,17 +260,6 @@ public class SigningController : Controller
 
             //
             // find certificate
-            CertificateConfiguration certificate;
-            if (string.IsNullOrWhiteSpace(signHashRequestDto.Username))
-            {
-                certificate = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
-            }
-            else
-            {
-                certificate = _configuration.Certificates.FirstOrDefault(
-                    c => c.IsAuthorized(signHashRequestDto.Username, signHashRequestDto.Password));
-            }
-
             if (certificate == null)
             {
                 _logger.LogWarning("Unauthorized signing request");
@@ -287,14 +282,19 @@ public class SigningController : Controller
 
             stopwatch.Stop();
             apiSignHashResponse.Status = coreSignFileResponse.Status;
+            apiSignHashResponse.ErrorMessage = coreSignFileResponse.ErrorMessage;
             apiSignHashResponse.Signature = Convert.ToBase64String(coreSignFileResponse.Signature);
             apiSignHashResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
 
+            // only return when signed
+            _certificateProvider.Return(signHashRequestDto.Username, certificate);
+            
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {apiSignHashResponse.SignTimeInMilliseconds})");
         }
         catch (Exception e)
         {
+            _certificateProvider.Destroy(certificate);
             _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
             apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
             apiSignHashResponse.ErrorMessage = e.Message;

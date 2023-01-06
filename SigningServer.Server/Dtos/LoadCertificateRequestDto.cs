@@ -1,4 +1,5 @@
-using System.Security.Cryptography.X509Certificates;
+
+using SigningServer.Core;
 
 namespace SigningServer.Server.Dtos;
 
@@ -17,7 +18,7 @@ public class LoadCertificateRequestDto
     /// <summary>
     /// The format into which the certificates will be encoded.
     /// </summary>
-    public X509ContentType ExportFormat { get; set; }
+    public LoadCertificateFormat ExportFormat { get; set; }
 
     /// <summary>
     /// Whether to include the full certificate chain.

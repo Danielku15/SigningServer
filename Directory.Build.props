@@ -8,9 +8,11 @@
 
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-		<Version>2.0.0.$(BuildNumber)</Version>
+		<Version>2.0.0</Version>
+		<FileVersion>2.0.0.$(BuildNumber)</FileVersion>
+    <Version Condition=" '$(IsPrerelease)' == 'true' ">$(Version)-alpha.$(BuildNumber)</Version>
 		<Company>Daniel Kuschny</Company>
-		<Copyright>Copyright © 2022 Daniel Kuschny</Copyright>
+		<Copyright>Copyright © 2023 Daniel Kuschny</Copyright>
 		<Product>SigningServer</Product>
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -1,26 +1,24 @@
-name: Build
+name: Prerelease
 on: 
-  push:
-    branches: 
-      - develop
-      - master
-  pull_request:
-
+  workflow_dispatch:
+    inputs:
+      build:
+        required: true
+        description: Pre Release Build Number
+        type: string
 jobs:
   build:
-    name: Build and Test
+    name: Create Prerelease
     runs-on: windows-latest
-    strategy:
-        matrix: 
-            configuration: [Debug, Release]
     steps:
+      - 
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
-      - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:CopyToDist=true -p:BuildNumber=${{ github.run_number }}
-      - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
-      - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
+      - uses: microsoft/setup-msbuild@v1
+      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true -p:BuildNumber=${{ inputs.build }} -p:IsPrerelease=true
+      - run: dotnet pack SigningServer.sln --configuration=Release
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -39,3 +37,5 @@ jobs:
           name: SigningServer.Client.Tool
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg
+      - name: Publish NuGet  
+        run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

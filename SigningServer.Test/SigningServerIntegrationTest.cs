@@ -97,7 +97,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             }
         }
         
-        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+        Directory.GetFiles("WorkingDirectory").Should().BeEmpty("Server Side file cleanup failed");
     }
 
     [TestMethod]

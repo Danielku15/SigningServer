@@ -378,7 +378,7 @@ internal class Program
                         if (i + 2 < args.Length)
                         {
                             i++;
-                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], out var p) ||
+                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], true, out var p) ||
                                 p is not LoadCertificateFormat contentType)
                             {
                                 log.Error("Config could not be loaded: Invalid certificate format");

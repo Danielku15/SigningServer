@@ -1,37 +1,41 @@
 <Project>
-	<PropertyGroup Label="Globals">
-		<Optimize>false</Optimize>
-		<DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
-		
-		<TargetFramework>net6.0</TargetFramework>
+  <PropertyGroup Label="Globals">
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
 
-		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-		<BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-		<Version>2.0.0</Version>
-		<FileVersion>2.0.0.$(BuildNumber)</FileVersion>
+    <TargetFramework>net6.0</TargetFramework>
+
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0.$(BuildNumber)</FileVersion>
     <Version Condition=" '$(IsPrerelease)' == 'true' ">$(Version)-alpha.$(BuildNumber)</Version>
-		<Company>Daniel Kuschny</Company>
-		<Copyright>Copyright © 2023 Daniel Kuschny</Copyright>
-		<Product>SigningServer</Product>
+    <Company>Daniel Kuschny</Company>
+    <Copyright>Copyright © 2023 Daniel Kuschny</Copyright>
+    <Product>SigningServer</Product>
+    <Authors>Danielku15 and Contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Danielku15/SigningServer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Danielku15/SigningServer</RepositoryUrl>
 
-		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 
-		<DistPath>$(MSBuildThisFileDirectory)Dist\</DistPath>
-	</PropertyGroup>
+    <DistPath>$(MSBuildThisFileDirectory)Dist\</DistPath>
+  </PropertyGroup>
 
-	<Target Name="CopyToDist" BeforeTargets="AfterBuild" Condition=" '$(CopyToDist)' == 'true' ">
-		<Message Text="Copying binaries to from $(OutputPath) to $(DistPath)" Importance="High" />
-		<ItemGroup>
-			<OutputFilesToCopy Include="$(OutputPath)\**\*.*" Exclude="$(OutputPath)\**\*.obj;$(OutputPath)\**\*.tlog" />
-		</ItemGroup>
+  <Target Name="CopyToDist" BeforeTargets="AfterBuild" Condition=" '$(CopyToDist)' == 'true' ">
+    <Message Text="Copying binaries to from $(OutputPath) to $(DistPath)" Importance="High"/>
+    <ItemGroup>
+      <OutputFilesToCopy Include="$(OutputPath)\**\*.*" Exclude="$(OutputPath)\**\*.obj;$(OutputPath)\**\*.tlog"/>
+    </ItemGroup>
 
-		<Copy SourceFiles="@(OutputFilesToCopy)"
-			  DestinationFiles="@(OutputFilesToCopy->'$(DistPath)$(Configuration)\$(MSBuildProjectName)\%(RecursiveDir)%(Filename)%(Extension)')"
-			  SkipUnchangedFiles="True"
-			  Condition="'$(OutputType)' == 'Exe'" />
-	</Target>
+    <Copy SourceFiles="@(OutputFilesToCopy)"
+          DestinationFiles="@(OutputFilesToCopy->'$(DistPath)$(Configuration)\$(MSBuildProjectName)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="True"
+          Condition="'$(OutputType)' == 'Exe'"/>
+  </Target>
 
 
 </Project>

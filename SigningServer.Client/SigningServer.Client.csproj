@@ -3,6 +3,8 @@
 		<OutputType>Exe</OutputType>
 		<Title>SigningServer Client</Title>
 		<Description>This is the client for signing files on a signing server.</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>signingserver-client</ToolCommandName>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="config.json">

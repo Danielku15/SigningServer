@@ -63,32 +63,43 @@ public class NuGetSigningTool : ISigningTool
         }
 
         var outputFile = Path.ChangeExtension(signFileRequest.InputFilePath, ".nupkg.signed");
-
-        var timestampProvider = !string.IsNullOrEmpty(signFileRequest.TimestampServer)
-            ? new Rfc3161TimestampProvider(new Uri(signFileRequest.TimestampServer))
-            : null;
-        var signatureProvider = new AsymmetricPrivateKeyX509SignatureProvider(signFileRequest.PrivateKey,
-            timestampProvider);
-        using var options = SigningOptions.CreateFromFilePaths(
-            signFileRequest.InputFilePath,
-            outputFile,
-            signFileRequest.OverwriteSignature,
-            signatureProvider,
-            new NuGetLogger(_logger));
-
-        if (!NuGetSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm ?? "SHA256", out var hashAlg))
+        try
         {
-            hashAlg = HashAlgorithmName.SHA256;
+            var timestampProvider = !string.IsNullOrEmpty(signFileRequest.TimestampServer)
+                ? new Rfc3161TimestampProvider(new Uri(signFileRequest.TimestampServer))
+                : null;
+            var signatureProvider = new AsymmetricPrivateKeyX509SignatureProvider(signFileRequest.PrivateKey,
+                timestampProvider);
+            using var options = SigningOptions.CreateFromFilePaths(
+                signFileRequest.InputFilePath,
+                outputFile,
+                signFileRequest.OverwriteSignature,
+                signatureProvider,
+                new NuGetLogger(_logger));
+
+            if (!NuGetSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm ?? "SHA256", out var hashAlg))
+            {
+                hashAlg = HashAlgorithmName.SHA256;
+            }
+
+            var request = new AuthorSignPackageRequest(signFileRequest.Certificate, hashAlg);
+            await SigningUtility.SignAsync(options, request, cancellationToken);
+            signFileResponse.Status = successResult;
+            signFileResponse.ResultFiles = new[]
+            {
+                new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFile)
+            };
+            return signFileResponse;
         }
-
-        var request = new AuthorSignPackageRequest(signFileRequest.Certificate, hashAlg);
-        await SigningUtility.SignAsync(options, request, cancellationToken);
-        signFileResponse.Status = successResult;
-        signFileResponse.ResultFiles = new[]
+        catch
         {
-            new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFile)
-        };
-        return signFileResponse;
+            // ensure on error propagaion we delete intermediate output files which will not be reported.
+            if (File.Exists(outputFile))
+            {
+                File.Delete(outputFile);
+            }
+            throw;
+        }
     }
 
     internal class NuGetLogger : LoggerBase

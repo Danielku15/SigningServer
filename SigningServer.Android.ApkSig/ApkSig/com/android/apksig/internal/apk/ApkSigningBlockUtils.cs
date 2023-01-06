@@ -1129,7 +1129,9 @@ namespace SigningServer.Android.Com.Android.Apksig.Internal.Apk
             
             public readonly SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo> signers = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.Internal.Apk.ApkSigningBlockUtils.Result.SignerInfo>();
             
+#pragma warning disable CS0108, CS0114
             internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue> mWarnings = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue>();
+#pragma warning restore CS0108, CS0114
             
             internal readonly SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue> mErrors = new SigningServer.Android.Collections.List<SigningServer.Android.Com.Android.Apksig.ApkVerificationIssue>();
             

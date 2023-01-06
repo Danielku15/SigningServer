@@ -68,7 +68,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.SignFilesAsync();
         }
 
-        CheckCleanupAsync();
+        await CheckCleanupAsync();
 
         var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
         var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();

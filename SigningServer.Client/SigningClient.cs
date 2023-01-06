@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -140,6 +139,60 @@ public sealed class SigningClient : IDisposable
         if (mainException != null)
         {
             throw mainException;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Configuration.LoadCertificatePath))
+        {
+            await LoadCertificateAsync(cancellationSource.Token);
+        }
+    }
+
+    private async Task LoadCertificateAsync(CancellationToken cancellationToken)
+    {
+        var msg = "certificate" + (Configuration.LoadCertificateChain ? " chain" : "");
+        Log.Info(
+            $"Loading certificate {msg} with format {Configuration.LoadCertificateExportFormat} to {Configuration.LoadCertificatePath}");
+
+        var response = await _client.PostAsJsonAsync("signing/loadcertificate",
+            new LoadCertificateRequestDto
+            {
+                Username = Configuration.Username,
+                Password = Configuration.Password,
+                ExportFormat = Configuration.LoadCertificateExportFormat!.Value,
+                IncludeChain = Configuration.LoadCertificateChain
+            }, cancellationToken);
+
+        var responseDto =
+            await response.Content.ReadFromJsonAsync<LoadCertificateResponseDto>(cancellationToken: cancellationToken);
+        if (responseDto == null)
+        {
+            throw response.StatusCode switch
+            {
+                HttpStatusCode.OK => new InvalidOperationException("No response body"),
+                HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
+                HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
+                HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
+            };
+        }
+
+        switch (responseDto.Status)
+        {
+            case LoadCertificateResponseStatus.CertificateLoaded:
+                Directory.CreateDirectory(Path.GetDirectoryName(Configuration.LoadCertificatePath)!);
+                await File.WriteAllBytesAsync(Configuration.LoadCertificatePath,
+                    Convert.FromBase64String(responseDto.CertificateData),
+                    cancellationToken);
+                Log.Info($"Certificate successfully downloaded to {Configuration.LoadCertificatePath}");
+                break;
+            case LoadCertificateResponseStatus.CertificateNotLoadedError:
+                var error = $"Certificate Loading Failed with error '{responseDto.ErrorMessage}'";
+                throw new SigningFailedException(error);
+            case LoadCertificateResponseStatus.CertificateNotLoadedUnauthorized:
+                Log.Error("The specified username and password are not recognized on the server");
+                throw new UnauthorizedAccessException();
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -318,7 +371,7 @@ public sealed class SigningClient : IDisposable
                 var contentType = response.Content.Headers.TryGetValues("Content-Type", out var contentTypes)
                     ? contentTypes.FirstOrDefault() ?? string.Empty
                     : string.Empty;
-                
+
                 if (contentType.StartsWith("application/json") ||
                     contentType.StartsWith("application/problem+json"))
                 {
@@ -326,7 +379,7 @@ public sealed class SigningClient : IDisposable
                     throw new IOException(
                         $"Could not load signing response (unexpected JSON response '{contentType}', {responseJson})");
                 }
-                
+
                 if (!contentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new IOException($"Could not load signing response (unexpected content type '{contentType}')");

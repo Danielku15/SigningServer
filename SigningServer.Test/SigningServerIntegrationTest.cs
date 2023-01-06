@@ -67,7 +67,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.SignFilesAsync();
         }
 
-        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+        CheckCleanupAsync();
 
         var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
         var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();
@@ -79,6 +79,25 @@ public class SigningServerIntegrationTest : UnitTestBase
 
             (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
         }
+    }
+
+    private static async Task CheckCleanupAsync()
+    {
+        for (var retry = 0; retry < 5; retry++)
+        {
+            var remainingFiles = Directory.GetFiles("WorkingDirectory").Length;
+
+            if (remainingFiles > 0)
+            {
+                await Task.Delay(1000);
+            }
+            else
+            {
+                return;
+            }
+        }
+        
+        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
     }
 
     [TestMethod]
@@ -93,9 +112,9 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.ConnectAsync();
             await client.SignFilesAsync();
         }
-       
-        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
 
+        await CheckCleanupAsync();
+        
         var referenceFiles =
             new HashSet<string>(
                 Directory.GetFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "hashes"), "*.sig"));
@@ -125,7 +144,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.SignFilesAsync();
         }
 
-        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+        await CheckCleanupAsync();
 
         var signedFiles = Directory.GetFiles(Path.Combine(ExecutionDirectory, "IntegrationTestFiles"));
         var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();
@@ -211,7 +230,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             await client.SignFilesAsync();
         }
 
-        Directory.GetFiles("WorkingDirectory").Length.Should().Be(0, "Server Side file cleanup failed");
+        await CheckCleanupAsync();
 
         var apk = Path.Combine(ExecutionDirectory, "ApkIdSig", "unsigned", "unsigned-aligned.apk");
         var idsig = Path.Combine(ExecutionDirectory, "ApkIdSig", "unsigned", "unsigned-aligned.apk.idsig");

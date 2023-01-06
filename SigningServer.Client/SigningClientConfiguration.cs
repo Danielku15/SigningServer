@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
+using SigningServer.Core;
 
 namespace SigningServer.Client;
 
@@ -85,5 +85,5 @@ public class SigningClientConfiguration
     /// <summary>
     /// If a certificate download should be performed, the format to download.
     /// </summary>
-    public X509ContentType? LoadCertificateExportFormat { get; set; }
+    public LoadCertificateFormat? LoadCertificateExportFormat { get; set; }
 }

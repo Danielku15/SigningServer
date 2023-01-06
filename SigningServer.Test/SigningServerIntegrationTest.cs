@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
+using SigningServer.Core;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
 using Program = SigningServer.Server.Program;
@@ -78,7 +80,8 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+                .BeTrue($"File {signedFile} was not signed");
         }
     }
 
@@ -97,7 +100,7 @@ public class SigningServerIntegrationTest : UnitTestBase
                 return;
             }
         }
-        
+
         Directory.GetFiles("WorkingDirectory").Should().BeEmpty("Server Side file cleanup failed");
     }
 
@@ -105,7 +108,8 @@ public class SigningServerIntegrationTest : UnitTestBase
     [DeploymentItem("TestFiles", "HashIntegrationTestFiles")]
     public async Task ValidTestRunHashing()
     {
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "unsigned")))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles",
+                     "unsigned")))
         {
             using var client = new SigningClient(_application.CreateClient(), file);
             client.Configuration.SignHashFileExtension = Path.GetExtension(file) + ".sig";
@@ -115,7 +119,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         }
 
         await CheckCleanupAsync();
-        
+
         var referenceFiles =
             new HashSet<string>(
                 Directory.GetFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles", "hashes"), "*.sig"));
@@ -155,7 +159,8 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+                .BeTrue($"File {signedFile} was not signed");
         }
     }
 
@@ -204,7 +209,8 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should().BeTrue($"File {signedFile} was not signed");
+            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+                .BeTrue($"File {signedFile} was not signed");
         }
 
         var times = tasks.Select(t => t.Result).ToArray();
@@ -245,8 +251,8 @@ public class SigningServerIntegrationTest : UnitTestBase
     {
         using (var client = new SigningClient(_application.CreateClient()))
         {
-            client.Configuration.LoadCertificatePath = Path.Combine("Certs","Cert.pfx");
-            client.Configuration.LoadCertificateExportFormat = X509ContentType.Pfx;
+            client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pfx");
+            client.Configuration.LoadCertificateExportFormat = LoadCertificateFormat.Pkcs12;
             await client.ConnectAsync();
             await client.SignFilesAsync();
         }
@@ -257,6 +263,43 @@ public class SigningServerIntegrationTest : UnitTestBase
         using var pfx = new X509Certificate2(await File.ReadAllBytesAsync(cert));
         pfx.Thumbprint.Should().Be(AssemblyEvents.Certificate.Thumbprint);
         pfx.HasPrivateKey.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public async Task TestCertificateDownloadPemCertificate()
+    {
+        var certString = await TestCertificateDownloadPem(LoadCertificateFormat.PemCertificate, "CERTIFICATE");
+        var cert = X509Certificate2.CreateFromPem(certString);
+        cert.Thumbprint.Should().Be(AssemblyEvents.Certificate.Thumbprint);
+        cert.HasPrivateKey.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public async Task TestCertificateDownloadPemCertificatePublic()
+    {
+        var certString = await TestCertificateDownloadPem(LoadCertificateFormat.PemPublicKey, "PUBLIC KEY");
+        using var cert = RSA.Create();
+        cert.ImportFromPem(certString);
+
+        cert.ExportSubjectPublicKeyInfo().Should().Equal(AssemblyEvents.Certificate.PublicKey.ExportSubjectPublicKeyInfo());
+    }
+
+    private async Task<string> TestCertificateDownloadPem(LoadCertificateFormat format, string section)
+    {
+        using (var client = new SigningClient(_application.CreateClient()))
+        {
+            client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pem");
+            client.Configuration.LoadCertificateExportFormat = format;
+            await client.ConnectAsync();
+            await client.SignFilesAsync();
+        }
+
+        var cert = Path.Combine(ExecutionDirectory, "Certs", "Cert.pem");
+        File.Exists(cert).Should().BeTrue();
+
+        var pem = await File.ReadAllTextAsync(cert);
+        pem.Should().ContainAll("BEGIN " + section, "END " + section);
+        return pem;
     }
 
     private string GenerateLargeTestFile(string path)

@@ -2,11 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks;
 using NLog;
 using NLog.Targets;
+using SigningServer.Core;
 
 namespace SigningServer.Client;
 
@@ -91,13 +91,8 @@ internal class Program
             Console.WriteLine("      Instead of signing files a certificate file containing the public key will be downloaded");
             Console.WriteLine("      to the specified path. Can be combined with other operations");
             Console.WriteLine("      Format: ");
-            Console.WriteLine("        - \"Authenticode\" - An Authenticode X.509 certificate.");
-            Console.WriteLine("        - \"Cert\" - A single X.509 certificate.");
-            Console.WriteLine("        - \"Pfx\" - A PFX-formatted certificate.");
-            Console.WriteLine("        - \"Pkcs12\" - A PKCS #12-formatted certificate.");
-            Console.WriteLine("        - \"Pkcs7\" - A PKCS #7-formatted certificate.");
-            Console.WriteLine("        - \"SerializedCert\" - A single serialized X.509 certificate.");
-            Console.WriteLine("        - \"SerializedStore\" - A serialized store.");
+            Console.WriteLine("        - \"Pem\" - A PEM encoded file");
+            Console.WriteLine("        - \"Pkcs12\" - A Pkcs12 encoded file (aka. PFX).");
 
             Console.WriteLine("  --load-certificate-chain Format");
             Console.WriteLine("      Like --load-certificate but the whole certificate chian will be downloaded.");
@@ -359,8 +354,8 @@ internal class Program
                         if (i + 2 < args.Length)
                         {
                             i++;
-                            if (!Enum.TryParse(typeof(X509ContentType), args[i], true, out var p) ||
-                                p is not X509ContentType contentType)
+                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], true, out var p) ||
+                                p is not LoadCertificateFormat contentType)
                             {
                                 log.Error("Config could not be loaded: Invalid certificate format");
                                 Environment.ExitCode = ErrorCodes.InvalidConfiguration;
@@ -383,8 +378,8 @@ internal class Program
                         if (i + 2 < args.Length)
                         {
                             i++;
-                            if (!Enum.TryParse(typeof(X509ContentType), args[i], out var p) ||
-                                p is not X509ContentType contentType)
+                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], out var p) ||
+                                p is not LoadCertificateFormat contentType)
                             {
                                 log.Error("Config could not be loaded: Invalid certificate format");
                                 Environment.ExitCode = ErrorCodes.InvalidConfiguration;

@@ -359,7 +359,7 @@ internal class Program
                         if (i + 2 < args.Length)
                         {
                             i++;
-                            if (!Enum.TryParse(typeof(X509ContentType), args[i], out var p) ||
+                            if (!Enum.TryParse(typeof(X509ContentType), args[i], true, out var p) ||
                                 p is not X509ContentType contentType)
                             {
                                 log.Error("Config could not be loaded: Invalid certificate format");

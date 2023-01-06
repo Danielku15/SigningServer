@@ -134,11 +134,21 @@ The client provides exit codes for each error scenario:
 * `7` - An error when communicating with the server occured
 * `8` - Security Negotiation Failed
 
+## Use Client as .net Tool
+The signing client is published as [.net Tool](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools) to nuget.org. 
+You can install the signing client globally or locally (through a manifest). 
+
+```
+dotnet new tool-manifest
+dotnet tool install SigningServer.Client
+dotnet tool run signingserver-client <Arguments>
+```
+
 ## License / Credits
 
 Unless stated otherwise the code of this project is licensed under:
 
-> Copyright (c) 2020 Daniel Kuschny and Contributors
+> Copyright (c) 2023 Daniel Kuschny and Contributors
 > Licensed under the MIT license.
 >
 > [MIT license](LICENSE)

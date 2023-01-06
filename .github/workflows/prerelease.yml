@@ -16,20 +16,20 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - uses: microsoft/setup-msbuild@v1
-      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true -p:BuildNumber=${{ inputs.build }} -p:IsPrerelease=true
-      - run: dotnet pack SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:IsPrerelease=true
+      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
+      - run: dotnet pack SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: SigningServer.Server
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Server/*.*
+            Dist/${{ matrix.configuration }}/SigningServer.Server/**/*.*
       - name: Archive Client Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: SigningServer.Client
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Client/*.*
+            Dist/${{ matrix.configuration }}/SigningServer.Client/**/*.*
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v2
         with:

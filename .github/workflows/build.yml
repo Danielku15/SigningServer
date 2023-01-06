@@ -18,24 +18,24 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
-      - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:CopyToDist=true -p:BuildNumber=${{ github.run_number }}
+      - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:CopyToDist=true -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}
       - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
       - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: SigningServer.Server
+          name: SigningServer.Server ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Server/*.*
+            Dist/${{ matrix.configuration }}/SigningServer.Server/**/*.*
       - name: Archive Client Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: SigningServer.Client
+          name: SigningServer.Client ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Client/*.*
+            Dist/${{ matrix.configuration }}/SigningServer.Client/**/*.*
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v2
         with:
-          name: SigningServer.Client.Tool
+          name: SigningServer.Client.Tool ${{ matrix.configuration }}
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg

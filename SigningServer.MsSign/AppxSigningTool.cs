@@ -13,19 +13,25 @@ public class AppxSigningTool : PortableExecutableSigningTool
     private static readonly HashSet<string> AppxSupportedExtensions =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            ".appx", ".appxbundle", ".eappx", ".eappxbundle",
-            ".msix", ".emsix", ".msixbundle", ".emsixbundle"
+            ".appx",
+            ".appxbundle",
+            ".eappx",
+            ".eappxbundle",
+            ".msix",
+            ".emsix",
+            ".msixbundle",
+            ".emsixbundle"
         };
 
     public override string FormatName => "Universal Windows Platform";
 
     public override IReadOnlyList<string> SupportedFileExtensions => AppxSupportedExtensions.ToArray();
-        
+
 
     public AppxSigningTool(ILogger<AppxSigningTool> logger) : base(logger)
     {
     }
-        
+
     public override bool IsFileSupported(string fileName)
     {
         return AppxSupportedExtensions.Contains(Path.GetExtension(fileName));
@@ -45,19 +51,28 @@ public class AppxSigningTool : PortableExecutableSigningTool
             ref Win32.CRYPTOAPI_BLOB blob)
         {
             byte[] digest;
-            switch (privateKey)
+            try
             {
-                case DSA dsa:
-                    digest = dsa.CreateSignature(pDigestToSign);
-                    break;
-                case ECDsa ecdsa:
-                    digest = ecdsa.SignHash(pDigestToSign);
-                    break;
-                case RSA rsa:
-                    digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
-                    break;
-                default:
-                    return Win32.E_INVALIDARG;
+                switch (privateKey)
+                {
+                    case DSA dsa:
+                        digest = dsa.CreateSignature(pDigestToSign);
+                        break;
+                    case ECDsa ecdsa:
+                        digest = ecdsa.SignHash(pDigestToSign);
+                        break;
+                    case RSA rsa:
+                        digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                        break;
+                    default:
+                        return Win32.E_INVALIDARG;
+                }
+            }
+            catch (Exception e)
+            {
+                var hr = e.HResult != 0 ? e.HResult : Win32.NTE_BAD_KEY;
+                Logger.LogError(e, "Failed to sign data reporting {hr}", hr);
+                return hr;
             }
 
             var resultPtr = Marshal.AllocHGlobal(digest.Length);
@@ -78,8 +93,7 @@ public class AppxSigningTool : PortableExecutableSigningTool
         });
         using var unmanagedSipData = new UnmanagedStruct<Win32.APPX_SIP_CLIENT_DATA>(new Win32.APPX_SIP_CLIENT_DATA
         {
-            pSignerParams = unmanagedSignerParams.Pointer,
-            pAppxSipState = IntPtr.Zero
+            pSignerParams = unmanagedSignerParams.Pointer, pAppxSipState = IntPtr.Zero
         });
         var signerParams = new Win32.SIGNER_SIGN_EX3_PARAMS
         {
@@ -126,7 +140,7 @@ public class AppxSigningTool : PortableExecutableSigningTool
         {
             Marshal.Release(appxSip.pAppxSipState);
         }
-                
+
         return (hr, Win32.S_OK);
     }
 }

@@ -38,7 +38,7 @@ public class PortableExecutableSigningTool : ISigningTool
                 ["SHA512"] = (Win32.CALG_SHA_512, Win32.OID_OIWSEC_SHA512, HashAlgorithmName.SHA512)
             };
 
-    private readonly ILogger _logger;
+    protected ILogger Logger { get; }
 
     public virtual string FormatName => "Windows Portable Executables (PE)";
 
@@ -47,12 +47,12 @@ public class PortableExecutableSigningTool : ISigningTool
 
     public PortableExecutableSigningTool(ILogger<PortableExecutableSigningTool> logger)
     {
-        _logger = logger;
+        Logger = logger;
     }
 
     protected PortableExecutableSigningTool(ILogger logger)
     {
-        _logger = logger;
+        Logger = logger;
     }
 
     public virtual bool IsFileSupported(string fileName)
@@ -87,7 +87,7 @@ public class PortableExecutableSigningTool : ISigningTool
 
         var actionId = new Guid(Win32.WINTRUST_ACTION_GENERIC_VERIFY_V2);
         var result = Win32.WinVerifyTrust(IntPtr.Zero, actionId, winTrustData);
-        _logger.LogTrace($"WinVerifyTrust returned {result}");
+        Logger.LogTrace($"WinVerifyTrust returned {result}");
 
         switch (result)
         {
@@ -134,13 +134,13 @@ public class PortableExecutableSigningTool : ISigningTool
         {
             if (signFileRequest.OverwriteSignature)
             {
-                _logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, removing signature");
+                Logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, removing signature");
                 UnsignFile(signFileRequest.InputFilePath);
                 successResult = SignFileResponseStatus.FileResigned;
             }
             else
             {
-                _logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, abort signing");
+                Logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, abort signing");
                 signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
                 return signFileResponse;
             }
@@ -203,7 +203,7 @@ public class PortableExecutableSigningTool : ISigningTool
 
         if (hr == Win32.S_OK && tshr == Win32.S_OK)
         {
-            _logger.LogTrace($"{signFileRequest.InputFilePath} successfully signed");
+            Logger.LogTrace($"{signFileRequest.InputFilePath} successfully signed");
             signFileResponse.Status = successResult;
             signFileResponse.ResultFiles = new[]
             {
@@ -224,7 +224,7 @@ public class PortableExecutableSigningTool : ISigningTool
                     $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.SubjectName}\" .. />.";
             }
 
-            _logger.LogError($"{signFileRequest.InputFilePath} signing failed {signFileResponse.ErrorMessage}");
+            Logger.LogError($"{signFileRequest.InputFilePath} signing failed {signFileResponse.ErrorMessage}");
         }
         else
         {
@@ -234,7 +234,7 @@ public class PortableExecutableSigningTool : ISigningTool
                 ? errorText
                 : $"timestamping failed (0x{hr:x})";
 
-            _logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {signFileResponse.ErrorMessage}");
+            Logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {signFileResponse.ErrorMessage}");
         }
 
         return signFileResponse;
@@ -250,32 +250,41 @@ public class PortableExecutableSigningTool : ISigningTool
         /*PSIGNER_SIGNATURE_INFO*/ IntPtr signerSignatureInfo,
         AsymmetricAlgorithm privateKey)
     {
-        _logger.LogTrace($"Call signing of  {inputFileName}");
+        Logger.LogTrace($"Call signing of  {inputFileName}");
 
         int SignCallback(IntPtr pCertContext, IntPtr pvExtra, uint algId, byte[] pDigestToSign, uint dwDigestToSign,
             ref Win32.CRYPTOAPI_BLOB blob)
         {
             byte[] digest;
-            switch (privateKey)
+            try
             {
-                case DSA dsa:
-                    digest = dsa.CreateSignature(pDigestToSign);
-                    break;
-                case ECDsa ecdsa:
-                    digest = ecdsa.SignHash(pDigestToSign);
-                    break;
-                case RSA rsa:
-                    digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
-                    break;
-                default:
-                    return Win32.E_INVALIDARG;
+                switch (privateKey)
+                {
+                    case DSA dsa:
+                        digest = dsa.CreateSignature(pDigestToSign);
+                        break;
+                    case ECDsa ecdsa:
+                        digest = ecdsa.SignHash(pDigestToSign);
+                        break;
+                    case RSA rsa:
+                        digest = rsa.SignHash(pDigestToSign, hashAlgorithmName, RSASignaturePadding.Pkcs1);
+                        break;
+                    default:
+                        return Win32.E_INVALIDARG;
+                }
+            }
+            catch (Exception e)
+            {
+                var hr = e.HResult != 0 ? e.HResult : Win32.NTE_BAD_KEY;
+                Logger.LogError(e, "Failed to sign data reporting {hr}", hr);
+                return hr;
             }
 
             var resultPtr = Marshal.AllocHGlobal(digest.Length);
             Marshal.Copy(digest, 0, resultPtr, digest.Length);
             blob.pbData = resultPtr;
             blob.cbData = (uint)digest.Length;
-            return 0;
+            return Win32.S_OK;
         }
 
         Win32.SignCallback callbackDelegate = SignCallback;
@@ -327,7 +336,7 @@ public class PortableExecutableSigningTool : ISigningTool
         var tshr = Win32.S_OK;
         if (hr == Win32.S_OK && !string.IsNullOrWhiteSpace(timestampServer))
         {
-            _logger.LogTrace($"Timestamping with url {timestampServer}");
+            Logger.LogTrace($"Timestamping with url {timestampServer}");
             var timestampRetries = 5;
             do
             {
@@ -344,11 +353,11 @@ public class PortableExecutableSigningTool : ISigningTool
                     );
                 if (tshr == Win32.S_OK)
                 {
-                    _logger.LogTrace("Timestamping succeeded");
+                    Logger.LogTrace("Timestamping succeeded");
                 }
                 else
                 {
-                    _logger.LogTrace($"Timestamping failed with {tshr}, retries: {timestampRetries}");
+                    Logger.LogTrace($"Timestamping failed with {tshr}, retries: {timestampRetries}");
                     Thread.Sleep(1000);
                 }
             } while (tshr != Win32.S_OK && (timestampRetries--) > 0);

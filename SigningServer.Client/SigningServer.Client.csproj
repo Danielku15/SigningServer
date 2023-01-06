@@ -5,6 +5,7 @@
 		<Description>This is the client for signing files on a signing server.</Description>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>signingserver-client</ToolCommandName>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="config.json">
@@ -12,6 +13,9 @@
 		</None>
 		<None Include="NLog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="readme.md" Pack="true">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 	<ItemGroup>

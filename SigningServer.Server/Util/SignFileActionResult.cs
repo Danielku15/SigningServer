@@ -26,7 +26,7 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
             {
                 SignFileResponseStatus.FileSigned => StatusCodes.Status200OK,
                 SignFileResponseStatus.FileResigned => StatusCodes.Status200OK,
-                SignFileResponseStatus.FileAlreadySigned => StatusCodes.Status204NoContent,
+                SignFileResponseStatus.FileAlreadySigned => StatusCodes.Status208AlreadyReported,
                 SignFileResponseStatus.FileNotSignedUnsupportedFormat => StatusCodes.Status400BadRequest,
                 SignFileResponseStatus.FileNotSignedError => StatusCodes.Status500InternalServerError,
                 SignFileResponseStatus.FileNotSignedUnauthorized => StatusCodes.Status401Unauthorized,

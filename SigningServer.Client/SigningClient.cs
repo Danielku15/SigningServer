@@ -172,6 +172,7 @@ public sealed class SigningClient : IDisposable
                 HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
                 HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
                 HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                HttpStatusCode.AlreadyReported => new InvalidOperationException("No response body"),
                 _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
             };
         }
@@ -246,6 +247,7 @@ public sealed class SigningClient : IDisposable
                         HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
                         HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
                         HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                        HttpStatusCode.AlreadyReported => new InvalidOperationException("No response body"),
                         _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
                     };
                 }

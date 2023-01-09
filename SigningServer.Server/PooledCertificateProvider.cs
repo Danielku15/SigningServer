@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
 
@@ -11,36 +12,36 @@ namespace SigningServer.Server;
 public class PooledCertificateProvider : ICertificateProvider
 {
     private readonly SigningServerConfiguration _configuration;
-    private readonly ObjectPoolProvider _objectPoolProvider;
     private readonly ILogger<PooledCertificateProvider> _logger;
     private readonly ILogger<CertificateConfiguration> _certConfigLogger;
     private readonly HardwareCertificateUnlocker _hardwareCertificateUnlocker;
 
-    private readonly ConcurrentDictionary<string /*username*/, ObjectPool<CertificateConfiguration>>
+    private readonly ConcurrentDictionary<string /*username*/, CertificatePool>
         _certificatePools = new();
 
     public PooledCertificateProvider(
         SigningServerConfiguration configuration,
-        ObjectPoolProvider objectPoolProvider,
         ILogger<PooledCertificateProvider> logger,
         ILogger<CertificateConfiguration> certConfigLogger,
         HardwareCertificateUnlocker hardwareCertificateUnlocker)
     {
         _configuration = configuration;
-        _objectPoolProvider = objectPoolProvider;
         _logger = logger;
         _certConfigLogger = certConfigLogger;
         _hardwareCertificateUnlocker = hardwareCertificateUnlocker;
     }
 
-    private class CertificateCloningObjectPolicy : PooledObjectPolicy<CertificateConfiguration>
+    private class CertificatePool
     {
         private readonly ILogger _logger;
         private readonly CertificateConfiguration _baseConfiguration;
         private readonly ILogger<CertificateConfiguration> _certConfigLogger;
         private readonly HardwareCertificateUnlocker _hardwareCertificateUnlocker;
 
-        public CertificateCloningObjectPolicy(
+        private readonly ConcurrentQueue<CertificateConfiguration>
+            _pooledItems = new();
+
+        public CertificatePool(
             ILogger logger,
             CertificateConfiguration baseConfiguration,
             ILogger<CertificateConfiguration> certConfigLogger,
@@ -52,7 +53,9 @@ public class PooledCertificateProvider : ICertificateProvider
             _hardwareCertificateUnlocker = hardwareCertificateUnlocker;
         }
 
-        public override CertificateConfiguration Create()
+        public int Size => _pooledItems.Count;
+
+        private CertificateConfiguration Create()
         {
             _logger.LogInformation($"Creating a new certificate instance for signing: {_baseConfiguration}");
             try
@@ -66,9 +69,18 @@ public class PooledCertificateProvider : ICertificateProvider
             }
         }
 
-        public override bool Return(CertificateConfiguration obj)
+        public void Return(CertificateConfiguration obj)
         {
-            return true;
+            _pooledItems.Enqueue(obj);
+        }
+
+        public CertificateConfiguration Get()
+        {
+            if (_pooledItems.TryDequeue(out var fromPool))
+            {
+                return fromPool;
+            }
+            return Create();
         }
     }
 
@@ -92,11 +104,76 @@ public class PooledCertificateProvider : ICertificateProvider
         }
 
         var pool = _certificatePools.GetOrAdd(username,
-            _ => _objectPoolProvider.Create(new CertificateCloningObjectPolicy(_logger,
-                baseConfiguration, _certConfigLogger,
-                _hardwareCertificateUnlocker))
+            _ => new CertificatePool(_logger, baseConfiguration, _certConfigLogger, _hardwareCertificateUnlocker)
         );
-        return pool.Get();
+
+        return GetWorkingFromPool(pool);
+    }
+
+    private static readonly byte[] SignTestSha2Hash = ((Func<byte[]>)(() =>
+    {
+        using var sha = SHA256.Create();
+        return sha.ComputeHash(Encoding.UTF8.GetBytes("SignTest"));
+    }))();
+
+    private bool _hasNoWorkingCertificates;
+    private CertificateConfiguration GetWorkingFromPool(CertificatePool pool)
+    {
+        var poolSize = pool.Size;
+        var cert = pool.Get();
+
+        // For some reason certain smartcard/HSM certificates can get broken over time and will
+        // start reporting "Internal Errors" without further info what's happening. 
+        // Due to that we do a preliminary check of the certificate here and drop any broken ones
+
+        var certFunctional = false;
+        Exception lastException = null; 
+        for (var retry = 0; retry < poolSize + 1; retry++)
+        {
+            try
+            {
+                switch (cert.PrivateKey)
+                {
+                    case DSA dsa:
+                        dsa.CreateSignature(SignTestSha2Hash);
+                        break;
+                    case ECDsa ecdsa:
+                        ecdsa.SignHash(SignTestSha2Hash);
+                        break;
+                    case RSA rsa:
+                        rsa.SignHash(SignTestSha2Hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                certFunctional = true;
+            }
+            catch (CryptographicException e)
+            {
+                lastException = e;
+                // private key not functional, try next cett
+                Destroy(cert);
+                cert = pool.Get();
+                certFunctional = false;
+            }
+        }
+
+        if (!certFunctional)
+        {
+            pool.Return(cert);
+            _hasNoWorkingCertificates = true;
+            _logger.LogCritical($"Could not find working certificate in pool after {poolSize} attempts");
+            throw lastException ?? new CryptographicException("Could not find working certificate");
+        }
+
+        if (_hasNoWorkingCertificates)
+        {
+            _logger.LogInformation($"Found working certificate again after once all were not working");
+            _hasNoWorkingCertificates = false;
+        }
+
+        return cert;
     }
 
     public void Return(string username, CertificateConfiguration certificateConfiguration)
@@ -125,16 +202,16 @@ public class PooledCertificateProvider : ICertificateProvider
         {
             certificateConfiguration.Certificate.Dispose();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             _logger.LogInformation(e, "Error during disposing of certificate");
         }
-        
+
         try
         {
             certificateConfiguration.PrivateKey.Dispose();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             _logger.LogInformation(e, "Error during disposing of PrivateKey");
         }

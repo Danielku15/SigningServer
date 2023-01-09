@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.SigningTool;
@@ -37,7 +35,6 @@ public class Startup
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
         services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
         services.AddSingleton<ICertificateProvider, PooledCertificateProvider>();
-        services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
         services.Configure<FormOptions>(x =>
         {
             x.ValueLengthLimit = int.MaxValue;

@@ -91,7 +91,8 @@ internal class Program
             Console.WriteLine("      Instead of signing files a certificate file containing the public key will be downloaded");
             Console.WriteLine("      to the specified path. Can be combined with other operations");
             Console.WriteLine("      Format: ");
-            Console.WriteLine("        - \"Pem\" - A PEM encoded file");
+            Console.WriteLine("        - \"PemCertificate\" - A PEM encoded file holding full X509 certificates (BEGIN/END CERTIFICATE)");
+            Console.WriteLine("        - \"PemPublicKey\" - A PEM encoded file holding Public Key Subject Infos  (BEGIN/END PUBLIC KEY)");
             Console.WriteLine("        - \"Pkcs12\" - A Pkcs12 encoded file (aka. PFX).");
 
             Console.WriteLine("  --load-certificate-chain Format");

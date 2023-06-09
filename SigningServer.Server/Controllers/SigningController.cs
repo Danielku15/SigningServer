@@ -115,7 +115,11 @@ public class SigningController : Controller
                 _certificateProvider.Return(signFileRequest.Username, certificate);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
-
+            
+            stopwatch.Stop();
+            var preparationTime = stopwatch.ElapsedMilliseconds;
+            stopwatch.Restart();
+            
             //
             // upload file to working directory
             inputFileName = signFileRequest.FileToSign.FileName;
@@ -214,10 +218,10 @@ public class SigningController : Controller
             apiSignFileResponse.Status = coreSignFileResponse.Status;
 
             stopwatch.Stop();
-            apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
+            apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds + preparationTime;
 
             _logger.LogInformation(
-                $"[{remoteIp}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
+                $"[{remoteIp}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, prepared in {preparationTime}ms, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
         }
         catch (Exception e)
         {

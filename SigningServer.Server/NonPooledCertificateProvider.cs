@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using SigningServer.Server.Configuration;
 
 namespace SigningServer.Server;
@@ -6,27 +7,33 @@ namespace SigningServer.Server;
 public class NonPooledCertificateProvider : ICertificateProvider
 {
     private readonly SigningServerConfiguration _configuration;
+
     public NonPooledCertificateProvider(SigningServerConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public CertificateConfiguration Get(string username, string password)
+    public Lazy<CertificateConfiguration> Get(string username, string password)
     {
+        CertificateConfiguration cert;
         if (string.IsNullOrWhiteSpace(username))
         {
-            return _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+            cert = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+        }
+        else
+        {
+            cert = _configuration.Certificates.FirstOrDefault(
+                c => c.IsAuthorized(username, password));
         }
 
-        return _configuration.Certificates.FirstOrDefault(
-            c => c.IsAuthorized(username, password));
+        return cert == null ? null : new Lazy<CertificateConfiguration>(cert);
     }
 
-    public void Return(string username, CertificateConfiguration certificateConfiguration)
+    public void Return(string username, Lazy<CertificateConfiguration> certificateConfiguration)
     {
     }
-    
-    public void Destroy(CertificateConfiguration certificateConfiguration)
+
+    public void Destroy(Lazy<CertificateConfiguration> certificateConfiguration)
     {
     }
 }

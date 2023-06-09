@@ -171,7 +171,7 @@ public class PortableExecutableSigningTool : ISigningTool
             new Win32.SIGNER_CERT_STORE_INFO
             {
                 cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_CERT_STORE_INFO>(),
-                pSigningCert = signFileRequest.Certificate.Handle,
+                pSigningCert = signFileRequest.Certificate.Value.Handle,
                 dwCertPolicy = Win32.SIGNER_CERT_POLICY_CHAIN,
                 hCertStore = IntPtr.Zero
             });
@@ -198,7 +198,7 @@ public class PortableExecutableSigningTool : ISigningTool
             algId.algOid,
             signFileRequest.InputFilePath, signFileRequest.TimestampServer, signerSubjectInfo.Pointer,
             signerCert.Pointer,
-            signerSignatureInfo.Pointer, signFileRequest.PrivateKey
+            signerSignatureInfo.Pointer, signFileRequest.PrivateKey.Value
         );
 
         if (hr == Win32.S_OK && tshr == Win32.S_OK)
@@ -221,7 +221,7 @@ public class PortableExecutableSigningTool : ISigningTool
             if ((uint)hr == 0x8007000B)
             {
                 signFileResponse.ErrorMessage =
-                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.SubjectName}\" .. />.";
+                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.Value.SubjectName}\" .. />.";
             }
 
             Logger.LogError($"{signFileRequest.InputFilePath} signing failed {signFileResponse.ErrorMessage}");

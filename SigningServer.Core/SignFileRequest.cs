@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -17,13 +18,13 @@ public class SignFileRequest
     /// Gets or sets the certificate used during the signing operation.
     /// Typically embedded into the signed file (without private keys).
     /// </summary>
-    public X509Certificate2 Certificate { get; set; }
+    public Lazy<X509Certificate2> Certificate { get; set; }
 
     /// <summary>
     /// Gets or sets the private key used for performing the signing operations.
     /// This key must match the <see cref="Certificate"/> to avoid corrupt signatures.
     /// </summary>
-    public AsymmetricAlgorithm PrivateKey { get; set; }
+    public Lazy<AsymmetricAlgorithm> PrivateKey { get; set; }
 
     /// <summary>
     /// Gets or sets the original name of the file being signed. <see cref="InputFilePath"/>

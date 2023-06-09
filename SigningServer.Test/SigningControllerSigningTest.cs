@@ -39,7 +39,7 @@ public class SigningControllerSigningTest : UnitTestBase
                 {
                     new CertificateConfiguration
                     {
-                        Certificate = AssemblyEvents.Certificate, PrivateKey = AssemblyEvents.PrivateKey
+                        Certificate = AssemblyEvents.Certificate.Value, PrivateKey = AssemblyEvents.PrivateKey.Value
                     }
                 },
             WorkingDirectory = "WorkingDirectory"
@@ -93,8 +93,8 @@ public class SigningControllerSigningTest : UnitTestBase
                 {
                     Username = "SignUser",
                     Password = "SignPass",
-                    Certificate = AssemblyEvents.Certificate,
-                    PrivateKey = AssemblyEvents.PrivateKey
+                    Certificate = AssemblyEvents.Certificate.Value,
+                    PrivateKey = AssemblyEvents.PrivateKey.Value
                 }
             },
             WorkingDirectory = "WorkingDirectory"

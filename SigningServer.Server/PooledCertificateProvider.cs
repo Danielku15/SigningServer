@@ -80,11 +80,12 @@ public class PooledCertificateProvider : ICertificateProvider
             {
                 return fromPool;
             }
+
             return Create();
         }
     }
 
-    public CertificateConfiguration Get(string username, string password)
+    public Lazy<CertificateConfiguration> Get(string username, string password)
     {
         CertificateConfiguration baseConfiguration;
         if (string.IsNullOrWhiteSpace(username))
@@ -107,7 +108,7 @@ public class PooledCertificateProvider : ICertificateProvider
             _ => new CertificatePool(_logger, baseConfiguration, _certConfigLogger, _hardwareCertificateUnlocker)
         );
 
-        return GetWorkingFromPool(pool);
+        return new Lazy<CertificateConfiguration>(() => GetWorkingFromPool(pool));
     }
 
     private static readonly byte[] SignTestSha2Hash = ((Func<byte[]>)(() =>
@@ -117,6 +118,7 @@ public class PooledCertificateProvider : ICertificateProvider
     }))();
 
     private bool _hasNoWorkingCertificates;
+
     private CertificateConfiguration GetWorkingFromPool(CertificatePool pool)
     {
         var poolSize = pool.Size;
@@ -127,7 +129,7 @@ public class PooledCertificateProvider : ICertificateProvider
         // Due to that we do a preliminary check of the certificate here and drop any broken ones
 
         var certFunctional = false;
-        Exception lastException = null; 
+        Exception lastException = null;
         for (var retry = 0; retry < poolSize + 1; retry++)
         {
             try
@@ -176,9 +178,9 @@ public class PooledCertificateProvider : ICertificateProvider
         return cert;
     }
 
-    public void Return(string username, CertificateConfiguration certificateConfiguration)
+    public void Return(string username, Lazy<CertificateConfiguration> certificateConfiguration)
     {
-        if (certificateConfiguration == null)
+        if (certificateConfiguration is not { IsValueCreated: true })
         {
             return;
         }
@@ -188,16 +190,21 @@ public class PooledCertificateProvider : ICertificateProvider
             username = string.Empty;
         }
 
-        _certificatePools[username].Return(certificateConfiguration);
+        _certificatePools[username].Return(certificateConfiguration.Value);
     }
 
-    public void Destroy(CertificateConfiguration certificateConfiguration)
+    public void Destroy(Lazy<CertificateConfiguration> certificateConfiguration)
     {
-        if (certificateConfiguration == null)
+        if (certificateConfiguration is not { IsValueCreated: true })
         {
             return;
         }
 
+        Destroy(certificateConfiguration.Value);
+    }
+
+    private void Destroy(CertificateConfiguration certificateConfiguration)
+    {
         try
         {
             certificateConfiguration.Certificate.Dispose();

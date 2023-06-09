@@ -43,8 +43,8 @@ public class SigningServerIntegrationTest : UnitTestBase
                             {
                                 new CertificateConfiguration
                                 {
-                                    Certificate = AssemblyEvents.Certificate,
-                                    PrivateKey = AssemblyEvents.PrivateKey
+                                    Certificate = AssemblyEvents.Certificate.Value,
+                                    PrivateKey = AssemblyEvents.PrivateKey.Value
                                 }
                             },
                             WorkingDirectory = "WorkingDirectory"
@@ -261,7 +261,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         File.Exists(cert).Should().BeTrue();
 
         using var pfx = new X509Certificate2(await File.ReadAllBytesAsync(cert));
-        pfx.Thumbprint.Should().Be(AssemblyEvents.Certificate.Thumbprint);
+        pfx.Thumbprint.Should().Be(AssemblyEvents.Certificate.Value.Thumbprint);
         pfx.HasPrivateKey.Should().BeFalse();
     }
 
@@ -270,7 +270,7 @@ public class SigningServerIntegrationTest : UnitTestBase
     {
         var certString = await TestCertificateDownloadPem(LoadCertificateFormat.PemCertificate, "CERTIFICATE");
         var cert = X509Certificate2.CreateFromPem(certString);
-        cert.Thumbprint.Should().Be(AssemblyEvents.Certificate.Thumbprint);
+        cert.Thumbprint.Should().Be(AssemblyEvents.Certificate.Value.Thumbprint);
         cert.HasPrivateKey.Should().BeFalse();
     }
 
@@ -281,7 +281,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         using var cert = RSA.Create();
         cert.ImportFromPem(certString);
 
-        cert.ExportSubjectPublicKeyInfo().Should().Equal(AssemblyEvents.Certificate.PublicKey.ExportSubjectPublicKeyInfo());
+        cert.ExportSubjectPublicKeyInfo().Should().Equal(AssemblyEvents.Certificate.Value.PublicKey.ExportSubjectPublicKeyInfo());
     }
 
     private async Task<string> TestCertificateDownloadPem(LoadCertificateFormat format, string section)

@@ -51,7 +51,7 @@ public class ClickOnceSigningTool : ISigningTool
             }
         }
 
-        SecurityUtilities.SignFile(signFileRequest.Certificate, signFileRequest.PrivateKey,
+        SecurityUtilities.SignFile(signFileRequest.Certificate.Value, signFileRequest.PrivateKey.Value,
             signFileRequest.TimestampServer, signFileRequest.InputFilePath);
         signFileResponse.Status = successResult;
         signFileResponse.ResultFiles = new[]

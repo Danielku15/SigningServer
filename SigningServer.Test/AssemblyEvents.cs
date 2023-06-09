@@ -13,8 +13,8 @@ namespace SigningServer.Test;
 [TestClass]
 public class AssemblyEvents
 {
-    internal static X509Certificate2 Certificate;
-    internal static AsymmetricAlgorithm PrivateKey;
+    internal static Lazy<X509Certificate2> Certificate;
+    internal static Lazy<AsymmetricAlgorithm> PrivateKey;
     private static ILogger<AssemblyEvents> _log;
     internal static ILoggerFactory LoggerProvider { get; set; }
 
@@ -33,10 +33,11 @@ public class AssemblyEvents
            
         _log.LogInformation("Loading certificate");
 
-        Certificate = new X509Certificate2(certificatePath, certificatePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet | X509KeyStorageFlags.PersistKeySet);
-        PrivateKey = Certificate.GetECDsaPrivateKey() ??
-                     Certificate.GetRSAPrivateKey() ??
-                     ((AsymmetricAlgorithm)Certificate.GetDSAPrivateKey());
+        var cert = new X509Certificate2(certificatePath, certificatePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet | X509KeyStorageFlags.PersistKeySet);
+        Certificate = new Lazy<X509Certificate2>(cert);
+        PrivateKey = new Lazy<AsymmetricAlgorithm>(cert.GetECDsaPrivateKey() ??
+                     cert.GetRSAPrivateKey() ??
+                     ((AsymmetricAlgorithm)cert.GetDSAPrivateKey()));
         _log.LogInformation("Certificate loaded");
     }
 
@@ -49,7 +50,7 @@ public class AssemblyEvents
             _log.LogInformation("Removeing test certificate from store");
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
-            store.Remove(Certificate);
+            store.Remove(Certificate.Value);
             store.Close();
             _log.LogInformation("Certificate removed");
         }

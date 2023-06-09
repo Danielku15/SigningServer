@@ -81,7 +81,7 @@ public class SigningController : Controller
         SignFileResponse coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
-        CertificateConfiguration certificate = null;
+        Lazy<CertificateConfiguration> certificate = null;
         try
         {
             var stopwatch = Stopwatch.StartNew();
@@ -179,8 +179,8 @@ public class SigningController : Controller
                     InputFilePath = inputFileName,
                     OriginalFileName = signFileRequest.FileToSign.FileName,
                     HashAlgorithm = signFileRequest.HashAlgorithm,
-                    Certificate = certificate.Certificate,
-                    PrivateKey = certificate.PrivateKey,
+                    Certificate = new Lazy<X509Certificate2>(() => certificate.Value.Certificate),
+                    PrivateKey = new Lazy<AsymmetricAlgorithm>(()=> certificate.Value.PrivateKey),
                     TimestampServer = timestampServer
                 }, cancellationToken);
 
@@ -284,8 +284,8 @@ public class SigningController : Controller
             {
                 InputHash = hashBytes,
                 HashAlgorithm = signHashRequestDto.HashAlgorithm,
-                Certificate = certificate.Certificate,
-                PrivateKey = certificate.PrivateKey
+                Certificate = certificate.Value.Certificate,
+                PrivateKey = certificate.Value.PrivateKey
             });
 
             stopwatch.Stop();
@@ -331,7 +331,7 @@ public class SigningController : Controller
             {
                 using var ch = new X509Chain();
                 ch.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                ch.Build(certificate.Certificate);
+                ch.Build(certificate.Value.Certificate);
 
                 var collection = new X509Certificate2Collection(ch.ChainElements
                     .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
@@ -355,7 +355,7 @@ public class SigningController : Controller
             }
             else
             {
-                using var copyWithoutPrivateKey = new X509Certificate2(certificate.Certificate.RawData);
+                using var copyWithoutPrivateKey = new X509Certificate2(certificate.Value.Certificate.RawData);
                 var exported = Export(copyWithoutPrivateKey, loadCertificateRequestDto.ExportFormat)!;
                 apiLoadReponse = new LoadCertificateResponseDto
                 {

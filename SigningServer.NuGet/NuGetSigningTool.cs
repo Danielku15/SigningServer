@@ -13,7 +13,7 @@ using NuGet.Packaging.Signing;
 using SigningServer.Core;
 using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
-namespace SigningServer.Server.SigningTool;
+namespace SigningServer.NuGet;
 
 public class NuGetSigningTool : ISigningTool
 {
@@ -116,16 +116,16 @@ public class NuGetSigningTool : ISigningTool
             _logger.Log(ConvertLevel(message.Level), message.Message);
         }
 
-        private Microsoft.Extensions.Logging.LogLevel ConvertLevel(NuGet.Common.LogLevel messageLevel)
+        private Microsoft.Extensions.Logging.LogLevel ConvertLevel(global::NuGet.Common.LogLevel messageLevel)
         {
             return messageLevel switch
             {
-                NuGet.Common.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
-                NuGet.Common.LogLevel.Verbose => Microsoft.Extensions.Logging.LogLevel.Trace,
-                NuGet.Common.LogLevel.Information => Microsoft.Extensions.Logging.LogLevel.Information,
-                NuGet.Common.LogLevel.Minimal => Microsoft.Extensions.Logging.LogLevel.Information,
-                NuGet.Common.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
-                NuGet.Common.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+                global::NuGet.Common.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+                global::NuGet.Common.LogLevel.Verbose => Microsoft.Extensions.Logging.LogLevel.Trace,
+                global::NuGet.Common.LogLevel.Information => Microsoft.Extensions.Logging.LogLevel.Information,
+                global::NuGet.Common.LogLevel.Minimal => Microsoft.Extensions.Logging.LogLevel.Information,
+                global::NuGet.Common.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
+                global::NuGet.Common.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
                 _ => throw new ArgumentOutOfRangeException(nameof(messageLevel))
             };
         }
@@ -174,7 +174,7 @@ public class NuGetSigningTool : ISigningTool
         }
 
         public Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request,
-            SignatureContent signatureContent, NuGet.Common.ILogger logger,
+            SignatureContent signatureContent, global::NuGet.Common.ILogger logger,
             CancellationToken token)
         {
             var signature = CreatePrimarySignature(request, signatureContent, logger);
@@ -192,7 +192,7 @@ public class NuGetSigningTool : ISigningTool
 
         public Task<PrimarySignature> CreateRepositoryCountersignatureAsync(RepositorySignPackageRequest request,
             PrimarySignature primarySignature,
-            NuGet.Common.ILogger logger, CancellationToken token)
+            global::NuGet.Common.ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -208,7 +208,7 @@ public class NuGetSigningTool : ISigningTool
         }
 
         private PrimarySignature CreateRepositoryCountersignature(SignPackageRequest request,
-            PrimarySignature primarySignature, NuGet.Common.ILogger logger)
+            PrimarySignature primarySignature, global::NuGet.Common.ILogger logger)
         {
             var cmsSigner = CreateCmsSigner(request, logger);
 
@@ -222,7 +222,7 @@ public class NuGetSigningTool : ISigningTool
 
 
         private PrimarySignature CreatePrimarySignature(SignPackageRequest request,
-            SignatureContent signatureContent, NuGet.Common.ILogger logger)
+            SignatureContent signatureContent, global::NuGet.Common.ILogger logger)
         {
             var cmsSigner = CreateCmsSigner(request, logger);
 
@@ -235,7 +235,7 @@ public class NuGetSigningTool : ISigningTool
             return PrimarySignature.Load(cms);
         }
 
-        private CmsSigner CreateCmsSigner(SignPackageRequest request, NuGet.Common.ILogger logger)
+        private CmsSigner CreateCmsSigner(SignPackageRequest request, global::NuGet.Common.ILogger logger)
         {
             var cmsSigner = SigningUtility.CreateCmsSigner(request, logger);
             cmsSigner.PrivateKey = _privateKey;
@@ -243,7 +243,7 @@ public class NuGetSigningTool : ISigningTool
         }
 
         private Task<PrimarySignature> TimestampPrimarySignatureAsync(SignPackageRequest request,
-            NuGet.Common.ILogger logger,
+            global::NuGet.Common.ILogger logger,
             PrimarySignature signature, CancellationToken token)
         {
             var signatureValue = signature.GetSignatureValue();
@@ -260,7 +260,7 @@ public class NuGetSigningTool : ISigningTool
         }
 
         private Task<PrimarySignature> TimestampRepositoryCountersignatureAsync(SignPackageRequest request,
-            NuGet.Common.ILogger logger, PrimarySignature primarySignature, CancellationToken token)
+            global::NuGet.Common.ILogger logger, PrimarySignature primarySignature, CancellationToken token)
         {
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
             var signatureValue = repositoryCountersignature.GetSignatureValue();

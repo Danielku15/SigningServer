@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
+using SigningServer.NuGet;
 using SigningServer.Server.SigningTool;
 using LogLevel = NuGet.Common.LogLevel;
 

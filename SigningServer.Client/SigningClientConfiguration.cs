@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using SigningServer.ClientCore;
 using SigningServer.Core;
 
 namespace SigningServer.Client;
@@ -7,7 +8,7 @@ namespace SigningServer.Client;
 /// <summary>
 /// Represents the signing client configuration.
 /// </summary>
-public class SigningClientConfiguration
+public class SigningClientConfiguration : SigningClientConfigurationBase
 {
     /// <summary>
     /// The url to the signing server.
@@ -23,67 +24,4 @@ public class SigningClientConfiguration
     /// The password for authentication and certificate selection.
     /// </summary>
     public string Password { get; set; }
-
-    /// <summary>
-    /// Whether to overwrite existing signatures or fail when signatures are present.
-    /// </summary>
-    public bool OverwriteSignatures { get; set; }
-
-    /// <summary>
-    /// Whether to ignore any existing signatures and not sign in this case.
-    /// </summary>
-    public bool IgnoreExistingSignatures { get; set; } = true;
-
-    /// <summary>
-    /// Whether to ignore unsupported file formats or whether to fail when encountering them. 
-    /// </summary>
-    public bool IgnoreUnsupportedFiles { get; set; } = true;
-
-    /// <summary>
-    /// The timeout of signing operations in seconds.
-    /// </summary>
-    public int Timeout { get; set; } = 60;
-
-    /// <summary>
-    /// The hash algorithm to use.
-    /// </summary>
-    public string HashAlgorithm { get; set; }
-
-    /// <summary>
-    /// The number of retries the client should perform before giving up failed sign operations.
-    /// </summary>
-    public int Retry { get; set; } = 3;
-
-    /// <summary>
-    /// The number of parallel signing operations to perform.
-    /// </summary>
-    public int? Parallel { get; set; } = 1;
-
-    /// <summary>
-    /// If this extension is set, the files will be hashed locally and the hash is sent to the server
-    /// for signing. The hash will be written raw-byte encoded to a file with this file extension (at the input file location).
-    /// </summary>
-    public string SignHashFileExtension { get; set; } = null;
-
-    /// <summary>
-    /// The sources (files and directories) to sign.
-    /// </summary>
-    [JsonIgnore]
-    public IList<string> Sources { get; set; } = new List<string>();
-
-    /// <summary>
-    /// If a certificate download should be performed, the path to write it to.
-    /// </summary>
-    public string LoadCertificatePath { get; set; }
-
-    /// <summary>
-    /// If a certificate download should be performed, whether to load the whole chain instead of only the cert used
-    /// for signing.
-    /// </summary>
-    public bool LoadCertificateChain { get; set; }
-
-    /// <summary>
-    /// If a certificate download should be performed, the format to download.
-    /// </summary>
-    public LoadCertificateFormat? LoadCertificateExportFormat { get; set; }
 }

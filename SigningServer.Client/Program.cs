@@ -4,8 +4,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using NLog;
 using NLog.Targets;
+using NLog.Web;
+using SigningServer.ClientCore;
 using SigningServer.Core;
 
 namespace SigningServer.Client;
@@ -120,6 +123,7 @@ internal class Program
 
         SetupLogging();
 
+        var logger = LogManager.Setup().LoadConfigurationFromAppSettings();
         var log = LogManager.GetCurrentClassLogger();
         var configuration = await LoadConfiguration(log, args);
         if (configuration == null)
@@ -131,7 +135,7 @@ internal class Program
         try
         {
             log.Trace("Creating client");
-            client = new SigningClient(configuration);
+            client = new SigningClient(configuration, /* TODO*/ new NullLogger<SigningClient>());
             await client.ConnectAsync();
             log.Trace("connected to server");
         }

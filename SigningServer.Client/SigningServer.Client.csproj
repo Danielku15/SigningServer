@@ -11,9 +11,6 @@
 		<None Include="config.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Include="NLog.config">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
     <None Include="readme.md" Pack="true" PackagePath="\">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -21,22 +18,10 @@
 	<ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="NLog" Version="5.0.4" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj" />
 	  <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Compile Include="..\SigningServer.Server\Dtos\SignHashRequestDto.cs">
-	    <Link>SignHashRequestDto.cs</Link>
-	  </Compile>
-	  <Compile Include="..\SigningServer.Server\Dtos\SignHashResponseDto.cs">
-	    <Link>SignHashResponseDto.cs</Link>
-	  </Compile>
-	  <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateRequestDto.cs">
-	    <Link>LoadCertificateRequestDto.cs</Link>
-	  </Compile>
-	  <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateResponseDto.cs">
-	    <Link>LoadCertificateResponseDto.cs</Link>
-	  </Compile>
 	</ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using SigningServer.Core;
+﻿using SigningServer.Core;
 
-namespace SigningServer.Server.SigningTool;
+namespace SigningServer.Signing;
 
 /// <summary>
 /// Classes implementing this interface can sign hashes.

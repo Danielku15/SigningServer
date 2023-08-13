@@ -1,6 +1,6 @@
-namespace SigningServer.Client;
+namespace SigningServer.ClientCore;
 
-internal static class ErrorCodes
+public static class ErrorCodes
 {
     public const int UnexpectedError = 1;
     public const int FileNotFound = 2;

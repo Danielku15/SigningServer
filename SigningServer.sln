@@ -34,6 +34,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.Runti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Test", "SigningServer.Test\SigningServer.Test.csproj", "{2BD0A43A-01B7-4E03-B9F0-208642042AB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Signing", "SigningServer.Signing\SigningServer.Signing.csproj", "{C5DCD69F-21E2-4023-97DA-5AFFB1661368}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.NuGet", "SigningServer.NuGet\SigningServer.NuGet.csproj", "{CE66B7F6-3098-4F1F-B6D4-FFD56D384D0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.StandaloneClient", "SigningServer.StandaloneClient\SigningServer.StandaloneClient.csproj", "{31801116-48D5-47EC-BE2E-BBFDA6C825AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.ClientCore", "SigningServer.ClientCore\SigningServer.ClientCore.csproj", "{ACF064FF-E2C3-4706-8413-D90D06741473}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +92,22 @@ Global
 		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BD0A43A-01B7-4E03-B9F0-208642042AB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5DCD69F-21E2-4023-97DA-5AFFB1661368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5DCD69F-21E2-4023-97DA-5AFFB1661368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5DCD69F-21E2-4023-97DA-5AFFB1661368}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5DCD69F-21E2-4023-97DA-5AFFB1661368}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE66B7F6-3098-4F1F-B6D4-FFD56D384D0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE66B7F6-3098-4F1F-B6D4-FFD56D384D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE66B7F6-3098-4F1F-B6D4-FFD56D384D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE66B7F6-3098-4F1F-B6D4-FFD56D384D0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31801116-48D5-47EC-BE2E-BBFDA6C825AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31801116-48D5-47EC-BE2E-BBFDA6C825AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31801116-48D5-47EC-BE2E-BBFDA6C825AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31801116-48D5-47EC-BE2E-BBFDA6C825AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF064FF-E2C3-4706-8413-D90D06741473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF064FF-E2C3-4706-8413-D90D06741473}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF064FF-E2C3-4706-8413-D90D06741473}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF064FF-E2C3-4706-8413-D90D06741473}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

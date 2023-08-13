@@ -13,8 +13,8 @@ using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Dtos;
-using SigningServer.Server.SigningTool;
 using SigningServer.Server.Util;
+using SigningServer.Signing;
 
 namespace SigningServer.Server.Controllers;
 

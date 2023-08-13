@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SigningServer.Core;
 
-namespace SigningServer.Server.SigningTool;
+namespace SigningServer.Signing;
 
 /// <summary>
 /// A provider of <see cref="ISigningTool"/> instances.

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
-using SigningServer.Server.SigningTool;
 using SigningServer.Server.Util;
+using SigningServer.Signing;
 
 namespace SigningServer.Server;
 

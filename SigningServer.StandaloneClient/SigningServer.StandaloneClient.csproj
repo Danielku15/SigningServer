@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <Title>SigningServer Standalone Client</Title>
+        <Description>This is a client for signing files using a compatible signing server or certificate API.</Description>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>signingserver-standalone-client</ToolCommandName>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="config.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="readme.md" Pack="true" PackagePath="\">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+        <PackageReference Include="NLog" Version="5.0.4" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\SigningServer.Server\Dtos\SignHashRequestDto.cs">
+            <Link>SignHashRequestDto.cs</Link>
+        </Compile>
+        <Compile Include="..\SigningServer.Server\Dtos\SignHashResponseDto.cs">
+            <Link>SignHashResponseDto.cs</Link>
+        </Compile>
+        <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateRequestDto.cs">
+            <Link>LoadCertificateRequestDto.cs</Link>
+        </Compile>
+        <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateResponseDto.cs">
+            <Link>LoadCertificateResponseDto.cs</Link>
+        </Compile>
+    </ItemGroup>
+</Project>

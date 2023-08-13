@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 
-namespace SigningServer.Server.SigningTool;
+namespace SigningServer.Signing;
 
-internal class ManagedHashSigningTool : IHashSigningTool
+public class ManagedHashSigningTool : IHashSigningTool
 {
     public SignHashResponse SignHash(SignHashRequest signHashRequest)
     {

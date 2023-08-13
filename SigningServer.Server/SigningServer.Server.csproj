@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
 		<PackageReference Include="NLog" Version="5.0.4" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
-		<PackageReference Include="NuGet.Packaging" Version="6.3.0" />
 		<PackageReference Include="RSAKeyVaultProvider" Version="2.1.1" />
 		<PackageReference Include="SharpZipLib" Version="1.4.0" />
 	</ItemGroup>
@@ -28,5 +27,10 @@
 		<ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj" />
 		<ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
 		<ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
+		<ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj" />
+		<ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="SigningTool\" />
 	</ItemGroup>
 </Project>

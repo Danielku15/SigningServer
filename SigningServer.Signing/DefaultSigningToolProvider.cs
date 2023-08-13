@@ -3,10 +3,11 @@ using SigningServer.Android;
 using SigningServer.ClickOnce;
 using SigningServer.Core;
 using SigningServer.MsSign;
+using SigningServer.NuGet;
 
-namespace SigningServer.Server.SigningTool;
+namespace SigningServer.Signing;
 
-internal class DefaultSigningToolProvider : EnumerableSigningToolProvider
+public class DefaultSigningToolProvider : EnumerableSigningToolProvider
 {
     public DefaultSigningToolProvider(ILoggerFactory loggerFactory)
         : base(new ISigningTool[]

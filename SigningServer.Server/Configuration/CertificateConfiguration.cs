@@ -15,34 +15,34 @@ public class CertificateConfiguration
     /// <summary>
     /// The plain text username to use this certificate
     /// </summary>
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     /// <summary>
     /// The plain text password to use this certificate
     /// </summary>
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     /// <summary>
     /// Local Certificate from Certificate Store
     /// </summary>
-    public LocalStoreCertificateConfiguration LocalStore { get; set; }
+    public LocalStoreCertificateConfiguration? LocalStore { get; set; }
 
     /// <summary>
     /// Azure specific configuration
     /// </summary>
-    public AzureKeyVaultConfiguration Azure { get; set; }
+    public AzureKeyVaultConfiguration? Azure { get; set; }
 
     /// <summary>
     /// The loaded certificate.
     /// </summary>
     [JsonIgnore]
-    public X509Certificate2 Certificate { get; set; }
+    public X509Certificate2? Certificate { get; set; }
 
     /// <summary>
     /// The loaded private key.
     /// </summary>
     [JsonIgnore]
-    public AsymmetricAlgorithm PrivateKey { get; set; }
+    public AsymmetricAlgorithm? PrivateKey { get; set; }
 
     /// <summary>
     /// A value indicating whether authentication is needed for the certificate.
@@ -50,7 +50,7 @@ public class CertificateConfiguration
     [JsonIgnore]
     public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
-    public void LoadCertificate(ILogger<CertificateConfiguration> logger, HardwareCertificateUnlocker unlocker)
+    public void LoadCertificate(ILogger<CertificateConfiguration> logger, HardwareCertificateUnlocker? unlocker)
     {
         // only do reloads if cert needs hardware unlock or certificate is not loaded at all
         if (string.IsNullOrEmpty(LocalStore?.TokenPin) && Certificate != null)
@@ -75,7 +75,7 @@ public class CertificateConfiguration
         }
     }
 
-    public bool IsAuthorized(string username, string password)
+    public bool IsAuthorized(string username, string? password)
     {
         return string.Equals(Username, username, StringComparison.CurrentCultureIgnoreCase) && Password == password;
     }

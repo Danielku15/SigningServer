@@ -16,8 +16,9 @@ namespace SigningServer.ClientCore;
 public abstract class SigningClient<TConfiguration> : IDisposable
     where TConfiguration : SigningClientConfigurationBase
 {
-    public ServerCapabilitiesResponse ServerCapabilities { get; protected set; }
-    public HashSet<string> SupportedFileFormats { get; } = new(StringComparer.OrdinalIgnoreCase);
+    protected ServerCapabilitiesResponse? ServerCapabilities { get; set; }
+    protected HashSet<string> SupportedFileFormats { get; } = new(StringComparer.OrdinalIgnoreCase);
+    
 
     public TConfiguration Configuration { get; }
     
@@ -40,14 +41,14 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                 return new[] { fileInfo.FullName };
             }
 
-            return Directory.EnumerateFiles(source!, "*", SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories)
                 .Where(f => SupportedFileFormats.Contains(Path.GetExtension(f)))
                 .ToArray();
         });
         var processingQueue = new ConcurrentQueue<string>(allFiles);
 
         var numberOfWorkers = Math.Min(Math.Max(1, Configuration.Parallel ?? Environment.ProcessorCount),
-            ServerCapabilities.MaxDegreeOfParallelismPerClient);
+            ServerCapabilities!.MaxDegreeOfParallelismPerClient);
 
         var numberOfFiles = processingQueue.Count;
         Logger.LogInformation("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers} worker", numberOfFiles,
@@ -55,7 +56,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
 
         var sw = Stopwatch.StartNew();
         var cancellationSource = new CancellationTokenSource();
-        Exception mainException = null;
+        Exception? mainException = null;
         var tasks = Enumerable.Range(0, numberOfWorkers)
             .Select(_ => Task.Run(async () =>
             {
@@ -110,8 +111,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable
         {
             case LoadCertificateResponseStatus.CertificateLoaded:
                 Directory.CreateDirectory(Path.GetDirectoryName(Configuration.LoadCertificatePath)!);
-                await File.WriteAllBytesAsync(Configuration.LoadCertificatePath,
-                    Convert.FromBase64String(responseDto.CertificateData),
+                await File.WriteAllBytesAsync(Configuration.LoadCertificatePath!,
+                    Convert.FromBase64String(responseDto.CertificateData!),
                     cancellationToken);
                 Logger.LogInformation($"Certificate successfully downloaded to {Configuration.LoadCertificatePath}");
                 break;
@@ -164,7 +165,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                 {
                     case SignHashResponseStatus.HashSigned:
                         var extension = Configuration.SignHashFileExtension;
-                        if (!extension.StartsWith("."))
+                        if (extension == null || !extension.StartsWith("."))
                         {
                             extension = "." + extension;
                         }
@@ -176,7 +177,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                         retry = 0;
                         break;
                     case SignHashResponseStatus.HashNotSignedUnsupportedFormat:
-                        throw new UnsupportedFileFormatException(responseDto.ErrorMessage);
+                        throw new UnsupportedFileFormatException(responseDto.ErrorMessage!);
                     case SignHashResponseStatus.HashNotSignedError:
                         var error =
                             $"Signing Failed with error '{responseDto.ErrorMessage}' (sign time: {responseDto.SignTimeInMilliseconds:0}ms)";
@@ -331,7 +332,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                     }
                 }
 
-                await foreach (var result in results)
+                await foreach (var result in results.WithCancellation(cancellationToken))
                 {
                     switch (result.Kind)
                     {

@@ -2,20 +2,14 @@
 
 namespace SigningServer.Server.Dtos;
 
-public class LoadCertificateResponseDto
-{
-    /// <summary>
-    /// The result of the signing
-    /// </summary>
-    public LoadCertificateResponseStatus Status { get; set; }
-
-    /// <summary>
-    /// The detailed error message in case <see cref="Status"/> is set to <see cref="LoadCertificateResponseStatus.CertificateNotLoadedError"/>
-    /// </summary>
-    public string ErrorMessage { get; set; }
-
-    /// <summary>
-    /// The base64 encoded certificate bytes.
-    /// </summary>
-    public string CertificateData { get; set; }
-}
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Status">The result of the certificate loading</param>
+/// <param name="ErrorMessage">The detailed error message in case <see cref="Status"/> is set to <see cref="LoadCertificateResponseStatus.CertificateNotLoadedError"/></param>
+/// <param name="CertificateData"> The base64 encoded certificate bytes.</param>
+public record LoadCertificateResponseDto(
+    LoadCertificateResponseStatus Status,
+    string? ErrorMessage,
+    string? CertificateData
+);

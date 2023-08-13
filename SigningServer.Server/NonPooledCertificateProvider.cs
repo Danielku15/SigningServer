@@ -13,9 +13,9 @@ public class NonPooledCertificateProvider : ICertificateProvider
         _configuration = configuration;
     }
 
-    public Lazy<CertificateConfiguration> Get(string username, string password)
+    public Lazy<CertificateConfiguration>? Get(string? username, string? password)
     {
-        CertificateConfiguration cert;
+        CertificateConfiguration? cert;
         if (string.IsNullOrWhiteSpace(username))
         {
             cert = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
@@ -29,11 +29,11 @@ public class NonPooledCertificateProvider : ICertificateProvider
         return cert == null ? null : new Lazy<CertificateConfiguration>(cert);
     }
 
-    public void Return(string username, Lazy<CertificateConfiguration> certificateConfiguration)
+    public void Return(string? username, Lazy<CertificateConfiguration> certificateConfiguration)
     {
     }
 
-    public void Destroy(Lazy<CertificateConfiguration> certificateConfiguration)
+    public void Destroy(Lazy<CertificateConfiguration>? certificateConfiguration)
     {
     }
 }

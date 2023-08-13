@@ -127,7 +127,6 @@ public class PortableExecutableSigningTool : ISigningTool
     public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
         CancellationToken cancellationToken)
     {
-        var signFileResponse = new SignFileResponse();
         var successResult = SignFileResponseStatus.FileSigned;
 
         if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -141,8 +140,7 @@ public class PortableExecutableSigningTool : ISigningTool
             else
             {
                 Logger.LogTrace($"File {signFileRequest.InputFilePath} is already signed, abort signing");
-                signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                return signFileResponse;
+                return SignFileResponse.FileAlreadySignedError;
             }
         }
 
@@ -204,40 +202,40 @@ public class PortableExecutableSigningTool : ISigningTool
         if (hr == Win32.S_OK && tshr == Win32.S_OK)
         {
             Logger.LogTrace($"{signFileRequest.InputFilePath} successfully signed");
-            signFileResponse.Status = successResult;
-            signFileResponse.ResultFiles = new[]
-            {
-                new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath)
-            };
+            return new SignFileResponse(successResult, string.Empty,
+                new[]
+                {
+                    new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath)
+                });
         }
         else if (hr != Win32.S_OK)
         {
             var exception = new Win32Exception(hr);
-            signFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
-            signFileResponse.ErrorMessage = !string.IsNullOrEmpty(exception.Message)
+            var errorMessage = !string.IsNullOrEmpty(exception.Message)
                 ? exception.Message
                 : $"signing file failed (0x{hr:x})";
 
             if ((uint)hr == 0x8007000B)
             {
-                signFileResponse.ErrorMessage =
+                errorMessage =
                     $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.Value.SubjectName}\" .. />.";
             }
 
-            Logger.LogError($"{signFileRequest.InputFilePath} signing failed {signFileResponse.ErrorMessage}");
+            Logger.LogError($"{signFileRequest.InputFilePath} signing failed {errorMessage}");
+            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, Array.Empty<SignFileResponseFileInfo>());
         }
         else
         {
             var errorText = new Win32Exception(tshr).Message;
-            signFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
-            signFileResponse.ErrorMessage = !string.IsNullOrEmpty(errorText)
+            var errorMessage = !string.IsNullOrEmpty(errorText)
                 ? errorText
                 : $"timestamping failed (0x{hr:x})";
+            
 
-            Logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {signFileResponse.ErrorMessage}");
+            Logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {errorMessage}");
+            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, Array.Empty<SignFileResponseFileInfo>());
+
         }
-
-        return signFileResponse;
     }
 
     private protected virtual (int hr, int tshr) SignAndTimestamp(

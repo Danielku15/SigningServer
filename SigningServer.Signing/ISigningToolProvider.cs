@@ -16,7 +16,7 @@ public interface ISigningToolProvider
     /// <remarks>
     /// Detection is typically done based on the file extension.
     /// </remarks>
-    ISigningTool GetSigningTool(string fileName);
+    ISigningTool? GetSigningTool(string fileName);
 
     /// <summary>
     /// A list of all <see cref="ISigningTool"/>s this provider has available.

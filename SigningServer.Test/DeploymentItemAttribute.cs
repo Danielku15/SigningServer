@@ -10,7 +10,7 @@ namespace SigningServer.Test;
 public class DeploymentItemAttribute : Attribute
 {
     private readonly string _path;
-    private readonly string _outputDirectory;
+    private readonly string? _outputDirectory;
 
     /// <summary>
     /// NUnit replacement for Microsoft.VisualStudio.TestTools.UnitTesting.DeploymentItemAttribute
@@ -18,7 +18,7 @@ public class DeploymentItemAttribute : Attribute
     /// </summary>
     /// <param name="path">The relative or absolute path to the file or directory to deploy. The path is relative to the build output directory.</param>
     /// <param name="outputDirectory">The path of the directory to which the items are to be copied. It can be either absolute or relative to the deployment directory.</param>
-    public DeploymentItemAttribute(string path, string outputDirectory = null)
+    public DeploymentItemAttribute(string path, string? outputDirectory = null)
     {
         _path = path;
         _outputDirectory = outputDirectory;
@@ -61,7 +61,7 @@ public class DeploymentItemAttribute : Attribute
         if (File.Exists(itemPath)) // It's a file
         {
             // Assemble the parent folder path (because the item might be in multiple sub-folders.
-            var parentFolderPathInBin = new DirectoryInfo(itemPathInBin).Parent.FullName;
+            var parentFolderPathInBin = new DirectoryInfo(itemPathInBin).Parent!.FullName;
 
             // If the target directory does not exist, create it
             if (!Directory.Exists(parentFolderPathInBin))

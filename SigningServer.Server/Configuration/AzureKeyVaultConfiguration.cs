@@ -16,26 +16,26 @@ public class AzureKeyVaultConfiguration
     /// <summary>
     /// The url to the azure keyvault like https://weu-000-keyvaultname.vault.azure.net/
     /// </summary>
-    public string KeyVaultUrl { get; set; }
+    public string KeyVaultUrl { get; set; } = string.Empty;
     /// <summary>
     /// The ID of the tenant for accessing the keyvault
     /// </summary>
-    public string TenantId { get; set; }
+    public string? TenantId { get; set; }
 
     /// <summary>
     /// The name of the certificate in the key vault
     /// </summary>
-    public string CertificateName { get; set; }
+    public string? CertificateName { get; set; }
         
     /// <summary>
     /// The client id for accessing the Key Vault (OAuth Client Credentias Grant flow)
     /// </summary>
-    public string ClientId { get; set; }
+    public string? ClientId { get; set; }
     
     /// <summary>
     /// The client secret for accessing the Key Vault (OAuth Client Credentias Grant flow)
     /// </summary>
-    public string ClientSecret { get; set; }
+    public string? ClientSecret { get; set; }
         
     /// <summary>
     /// Whether to attempt using a managed identity for authentication

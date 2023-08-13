@@ -124,8 +124,8 @@ internal static class Win32
         [In, Optional] /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo,
         [In, Optional] uint dwTimestampFlags,
         [In, Optional, MarshalAs(UnmanagedType.LPStr)]
-        string pszAlgorithmOid,
-        [In, Optional] string pwszTimestampURL,
+        string? pszAlgorithmOid,
+        [In, Optional] string? pwszTimestampURL,
         [In, Optional] /*PCRYPT_ATTRIBUTES*/ IntPtr psRequest,
         [In, Optional] IntPtr pSipData,
         [Out] /*PPSIGNER_CONTEXT*/IntPtr ppSignerContext,
@@ -268,8 +268,8 @@ internal static class Win32
         public /*PSIGNER_SIGNATURE_INFO*/ IntPtr pSignatureInfo;
         public /*PSIGNER_PROVIDER_INFO*/ IntPtr pProviderInfo;
         public uint dwTimestampFlags;
-        [MarshalAs(UnmanagedType.LPStr)] public string pszTimestampAlgorithmOid;
-        [MarshalAs(UnmanagedType.LPWStr)] public string pwszTimestampURL;
+        [MarshalAs(UnmanagedType.LPStr)] public string? pszTimestampAlgorithmOid;
+        [MarshalAs(UnmanagedType.LPWStr)] public string? pwszTimestampURL;
         public IntPtr psRequest;
         public /*PSIGN_INFO*/ IntPtr pSignCallback;
         public /*PPSIGNER_CONTEXT*/ IntPtr pSignerContext;
@@ -310,7 +310,7 @@ internal static class Win32
     public const string szOID_NIST_sha256 = "2.16.840.1.101.3.4.2.1";
 
     [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    public static extern int SetDllDirectoryW(string strPathName);
+    public static extern int SetDllDirectoryW(string? strPathName);
 
     [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     public static extern IntPtr LoadLibraryExW(string strFileName, IntPtr hFile, uint ulFlags);

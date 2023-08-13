@@ -10,17 +10,16 @@ public class ManagedHashSigningTool : IHashSigningTool
     {
         if (!TryGetHashAlgorithm(signHashRequest.HashAlgorithm, out var algorithmName))
         {
-            return new SignHashResponse
-            {
-                Status = SignHashResponseStatus.HashNotSignedUnsupportedFormat,
-                ErrorMessage = $"Hash algorithm '{signHashRequest.HashAlgorithm}' is not known"
-            };
+            return new SignHashResponse(SignHashResponseStatus.HashNotSignedUnsupportedFormat,
+                $"Hash algorithm '{signHashRequest.HashAlgorithm}' is not known",
+                Array.Empty<byte>()
+            );
         }
 
-        return new SignHashResponse
-        {
-            Signature = SignInternal(signHashRequest, algorithmName), Status = SignHashResponseStatus.HashSigned,
-        };
+        return new SignHashResponse(SignHashResponseStatus.HashSigned,
+            string.Empty,
+            SignInternal(signHashRequest, algorithmName)
+        );
     }
 
     private static bool TryGetHashAlgorithm(string hashAlgorithm, out HashAlgorithmName hashAlgorithmName)
@@ -40,11 +39,11 @@ public class ManagedHashSigningTool : IHashSigningTool
             case "SHA-256":
                 hashAlgorithmName = HashAlgorithmName.SHA256;
                 return true;
-            
+
             case "SHA386":
             case "SHA-386":
                 hashAlgorithmName = HashAlgorithmName.SHA384;
-                return true;            
+                return true;
             case "SHA512":
             case "SHA-512":
                 hashAlgorithmName = HashAlgorithmName.SHA512;

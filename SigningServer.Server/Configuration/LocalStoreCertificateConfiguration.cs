@@ -17,17 +17,17 @@ public class LocalStoreCertificateConfiguration
     /// <summary>
     /// The name of the certificate store to access (AddressBook, AuthRoot, CertificateAuthority, Disallowed, My, Root, TrustedPeople, TrustedPublisher)
     /// </summary>
-    public string StoreName { get; set; }
+    public string StoreName { get; set; } = string.Empty;
 
     /// <summary>
     /// The location of the store (CurrentUser, LocalMachine)
     /// </summary>
-    public string StoreLocation { get; set; }
+    public string StoreLocation { get; set; } = string.Empty;
 
     /// <summary>
     /// The thumbprint of the certificate to load
     /// </summary>
-    public string Thumbprint { get; set; }
+    public string Thumbprint { get; set; } = string.Empty;
 
     /// <summary>
     /// The pin to unlock the hardware token (holding EV certificates)
@@ -37,10 +37,10 @@ public class LocalStoreCertificateConfiguration
     /// SigningServer.exe -encode TokenPinHere
     /// is is protected with the Windows DPAPI
     /// </remarks>
-    public string TokenPin { get; set; }
+    public string? TokenPin { get; set; }
 
     public void Load(ILogger logger, CertificateConfiguration certificateConfiguration,
-        HardwareCertificateUnlocker unlocker)
+        HardwareCertificateUnlocker? unlocker)
     {
         logger.LogInformation("Loading Certificate from local machine");
         if (!Enum.TryParse(StoreName, out StoreName storeName))
@@ -71,8 +71,8 @@ public class LocalStoreCertificateConfiguration
             $"Certificate with thumbprint '{Thumbprint}' has no private key");
 
         certificateConfiguration.PrivateKey = certificate.GetECDsaPrivateKey() ??
-                     certificate.GetRSAPrivateKey() ??
-                     (AsymmetricAlgorithm)certificate.GetDSAPrivateKey();
+                                              certificate.GetRSAPrivateKey() ??
+                                              (AsymmetricAlgorithm?)certificate.GetDSAPrivateKey();
 
         var rsa = certificateConfiguration.Certificate.GetRSAPrivateKey();
         switch (rsa)
@@ -129,7 +129,8 @@ public class LocalStoreCertificateConfiguration
         try
         {
             // ReSharper disable once InconsistentNaming Win32 constant
-            const int PROV_RSA_AES = 24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
+            const int
+                PROV_RSA_AES = 24; // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
 
             // ProviderType == 1(PROV_RSA_FULL) and providerType == 12(PROV_RSA_SCHANNEL) are provider types that only support SHA1.
             // Change them to PROV_RSA_AES=24 that supports SHA2 also. Only levels up if the associated key is not a hardware key.

@@ -12,11 +12,12 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SigningServer.Client;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
-using SigningServer.Server.SigningTool;
+using SigningServer.Signing;
 using Program = SigningServer.Server.Program;
 
 namespace SigningServer.Test;
@@ -24,7 +25,7 @@ namespace SigningServer.Test;
 [TestClass]
 public class SigningServerIntegrationTest : UnitTestBase
 {
-    private static WebApplicationFactory<Program> _application;
+    private static WebApplicationFactory<Program>? _application;
 
     [ClassInitialize]
     public static void Setup(TestContext _)
@@ -63,7 +64,8 @@ public class SigningServerIntegrationTest : UnitTestBase
     [DeploymentItem("TestFiles", "IntegrationTestFiles")]
     public async Task ValidTestRun()
     {
-        using (var client = new SigningClient(_application.CreateClient(),
+        using (var client = new SigningClient(_application!.CreateClient(),
+                   new NullLogger<SigningClient>(),
                    Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned")))
         {
             await client.ConnectAsync();
@@ -80,7 +82,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+            (await tool!.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
                 .BeTrue($"File {signedFile} was not signed");
         }
     }
@@ -111,7 +113,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         foreach (var file in Directory.EnumerateFiles(Path.Combine(ExecutionDirectory, "HashIntegrationTestFiles",
                      "unsigned")))
         {
-            using var client = new SigningClient(_application.CreateClient(), file);
+            using var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>(), file);
             client.Configuration.SignHashFileExtension = Path.GetExtension(file) + ".sig";
             client.Configuration.HashAlgorithm = "SHA256";
             await client.ConnectAsync();
@@ -141,7 +143,8 @@ public class SigningServerIntegrationTest : UnitTestBase
     [DeploymentItem("TestFiles", "Parallel")]
     public async Task ParallelSigning()
     {
-        using (var client = new SigningClient(_application.CreateClient(),
+        using (var client = new SigningClient(_application!.CreateClient(),
+                   new NullLogger<SigningClient>(),
                    Path.Combine(ExecutionDirectory, "Parallel/unsigned")))
         {
             client.Configuration.Parallel = 4;
@@ -159,7 +162,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+            (await tool!.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
                 .BeTrue($"File {signedFile} was not signed");
         }
     }
@@ -185,7 +188,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             {
                 await Task.Delay(i * 50); // slight delay to trigger not exactly the same time 
                 var sw = Stopwatch.StartNew();
-                using (var client = new SigningClient(_application.CreateClient(), f))
+                using (var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>(), f))
                 {
                     await client.ConnectAsync();
                     await client.SignFilesAsync();
@@ -203,13 +206,13 @@ public class SigningServerIntegrationTest : UnitTestBase
 
         // check for successful signing
         var signedFiles = Directory.GetFiles(testDir, "*.ps1");
-        var signingTools = _application.Services.GetRequiredService<ISigningToolProvider>();
+        var signingTools = _application!.Services.GetRequiredService<ISigningToolProvider>();
         foreach (var signedFile in signedFiles)
         {
             var tool = signingTools.GetSigningTool(signedFile);
             tool.Should().NotBeNull($"Could not find signing tool for file {signedFile}");
 
-            (await tool.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
+            (await tool!.IsFileSignedAsync(signedFile, CancellationToken.None)).Should()
                 .BeTrue($"File {signedFile} was not signed");
         }
 
@@ -230,7 +233,8 @@ public class SigningServerIntegrationTest : UnitTestBase
     [DeploymentItem("TestFiles", "ApkIdSig")]
     public async Task TestIdSigIsDownloadedAlongApk()
     {
-        using (var client = new SigningClient(_application.CreateClient(),
+        using (var client = new SigningClient(_application!.CreateClient(),
+                   new NullLogger<SigningClient>(),
                    Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk")))
         {
             await client.ConnectAsync();
@@ -249,7 +253,7 @@ public class SigningServerIntegrationTest : UnitTestBase
     [TestMethod]
     public async Task TestCertificateDownload()
     {
-        using (var client = new SigningClient(_application.CreateClient()))
+        using (var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>()))
         {
             client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pfx");
             client.Configuration.LoadCertificateExportFormat = LoadCertificateFormat.Pkcs12;
@@ -286,7 +290,7 @@ public class SigningServerIntegrationTest : UnitTestBase
 
     private async Task<string> TestCertificateDownloadPem(LoadCertificateFormat format, string section)
     {
-        using (var client = new SigningClient(_application.CreateClient()))
+        using (var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>()))
         {
             client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pem");
             client.Configuration.LoadCertificateExportFormat = format;

@@ -16,7 +16,7 @@ namespace SigningServer.Server.Util;
 /// </summary>
 public class SignFileActionResult : ActionResult, IStatusCodeActionResult
 {
-    private readonly IList<SignFileResponseFileInfo> _files;
+    private readonly IList<SignFileResponseFileInfo>? _files;
 
     public int? StatusCode
     {
@@ -37,7 +37,7 @@ public class SignFileActionResult : ActionResult, IStatusCodeActionResult
 
     public Dtos.SignFileResponseDto ResponseDto { get; }
 
-    public SignFileActionResult(Dtos.SignFileResponseDto apiSignFileResponseDto, IList<SignFileResponseFileInfo> files)
+    public SignFileActionResult(Dtos.SignFileResponseDto apiSignFileResponseDto, IList<SignFileResponseFileInfo>? files)
     {
         ResponseDto = apiSignFileResponseDto;
         _files = files;

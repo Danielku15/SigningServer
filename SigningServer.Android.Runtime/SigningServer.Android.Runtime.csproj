@@ -5,6 +5,7 @@
 		<LangVersion>8</LangVersion>
 		<RootNamespace>SigningServer.Android</RootNamespace>
 		<Copyright>Daniel Kuschny, The Android Open Source Project, Oracle and/or its affiliates.</Copyright>
+    <Nullable>disable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
     <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />

@@ -78,7 +78,7 @@ public class SignedCmiManifest2
         ReplacePublicKeyToken(_manifestDom, signer.StrongNameKey);
 
         // No cert means don't Authenticode sign and timestamp.
-        XmlDocument licenseDom = null;
+        XmlDocument? licenseDom = null;
         if (signer.Certificate != null)
         {
             // Yes. We will Authenticode sign, so first insert <publisherIdentity />
@@ -284,7 +284,7 @@ public class SignedCmiManifest2
         return timestamp;
     }
 
-    private static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument licenseDom,
+    private static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument? licenseDom,
         CmiManifestSigner2 signer)
     {
         // Make sure it is RSA, as this is the only one Fusion will support.
@@ -409,7 +409,7 @@ public class SignedCmiManifest2
     }
 
 
-    private static XmlDocument CreateLicenseDom(CmiManifestSigner2 signer, XmlElement principal, byte[] hash)
+    private static XmlDocument CreateLicenseDom(CmiManifestSigner2 signer, XmlElement? principal, byte[] hash)
     {
         var licenseDom = new XmlDocument { PreserveWhitespace = true };
         licenseDom.LoadXml(LicenseTemplate);
@@ -420,9 +420,12 @@ public class SignedCmiManifest2
             (XmlElement)licenseDom.SelectSingleNode("r:license/r:grant/as:ManifestInformation/as:assemblyIdentity", nsm)
             !;
         assemblyIdentityNode.RemoveAllAttributes();
-        foreach (XmlAttribute attribute in principal.Attributes)
+        if (principal != null)
         {
-            assemblyIdentityNode.SetAttribute(attribute.Name, attribute.Value);
+            foreach (XmlAttribute attribute in principal.Attributes)
+            {
+                assemblyIdentityNode.SetAttribute(attribute.Name, attribute.Value);
+            }    
         }
 
         var manifestInformationNode =
@@ -435,7 +438,7 @@ public class SignedCmiManifest2
         var authenticodePublisherNode =
             (XmlElement)licenseDom.SelectSingleNode("r:license/r:grant/as:AuthenticodePublisher/as:X509SubjectName",
                 nsm)!;
-        authenticodePublisherNode.InnerText = signer.Certificate.SubjectName.Name!;
+        authenticodePublisherNode.InnerText = signer.Certificate!.SubjectName.Name;
 
         return licenseDom;
     }
@@ -445,7 +448,7 @@ public class SignedCmiManifest2
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
 
-    private static string BytesToHexString(IReadOnlyList<byte> array, int start, int end)
+    private static string? BytesToHexString(IReadOnlyList<byte>? array, int start, int end)
     {
         if (array == null)
         {
@@ -466,7 +469,7 @@ public class SignedCmiManifest2
         return new string(hexOrder);
     }
 
-    private XmlElement ExtractPrincipalFromManifest()
+    private XmlElement? ExtractPrincipalFromManifest()
     {
         var nsm = new XmlNamespaceManager(_manifestDom.NameTable);
         nsm.AddNamespace("asm", AssemblyNamespaceUri);

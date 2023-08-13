@@ -85,9 +85,9 @@ public class PooledCertificateProvider : ICertificateProvider
         }
     }
 
-    public Lazy<CertificateConfiguration> Get(string username, string password)
+    public Lazy<CertificateConfiguration>? Get(string? username, string? password)
     {
-        CertificateConfiguration baseConfiguration;
+        CertificateConfiguration? baseConfiguration;
         if (string.IsNullOrWhiteSpace(username))
         {
             baseConfiguration = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
@@ -129,7 +129,7 @@ public class PooledCertificateProvider : ICertificateProvider
         // Due to that we do a preliminary check of the certificate here and drop any broken ones
 
         var certFunctional = false;
-        Exception lastException = null;
+        Exception? lastException = null;
         for (var retry = 0; retry < poolSize + 1; retry++)
         {
             try
@@ -178,7 +178,7 @@ public class PooledCertificateProvider : ICertificateProvider
         return cert;
     }
 
-    public void Return(string username, Lazy<CertificateConfiguration> certificateConfiguration)
+    public void Return(string? username, Lazy<CertificateConfiguration> certificateConfiguration)
     {
         if (certificateConfiguration is not { IsValueCreated: true })
         {
@@ -193,7 +193,7 @@ public class PooledCertificateProvider : ICertificateProvider
         _certificatePools[username].Return(certificateConfiguration.Value);
     }
 
-    public void Destroy(Lazy<CertificateConfiguration> certificateConfiguration)
+    public void Destroy(Lazy<CertificateConfiguration>? certificateConfiguration)
     {
         if (certificateConfiguration is not { IsValueCreated: true })
         {
@@ -207,7 +207,7 @@ public class PooledCertificateProvider : ICertificateProvider
     {
         try
         {
-            certificateConfiguration.Certificate.Dispose();
+            certificateConfiguration.Certificate?.Dispose();
         }
         catch (Exception e)
         {
@@ -216,7 +216,7 @@ public class PooledCertificateProvider : ICertificateProvider
 
         try
         {
-            certificateConfiguration.PrivateKey.Dispose();
+            certificateConfiguration.PrivateKey?.Dispose();
         }
         catch (Exception e)
         {

@@ -7,11 +7,6 @@
 		<TargetFramework>net6.0-windows</TargetFramework>
   </PropertyGroup>
 	<ItemGroup>
-		<None Include="NLog.config">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Include="Azure.Identity" Version="1.7.0" />
 		<PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
     <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
@@ -29,8 +24,5 @@
 		<ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
 		<ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj" />
 		<ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="SigningTool\" />
 	</ItemGroup>
 </Project>

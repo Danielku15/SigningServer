@@ -46,7 +46,6 @@ public class NuGetSigningTool : ISigningTool
     public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
         CancellationToken cancellationToken)
     {
-        var signFileResponse = new SignFileResponse();
         var successResult = SignFileResponseStatus.FileSigned;
 
         if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -57,8 +56,7 @@ public class NuGetSigningTool : ISigningTool
             }
             else
             {
-                signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                return signFileResponse;
+                return SignFileResponse.FileAlreadySignedError;
             }
         }
 
@@ -84,12 +82,9 @@ public class NuGetSigningTool : ISigningTool
 
             var request = new AuthorSignPackageRequest(signFileRequest.Certificate.Value, hashAlg);
             await SigningUtility.SignAsync(options, request, cancellationToken);
-            signFileResponse.Status = successResult;
-            signFileResponse.ResultFiles = new[]
-            {
-                new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFile)
-            };
-            return signFileResponse;
+
+            return new SignFileResponse(successResult, string.Empty,
+                new[] { new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFile) });
         }
         catch
         {
@@ -164,10 +159,10 @@ public class NuGetSigningTool : ISigningTool
     private class AsymmetricPrivateKeyX509SignatureProvider : ISignatureProvider
     {
         private readonly AsymmetricAlgorithm _privateKey;
-        private readonly ITimestampProvider _timestampProvider;
+        private readonly ITimestampProvider? _timestampProvider;
 
         public AsymmetricPrivateKeyX509SignatureProvider(AsymmetricAlgorithm privateKey,
-            ITimestampProvider timestampProvider)
+            ITimestampProvider? timestampProvider)
         {
             _privateKey = privateKey;
             _timestampProvider = timestampProvider;
@@ -184,10 +179,8 @@ public class NuGetSigningTool : ISigningTool
             {
                 return Task.FromResult(signature);
             }
-            else
-            {
-                return TimestampPrimarySignatureAsync(request, logger, signature, token);
-            }
+
+            return TimestampPrimarySignatureAsync(request, logger, signature, token);
         }
 
         public Task<PrimarySignature> CreateRepositoryCountersignatureAsync(RepositorySignPackageRequest request,
@@ -256,7 +249,7 @@ public class NuGetSigningTool : ISigningTool
                 target: SignaturePlacement.PrimarySignature
             );
 
-            return _timestampProvider.TimestampSignatureAsync(signature, timestampRequest, logger, token);
+            return _timestampProvider!.TimestampSignatureAsync(signature, timestampRequest, logger, token);
         }
 
         private Task<PrimarySignature> TimestampRepositoryCountersignatureAsync(SignPackageRequest request,
@@ -273,7 +266,7 @@ public class NuGetSigningTool : ISigningTool
                 target: SignaturePlacement.Countersignature
             );
 
-            return _timestampProvider.TimestampSignatureAsync(primarySignature, timestampRequest, logger, token);
+            return _timestampProvider!.TimestampSignatureAsync(primarySignature, timestampRequest, logger, token);
         }
     }
 }

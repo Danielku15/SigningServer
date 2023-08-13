@@ -3,6 +3,7 @@
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <Nullable>enable</Nullable>
 
     <TargetFramework>net6.0</TargetFramework>
 

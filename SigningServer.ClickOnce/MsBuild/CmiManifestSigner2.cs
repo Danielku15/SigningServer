@@ -33,7 +33,7 @@ namespace SigningServer.ClickOnce.MsBuild;
 public class CmiManifestSigner2
 {
     public AsymmetricAlgorithm StrongNameKey { get; }
-    public X509Certificate2 Certificate { get; }
+    public X509Certificate2? Certificate { get; }
     public bool UseSha256 { get; }
 
     public CmiManifestSigner2(AsymmetricAlgorithm strongNameKey, X509Certificate2 certificate, bool useSha256)

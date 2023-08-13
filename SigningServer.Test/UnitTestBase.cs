@@ -13,7 +13,7 @@ public class UnitTestBase
     protected const string TimestampServer = "http://timestamp.globalsign.com/tsa/r6advanced1";
     protected const string Sha1TimestampServer = "http://timestamp.sectigo.com";
 
-    protected async Task CanSignAsync(ISigningTool signingTool, string fileName, string hashAlgorithm = null)
+    protected async Task CanSignAsync(ISigningTool signingTool, string fileName, string? hashAlgorithm = null)
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
@@ -21,15 +21,15 @@ public class UnitTestBase
             ? Sha1TimestampServer
             : TimestampServer;
 
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            OverwriteSignature = false,
-            HashAlgorithm = hashAlgorithm,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = timestampServer
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            timestampServer,
+            hashAlgorithm,
+            false
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
@@ -61,14 +61,15 @@ public class UnitTestBase
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            OverwriteSignature = true,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = TimestampServer
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null,
+            true
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileResigned);
@@ -82,14 +83,15 @@ public class UnitTestBase
     {
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            OverwriteSignature = false,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = TimestampServer
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null, 
+            false
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         Trace.WriteLine(response);

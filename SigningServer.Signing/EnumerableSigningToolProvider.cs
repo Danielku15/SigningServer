@@ -13,7 +13,7 @@ public class EnumerableSigningToolProvider : ISigningToolProvider
     
     public IList<ISigningTool> AllTools { get; }
 
-    public ISigningTool GetSigningTool(string fileName)
+    public ISigningTool? GetSigningTool(string fileName)
     {
         return AllTools.FirstOrDefault(signingTool => signingTool.IsFileSupported(fileName));
     }

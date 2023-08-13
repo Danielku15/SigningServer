@@ -32,9 +32,9 @@ public class ClickOnceSigningTool : ISigningTool
         return ClickOnceSupportedExtension.Contains(Path.GetExtension(fileName));
     }
 
-    public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken)
+    public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
+        CancellationToken cancellationToken)
     {
-        var signFileResponse = new SignFileResponse();
         var successResult = SignFileResponseStatus.FileSigned;
 
         if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -46,19 +46,16 @@ public class ClickOnceSigningTool : ISigningTool
             }
             else
             {
-                signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                return signFileResponse;
+                return SignFileResponse.FileAlreadySignedError;
             }
         }
 
         SecurityUtilities.SignFile(signFileRequest.Certificate.Value, signFileRequest.PrivateKey.Value,
             signFileRequest.TimestampServer, signFileRequest.InputFilePath);
-        signFileResponse.Status = successResult;
-        signFileResponse.ResultFiles = new[]
-        {
-            new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath)
-        };
-        return signFileResponse;
+        return new SignFileResponse(
+            successResult,
+            string.Empty,
+            new[] { new SignFileResponseFileInfo(signFileRequest.OriginalFileName, signFileRequest.InputFilePath) });
     }
 
 

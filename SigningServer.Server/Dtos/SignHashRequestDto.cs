@@ -7,22 +7,22 @@ public class SignHashRequestDto
     /// <summary>
     /// The username to authenticate the signing
     /// </summary>
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     /// <summary>
     /// The SHA2 hash of the password to authenticate the signing.
     /// </summary>
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     /// <summary>
     /// The hash algorithm to use for signing
     /// </summary>
     [Required]
-    public string HashAlgorithm { get; set; }
+    public string HashAlgorithm { get; set; } = string.Empty;
 
     /// <summary>
     /// The base64 encoded raw hash bytes to sign.
     /// </summary>
     [Required]
-    public string Hash { get; set; }
+    public string Hash { get; set; } = string.Empty;
 }

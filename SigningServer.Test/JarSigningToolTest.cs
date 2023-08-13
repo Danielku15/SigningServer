@@ -74,14 +74,15 @@ public class JarSigningToolTest : UnitTestBase
         var signingTool = new JarSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = TimestampServer,
-            OverwriteSignature = false
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null,
+            false
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);
         (await signingTool.IsFileSignedAsync(response.ResultFiles[0].OutputFilePath, CancellationToken.None)).Should()

@@ -18,7 +18,7 @@ public sealed class HardwareCertificateUnlocker : IHostedService
 {
     private readonly ILogger<HardwareCertificateUnlocker> _logger;
     private readonly ILogger<CertificateConfiguration> _certConfigLogger;
-    private Timer _refreshTimer;
+    private Timer? _refreshTimer;
     private readonly ConcurrentBag<CertificateConfiguration> _certificatesToRefresh;
     private readonly TimeSpan _refreshTime;
 
@@ -45,7 +45,7 @@ public sealed class HardwareCertificateUnlocker : IHostedService
         return Task.CompletedTask;
     }
 
-    private void UnlockAllTokens(object state)
+    private void UnlockAllTokens(object? state)
     {
         foreach (var configuration in _certificatesToRefresh)
         {

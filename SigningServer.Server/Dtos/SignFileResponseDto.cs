@@ -24,11 +24,11 @@ public class SignFileResponseDto
     /// <summary>
     /// The detailed error message in case <see cref="Status"/> is set to <see cref="SignFileResponseStatus.FileNotSignedError"/>
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// The result files consisting typically of the signed file.
     /// In some scenarios additional files might be provided (e.g. Android v4 idsig)
     /// </summary>
-    public IFormFileCollection ResultFiles { get; set; } // Mainly used for documentation purposes, SignFileActionResult handles the serialization
+    public IFormFileCollection? ResultFiles { get; set; } // Mainly used for documentation purposes, SignFileActionResult handles the serialization
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -65,7 +66,7 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
             {
                 Username = Configuration.Username,
                 Password = Configuration.Password,
-                HashAlgorithm = Configuration.HashAlgorithm,
+                HashAlgorithm = Configuration.HashAlgorithm!,
                 Hash = Convert.ToBase64String(hashBytes)
             }, cancellationToken);
 
@@ -177,7 +178,8 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
 
             while (await reader.ReadNextSectionAsync(cancellationToken) is { } section)
             {
-                if (!section.Headers.TryGetValue("Content-Disposition", out var contentDispositionValue))
+                if (section.Headers == null ||
+                    !section.Headers.TryGetValue("Content-Disposition", out var contentDispositionValue))
                 {
                     throw new IOException(
                         $"Could not load signing response (missing Content-Disposition on response section)");
@@ -260,7 +262,7 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
     private static readonly Regex BoundaryRegex =
         new("boundary=([^,]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static bool TryParseBoundary(string contentType, out string boundary)
+    private static bool TryParseBoundary(string contentType, [NotNullWhen(true)] out string? boundary)
     {
         boundary = null;
         var match = BoundaryRegex.Match(contentType);
@@ -295,11 +297,12 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
     public async Task ConnectAsync()
     {
         Logger.LogInformation("Connecting to signing server");
-        ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities");
+        ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities") ??
+                             throw new IOException("No signing capabilities provided by server");
         Logger.LogInformation("Server Capabilities loaded");
 
         Logger.LogTrace("Supported Formats:");
-        foreach (var supportedFormat in ServerCapabilities!.SupportedFormats)
+        foreach (var supportedFormat in ServerCapabilities.SupportedFormats)
         {
             Logger.LogTrace($"  {supportedFormat.Name}");
             Logger.LogTrace("    Supported Extensions: {fileExtensions}",

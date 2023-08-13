@@ -114,14 +114,15 @@ public class AndroidApkSigningToolTest : UnitTestBase
         var signingTool = new AndroidApkSigningTool();
         signingTool.IsFileSupported(fileName).Should().BeTrue();
 
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            OverwriteSignature = false,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = TimestampServer
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null,
+            false
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
 
         response.Status.Should().Be(SignFileResponseStatus.FileSigned);

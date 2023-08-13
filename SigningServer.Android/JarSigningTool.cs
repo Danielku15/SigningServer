@@ -37,9 +37,9 @@ namespace SigningServer.Android
             return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken)
+        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
+            CancellationToken cancellationToken)
         {
-            var signFileResponse = new SignFileResponse();
             var successResult = SignFileResponseStatus.FileSigned;
 
             if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -50,8 +50,7 @@ namespace SigningServer.Android
                 }
                 else
                 {
-                    signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                    return signFileResponse;
+                    return SignFileResponse.FileAlreadySignedError;
                 }
             }
 
@@ -62,7 +61,7 @@ namespace SigningServer.Android
                 if (string.IsNullOrEmpty(name))
                 {
                     name = signFileRequest.Certificate.Value.SubjectName.Name;
-                    if (name?.StartsWith("CN=", StringComparison.OrdinalIgnoreCase) == true)
+                    if (name.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
                     {
                         name = name.Substring("CN=".Length);
                     }
@@ -90,12 +89,8 @@ namespace SigningServer.Android
                 var apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();
 
-                signFileResponse.Status = successResult;
-                signFileResponse.ResultFiles = new List<SignFileResponseFileInfo>
-                {
-                    new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName),
-                };
-                return signFileResponse;
+                return new SignFileResponse(successResult, string.Empty,
+                    new[] { new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName), });
             }
             catch
             {

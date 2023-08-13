@@ -50,14 +50,15 @@ public class AppxSigningToolTest : UnitTestBase
         var signingTool = CreateSignTool();
         var fileName = "Unsigned_WrongPublishedFails/error/UnsignedWrongPublisher.appx";
         signingTool.IsFileSupported(fileName).Should().BeTrue();
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            TimestampServer = TimestampServer,
-            OverwriteSignature = true
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null,
+            true
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         Trace.WriteLine(response);
         response.Status.Should().Be(SignFileResponseStatus.FileNotSignedError);
@@ -80,13 +81,15 @@ public class AppxSigningToolTest : UnitTestBase
         var signingTool = CreateSignTool();
         var fileName = "NoResign_Works/signed/signed.appx";
         signingTool.IsFileSupported(fileName).Should().BeTrue();
-        var request = new SignFileRequest
-        {
-            InputFilePath = fileName,
-            Certificate = AssemblyEvents.Certificate,
-            PrivateKey = AssemblyEvents.PrivateKey,
-            OverwriteSignature = true
-        };
+        var request = new SignFileRequest(
+            fileName,
+            AssemblyEvents.Certificate,
+            AssemblyEvents.PrivateKey,
+            string.Empty,
+            TimestampServer,
+            null,
+            true
+        );
         var response = await signingTool.SignFileAsync(request, CancellationToken.None);
         response.Status.Should().Be(SignFileResponseStatus.FileResigned);
         (await signingTool.IsFileSignedAsync(fileName, CancellationToken.None)).Should().BeTrue();

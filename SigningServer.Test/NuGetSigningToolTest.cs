@@ -11,7 +11,6 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using SigningServer.NuGet;
-using SigningServer.Server.SigningTool;
 using LogLevel = NuGet.Common.LogLevel;
 
 namespace SigningServer.Test;
@@ -54,7 +53,7 @@ public class NuGetSigningToolTest : UnitTestBase
                 buffer.AppendLine(msg.Message);
             }
 
-            if (logMessages.Any(m => m.Level >= NuGet.Common.LogLevel.Warning))
+            if (logMessages.Any(m => m.Level >= LogLevel.Warning))
             {
                 var errors = logMessages.Count(m => m.Level == LogLevel.Error);
                 var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);

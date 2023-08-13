@@ -1,19 +1,15 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
-using NLog;
-using NLog.Targets;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NLog.Web;
 using SigningServer.ClientCore;
-using SigningServer.Core;
 
 namespace SigningServer.Client;
 
-internal class Program
+internal static class Program
 {
     private static async Task Main(string[] args)
     {
@@ -24,89 +20,11 @@ internal class Program
 
             Console.WriteLine("  --help, -h");
             Console.WriteLine("      Print this help.");
-
+            
             Console.WriteLine("  --config File, -c File");
             Console.WriteLine("      The path to the config.json to use (overwrites any previously provided settings)");
 
-            Console.WriteLine("  --server Server, -s Server");
-            Console.WriteLine("      The URL to the Signing Server to use");
-            Console.WriteLine("      Config.json Key: \"SigningServer\": \"value\"");
-
-            Console.WriteLine("  --username [username], -u [username]");
-            Console.WriteLine("      The username to use for authentication and certificate selection on the server");
-            Console.WriteLine("      Config.json Key: \"Username\": \"value\"");
-
-            Console.WriteLine("  --password [password], -p [password]");
-            Console.WriteLine("      The password to use for authentication and certificate selection on the server");
-            Console.WriteLine("      Config.json Key: \"Password\": \"value\"");
-
-            Console.WriteLine("  --hash-algorithm [algorithm], -h [algorithm]");
-            Console.WriteLine("      The Hash Algorithm to use for signing (empty for default)");
-            Console.WriteLine("      Config.json Key: \"HashAlgorithm\": \"value\"");
-
-            Console.WriteLine("  --overwrite-signatures, -os");
-            Console.WriteLine("      Enable overwriting of existing signatures");
-            Console.WriteLine("      Config.json Key: \"OverwriteSignatures\": true");
-
-            Console.WriteLine("  --keep-signatures, -ks");
-            Console.WriteLine("      Disable overwriting of existing signatures");
-            Console.WriteLine("      Config.json Key: \"OverwriteSignatures\": false");
-
-            Console.WriteLine("  --ignore-existing-signatures, -is");
-            Console.WriteLine("      Ignore existing signatures");
-            Console.WriteLine("      Config.json Key: \"IgnoreExistingSignatures\": true");
-
-            Console.WriteLine("  --fail-on-existing-signatures, -fs");
-            Console.WriteLine("      Whether to fail with existing signatures");
-            Console.WriteLine("      Config.json Key: \"IgnoreExistingSignatures\": false");
-
-            Console.WriteLine("  --ignore-unsupported-files, -iu");
-            Console.WriteLine("      Whether to ignore unsupported file formats");
-            Console.WriteLine("      Config.json Key: \"IgnoreUnsupportedFiles\": true");
-
-            Console.WriteLine("  --fail-on-unsupported-files, -fu");
-            Console.WriteLine("      Whether to fail when unsupported file formats");
-            Console.WriteLine("      Config.json Key: \"IgnoreUnsupportedFiles\": false");
-
-            Console.WriteLine("  --timeout Timeout, -t Timeout");
-            Console.WriteLine("      Configures the timeout in seconds before failing the signing operations.");
-            Console.WriteLine("      Config.json Key: \"IgnoreUnsupportedFiles\": 300");
-
-            Console.WriteLine("  --retries Retries, -re Retries");
-            Console.WriteLine(
-                "      The number of retries to attempt on potentially recoverable errors (e.g. timeouts).");
-            Console.WriteLine("      Config.json Key: \"Retry\": 3");
-
-            Console.WriteLine("  --parallel [NumberOfThreads], -pa [NumberOfThreads]");
-            Console.WriteLine("      The number of parallel signing operations the client should perform.");
-            Console.WriteLine("      Might be reduced based on the server configuration.");
-            Console.WriteLine("      Leave value empty (or null in config.json) for auto detection.");
-            Console.WriteLine("      Config.json Key: \"Parallel\": 4");
-
-            Console.WriteLine("  --sign-hash SignatureExtension");
-            Console.WriteLine("      Instead of uploading the file and signing it according to the known file");
-            Console.WriteLine("      format. The file will be hashed locally, and the hash is sent to the ");
-            Console.WriteLine("      server for signing. The signature will be written as raw bytes to the");
-            Console.WriteLine(
-                "      same paths as the input file with the extension changed to the provided file extension");
-
-            Console.WriteLine("  --load-certificate Format Path");
-            Console.WriteLine("      Instead of signing files a certificate file containing the public key will be downloaded");
-            Console.WriteLine("      to the specified path. Can be combined with other operations");
-            Console.WriteLine("      Format: ");
-            Console.WriteLine("        - \"PemCertificate\" - A PEM encoded file holding full X509 certificates (BEGIN/END CERTIFICATE)");
-            Console.WriteLine("        - \"PemPublicKey\" - A PEM encoded file holding Public Key Subject Infos  (BEGIN/END PUBLIC KEY)");
-            Console.WriteLine("        - \"Pkcs12\" - A Pkcs12 encoded file (aka. PFX).");
-
-            Console.WriteLine("  --load-certificate-chain Format");
-            Console.WriteLine("      Like --load-certificate but the whole certificate chian will be downloaded.");
-
-            Console.WriteLine();
-
-            Console.WriteLine("sources: ");
-            Console.WriteLine("   Can be any single file or a full directory (recursive) to sign.");
-            Console.WriteLine("   For directories only known supported files are considered.");
-            Console.WriteLine();
+            SigningClientConfiguration.PrintUsage(Console.Out);
 
             Console.WriteLine("exit codes: ");
             Console.WriteLine("   1 - unexpected error");
@@ -121,357 +39,26 @@ internal class Program
             return;
         }
 
-        SetupLogging();
-
-        var logger = LogManager.Setup().LoadConfigurationFromAppSettings();
-        var log = LogManager.GetCurrentClassLogger();
-        var configuration = await LoadConfiguration(log, args);
-        if (configuration == null)
-        {
-            return;
-        }
-
-        SigningClient client;
-        try
-        {
-            log.Trace("Creating client");
-            client = new SigningClient(configuration, /* TODO*/ new NullLogger<SigningClient>());
-            await client.ConnectAsync();
-            log.Trace("connected to server");
-        }
-        catch (Exception e)
-        {
-            log.Error(e, "Could not create signing client");
-            Environment.ExitCode = ErrorCodes.CommunicationError;
-            return;
-        }
-
-        try
-        {
-            await client.SignFilesAsync();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Environment.ExitCode = ErrorCodes.Unauthorized;
-        }
-        catch (UnsupportedFileFormatException)
-        {
-            Environment.ExitCode = ErrorCodes.UnsupportedFileFormat;
-        }
-        catch (FileAlreadySignedException)
-        {
-            Environment.ExitCode = ErrorCodes.FileAlreadySigned;
-        }
-        catch (FileNotFoundException)
-        {
-            Environment.ExitCode = ErrorCodes.FileNotFound;
-        }
-        catch (IOException)
-        {
-            Environment.ExitCode = ErrorCodes.CommunicationError;
-        }
-        catch (HttpRequestException)
-        {
-            Environment.ExitCode = ErrorCodes.CommunicationError;
-        }
-        catch (OperationCanceledException)
-        {
-            Environment.ExitCode = ErrorCodes.CommunicationError;
-        }
-        catch (Exception e)
-        {
-            log.Fatal(e, "Unexpected error happened");
-            Environment.ExitCode = ErrorCodes.UnexpectedError;
-        }
-    }
-
-    private static async Task<SigningClientConfiguration> LoadConfiguration(ILogger log, string[] args)
-    {
-        var configuration = await LoadDefaultConfigurationAsync(log);
-        if (configuration == null)
-        {
-            return null;
-        }
-
-        for (var i = 0; i < args.Length; i++)
-        {
-            var arg = args[i];
-            if (arg.StartsWith("-"))
+        using var host = Host.CreateDefaultBuilder( /* No Args */)
+            .ConfigureAppConfiguration(config =>
             {
-                switch (arg.ToLowerInvariant())
-                {
-                    case "-c":
-                    case "--config":
-                        if (i + 1 < args.Length)
-                        {
-                            try
-                            {
-                                log.Trace("Loading config");
-                                configuration =
-                                    JsonSerializer.Deserialize<SigningClientConfiguration>(
-                                        await File.ReadAllTextAsync(args[i + 1]))!;
-                                log.Trace("Configuration loaded");
-                            }
-                            catch (Exception e)
-                            {
-                                log.Error(e, "Config could not be loaded");
-                                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                                return null;
-                            }
-
-                            i++;
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No filename provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    case "-s":
-                    case "--server":
-                        if (i + 1 < args.Length)
-                        {
-                            i++;
-                            configuration.SigningServer = args[i];
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No server value provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    case "-u":
-                    case "--username":
-                        if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
-                        {
-                            i++;
-                            configuration.Username = args[i];
-                        }
-                        else
-                        {
-                            configuration.Username = "";
-                        }
-
-                        break;
-                    case "-p":
-                    case "--password":
-                        if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
-                        {
-                            i++;
-                            configuration.Password = args[i];
-                        }
-                        else
-                        {
-                            configuration.Password = "";
-                        }
-
-                        break;
-                    case "-h":
-                    case "--hash-algorithm":
-                        if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
-                        {
-                            i++;
-                            configuration.HashAlgorithm = args[i];
-                        }
-                        else
-                        {
-                            configuration.HashAlgorithm = "";
-                        }
-
-                        break;
-                    case "-os":
-                    case "--overwrite-signatures":
-                        configuration.OverwriteSignatures = true;
-                        break;
-                    case "-ks":
-                    case "--keep-signatures":
-                        configuration.OverwriteSignatures = false;
-                        break;
-                    case "-is":
-                    case "--ignore-existing-signatures":
-                        configuration.IgnoreExistingSignatures = true;
-                        break;
-                    case "-fs":
-                    case "--fail-on-existing-signatures":
-                        configuration.IgnoreExistingSignatures = false;
-                        break;
-                    case "-iu":
-                    case "--ignore-unsupported-files":
-                        configuration.IgnoreUnsupportedFiles = true;
-                        break;
-                    case "-fu":
-                    case "--fail-on-unsupported-files":
-                        configuration.IgnoreUnsupportedFiles = false;
-                        break;
-                    case "-t":
-                    case "--timeout":
-                        if (i + 1 < args.Length)
-                        {
-                            if (int.TryParse(args[i + 1], out var v))
-                            {
-                                configuration.Timeout = v;
-                            }
-                            else
-                            {
-                                log.Error("Config could not be loaded: Invalid timeout value provided");
-                                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                                return null;
-                            }
-
-                            i++;
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No timeout value provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    case "--sign-hash":
-                        if (i + 1 < args.Length)
-                        {
-                            i++;
-                            configuration.SignHashFileExtension = args[i];
-                            if (!configuration.SignHashFileExtension.StartsWith("."))
-                            {
-                                configuration.SignHashFileExtension = "." + configuration.SignHashFileExtension;
-                            }
-
-                            if (string.IsNullOrEmpty(configuration.HashAlgorithm))
-                            {
-                                configuration.HashAlgorithm = "SHA256";
-                            }
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No signature file extension value provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    case "--load-certificate":
-                        if (i + 2 < args.Length)
-                        {
-                            i++;
-                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], true, out var p) ||
-                                p is not LoadCertificateFormat contentType)
-                            {
-                                log.Error("Config could not be loaded: Invalid certificate format");
-                                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                                return null;
-                            }
-
-                            configuration.LoadCertificateExportFormat = contentType;
-                            i++;
-                            configuration.LoadCertificatePath = Path.GetFullPath(args[i]);
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No signature file extension value provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    case "--load-certificate-chain":
-                        if (i + 2 < args.Length)
-                        {
-                            i++;
-                            if (!Enum.TryParse(typeof(LoadCertificateFormat), args[i], true, out var p) ||
-                                p is not LoadCertificateFormat contentType)
-                            {
-                                log.Error("Config could not be loaded: Invalid certificate format");
-                                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                                return null;
-                            }
-
-                            configuration.LoadCertificateExportFormat = contentType;
-                            i++;
-                            configuration.LoadCertificatePath = Path.GetFullPath(args[i]);
-                            configuration.LoadCertificateChain = true;
-                        }
-                        else
-                        {
-                            log.Error("Config could not be loaded: No signature file extension value provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
-                        }
-
-                        break;
-                    default:
-                        log.Error("Unknown option '{file}'", arg);
-                        Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                        return null;
-                }
-            }
-            else
+                config.AddJsonFile("config.json", optional: true);
+            })
+            .ConfigureServices(services =>
             {
-                arg = arg.Trim('"');
-                if (File.Exists(arg) || Directory.Exists(arg))
-                {
-                    configuration.Sources.Add(arg);
-                }
-                else
-                {
-                    log.Error("Config could not be loaded: File or Directory not found '{file}'", arg);
-                    Environment.ExitCode = ErrorCodes.FileNotFound;
-                    return null;
-                }
-            }
-        }
+                services.AddSingleton<ISigningConfigurationLoader>(sp =>
+                    ActivatorUtilities.CreateInstance<DefaultSigningConfigurationLoader>(sp,
+                        new object[] { args }));
+                services.AddSingleton<ISigningClientProvider<SigningClientConfiguration>, SigningClientProvider>();
+                services.AddSingleton<SigningClientRunner>();
+            })
+            .UseNLog()
+            .Build();
 
-        return configuration;
-    }
+        await host.StartAsync();
 
-    private static async Task<SigningClientConfiguration> LoadDefaultConfigurationAsync(ILogger log)
-    {
-        var defaultConfigFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
-
-        if (File.Exists(defaultConfigFilePath))
-        {
-            try
-            {
-                log.Trace("Loading config");
-                var configuration =
-                    JsonSerializer.Deserialize<SigningClientConfiguration>(
-                        await File.ReadAllTextAsync(defaultConfigFilePath))!;
-                log.Trace("Configuration loaded");
-                return configuration;
-            }
-            catch (Exception e)
-            {
-                log.Error(e, "Config could not be loaded");
-                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                return null;
-            }
-        }
-
-        return new SigningClientConfiguration();
-    }
-
-    private static void SetupLogging()
-    {
-        if (File.Exists(Path.Combine(AppContext.BaseDirectory, "nlog.config")))
-        {
-            return;
-        }
-
-        var configuration = new NLog.Config.LoggingConfiguration();
-        const string Format = "${longdate} ${level} - ${message} ${exception:format=ToString}";
-        var console = new ColoredConsoleTarget("console") { Layout = Format };
-        var debugger = new DebuggerTarget("debug") { Layout = Format };
-        configuration.AddTarget(console);
-        configuration.AddTarget(debugger);
-
-        configuration.AddRule(LogLevel.Trace, LogLevel.Off, console);
-        configuration.AddRule(LogLevel.Trace, LogLevel.Off, debugger);
-        LogManager.Configuration = configuration;
-        LogManager.ReconfigExistingLoggers();
+        var loader = host.Services.GetRequiredService<SigningClientRunner>();
+        await loader.RunAsync();
+        await host.StopAsync();
     }
 }

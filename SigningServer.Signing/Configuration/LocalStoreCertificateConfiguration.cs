@@ -5,9 +5,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using SigningServer.Server.Util;
 
-namespace SigningServer.Server.Configuration;
+namespace SigningServer.Signing.Configuration;
 
 /// <summary>
 /// Represents the settings to load a certificate from the Windows Certificate Store.
@@ -40,7 +39,7 @@ public class LocalStoreCertificateConfiguration
     public string? TokenPin { get; set; }
 
     public void Load(ILogger logger, CertificateConfiguration certificateConfiguration,
-        HardwareCertificateUnlocker? unlocker)
+        IHardwareCertificateUnlocker? unlocker)
     {
         logger.LogInformation("Loading Certificate from local machine");
         if (!Enum.TryParse(StoreName, out StoreName storeName))

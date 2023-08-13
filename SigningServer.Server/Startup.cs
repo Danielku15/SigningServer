@@ -9,6 +9,7 @@ using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
 using SigningServer.Signing;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 

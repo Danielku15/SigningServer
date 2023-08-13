@@ -3,9 +3,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using SigningServer.Server.Util;
 
-namespace SigningServer.Server.Configuration;
+namespace SigningServer.Signing.Configuration;
 
 /// <summary>
 /// A single certificate configuration.
@@ -33,6 +32,11 @@ public class CertificateConfiguration
     public AzureKeyVaultConfiguration? Azure { get; set; }
 
     /// <summary>
+    /// Signing Server specific configuration
+    /// </summary>
+    public SigningServerApiConfiguration? SigningServer { get; set; }
+
+    /// <summary>
     /// The loaded certificate.
     /// </summary>
     [JsonIgnore]
@@ -50,7 +54,7 @@ public class CertificateConfiguration
     [JsonIgnore]
     public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
-    public void LoadCertificate(ILogger<CertificateConfiguration> logger, HardwareCertificateUnlocker? unlocker)
+    public void LoadCertificate(ILogger logger, IHardwareCertificateUnlocker? unlocker)
     {
         // only do reloads if cert needs hardware unlock or certificate is not loaded at all
         if (string.IsNullOrEmpty(LocalStore?.TokenPin) && Certificate != null)
@@ -67,6 +71,10 @@ public class CertificateConfiguration
         else if (LocalStore != null)
         {
             LocalStore.Load(logger, this, unlocker);
+        }
+        else if (SigningServer != null)
+        {
+            SigningServer.Load(logger, this);
         }
         else
         {
@@ -96,14 +104,14 @@ public class CertificateConfiguration
     }
 
     public CertificateConfiguration CloneForSigning(ILogger<CertificateConfiguration> logger,
-        HardwareCertificateUnlocker unlocker)
+        IHardwareCertificateUnlocker unlocker)
     {
         var configuration = new CertificateConfiguration
         {
             Username = Username, Password = Password, LocalStore = LocalStore, Azure = Azure
         };
 
-        if (LocalStore != null || Azure != null)
+        if (LocalStore != null || Azure != null || SigningServer != null)
         {
             configuration.LoadCertificate(logger, unlocker);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server.Configuration;
 

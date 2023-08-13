@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SigningServer.Server.Configuration;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server.Util;
 
@@ -14,7 +15,7 @@ namespace SigningServer.Server.Util;
 /// or were locked again, causing the signing to fail. Reloading the certificate
 /// seems to resolve this issue.
 /// </summary>
-public sealed class HardwareCertificateUnlocker : IHostedService
+public sealed class HardwareCertificateUnlocker : IHostedService, IHardwareCertificateUnlocker
 {
     private readonly ILogger<HardwareCertificateUnlocker> _logger;
     private readonly ILogger<CertificateConfiguration> _certConfigLogger;

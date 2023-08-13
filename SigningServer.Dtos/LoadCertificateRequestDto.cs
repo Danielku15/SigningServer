@@ -1,7 +1,6 @@
-
 using SigningServer.Core;
 
-namespace SigningServer.Server.Dtos;
+namespace SigningServer.Dtos;
 
 public class LoadCertificateRequestDto
 {

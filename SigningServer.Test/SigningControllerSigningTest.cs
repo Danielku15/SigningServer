@@ -18,6 +18,7 @@ using SigningServer.Server.Configuration;
 using SigningServer.Server.Controllers;
 using SigningServer.Server.Dtos;
 using SigningServer.Signing;
+using SigningServer.Signing.Configuration;
 using SignFileResponse = SigningServer.Core.SignFileResponse;
 
 namespace SigningServer.Test;

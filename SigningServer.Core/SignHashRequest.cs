@@ -17,5 +17,6 @@ public record SignHashRequest(
     byte[] InputHash,
     X509Certificate2 Certificate,
     AsymmetricAlgorithm PrivateKey,
-    string HashAlgorithm
+    string HashAlgorithm,
+    RSASignaturePaddingMode? PaddingMode
 );

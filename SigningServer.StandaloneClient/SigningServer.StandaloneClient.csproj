@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <Title>SigningServer Standalone Client</Title>
-        <Description>This is a client for signing files using a compatible signing server or certificate API.</Description>
-        <PackAsTool>true</PackAsTool>
-        <ToolCommandName>signingserver-standalone-client</ToolCommandName>
-        <PackageReadmeFile>readme.md</PackageReadmeFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Title>SigningServer Standalone Client</Title>
+    <Description>This is a client for signing files using a compatible signing server or certificate API.</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>signingserver-standalone-client</ToolCommandName>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <TargetFramework>$(TargetFramework)-windows</TargetFramework>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -24,5 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj" />
     <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
+    <ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
@@ -36,7 +37,12 @@ public class SigningClientConfigurationBase
     /// The hash algorithm to use.
     /// </summary>
     public string? HashAlgorithm { get; set; }
-
+    
+    /// <summary>
+    /// The RSA signature padding mode to use in case of RSA Hashing.
+    /// </summary>
+    public RSASignaturePaddingMode? RsaSignaturePaddingMode { get; set; }
+    
     /// <summary>
     /// The number of retries the client should perform before giving up failed sign operations.
     /// </summary>
@@ -75,7 +81,7 @@ public class SigningClientConfigurationBase
     /// </summary>
     public LoadCertificateFormat? LoadCertificateExportFormat { get; set; }
 
-    public bool FillFromArgs(string[] args, ILogger log)
+    public virtual bool FillFromArgs(string[] args, ILogger log)
     {
         for (var i = 0; i < args.Length; i++)
         {
@@ -121,6 +127,26 @@ public class SigningClientConfigurationBase
                     HashAlgorithm = "";
                 }
 
+                return true;
+            case "--rsa-signature-padding":
+                if (i + 1 < args.Length)
+                {
+                    i++;
+                    
+                    if (!Enum.TryParse(typeof(RSASignaturePaddingMode), args[i], true, out var p) ||
+                        p is not RSASignaturePaddingMode contentType)
+                    {
+                        log.LogError("Config could not be loaded: Invalid RSA Signature Padding");
+                        return false;
+                    }
+
+                    RsaSignaturePaddingMode = contentType;
+                }
+                else
+                {
+                    log.LogError("Config could not be loaded: No RSA Signature Padding provided");
+                    return false;
+                }
                 return true;
             case "-os":
             case "--overwrite-signatures":
@@ -244,9 +270,21 @@ public class SigningClientConfigurationBase
 
     public static void PrintUsage(TextWriter writer)
     {
+        Console.WriteLine("options: ");
+
+        Console.WriteLine("  --help, -h");
+        Console.WriteLine("      Print this help.");
+
+        Console.WriteLine("  --config File, -c File");
+        Console.WriteLine("      The path to the config.json to use (overwrites any previously provided settings)");
+
         writer.WriteLine("  --hash-algorithm [algorithm], -h [algorithm]");
         writer.WriteLine("      The Hash Algorithm to use for signing (empty for default)");
         writer.WriteLine("      Config.json Key: \"HashAlgorithm\": \"value\"");
+
+        writer.WriteLine("  --rsa-signature-padding [algorithm]");
+        writer.WriteLine("      The RSA Signature Padding to use for signing (empty for default)");
+        writer.WriteLine("      Config.json Key: \"RsaSignaturePaddingMode\": \"value\"");
 
         writer.WriteLine("  --overwrite-signatures, -os");
         writer.WriteLine("      Enable overwriting of existing signatures");
@@ -314,5 +352,15 @@ public class SigningClientConfigurationBase
         writer.WriteLine("   Can be any single file or a full directory (recursive) to sign.");
         writer.WriteLine("   For directories only known supported files are considered.");
         writer.WriteLine();
+        
+        Console.WriteLine("exit codes: ");
+        Console.WriteLine("   1 - unexpected error");
+        Console.WriteLine("   2 - Specified source could not be found");
+        Console.WriteLine(
+            "   3 - Detected a file which is already signed and --fail-on-existing-signatures is set");
+        Console.WriteLine("   4 - Detected an unsupported file format and --fail-on-unsupported-files is active");
+        Console.WriteLine("   5 - Unauthorized, wrong username or password");
+        Console.WriteLine("   6 - Client configuration invalid");
+        Console.WriteLine("   7 - Communication error");
     }
 }

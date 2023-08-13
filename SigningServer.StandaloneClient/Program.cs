@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NLog.Web;
 using SigningServer.ClientCore;
+using SigningServer.ClientCore.Configuration;
+using SigningServer.Signing;
 
 namespace SigningServer.StandaloneClient;
 
@@ -16,26 +18,7 @@ internal static class Program
         if (args.Length == 0 || args.Any(a => a is "/?" or "--help" or "-?" or "-help" or "-h"))
         {
             Console.WriteLine("usage: SigningServer.Client.exe [options] [Source1 Source2 Source3 ...]");
-            Console.WriteLine("options: ");
-
-            Console.WriteLine("  --help, -h");
-            Console.WriteLine("      Print this help.");
-            
-            Console.WriteLine("  --config File, -c File");
-            Console.WriteLine("      The path to the config.json to use (overwrites any previously provided settings)");
-
-            SigningClientConfiguration.PrintUsage(Console.Out);
-
-            Console.WriteLine("exit codes: ");
-            Console.WriteLine("   1 - unexpected error");
-            Console.WriteLine("   2 - Specified source could not be found");
-            Console.WriteLine(
-                "   3 - Detected a file which is already signed and --fail-on-existing-signatures is set");
-            Console.WriteLine("   4 - Detected an unsupported file format and --fail-on-unsupported-files is active");
-            Console.WriteLine("   5 - Unauthorized, wrong username or password");
-            Console.WriteLine("   6 - Client configuration invalid");
-            Console.WriteLine("   7 - Communication error");
-
+            StandaloneSigningClientConfiguration.PrintUsage(Console.Out);
             return;
         }
 
@@ -46,18 +29,20 @@ internal static class Program
             })
             .ConfigureServices(services =>
             {
-                services.AddSingleton<ISigningConfigurationLoader>(sp =>
-                    ActivatorUtilities.CreateInstance<DefaultSigningConfigurationLoader>(sp,
+                services.AddSingleton<ISigningConfigurationLoader<StandaloneSigningClientConfiguration>>(sp =>
+                    ActivatorUtilities.CreateInstance<DefaultSigningConfigurationLoader<StandaloneSigningClientConfiguration>>(sp,
                         new object[] { args }));
-                services.AddSingleton<ISigningClientProvider<SigningClientConfiguration>, SigningClientProvider>();
-                services.AddSingleton<SigningClientRunner>();
+                services.AddSingleton<ISigningClientProvider<StandaloneSigningClientConfiguration>, SigningClientProvider>();
+                services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
+                services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
+                services.AddSingleton<SigningClientRunner<StandaloneSigningClientConfiguration>>();
             })
             .UseNLog()
             .Build();
 
         await host.StartAsync();
 
-        var loader = host.Services.GetRequiredService<SigningClientRunner>();
+        var loader = host.Services.GetRequiredService<SigningClientRunner<StandaloneSigningClientConfiguration>>();
         await loader.RunAsync();
         await host.StopAsync();
     }

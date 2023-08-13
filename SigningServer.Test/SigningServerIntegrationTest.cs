@@ -18,6 +18,7 @@ using SigningServer.Client;
 using SigningServer.Core;
 using SigningServer.Server.Configuration;
 using SigningServer.Signing;
+using SigningServer.Signing.Configuration;
 using Program = SigningServer.Server.Program;
 
 namespace SigningServer.Test;
@@ -68,7 +69,7 @@ public class SigningServerIntegrationTest : UnitTestBase
                    new NullLogger<SigningClient>(),
                    Path.Combine(ExecutionDirectory, "IntegrationTestFiles/unsigned")))
         {
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 
@@ -116,7 +117,7 @@ public class SigningServerIntegrationTest : UnitTestBase
             using var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>(), file);
             client.Configuration.SignHashFileExtension = Path.GetExtension(file) + ".sig";
             client.Configuration.HashAlgorithm = "SHA256";
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 
@@ -148,7 +149,7 @@ public class SigningServerIntegrationTest : UnitTestBase
                    Path.Combine(ExecutionDirectory, "Parallel/unsigned")))
         {
             client.Configuration.Parallel = 4;
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 
@@ -190,7 +191,7 @@ public class SigningServerIntegrationTest : UnitTestBase
                 var sw = Stopwatch.StartNew();
                 using (var client = new SigningClient(_application!.CreateClient(), new NullLogger<SigningClient>(), f))
                 {
-                    await client.ConnectAsync();
+                    await client.InitializeAsync();
                     await client.SignFilesAsync();
                 }
 
@@ -237,7 +238,7 @@ public class SigningServerIntegrationTest : UnitTestBase
                    new NullLogger<SigningClient>(),
                    Path.Combine(ExecutionDirectory, "ApkIdSig/unsigned/unsigned-aligned.apk")))
         {
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 
@@ -257,7 +258,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         {
             client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pfx");
             client.Configuration.LoadCertificateExportFormat = LoadCertificateFormat.Pkcs12;
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 
@@ -294,7 +295,7 @@ public class SigningServerIntegrationTest : UnitTestBase
         {
             client.Configuration.LoadCertificatePath = Path.Combine("Certs", "Cert.pem");
             client.Configuration.LoadCertificateExportFormat = format;
-            await client.ConnectAsync();
+            await client.InitializeAsync();
             await client.SignFilesAsync();
         }
 

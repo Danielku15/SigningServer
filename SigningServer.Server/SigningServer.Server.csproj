@@ -4,23 +4,21 @@
 		<Title>SigningServer Server</Title>
 		<Description>This is the server side component for running a signing server.</Description>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>$(TargetFramework)-windows</TargetFramework>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.7.0" />
-		<PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
     <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="6.0.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
 		<PackageReference Include="NLog" Version="5.0.4" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
-		<PackageReference Include="RSAKeyVaultProvider" Version="2.1.1" />
 		<PackageReference Include="SharpZipLib" Version="1.4.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
 		<ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj" />
 		<ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
+		<ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
 		<ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
 		<ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj" />
 		<ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />

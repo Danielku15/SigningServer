@@ -66,11 +66,27 @@ public class ManagedHashSigningTool : IHashSigningTool
     {
         return signHashRequest.PrivateKey switch
         {
-            RSA rsa => rsa.SignHash(signHashRequest.InputHash, hashAlgorithmName, RSASignaturePadding.Pkcs1),
+            RSA rsa => rsa.SignHash(signHashRequest.InputHash, hashAlgorithmName,
+                ToPadding(signHashRequest.PaddingMode)),
             DSA dsa => dsa.SignData(signHashRequest.InputHash, hashAlgorithmName),
             ECDsa ecdsa => ecdsa.SignHash(signHashRequest.InputHash),
             _ => throw new ArgumentOutOfRangeException(
                 $"Unsupported private key {signHashRequest.PrivateKey.GetType().FullName}")
         };
+    }
+
+    private static RSASignaturePadding ToPadding(RSASignaturePaddingMode? paddingMode)
+    {
+        switch (paddingMode)
+        {
+            case RSASignaturePaddingMode.Pkcs1:
+                return RSASignaturePadding.Pkcs1;
+            case RSASignaturePaddingMode.Pss:
+                return RSASignaturePadding.Pss;
+            case null:
+                return RSASignaturePadding.Pkcs1;
+            default:
+                throw new InvalidOperationException("Unsupported RSA Padding: " + paddingMode);
+        }
     }
 }

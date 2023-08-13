@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 

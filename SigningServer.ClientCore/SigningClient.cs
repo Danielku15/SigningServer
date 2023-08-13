@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
-using SigningServer.Server.Dtos;
+using SigningServer.Dtos;
 
 namespace SigningServer.ClientCore;
 
@@ -29,6 +29,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable
         Configuration = configuration;
         Logger = logger;
     }
+
+    public abstract Task InitializeAsync();
 
     public async Task SignFilesAsync()
     {
@@ -245,7 +247,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable
     protected record SignFilePartialResult(SignFilePartialResultKind Kind, object Value);
 
     protected abstract IAsyncEnumerable<SignFilePartialResult> SignFileAsync(string file,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        CancellationToken fileCompletedToken);
 
     private async Task DoSignFileAsync(string file, CancellationToken cancellationToken)
     {
@@ -260,6 +263,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable
         }
 
         var retry = Configuration.Retry;
+
+        using var fileCompletedSource = new CancellationTokenSource();
         do
         {
             try
@@ -267,7 +272,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var results = SignFileAsync(file, cancellationToken);
+                var results = SignFileAsync(file, cancellationToken, fileCompletedSource.Token);
 
                 var status = SignFileResponseStatus.FileSigned;
                 var errorMessage = string.Empty;
@@ -283,6 +288,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                     }
 
                     responseInfoWritten = true;
+                    fileCompletedSource.Cancel();
+
                     switch (status)
                     {
                         case SignFileResponseStatus.FileSigned:
@@ -361,7 +368,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                                 await using var targetFile = new FileStream(targetFileName, FileMode.Create,
                                     FileAccess.ReadWrite,
                                     FileShare.None);
-                                await fileInfo.ContentStream.CopyToAsync(targetFile, cancellationToken);
+                                await using (fileInfo.ContentStream)
+                                {
+                                    await fileInfo.ContentStream.CopyToAsync(targetFile, cancellationToken);
+                                }
                                 downloadWatch.Stop();
                                 Logger.LogTrace("Downloaded file {fileName} in {downloadTime}ms", fileInfo.FileName,
                                     downloadWatch.ElapsedMilliseconds);

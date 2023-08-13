@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using NLog.Web;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 

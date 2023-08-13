@@ -2,12 +2,12 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace SigningServer.Server.Util;
+namespace SigningServer.Signing.Configuration;
 
 /// <summary>
 /// A utility class to protect/unprotect any strings using the data projection API.
 /// </summary>
-internal class DataProtector
+public class DataProtector
 {
     public static string ProtectData(string raw)
     {

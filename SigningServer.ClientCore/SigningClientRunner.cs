@@ -3,20 +3,21 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SigningServer.ClientCore;
+using SigningServer.ClientCore.Configuration;
 
-namespace SigningServer.Client;
+namespace SigningServer.ClientCore;
 
-internal class SigningClientRunner
+public class SigningClientRunner<TConfiguration> 
+    where TConfiguration : SigningClientConfigurationBase
 {
-    private readonly ILogger<SigningClientRunner> _logger;
-    private readonly ISigningConfigurationLoader _configurationLoader;
-    private readonly ISigningClientProvider<SigningClientConfiguration> _clientProvider;
+    private readonly ILogger<SigningClientRunner<TConfiguration> > _logger;
+    private readonly ISigningConfigurationLoader<TConfiguration> _configurationLoader;
+    private readonly ISigningClientProvider<TConfiguration> _clientProvider;
 
     public SigningClientRunner(
-        ILogger<SigningClientRunner> logger,
-        ISigningConfigurationLoader configurationLoader,
-        ISigningClientProvider<SigningClientConfiguration> clientProvider)
+        ILogger<SigningClientRunner<TConfiguration> > logger,
+        ISigningConfigurationLoader<TConfiguration> configurationLoader,
+        ISigningClientProvider<TConfiguration> clientProvider)
     {
         _logger = logger;
         _configurationLoader = configurationLoader;
@@ -32,6 +33,7 @@ internal class SigningClientRunner
             {
                 Environment.ExitCode = ErrorCodes.InvalidConfiguration;
             }
+
             return;
         }
 
@@ -45,13 +47,13 @@ internal class SigningClientRunner
             }
         }
 
-        SigningClient client;
+        SigningClient<TConfiguration> client;
         try
         {
             _logger.LogTrace("Creating client");
-            client = (SigningClient)_clientProvider.CreateClient(configuration);
-            await client.ConnectAsync();
-            _logger.LogTrace("connected to server");
+            client = _clientProvider.CreateClient(configuration);
+            await client.InitializeAsync();
+            _logger.LogTrace("Initialized client");
         }
         catch (Exception e)
         {

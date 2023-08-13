@@ -1,23 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Include="..\SigningServer.Server\Dtos\SignHashRequestDto.cs">
-            <Link>SignHashRequestDto.cs</Link>
-        </Compile>
-        <Compile Include="..\SigningServer.Server\Dtos\SignHashResponseDto.cs">
-            <Link>SignHashResponseDto.cs</Link>
-        </Compile>
-        <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateRequestDto.cs">
-            <Link>LoadCertificateRequestDto.cs</Link>
-        </Compile>
-        <Compile Include="..\SigningServer.Server\Dtos\LoadCertificateResponseDto.cs">
-            <Link>LoadCertificateResponseDto.cs</Link>
-        </Compile>
+        <ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
     </ItemGroup>
 </Project>

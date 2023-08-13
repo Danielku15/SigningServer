@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SigningServer.Server.Configuration;
+namespace SigningServer.Signing.Configuration;
 
 public class InvalidConfigurationException : Exception
 {

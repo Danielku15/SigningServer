@@ -1,5 +1,4 @@
 ﻿{
-  "SigningServer": "http://localhost:5000",
   "NLog": {
     "targets": {
       "console": {

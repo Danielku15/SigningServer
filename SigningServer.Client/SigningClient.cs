@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -16,7 +17,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SigningServer.ClientCore;
 using SigningServer.Core;
-using SigningServer.Server.Dtos;
+using SigningServer.Dtos;
 
 namespace SigningServer.Client;
 
@@ -67,7 +68,8 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
                 Username = Configuration.Username,
                 Password = Configuration.Password,
                 HashAlgorithm = Configuration.HashAlgorithm!,
-                Hash = Convert.ToBase64String(hashBytes)
+                Hash = Convert.ToBase64String(hashBytes),
+                PaddingMode = Configuration.RsaSignaturePaddingMode
             }, cancellationToken);
 
         var responseDto =
@@ -119,7 +121,8 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
     }
 
     protected override async IAsyncEnumerable<SignFilePartialResult> SignFileAsync(string file,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        CancellationToken fileCompletedToken)
     {
         var content = new MultipartFormDataContent(Guid.NewGuid().ToString("N"));
         if (!string.IsNullOrEmpty(Configuration.Username))
@@ -288,13 +291,16 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
 
     private async Task<string> ReadAsStringAsync(Stream sectionBody)
     {
-        using var ms = new MemoryStream();
-        await sectionBody.CopyToAsync(ms);
-        return Encoding.UTF8.GetString(ms.ToArray());
+        await using (sectionBody)
+        {
+            using var ms = new MemoryStream();
+            await sectionBody.CopyToAsync(ms);
+            return Encoding.UTF8.GetString(ms.ToArray());    
+        }
     }
 
 
-    public async Task ConnectAsync()
+    public override async Task InitializeAsync()
     {
         Logger.LogInformation("Connecting to signing server");
         ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities") ??

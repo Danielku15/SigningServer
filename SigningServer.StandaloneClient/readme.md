@@ -1,8 +1,10 @@
-# SigningServer Client
+# SigningServer Standalone Client
 
 This is a .net Tool for the client part of the Software [SigningServer](https://github.com/Danielku15/SigningServer)
 a service for centralizing code signing workloads in corporate environments. This client can reach out to a server counterpart
 to perform code signing operations on a range of supported file formats.
+
+This client can perform the main signing workflows locally and use a remote server only for certain cryptographic operations.
 
 You can read more about consuming .net Tools [here](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools).
 

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 
-namespace SigningServer.Server.Dtos;
+namespace SigningServer.Dtos;
 
 public class SignHashRequestDto
 {
@@ -19,6 +20,11 @@ public class SignHashRequestDto
     /// </summary>
     [Required]
     public string HashAlgorithm { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The padding algorithm to use for signing
+    /// </summary>
+    public RSASignaturePaddingMode? PaddingMode { get; set; }
 
     /// <summary>
     /// The base64 encoded raw hash bytes to sign.

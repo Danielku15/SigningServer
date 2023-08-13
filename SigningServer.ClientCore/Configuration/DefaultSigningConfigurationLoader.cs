@@ -4,18 +4,18 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SigningServer.ClientCore;
 
-namespace SigningServer.Client;
+namespace SigningServer.ClientCore.Configuration;
 
-internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
+public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigurationLoader<TConfiguration>
+    where TConfiguration : SigningClientConfigurationBase, new()
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<DefaultSigningConfigurationLoader> _logger;
+    private readonly ILogger<DefaultSigningConfigurationLoader<TConfiguration>> _logger;
     private readonly string[] _commandLineArgs;
 
     public DefaultSigningConfigurationLoader(IConfiguration configuration,
-        ILogger<DefaultSigningConfigurationLoader> logger,
+        ILogger<DefaultSigningConfigurationLoader<TConfiguration>> logger,
         string[] commandLineArgs)
     {
         _configuration = configuration;
@@ -23,7 +23,7 @@ internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
         _commandLineArgs = commandLineArgs;
     }
 
-    public async Task<SigningClientConfiguration?> LoadConfigurationAsync()
+    public async Task<TConfiguration?> LoadConfigurationAsync()
     {
         // 1. Load from files
         var configuration = await LoadConfigurationFromFileAsync();
@@ -34,7 +34,7 @@ internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
 
         // 2. Fill from IConfiguration
         _configuration.Bind(configuration);
-        
+
         // 3. Fill from Command Line
         if (!configuration.FillFromArgs(_commandLineArgs, _logger))
         {
@@ -45,9 +45,9 @@ internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
         return configuration;
     }
 
-    private async Task<SigningClientConfiguration?> LoadConfigurationFromFileAsync()
+    private async Task<TConfiguration?> LoadConfigurationFromFileAsync()
     {
-        var configuration = new SigningClientConfiguration();
+        var configuration = new TConfiguration();
 
         var defaultConfigFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
         if (File.Exists(defaultConfigFilePath))
@@ -56,7 +56,7 @@ internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
             {
                 _logger.LogTrace("Loading config.json");
                 configuration =
-                    JsonSerializer.Deserialize<SigningClientConfiguration>(
+                    JsonSerializer.Deserialize<TConfiguration>(
                         await File.ReadAllTextAsync(defaultConfigFilePath))!;
                 _logger.LogTrace("Configuration loaded from config.json");
                 return configuration;
@@ -85,7 +85,7 @@ internal class DefaultSigningConfigurationLoader : ISigningConfigurationLoader
                             {
                                 _logger.LogTrace("Loading config from {fileName}", args[i + 1]);
                                 configuration =
-                                    JsonSerializer.Deserialize<SigningClientConfiguration>(
+                                    JsonSerializer.Deserialize<TConfiguration>(
                                         await File.ReadAllTextAsync(args[i + 1]))!;
                                 _logger.LogTrace("Configuration loaded from {fileName}", args[i + 1]);
                             }

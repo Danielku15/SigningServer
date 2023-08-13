@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using SigningServer.Server.Configuration;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 

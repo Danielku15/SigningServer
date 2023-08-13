@@ -1,7 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(TargetFramework)-windows</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.7.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
+    <PackageReference Include="RSAKeyVaultProvider" Version="2.1.1" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
     <ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj" />
+    <ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
     <ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
     <ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj" />
   </ItemGroup>

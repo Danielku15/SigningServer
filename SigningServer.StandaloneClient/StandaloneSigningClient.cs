@@ -26,6 +26,10 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
         IHashSigningTool hashSigningTool, ISigningToolProvider signingToolProvider) : base(configuration,
         logger)
     {
+        if (string.IsNullOrEmpty(configuration.WorkingDirectory))
+        {
+            configuration.WorkingDirectory = Path.GetTempPath();
+        }
         _hashSigningTool = hashSigningTool;
         _signingToolProvider = signingToolProvider;
     }

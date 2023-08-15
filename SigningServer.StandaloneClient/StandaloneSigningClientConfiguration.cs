@@ -103,9 +103,9 @@ public class StandaloneSigningClientConfiguration : SigningClientConfigurationBa
 
     public override bool FillFromArgs(string[] args, ILogger log)
     {
-        Server.SigningServer = new SigningServerApiConfiguration();
-        Server.Azure = new AzureKeyVaultConfiguration();
-        Server.LocalStore = new LocalStoreCertificateConfiguration();
+        Server.SigningServer ??= new SigningServerApiConfiguration();
+        Server.Azure ??= new AzureKeyVaultConfiguration();
+        Server.LocalStore ??= new LocalStoreCertificateConfiguration();
 
         var result = base.FillFromArgs(args, log);
 

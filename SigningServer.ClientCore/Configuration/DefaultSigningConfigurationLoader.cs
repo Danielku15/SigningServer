@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -86,7 +87,14 @@ public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigu
                                 _logger.LogTrace("Loading config from {fileName}", args[i + 1]);
                                 configuration =
                                     JsonSerializer.Deserialize<TConfiguration>(
-                                        await File.ReadAllTextAsync(args[i + 1]))!;
+                                        await File.ReadAllTextAsync(args[i + 1]), new JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true,
+                                            Converters =
+                                            {
+                                                new JsonStringEnumConverter()
+                                            }
+                                        })!;
                                 _logger.LogTrace("Configuration loaded from {fileName}", args[i + 1]);
                             }
                             catch (Exception e)

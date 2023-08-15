@@ -281,6 +281,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                 var sw = new Stopwatch();
                 sw.Start();
 
+                Logger.LogInformation("Start signing file {fileName}", info.FullName);
                 var results = SignFileAsync(file, cancellationToken, fileCompletedSource.Token);
 
                 var status = SignFileResponseStatus.FileSigned;

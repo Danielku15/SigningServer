@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NLog.Web;
 using SigningServer.ClientCore;
 using SigningServer.ClientCore.Configuration;
@@ -22,6 +23,12 @@ internal static class Program
         }
 
         using var host = Host.CreateDefaultBuilder( /* No Args */)
+            .ConfigureLogging(log =>
+            {
+                log.SetMinimumLevel(LogLevel.Trace);
+                log.ClearProviders();
+                log.AddNLogWeb();
+            })
             .ConfigureAppConfiguration(config =>
             {
                 config.AddJsonFile("config.json", optional: true);

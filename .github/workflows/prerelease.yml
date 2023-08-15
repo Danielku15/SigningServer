@@ -36,5 +36,7 @@ jobs:
           name: SigningServer.Client.Tool
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg
-      - name: Publish NuGet  
+      - name: Publish NuGet (Client) 
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: Publish NuGet (Standalone Client)
+        run: dotnet nuget push SigningServer.StandaloneClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

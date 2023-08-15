@@ -1,7 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>$(TargetFramework)-windows</TargetFramework>
-  </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SigningServer.Tests" />
   </ItemGroup>

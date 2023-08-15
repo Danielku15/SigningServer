@@ -71,7 +71,14 @@ public class CertificateConfiguration
         }
         else if (LocalStore != null)
         {
-            LocalStore.Load(logger, this, unlocker);
+            if (OperatingSystem.IsWindows())
+            {
+                LocalStore.Load(logger, this, unlocker);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Local Store certificates can only be used on Windows");
+            }
         }
         else if (SigningServer != null)
         {
@@ -116,7 +123,7 @@ public class CertificateConfiguration
         {
             await configuration.LoadCertificateAsync(logger, unlocker);
         }
-        else if(Certificate != null && PrivateKey != null)
+        else if(Certificate != null && PrivateKey != null && OperatingSystem.IsWindows())
         {
             // NOTE: This path is mainly needed for testing and rather not in production.
             configuration.Certificate = new X509Certificate2(Certificate);

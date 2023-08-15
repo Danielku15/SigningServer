@@ -6,7 +6,6 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>signingserver-standalone-client</ToolCommandName>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
-    <TargetFramework>$(TargetFramework)-windows</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <None Include="config.json">

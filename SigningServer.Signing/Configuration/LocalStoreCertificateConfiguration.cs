@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -38,6 +39,7 @@ public class LocalStoreCertificateConfiguration
     /// </remarks>
     public string? TokenPin { get; set; }
 
+    [SupportedOSPlatform("windows")]
     public void Load(ILogger logger, CertificateConfiguration certificateConfiguration,
         IHardwareCertificateUnlocker? unlocker)
     {
@@ -122,7 +124,8 @@ public class LocalStoreCertificateConfiguration
         }
     }
 
-    public static RSACryptoServiceProvider PatchHashSupport(ILogger logger, RSACryptoServiceProvider orgKey)
+    [SupportedOSPlatform("windows")]
+    private static RSACryptoServiceProvider PatchHashSupport(ILogger logger, RSACryptoServiceProvider orgKey)
     {
         var newKey = orgKey;
         try

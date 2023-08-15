@@ -29,6 +29,10 @@ jobs:
         id: pack_client      
         run: |
             & Compress-Archive -Path .\dist\Release\SigningServer.Client -DestinationPath dist\Release\SigningServer.Client.zip
+      - name: Package StandaloneClient
+        id: pack_client      
+        run: |
+            & Compress-Archive -Path .\dist\Release\SigningServer.StandaloneClient -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -42,6 +46,10 @@ jobs:
           files: |
             dist\Release\SigningServer.Server.zip
             dist\Release\SigningServer.Client.zip
+            dist\Release\SigningServer.StandaloneClient.zip
             SigningServer.Client\bin\Release\*.nupkg
-      - name: Publish NuGet  
+            SigningServer.StandaloneClient\bin\Release\*.nupkg
+      - name: Publish NuGet (Client)
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: Publish NuGet (Standalone)
+        run: dotnet nuget push SigningServer.StandaloneClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

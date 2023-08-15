@@ -22,7 +22,7 @@ namespace SigningServer.Android
 
     public class AndroidApkSigningTool : ISigningTool
     {
-        private static readonly Version Version = typeof(AndroidApkSigningTool).Assembly.GetName().Version;
+        private static readonly Version Version = typeof(AndroidApkSigningTool).Assembly.GetName().Version!;
         public static readonly string CreatedBy = Version.ToString(3) + " (SigningServer)";
 
         private static readonly HashSet<string> ApkSupportedExtension =
@@ -44,7 +44,6 @@ namespace SigningServer.Android
         public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
             CancellationToken cancellationToken)
         {
-            var signFileResponse = new SignFileResponse();
             var successResult = SignFileResponseStatus.FileSigned;
 
             if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -55,20 +54,22 @@ namespace SigningServer.Android
                 }
                 else
                 {
-                    signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                    return signFileResponse;
+                    return SignFileResponse.FileAlreadySignedError;
                 }
             }
+
+            var certificate = await signFileRequest.Certificate.Value;
+            var privateKey = await signFileRequest.PrivateKey.Value;
 
             var outputFileName = signFileRequest.InputFilePath + ".signed";
             var outputSignatureFileName = signFileRequest.InputFilePath + ".idsig";
             try
             {
-                var name = signFileRequest.Certificate.Value.FriendlyName;
+                var name = certificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
-                    name = signFileRequest.Certificate.Value.SubjectName.Name;
-                    if (name?.StartsWith("CN=", StringComparison.OrdinalIgnoreCase) == true)
+                    name = certificate.SubjectName.Name;
+                    if (name.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
                     {
                         name = name.Substring("CN=".Length);
                     }
@@ -82,10 +83,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        DotNetCryptographyProvider.Instance.CreatePrivateKey(signFileRequest.PrivateKey.Value),
+                        DotNetCryptographyProvider.Instance.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            DotNetCryptographyProvider.Instance.CreateCertificate(signFileRequest.Certificate.Value)
+                            DotNetCryptographyProvider.Instance.CreateCertificate(certificate)
                         }, false)
                 };
 
@@ -107,19 +108,18 @@ namespace SigningServer.Android
                 var apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();
 
-                signFileResponse.Status = successResult;
-                signFileResponse.ResultFiles = new List<SignFileResponseFileInfo>
+                var resultFiles = new List<SignFileResponseFileInfo>
                 {
                     new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName),
                 };
                 if (File.Exists(outputSignatureFileName))
                 {
-                    signFileResponse.ResultFiles.Add(
+                    resultFiles.Add(
                         new SignFileResponseFileInfo(signFileRequest.OriginalFileName + ".idsig",
                             outputSignatureFileName));
                 }
 
-                return signFileResponse;
+                return new SignFileResponse(successResult, string.Empty, resultFiles);
             }
             catch
             {

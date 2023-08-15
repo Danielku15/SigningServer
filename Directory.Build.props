@@ -3,12 +3,13 @@
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <Nullable>enable</Nullable>
 
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
 
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <BuildNumber Condition=" '$(BuildNumber)' == '' ">0</BuildNumber>
-    <VersionPrefix>2.0.1</VersionPrefix>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <FileVersion>$(VersionPrefix).$(BuildNumber)</FileVersion>
     <Company>Daniel Kuschny</Company>
     <Copyright>Copyright © 2023 Daniel Kuschny</Copyright>

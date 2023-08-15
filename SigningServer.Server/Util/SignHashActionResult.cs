@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SigningServer.Core;
+using SigningServer.Dtos;
 
 namespace SigningServer.Server.Util;
 
@@ -16,7 +17,7 @@ namespace SigningServer.Server.Util;
 /// </summary>
 public class SignHashActionResult : ObjectResult
 {
-    public SignHashActionResult(Dtos.SignHashResponseDto responseDto) : base(responseDto)
+    public SignHashActionResult(SignHashResponseDto responseDto) : base(responseDto)
     {
         StatusCode = responseDto.Status switch
         {

@@ -3,9 +3,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 
@@ -55,12 +57,12 @@ public class PooledCertificateProvider : ICertificateProvider
 
         public int Size => _pooledItems.Count;
 
-        private CertificateConfiguration Create()
+        private ValueTask<CertificateConfiguration> CreateAsync()
         {
             _logger.LogInformation($"Creating a new certificate instance for signing: {_baseConfiguration}");
             try
             {
-                return _baseConfiguration.CloneForSigning(_certConfigLogger, _hardwareCertificateUnlocker);
+                return _baseConfiguration.CloneForSigningAsync(_certConfigLogger, _hardwareCertificateUnlocker);
             }
             catch (Exception e)
             {
@@ -74,20 +76,20 @@ public class PooledCertificateProvider : ICertificateProvider
             _pooledItems.Enqueue(obj);
         }
 
-        public CertificateConfiguration Get()
+        public ValueTask<CertificateConfiguration> GetAsync()
         {
             if (_pooledItems.TryDequeue(out var fromPool))
             {
-                return fromPool;
+                return ValueTask.FromResult(fromPool);
             }
 
-            return Create();
+            return CreateAsync();
         }
     }
 
-    public Lazy<CertificateConfiguration> Get(string username, string password)
+    public Lazy<ValueTask<CertificateConfiguration>>? Get(string? username, string? password)
     {
-        CertificateConfiguration baseConfiguration;
+        CertificateConfiguration? baseConfiguration;
         if (string.IsNullOrWhiteSpace(username))
         {
             baseConfiguration = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
@@ -108,7 +110,7 @@ public class PooledCertificateProvider : ICertificateProvider
             _ => new CertificatePool(_logger, baseConfiguration, _certConfigLogger, _hardwareCertificateUnlocker)
         );
 
-        return new Lazy<CertificateConfiguration>(() => GetWorkingFromPool(pool));
+        return new Lazy<ValueTask<CertificateConfiguration>>(() => GetWorkingFromPoolAsync(pool));
     }
 
     private static readonly byte[] SignTestSha2Hash = ((Func<byte[]>)(() =>
@@ -119,17 +121,17 @@ public class PooledCertificateProvider : ICertificateProvider
 
     private bool _hasNoWorkingCertificates;
 
-    private CertificateConfiguration GetWorkingFromPool(CertificatePool pool)
+    private async ValueTask<CertificateConfiguration> GetWorkingFromPoolAsync(CertificatePool pool)
     {
         var poolSize = pool.Size;
-        var cert = pool.Get();
+        var cert = await pool.GetAsync();
 
         // For some reason certain smartcard/HSM certificates can get broken over time and will
         // start reporting "Internal Errors" without further info what's happening. 
         // Due to that we do a preliminary check of the certificate here and drop any broken ones
 
         var certFunctional = false;
-        Exception lastException = null;
+        Exception? lastException = null;
         for (var retry = 0; retry < poolSize + 1; retry++)
         {
             try
@@ -156,7 +158,7 @@ public class PooledCertificateProvider : ICertificateProvider
                 lastException = e;
                 // private key not functional, try next cett
                 Destroy(cert);
-                cert = pool.Get();
+                cert = await pool.GetAsync();
                 certFunctional = false;
             }
         }
@@ -178,7 +180,7 @@ public class PooledCertificateProvider : ICertificateProvider
         return cert;
     }
 
-    public void Return(string username, Lazy<CertificateConfiguration> certificateConfiguration)
+    public async ValueTask ReturnAsync(string? username, Lazy<ValueTask<CertificateConfiguration>> certificateConfiguration)
     {
         if (certificateConfiguration is not { IsValueCreated: true })
         {
@@ -190,24 +192,24 @@ public class PooledCertificateProvider : ICertificateProvider
             username = string.Empty;
         }
 
-        _certificatePools[username].Return(certificateConfiguration.Value);
+        _certificatePools[username].Return(await certificateConfiguration.Value);
     }
 
-    public void Destroy(Lazy<CertificateConfiguration> certificateConfiguration)
+    public async ValueTask DestroyAsync(Lazy<ValueTask<CertificateConfiguration>>? certificateConfiguration)
     {
         if (certificateConfiguration is not { IsValueCreated: true })
         {
             return;
         }
 
-        Destroy(certificateConfiguration.Value);
+        Destroy(await certificateConfiguration.Value);
     }
 
     private void Destroy(CertificateConfiguration certificateConfiguration)
     {
         try
         {
-            certificateConfiguration.Certificate.Dispose();
+            certificateConfiguration.Certificate?.Dispose();
         }
         catch (Exception e)
         {
@@ -216,7 +218,7 @@ public class PooledCertificateProvider : ICertificateProvider
 
         try
         {
-            certificateConfiguration.PrivateKey.Dispose();
+            certificateConfiguration.PrivateKey?.Dispose();
         }
         catch (Exception e)
         {

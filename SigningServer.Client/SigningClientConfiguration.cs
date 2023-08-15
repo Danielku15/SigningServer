@@ -1,89 +1,92 @@
-﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using SigningServer.Core;
+﻿using System.IO;
+using Microsoft.Extensions.Logging;
+using SigningServer.ClientCore;
 
 namespace SigningServer.Client;
 
 /// <summary>
 /// Represents the signing client configuration.
 /// </summary>
-public class SigningClientConfiguration
+public class SigningClientConfiguration : SigningClientConfigurationBase
 {
     /// <summary>
     /// The url to the signing server.
     /// </summary>
-    public string SigningServer { get; set; }
+    public string SigningServer { get; set; } = string.Empty;
 
     /// <summary>
     /// The username for authentication and cerificate selection.
     /// </summary>
-    public string Username { get; set; }
+    public string Username { get; set; } = string.Empty;
 
     /// <summary>
     /// The password for authentication and certificate selection.
     /// </summary>
-    public string Password { get; set; }
+    public string Password { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Whether to overwrite existing signatures or fail when signatures are present.
-    /// </summary>
-    public bool OverwriteSignatures { get; set; }
+    public new static void PrintUsage(TextWriter writer)
+    {
+        writer.WriteLine("  --server Server, -s Server");
+        writer.WriteLine("      The URL to the Signing Server to use");
+        writer.WriteLine("      Config.json Key: \"SigningServer\": \"value\"");
 
-    /// <summary>
-    /// Whether to ignore any existing signatures and not sign in this case.
-    /// </summary>
-    public bool IgnoreExistingSignatures { get; set; } = true;
+        writer.WriteLine("  --username [username], -u [username]");
+        writer.WriteLine("      The username to use for authentication and certificate selection on the server");
+        writer.WriteLine("      Config.json Key: \"Username\": \"value\"");
 
-    /// <summary>
-    /// Whether to ignore unsupported file formats or whether to fail when encountering them. 
-    /// </summary>
-    public bool IgnoreUnsupportedFiles { get; set; } = true;
+        writer.WriteLine("  --password [password], -p [password]");
+        writer.WriteLine("      The password to use for authentication and certificate selection on the server");
+        writer.WriteLine("      Config.json Key: \"Password\": \"value\"");
 
-    /// <summary>
-    /// The timeout of signing operations in seconds.
-    /// </summary>
-    public int Timeout { get; set; } = 60;
+        SigningClientConfigurationBase.PrintUsage(writer);
+    }
 
-    /// <summary>
-    /// The hash algorithm to use.
-    /// </summary>
-    public string HashAlgorithm { get; set; }
+    protected override bool HandleArg(ILogger log, string arg, string[] args, ref int i)
+    {
+        switch (arg)
+        {
+            case "-s":
+            case "--server":
+                if (i + 1 < args.Length)
+                {
+                    i++;
+                    SigningServer = args[i];
+                }
+                else
+                {
+                    log.LogError("Config could not be loaded: No server value provided");
+                    return false;
+                }
 
-    /// <summary>
-    /// The number of retries the client should perform before giving up failed sign operations.
-    /// </summary>
-    public int Retry { get; set; } = 3;
+                return true;
+            case "-u":
+            case "--username":
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                {
+                    i++;
+                    Username = args[i];
+                }
+                else
+                {
+                    Username = "";
+                }
 
-    /// <summary>
-    /// The number of parallel signing operations to perform.
-    /// </summary>
-    public int? Parallel { get; set; } = 1;
+                return true;
+            case "-p":
+            case "--password":
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                {
+                    i++;
+                    Password = args[i];
+                }
+                else
+                {
+                    Password = "";
+                }
 
-    /// <summary>
-    /// If this extension is set, the files will be hashed locally and the hash is sent to the server
-    /// for signing. The hash will be written raw-byte encoded to a file with this file extension (at the input file location).
-    /// </summary>
-    public string SignHashFileExtension { get; set; } = null;
+                return true;
+        }
 
-    /// <summary>
-    /// The sources (files and directories) to sign.
-    /// </summary>
-    [JsonIgnore]
-    public IList<string> Sources { get; set; } = new List<string>();
-
-    /// <summary>
-    /// If a certificate download should be performed, the path to write it to.
-    /// </summary>
-    public string LoadCertificatePath { get; set; }
-
-    /// <summary>
-    /// If a certificate download should be performed, whether to load the whole chain instead of only the cert used
-    /// for signing.
-    /// </summary>
-    public bool LoadCertificateChain { get; set; }
-
-    /// <summary>
-    /// If a certificate download should be performed, the format to download.
-    /// </summary>
-    public LoadCertificateFormat? LoadCertificateExportFormat { get; set; }
+        return base.HandleArg(log, arg, args, ref i);
+    }
 }

@@ -37,9 +37,9 @@ namespace SigningServer.Android
             return JarSupportedExtension.Contains(Path.GetExtension(fileName));
         }
 
-        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest, CancellationToken cancellationToken)
+        public async ValueTask<SignFileResponse> SignFileAsync(SignFileRequest signFileRequest,
+            CancellationToken cancellationToken)
         {
-            var signFileResponse = new SignFileResponse();
             var successResult = SignFileResponseStatus.FileSigned;
 
             if (await IsFileSignedAsync(signFileRequest.InputFilePath, cancellationToken))
@@ -50,19 +50,20 @@ namespace SigningServer.Android
                 }
                 else
                 {
-                    signFileResponse.Status = SignFileResponseStatus.FileAlreadySigned;
-                    return signFileResponse;
+                    return SignFileResponse.FileAlreadySignedError;
                 }
             }
 
             var outputFileName = signFileRequest.InputFilePath + ".signed";
+            var cerificate = await signFileRequest.Certificate.Value;
+            var privateKey = await signFileRequest.PrivateKey.Value;
             try
             {
-                var name = signFileRequest.Certificate.Value.FriendlyName;
+                var name = cerificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
-                    name = signFileRequest.Certificate.Value.SubjectName.Name;
-                    if (name?.StartsWith("CN=", StringComparison.OrdinalIgnoreCase) == true)
+                    name = cerificate.SubjectName.Name;
+                    if (name.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
                     {
                         name = name.Substring("CN=".Length);
                     }
@@ -76,10 +77,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        DotNetCryptographyProvider.Instance.CreatePrivateKey(signFileRequest.PrivateKey.Value),
+                        DotNetCryptographyProvider.Instance.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            DotNetCryptographyProvider.Instance.CreateCertificate(signFileRequest.Certificate.Value)
+                            DotNetCryptographyProvider.Instance.CreateCertificate(cerificate)
                         }, false)
                 };
 
@@ -90,12 +91,8 @@ namespace SigningServer.Android
                 var apkSigner = apkSignerBuilder.Build();
                 apkSigner.Sign();
 
-                signFileResponse.Status = successResult;
-                signFileResponse.ResultFiles = new List<SignFileResponseFileInfo>
-                {
-                    new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName),
-                };
-                return signFileResponse;
+                return new SignFileResponse(successResult, string.Empty,
+                    new[] { new SignFileResponseFileInfo(signFileRequest.OriginalFileName, outputFileName), });
             }
             catch
             {

@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>SigningServer Contracts</Title>
+		<Description>This library contains the common interfaces for server and client implementations of the signing server.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
+	</ItemGroup>
+</Project>

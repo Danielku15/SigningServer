@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SigningServer.Server.Configuration;
+using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server.Util;
 
@@ -14,11 +15,11 @@ namespace SigningServer.Server.Util;
 /// or were locked again, causing the signing to fail. Reloading the certificate
 /// seems to resolve this issue.
 /// </summary>
-public sealed class HardwareCertificateUnlocker : IHostedService
+public sealed class HardwareCertificateUnlocker : IHostedService, IHardwareCertificateUnlocker
 {
     private readonly ILogger<HardwareCertificateUnlocker> _logger;
     private readonly ILogger<CertificateConfiguration> _certConfigLogger;
-    private Timer _refreshTimer;
+    private Timer? _refreshTimer;
     private readonly ConcurrentBag<CertificateConfiguration> _certificatesToRefresh;
     private readonly TimeSpan _refreshTime;
 
@@ -45,14 +46,14 @@ public sealed class HardwareCertificateUnlocker : IHostedService
         return Task.CompletedTask;
     }
 
-    private void UnlockAllTokens(object state)
+    private void UnlockAllTokens(object? state)
     {
         foreach (var configuration in _certificatesToRefresh)
         {
             try
             {
                 // null here on purpose so that the config does not register itself multiple times. 
-                configuration.LoadCertificate(_certConfigLogger, null);
+                configuration.LoadCertificateAsync(_certConfigLogger, null).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {

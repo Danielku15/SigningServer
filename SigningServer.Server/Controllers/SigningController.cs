@@ -5,16 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
+using SigningServer.Dtos;
 using SigningServer.Server.Configuration;
-using SigningServer.Server.Dtos;
-using SigningServer.Server.SigningTool;
 using SigningServer.Server.Util;
+using SigningServer.Signing;
+using SigningServer.Signing.Configuration;
+using SignFileRequestDto = SigningServer.Server.Dtos.SignFileRequestDto;
+using SignFileResponseDto = SigningServer.Server.Dtos.SignFileResponseDto;
 
 namespace SigningServer.Server.Controllers;
 
@@ -54,16 +57,14 @@ public class SigningController : Controller
     {
         var remoteIp = RemoteIp;
         _logger.LogTrace($"[{remoteIp}] Requesting supported file extensions");
-        return Ok(new ServerCapabilitiesResponse
-        {
-            MaxDegreeOfParallelismPerClient = _configuration.MaxDegreeOfParallelismPerClient,
-            SupportedFormats = _signingToolProvider.AllTools.Select(tool => new ServerSupportedFormat
-            {
-                Name = tool.FormatName,
-                SupportedFileExtensions = tool.SupportedFileExtensions,
-                SupportedHashAlgorithms = tool.SupportedHashAlgorithms,
-            }).ToList()
-        });
+        return Ok(new ServerCapabilitiesResponse(
+            _configuration.MaxDegreeOfParallelismPerClient,
+            _signingToolProvider.AllTools.Select(tool => new ServerSupportedFormat(
+                tool.FormatName,
+                tool.SupportedFileExtensions,
+                tool.SupportedHashAlgorithms
+            )).ToList()
+        ));
     }
 
     /// <summary>
@@ -78,10 +79,10 @@ public class SigningController : Controller
         CancellationToken cancellationToken)
     {
         var apiSignFileResponse = new SignFileResponseDto();
-        SignFileResponse coreSignFileResponse = null;
+        SignFileResponse? coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
-        Lazy<CertificateConfiguration> certificate = null;
+        Lazy<ValueTask<CertificateConfiguration>>? certificate = null;
         try
         {
             var stopwatch = Stopwatch.StartNew();
@@ -112,14 +113,14 @@ public class SigningController : Controller
             if (signingTool == null)
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnsupportedFormat;
-                _certificateProvider.Return(signFileRequest.Username, certificate);
+                await _certificateProvider.ReturnAsync(signFileRequest.Username, certificate);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
-            
+
             stopwatch.Stop();
             var preparationTime = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
-            
+
             //
             // upload file to working directory
             inputFileName = signFileRequest.FileToSign.FileName;
@@ -174,19 +175,19 @@ public class SigningController : Controller
                 : _configuration.TimestampServer;
 
             coreSignFileResponse = await signingTool.SignFileAsync(
-                new SignFileRequest
-                {
-                    InputFilePath = inputFileName,
-                    OriginalFileName = signFileRequest.FileToSign.FileName,
-                    HashAlgorithm = signFileRequest.HashAlgorithm,
-                    Certificate = new Lazy<X509Certificate2>(() => certificate.Value.Certificate),
-                    PrivateKey = new Lazy<AsymmetricAlgorithm>(()=> certificate.Value.PrivateKey),
-                    TimestampServer = timestampServer
-                }, cancellationToken);
+                new SignFileRequest(
+                    inputFileName,
+                    new Lazy<ValueTask<X509Certificate2>>(async () => (await certificate.Value).Certificate!),
+                    new Lazy<ValueTask<AsymmetricAlgorithm>>(async () => (await certificate.Value).PrivateKey!),
+                    signFileRequest.FileToSign.FileName,
+                    timestampServer,
+                    signFileRequest.HashAlgorithm,
+                    signFileRequest.OverwriteSignature
+                ), cancellationToken);
 
 
             // only return when signed
-            _certificateProvider.Return(signFileRequest.Username, certificate);
+            await _certificateProvider.ReturnAsync(signFileRequest.Username, certificate);
 
             // register for deletion of output file
             if (coreSignFileResponse.ResultFiles is { Count: > 0 })
@@ -225,7 +226,7 @@ public class SigningController : Controller
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
 
             _logger.LogError(e,
                 $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
@@ -243,9 +244,8 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("signhash")]
     [Produces("application/json", Type = typeof(SignHashResponseDto))]
-    public SignHashActionResult SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
+    public async Task<SignHashActionResult> SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
     {
-        var apiSignHashResponse = new SignHashResponseDto();
         var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
         try
@@ -261,18 +261,24 @@ public class SigningController : Controller
             }
             catch
             {
-                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
-                apiSignHashResponse.ErrorMessage = "No base64 encoded bytes were received";
-                return new SignHashActionResult(apiSignHashResponse);
+                return new SignHashActionResult(new SignHashResponseDto(
+                    SignHashResponseStatus.HashNotSignedError,
+                    0,
+                    "No base64 encoded bytes were received",
+                    string.Empty
+                ));
             }
 
             //
             // find certificate
             if (certificate == null)
             {
-                _logger.LogWarning("Unauthorized signing request");
-                apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedUnauthorized;
-                return new SignHashActionResult(apiSignHashResponse);
+                return new SignHashActionResult(new SignHashResponseDto(
+                    SignHashResponseStatus.HashNotSignedUnauthorized,
+                    0,
+                    "Unauthorized signing request",
+                    string.Empty
+                ));
             }
 
             var stopwatch = Stopwatch.StartNew();
@@ -280,35 +286,118 @@ public class SigningController : Controller
 
             //
             // sign hash
-            var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest
-            {
-                InputHash = hashBytes,
-                HashAlgorithm = signHashRequestDto.HashAlgorithm,
-                Certificate = certificate.Value.Certificate,
-                PrivateKey = certificate.Value.PrivateKey
-            });
+            var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest(
+                hashBytes,
+                (await certificate.Value).Certificate!,
+                (await certificate.Value).PrivateKey!,
+                signHashRequestDto.HashAlgorithm,
+                signHashRequestDto.PaddingMode
+            ));
 
             stopwatch.Stop();
-            apiSignHashResponse.Status = coreSignFileResponse.Status;
-            apiSignHashResponse.ErrorMessage = coreSignFileResponse.ErrorMessage;
-            apiSignHashResponse.Signature = Convert.ToBase64String(coreSignFileResponse.Signature);
-            apiSignHashResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
+            var result = new SignHashActionResult(new SignHashResponseDto(
+                coreSignFileResponse.Status,
+                stopwatch.ElapsedMilliseconds,
+                coreSignFileResponse.ErrorMessage,
+                Convert.ToBase64String(coreSignFileResponse.Signature)
+            ));
 
             // only return when signed
-            _certificateProvider.Return(signHashRequestDto.Username, certificate);
+            await _certificateProvider.ReturnAsync(signHashRequestDto.Username, certificate);
 
             _logger.LogInformation(
-                $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {apiSignHashResponse.SignTimeInMilliseconds})");
+                $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {stopwatch.ElapsedMilliseconds})");
+
+            return result;
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
-            apiSignHashResponse.Status = SignHashResponseStatus.HashNotSignedError;
-            apiSignHashResponse.ErrorMessage = e.Message;
+            return new SignHashActionResult(new SignHashResponseDto(
+                SignHashResponseStatus.HashNotSignedError,
+                0,
+                e.Message,
+                string.Empty
+            ));
         }
+    }
 
-        return new SignHashActionResult(apiSignHashResponse);
+    /// <summary>
+    /// Decrypts the given data assuming an RSA encryption
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost("decryptrsa")]
+    [Produces("application/json", Type = typeof(DecryptRsaResponseDto))]
+    public async Task<IActionResult> DecryptRsa([FromBody, Required] DecryptRsaRequestDto request)
+    {
+        var remoteIp = RemoteIp;
+        var certificate = _certificateProvider.Get(request.Username, request.Password);
+        ObjectResult result;
+        try
+        {
+            //
+            // validate input
+            _logger.LogInformation(
+                $"[{remoteIp}] [Begin] New decrypt of RSA data '{request.Data.Length}'");
+            byte[] dataBytes;
+            try
+            {
+                dataBytes = Convert.FromBase64String(request.Data);
+            }
+            catch
+            {
+                return new ObjectResult(new DecryptRsaResponseDto("No base64 encoded bytes were received", null))
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+            }
+
+            //
+            // find certificate
+            if (certificate == null)
+            {
+                return new ObjectResult(new DecryptRsaResponseDto("Unauthorized signing request", null))
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized
+                };
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            stopwatch.Restart();
+
+            var certificateValue = await certificate.Value;
+            if (certificateValue.PrivateKey is RSA rsa)
+            {
+                var decrypted = rsa.Decrypt(dataBytes, request.ToPadding());
+                result = new ObjectResult(new DecryptRsaResponseDto(null, Convert.ToBase64String(decrypted)));
+            }
+            else
+            {
+                return new ObjectResult(new DecryptRsaResponseDto("Certificate is not RSA", null))
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+            }
+
+            // only return when signed
+            await _certificateProvider.ReturnAsync(request.Username, certificate);
+
+            _logger.LogInformation(
+                $"[{remoteIp}] [Finished] request for RSA decrypt '{request.Data.Length}' finished, signed in {stopwatch.ElapsedMilliseconds})");
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            await _certificateProvider.DestroyAsync(certificate);
+            _logger.LogError(e, $"[{remoteIp}] Signing of '{request.Data}' failed: {e.Message}");
+            return new ObjectResult(new DecryptRsaResponseDto("Signing failed: " + e.Message, null))
+            {
+                StatusCode = StatusCodes.Status500InternalServerError
+            };
+        }
     }
 
     /// <summary>
@@ -318,113 +407,78 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("loadcertificate")]
     [Produces("application/json", Type = typeof(LoadCertificateActionResult))]
-    public LoadCertificateActionResult LoadCertificate(
+    public async Task<LoadCertificateActionResult> LoadCertificate(
         [FromBody, Required] LoadCertificateRequestDto loadCertificateRequestDto)
     {
-        var apiLoadReponse = new LoadCertificateResponseDto();
         var remoteIp = RemoteIp;
         var certificate =
             _certificateProvider.Get(loadCertificateRequestDto.Username, loadCertificateRequestDto.Password);
         try
         {
-            if (loadCertificateRequestDto.IncludeChain)
+            if (certificate == null)
             {
-                using var ch = new X509Chain();
-                ch.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                ch.Build(certificate.Value.Certificate);
+                _logger.LogWarning("Unauthorized certificate load request");
+                return new LoadCertificateActionResult(
+                    new LoadCertificateResponseDto(LoadCertificateResponseStatus.CertificateNotLoadedUnauthorized, null,
+                        null));
+            }
 
-                var collection = new X509Certificate2Collection(ch.ChainElements
-                    .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
-                try
+            try
+            {
+                var certificateValue = await certificate.Value;
+                if (loadCertificateRequestDto.IncludeChain)
                 {
-                    var exported = Export(collection, loadCertificateRequestDto.ExportFormat);
-                    apiLoadReponse = new LoadCertificateResponseDto
+                    using var ch = new X509Chain();
+                    ch.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                    ch.Build(certificateValue.Certificate!);
+
+                    var collection = new X509Certificate2Collection(ch.ChainElements
+                        .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
+                    try
                     {
-                        Status = LoadCertificateResponseStatus.CertificateLoaded,
-                        ErrorMessage = string.Empty,
-                        CertificateData = Convert.ToBase64String(exported)
-                    };
-                }
-                finally
-                {
-                    foreach (var cert in collection)
+                        var exported =
+                            LoadCertificateResponseDto.Export(collection, loadCertificateRequestDto.ExportFormat);
+                        return new LoadCertificateActionResult(new LoadCertificateResponseDto(
+                            LoadCertificateResponseStatus.CertificateLoaded,
+                            null,
+                            Convert.ToBase64String(exported)
+                        ));
+                    }
+                    finally
                     {
-                        cert.Dispose();
+                        foreach (var cert in collection)
+                        {
+                            cert.Dispose();
+                        }
                     }
                 }
-            }
-            else
-            {
-                using var copyWithoutPrivateKey = new X509Certificate2(certificate.Value.Certificate.RawData);
-                var exported = Export(copyWithoutPrivateKey, loadCertificateRequestDto.ExportFormat)!;
-                apiLoadReponse = new LoadCertificateResponseDto
+                else
                 {
-                    Status = LoadCertificateResponseStatus.CertificateLoaded,
-                    ErrorMessage = string.Empty,
-                    CertificateData = Convert.ToBase64String(exported)
-                };
+                    using var copyWithoutPrivateKey = new X509Certificate2(certificateValue.Certificate!.RawData);
+                    var exported = LoadCertificateResponseDto.Export(copyWithoutPrivateKey,
+                        loadCertificateRequestDto.ExportFormat);
+                    return new LoadCertificateActionResult(new LoadCertificateResponseDto(
+                        LoadCertificateResponseStatus.CertificateLoaded,
+                        null,
+                        Convert.ToBase64String(exported)
+                    ));
+                }
             }
-
-            // only return when signed
-            _certificateProvider.Return(loadCertificateRequestDto.Username, certificate);
+            finally
+            {
+                // only return when signed
+                await _certificateProvider.ReturnAsync(loadCertificateRequestDto.Username, certificate);
+            }
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Loading of certificate failed: {e.Message}");
-            apiLoadReponse.Status = LoadCertificateResponseStatus.CertificateNotLoadedError;
-            apiLoadReponse.ErrorMessage = e.Message;
-        }
-
-        return new LoadCertificateActionResult(apiLoadReponse);
-    }
-
-    private byte[] Export(X509Certificate2Collection collection, LoadCertificateFormat exportFormat)
-    {
-        switch (exportFormat)
-        {
-            case LoadCertificateFormat.PemCertificate:
-            case LoadCertificateFormat.PemPublicKey:
-                {
-                    using var ms = new MemoryStream();
-
-                    for (var i = 0; i < collection.Count; i++)
-                    {
-                        if (i > 0)
-                        {
-                            ms.WriteByte((byte)'\n');
-                        }
-
-                        var cert = collection[i];
-                        ms.Write(Export(cert, exportFormat));
-                    }
-
-                    return ms.ToArray();
-                }
-            case LoadCertificateFormat.Pkcs12:
-                return collection.Export(X509ContentType.Pkcs12)!;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(exportFormat), exportFormat, null);
-        }
-    }
-
-    private byte[] Export(X509Certificate2 certificate, LoadCertificateFormat exportFormat)
-    {
-        switch (exportFormat)
-        {
-            case LoadCertificateFormat.PemCertificate:
-                var certificatePem = PemEncoding.Write("CERTIFICATE", certificate.RawData);
-                return Encoding.ASCII.GetBytes(certificatePem);
-            case LoadCertificateFormat.PemPublicKey:
-                var key = (AsymmetricAlgorithm)certificate.GetRSAPublicKey() ??
-                          (AsymmetricAlgorithm)certificate.GetDSAPublicKey() ??
-                          certificate.GetECDsaPublicKey();
-                var publicKeyPem = PemEncoding.Write("PUBLIC KEY", key!.ExportSubjectPublicKeyInfo());
-                return Encoding.ASCII.GetBytes(publicKeyPem);
-            case LoadCertificateFormat.Pkcs12:
-                return certificate.Export(X509ContentType.Pkcs12)!;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(exportFormat), exportFormat, null);
+            return new LoadCertificateActionResult(new LoadCertificateResponseDto(
+                LoadCertificateResponseStatus.CertificateNotLoadedError,
+                e.Message,
+                null
+            ));
         }
     }
 

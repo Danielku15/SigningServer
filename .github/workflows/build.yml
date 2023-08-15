@@ -33,6 +33,12 @@ jobs:
           name: SigningServer.Client ${{ matrix.configuration }}
           path: |
             Dist/${{ matrix.configuration }}/SigningServer.Client/**/*.*
+      - name: Archive StandaloneClient Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: SigningServer.StandaloneClient ${{ matrix.configuration }}
+          path: |
+            Dist/${{ matrix.configuration }}/SigningServer.StandaloneClient/**/*.*
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v2
         with:

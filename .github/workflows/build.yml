@@ -39,3 +39,9 @@ jobs:
           name: SigningServer.Client.Tool ${{ matrix.configuration }}
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg
+      - name: Archive StandaloneClient .net Tool
+        uses: actions/upload-artifact@v2
+        with:
+          name: SigningServer.StandaloneClient.Tool ${{ matrix.configuration }}
+          path: |
+            SigningServer.StandaloneClient/bin/${{ matrix.configuration }}/*.nupkg

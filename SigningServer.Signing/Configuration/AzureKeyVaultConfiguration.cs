@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
@@ -44,7 +45,7 @@ public class AzureKeyVaultConfiguration
     /// </summary>
     public bool ManagedIdentity { get; set; }
 
-    public void Load(ILogger logger, CertificateConfiguration certificateConfiguration)
+    public async Task LoadAsync(ILogger logger, CertificateConfiguration certificateConfiguration)
     {
         logger.LogInformation("Loading Certificate from azure");
         var credentials = ManagedIdentity
@@ -52,7 +53,7 @@ public class AzureKeyVaultConfiguration
             : new ClientSecretCredential(TenantId, ClientId, ClientSecret);
 
         var client = new CertificateClient(new Uri(KeyVaultUrl), credentials);
-        var azureCertificate = client.GetCertificate(CertificateName).Value;
+        var azureCertificate = (await client.GetCertificateAsync(CertificateName)).Value;
         var certificate = new X509Certificate2(azureCertificate.Cer);
         if (certificate.GetRSAPublicKey() is not null)
         {

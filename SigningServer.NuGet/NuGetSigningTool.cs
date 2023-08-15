@@ -63,10 +63,12 @@ public class NuGetSigningTool : ISigningTool
         var outputFile = Path.ChangeExtension(signFileRequest.InputFilePath, ".nupkg.signed");
         try
         {
+            var certificate = await signFileRequest.Certificate.Value;
+            var privateKey = await signFileRequest.PrivateKey.Value;
             var timestampProvider = !string.IsNullOrEmpty(signFileRequest.TimestampServer)
                 ? new Rfc3161TimestampProvider(new Uri(signFileRequest.TimestampServer))
                 : null;
-            var signatureProvider = new AsymmetricPrivateKeyX509SignatureProvider(signFileRequest.PrivateKey.Value,
+            var signatureProvider = new AsymmetricPrivateKeyX509SignatureProvider(privateKey,
                 timestampProvider);
             using var options = SigningOptions.CreateFromFilePaths(
                 signFileRequest.InputFilePath,
@@ -80,7 +82,7 @@ public class NuGetSigningTool : ISigningTool
                 hashAlg = HashAlgorithmName.SHA256;
             }
 
-            var request = new AuthorSignPackageRequest(signFileRequest.Certificate.Value, hashAlg);
+            var request = new AuthorSignPackageRequest(certificate, hashAlg);
             await SigningUtility.SignAsync(options, request, cancellationToken);
 
             return new SignFileResponse(successResult, string.Empty,

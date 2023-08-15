@@ -53,7 +53,7 @@ public sealed class HardwareCertificateUnlocker : IHostedService, IHardwareCerti
             try
             {
                 // null here on purpose so that the config does not register itself multiple times. 
-                configuration.LoadCertificate(_certConfigLogger, null);
+                configuration.LoadCertificateAsync(_certConfigLogger, null).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {

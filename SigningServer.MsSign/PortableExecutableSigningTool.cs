@@ -150,6 +150,8 @@ public class PortableExecutableSigningTool : ISigningTool
             algId = PeSupportedHashAlgorithms["SHA256"];
         }
 
+        var certificate = await signFileRequest.Certificate.Value;
+        var privateKey = await signFileRequest.PrivateKey.Value;
         using var signerFileInfo = new UnmanagedStruct<Win32.SIGNER_FILE_INFO>(new Win32.SIGNER_FILE_INFO
         {
             cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_FILE_INFO>(),
@@ -169,7 +171,7 @@ public class PortableExecutableSigningTool : ISigningTool
             new Win32.SIGNER_CERT_STORE_INFO
             {
                 cbSize = (uint)Marshal.SizeOf<Win32.SIGNER_CERT_STORE_INFO>(),
-                pSigningCert = signFileRequest.Certificate.Value.Handle,
+                pSigningCert = certificate.Handle,
                 dwCertPolicy = Win32.SIGNER_CERT_POLICY_CHAIN,
                 hCertStore = IntPtr.Zero
             });
@@ -196,7 +198,7 @@ public class PortableExecutableSigningTool : ISigningTool
             algId.algOid,
             signFileRequest.InputFilePath, signFileRequest.TimestampServer, signerSubjectInfo.Pointer,
             signerCert.Pointer,
-            signerSignatureInfo.Pointer, signFileRequest.PrivateKey.Value
+            signerSignatureInfo.Pointer, privateKey
         );
 
         if (hr == Win32.S_OK && tshr == Win32.S_OK)
@@ -218,11 +220,11 @@ public class PortableExecutableSigningTool : ISigningTool
             if ((uint)hr == 0x8007000B)
             {
                 errorMessage =
-                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{signFileRequest.Certificate.Value.SubjectName}\" .. />.";
+                    $"The appxmanifest does not contain the expected publisher. Expected: <Identity ... Publisher\"{certificate.SubjectName}\" .. />.";
             }
 
             Logger.LogError($"{signFileRequest.InputFilePath} signing failed {errorMessage}");
-            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, Array.Empty<SignFileResponseFileInfo>());
+            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, null);
         }
         else
         {
@@ -233,7 +235,7 @@ public class PortableExecutableSigningTool : ISigningTool
             
 
             Logger.LogError($"{signFileRequest.InputFilePath} timestamping failed {errorMessage}");
-            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, Array.Empty<SignFileResponseFileInfo>());
+            return new SignFileResponse(SignFileResponseStatus.FileNotSignedError, errorMessage, null);
 
         }
     }

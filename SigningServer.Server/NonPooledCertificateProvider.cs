@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using SigningServer.Server.Configuration;
 using SigningServer.Signing.Configuration;
 
@@ -14,7 +15,7 @@ public class NonPooledCertificateProvider : ICertificateProvider
         _configuration = configuration;
     }
 
-    public Lazy<CertificateConfiguration>? Get(string? username, string? password)
+    public Lazy<ValueTask<CertificateConfiguration>>? Get(string? username, string? password)
     {
         CertificateConfiguration? cert;
         if (string.IsNullOrWhiteSpace(username))
@@ -27,14 +28,16 @@ public class NonPooledCertificateProvider : ICertificateProvider
                 c => c.IsAuthorized(username, password));
         }
 
-        return cert == null ? null : new Lazy<CertificateConfiguration>(cert);
+        return cert == null ? null : new Lazy<ValueTask<CertificateConfiguration>>(ValueTask.FromResult(cert));
     }
 
-    public void Return(string? username, Lazy<CertificateConfiguration> certificateConfiguration)
+    public ValueTask ReturnAsync(string? username, Lazy<ValueTask<CertificateConfiguration>> certificateConfiguration)
     {
+        return ValueTask.CompletedTask;
     }
 
-    public void Destroy(Lazy<CertificateConfiguration>? certificateConfiguration)
+    public ValueTask DestroyAsync(Lazy<ValueTask<CertificateConfiguration>>? certificateConfiguration)
     {
+        return ValueTask.CompletedTask;
     }
 }

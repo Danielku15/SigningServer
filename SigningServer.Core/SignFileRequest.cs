@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace SigningServer.Core;
 
@@ -21,8 +22,8 @@ namespace SigningServer.Core;
 /// If this is not set, and a file is already signed, the signing operation will fail.</param>
 public record SignFileRequest(
     string InputFilePath,
-    Lazy<X509Certificate2> Certificate,
-    Lazy<AsymmetricAlgorithm> PrivateKey,
+    Lazy<ValueTask<X509Certificate2>> Certificate,
+    Lazy<ValueTask<AsymmetricAlgorithm>> PrivateKey,
     string OriginalFileName,
     string TimestampServer,
     string? HashAlgorithm,

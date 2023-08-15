@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
 using SigningServer.Dtos;
@@ -35,17 +36,28 @@ public class SigningServerApiConfiguration
     /// </summary>
     public int Timeout { get; set; } = 60;
 
-    public void Load(ILogger logger, CertificateConfiguration certificateConfiguration)
+    /// <summary>
+    /// The client to use in testing scenarios. 
+    /// </summary>
+    internal HttpClient? HttpClient { get; set; }
+
+    public async Task LoadAsync(ILogger logger, CertificateConfiguration certificateConfiguration)
     {
         logger.LogInformation("Loading Certificate from Signing Server");
-        if (!Uri.TryCreate(SigningServer, UriKind.Absolute, out var signingServerUri))
+
+        var client = HttpClient;
+        if (client == null)
         {
-            throw new InvalidConfigurationException("Could not parse SigningServer URL, please specify absolute URL");
+            if (!Uri.TryCreate(SigningServer, UriKind.Absolute, out var signingServerUri))
+            {
+                throw new InvalidConfigurationException(
+                    "Could not parse SigningServer URL, please specify absolute URL");
+            }
+
+            client = new HttpClient { BaseAddress = signingServerUri, Timeout = TimeSpan.FromSeconds(Timeout) };
         }
 
-        var client = new HttpClient { BaseAddress = signingServerUri, Timeout = TimeSpan.FromSeconds(Timeout) };
-
-        certificateConfiguration.Certificate = LoadCertificate(client);
+        certificateConfiguration.Certificate = await LoadCertificateAsync(client);
 
         if (certificateConfiguration.Certificate.GetRSAPublicKey() is { } rsa)
         {
@@ -61,26 +73,23 @@ public class SigningServerApiConfiguration
         }
         else
         {
-            throw new InvalidConfigurationException("Unsupported certificate type: " + certificateConfiguration.Certificate.PublicKey.Oid);
+            throw new InvalidConfigurationException("Unsupported certificate type: " +
+                                                    certificateConfiguration.Certificate.PublicKey.Oid);
         }
     }
 
-    private X509Certificate2 LoadCertificate(HttpClient client)
+    private async Task<X509Certificate2> LoadCertificateAsync(HttpClient client)
     {
-        var response = client.Send(new HttpRequestMessage(HttpMethod.Post,  "signing/loadcertificate")
+        var response = await client.PostAsJsonAsync("signing/loadcertificate",
+            new LoadCertificateRequestDto
             {
-                Content = JsonContent.Create(new LoadCertificateRequestDto
-                {
-                    Username = Username,
-                    Password = Password,
-                    ExportFormat = LoadCertificateFormat.Pkcs12,
-                    IncludeChain = false
-                })
+                Username = Username,
+                Password = Password,
+                ExportFormat = LoadCertificateFormat.Pkcs12,
+                IncludeChain = false
             });
 
-        using var stream = response.Content.ReadAsStream();
-        var responseDto = System.Text.Json.JsonSerializer.Deserialize<LoadCertificateResponseDto>(stream);
-
+        var responseDto = await response.Content.ReadFromJsonAsync<LoadCertificateResponseDto>();
         switch (responseDto!.Status)
         {
             case LoadCertificateResponseStatus.CertificateLoaded:
@@ -144,7 +153,7 @@ public class SigningServerApiConfiguration
         {
             try
             {
-                var response = _client.Send(new HttpRequestMessage(HttpMethod.Post, "signing/signhash")
+                var response = _client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "signing/signhash")
                 {
                     Content = JsonContent.Create(new SignHashRequestDto
                     {
@@ -153,11 +162,9 @@ public class SigningServerApiConfiguration
                         Hash = Convert.ToBase64String(hash),
                         HashAlgorithm = "SHA256" // ignored
                     })
-                });
+                }).GetAwaiter().GetResult();
 
-                using var stream = response.Content.ReadAsStream();
-                var responseDto = System.Text.Json.JsonSerializer.Deserialize<SignHashResponseDto>(stream);
-
+                var responseDto = response.Content.ReadFromJsonAsync<SignHashResponseDto>().GetAwaiter().GetResult();
                 if (!string.IsNullOrEmpty(responseDto?.ErrorMessage))
                 {
                     throw new CryptographicException(responseDto.ErrorMessage);
@@ -246,18 +253,15 @@ public class SigningServerApiConfiguration
         {
             try
             {
-                var response = _client.Send(new HttpRequestMessage(HttpMethod.Post, "signing/decryptrsa")
-                {
-                    Content = JsonContent.Create(new DecryptRsaRequestDto(
-                        _configuration.Username,
-                        _configuration.Password,
-                        Convert.ToBase64String(data),
-                        padding.OaepHashAlgorithm.Name!,
-                        padding.Mode))
-                });
+                var response = _client.PostAsJsonAsync("signing/decryptrsa", new DecryptRsaRequestDto(
+                    _configuration.Username,
+                    _configuration.Password,
+                    Convert.ToBase64String(data),
+                    padding.OaepHashAlgorithm.Name!,
+                    padding.Mode)).GetAwaiter().GetResult();
 
-                using var stream = response.Content.ReadAsStream();
-                var responseDto = System.Text.Json.JsonSerializer.Deserialize<DecryptRsaResponseDto>(stream);
+                var responseDto = response.Content.ReadFromJsonAsync<DecryptRsaResponseDto>()
+                    .GetAwaiter().GetResult();
 
                 if (!string.IsNullOrEmpty(responseDto?.ErrorMessage))
                 {
@@ -276,20 +280,18 @@ public class SigningServerApiConfiguration
         {
             try
             {
-                var response = _client.Send(new HttpRequestMessage(HttpMethod.Post, "signing/signhash")
-                {
-                    Content = JsonContent.Create(new SignHashRequestDto
+                var response = _client.PostAsJsonAsync("signing/signhash",
+                    new SignHashRequestDto
                     {
                         Username = _configuration.Username,
                         Password = _configuration.Password,
-                        Hash =Convert.ToBase64String(hash),
+                        Hash = Convert.ToBase64String(hash),
                         HashAlgorithm = hashAlgorithm.Name!,
                         PaddingMode = padding.Mode
-                    })
-                });
+                    }).GetAwaiter().GetResult();
 
-                using var stream = response.Content.ReadAsStream();
-                var responseDto = System.Text.Json.JsonSerializer.Deserialize<SignHashResponseDto>(stream);
+                var responseDto = response.Content.ReadFromJsonAsync<SignHashResponseDto>()
+                    .GetAwaiter().GetResult();
 
                 if (!string.IsNullOrEmpty(responseDto?.ErrorMessage))
                 {

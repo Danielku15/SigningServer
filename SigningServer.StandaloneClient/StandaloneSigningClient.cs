@@ -30,6 +30,7 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
         _signingToolProvider = signingToolProvider;
     }
 
+
     protected override Task<SignHashResponseDto> SignHashAsync(byte[] hashBytes,
         CancellationToken cancellationToken)
     {
@@ -109,12 +110,12 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
         }
 
         var stopwatch = Stopwatch.StartNew();
-        
+
         //
         // upload file to working directory
         var inputFileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" +
-                        Path.GetFileNameWithoutExtension(signFileName) + "_" + Guid.NewGuid() +
-                        Path.GetExtension(signFileName);
+                            Path.GetFileNameWithoutExtension(signFileName) + "_" + Guid.NewGuid() +
+                            Path.GetExtension(signFileName);
         inputFileName = Path.Combine(Configuration.WorkingDirectory, inputFileName);
 
         if (!Directory.Exists(Configuration.WorkingDirectory))
@@ -159,43 +160,59 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
         var coreSignFileResponse = await signingTool.SignFileAsync(
             new SignFileRequest(
                 inputFileName,
-                new Lazy<X509Certificate2>(() => Configuration.Server.Certificate!),
-                new Lazy<AsymmetricAlgorithm>(() => Configuration.Server.PrivateKey!),
+                new Lazy<ValueTask<X509Certificate2>>(() => ValueTask.FromResult(Configuration.Server.Certificate!)),
+                new Lazy<ValueTask<AsymmetricAlgorithm>>(() => ValueTask.FromResult(Configuration.Server.PrivateKey!)),
                 signFileName,
                 Configuration.TimestampServer,
                 Configuration.HashAlgorithm,
                 Configuration.OverwriteSignatures
             ), cancellationToken);
 
-        foreach (var outputFile in coreSignFileResponse.ResultFiles)
+        if (coreSignFileResponse.ResultFiles != null)
         {
-            fileCompletedToken.Register(() =>
+            foreach (var outputFile in coreSignFileResponse.ResultFiles)
             {
-                SafeDelete(outputFile.OutputFilePath);
-            });
+                fileCompletedToken.Register(() =>
+                {
+                    SafeDelete(outputFile.OutputFilePath);
+                });
+            }
         }
-        
+
+
         stopwatch.Stop();
-        
+
         var signTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
 
         yield return new SignFilePartialResult(SignFilePartialResultKind.Status, coreSignFileResponse.Status);
-        yield return new SignFilePartialResult(SignFilePartialResultKind.ErrorMessage, coreSignFileResponse.ErrorMessage);
-        yield return new SignFilePartialResult(SignFilePartialResultKind.SignTime, signTimeInMilliseconds);
-        yield return new SignFilePartialResult(SignFilePartialResultKind.UploadTime, uploadTimeInMilliseconds);
-        foreach (var outputFile in coreSignFileResponse.ResultFiles)
+        yield return new SignFilePartialResult(SignFilePartialResultKind.ErrorMessage,
+            coreSignFileResponse.ErrorMessage);
+        yield return new SignFilePartialResult(SignFilePartialResultKind.SignTime, TimeSpan.FromMilliseconds(signTimeInMilliseconds));
+        yield return new SignFilePartialResult(SignFilePartialResultKind.UploadTime, TimeSpan.FromMilliseconds(uploadTimeInMilliseconds));
+        if (coreSignFileResponse.ResultFiles != null)
         {
-            yield return new SignFilePartialResult(SignFilePartialResultKind.ResultFile,
-                new SignFileFileResult(
-                    outputFile.FileName,
-                    File.OpenRead(outputFile.OutputFilePath)
-                ));
+            foreach (var outputFile in coreSignFileResponse.ResultFiles)
+            {
+                yield return new SignFilePartialResult(SignFilePartialResultKind.ResultFile,
+                    new SignFileFileResult(
+                        outputFile.FileName,
+                        File.OpenRead(outputFile.OutputFilePath)
+                    ));
+            }
         }
     }
 
-    public override Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
-        Configuration.Server.LoadCertificate(Logger, null /* no HSM Support */);
-        return Task.CompletedTask;
+        ServerCapabilities = new ServerCapabilitiesResponse(
+            Configuration.Parallel ?? 4,
+            _signingToolProvider.AllTools.Select(tool => new ServerSupportedFormat(
+                tool.FormatName,
+                tool.SupportedFileExtensions,
+                tool.SupportedHashAlgorithms
+            )).ToList()
+        );
+
+        await Configuration.Server.LoadCertificateAsync(Logger, null /* no HSM Support */);
     }
 }

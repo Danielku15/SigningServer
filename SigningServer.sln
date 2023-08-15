@@ -26,13 +26,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.Runti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.ApkSig", "SigningServer.Android.ApkSig\SigningServer.Android.ApkSig.csproj", "{66B494FE-33C9-4E4A-A821-90EFDAB6FAF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.ApkSig.Test", "SigningServer.Android.ApkSig.Test\SigningServer.Android.ApkSig.Test.csproj", "{36994D47-8EC9-460B-9B0A-E6102CABCBF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.ApkSig.Tests", "SigningServer.Android.ApkSig.Tests\SigningServer.Android.ApkSig.Tests.csproj", "{36994D47-8EC9-460B-9B0A-E6102CABCBF7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{DCB387F1-24B4-40AE-96EB-C26E542A93A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.Runtime.Test", "SigningServer.Android.Runtime.Test\SigningServer.Android.Runtime.Test.csproj", "{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Android.Runtime.Tests", "SigningServer.Android.Runtime.Tests\SigningServer.Android.Runtime.Tests.csproj", "{58BAEAD7-BEC6-4117-AC86-D8E35B01173B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Test", "SigningServer.Test\SigningServer.Test.csproj", "{2BD0A43A-01B7-4E03-B9F0-208642042AB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Tests", "SigningServer.Tests\SigningServer.Tests.csproj", "{2BD0A43A-01B7-4E03-B9F0-208642042AB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigningServer.Signing", "SigningServer.Signing\SigningServer.Signing.csproj", "{C5DCD69F-21E2-4023-97DA-5AFFB1661368}"
 EndProject

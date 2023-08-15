@@ -2,6 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace SigningServer.Signing.Configuration;
@@ -54,7 +55,7 @@ public class CertificateConfiguration
     [JsonIgnore]
     public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
-    public void LoadCertificate(ILogger logger, IHardwareCertificateUnlocker? unlocker)
+    public async Task LoadCertificateAsync(ILogger logger, IHardwareCertificateUnlocker? unlocker)
     {
         // only do reloads if cert needs hardware unlock or certificate is not loaded at all
         if (string.IsNullOrEmpty(LocalStore?.TokenPin) && Certificate != null)
@@ -66,7 +67,7 @@ public class CertificateConfiguration
 
         if (!string.IsNullOrEmpty(Azure?.KeyVaultUrl))
         {
-            Azure.Load(logger, this);
+            await Azure.LoadAsync(logger, this);
         }
         else if (LocalStore != null)
         {
@@ -74,7 +75,7 @@ public class CertificateConfiguration
         }
         else if (SigningServer != null)
         {
-            SigningServer.Load(logger, this);
+            await SigningServer.LoadAsync(logger, this);
         }
         else
         {
@@ -103,7 +104,7 @@ public class CertificateConfiguration
         return $"User: {Username}, Unknown certificate";
     }
 
-    public CertificateConfiguration CloneForSigning(ILogger<CertificateConfiguration> logger,
+    public async ValueTask<CertificateConfiguration> CloneForSigningAsync(ILogger<CertificateConfiguration> logger,
         IHardwareCertificateUnlocker unlocker)
     {
         var configuration = new CertificateConfiguration
@@ -113,7 +114,7 @@ public class CertificateConfiguration
 
         if (LocalStore != null || Azure != null || SigningServer != null)
         {
-            configuration.LoadCertificate(logger, unlocker);
+            await configuration.LoadCertificateAsync(logger, unlocker);
         }
         else if(Certificate != null && PrivateKey != null)
         {

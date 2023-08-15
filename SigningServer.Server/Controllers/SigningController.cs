@@ -82,7 +82,7 @@ public class SigningController : Controller
         SignFileResponse? coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
-        Lazy<CertificateConfiguration>? certificate = null;
+        Lazy<ValueTask<CertificateConfiguration>>? certificate = null;
         try
         {
             var stopwatch = Stopwatch.StartNew();
@@ -113,7 +113,7 @@ public class SigningController : Controller
             if (signingTool == null)
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnsupportedFormat;
-                _certificateProvider.Return(signFileRequest.Username, certificate);
+                await _certificateProvider.ReturnAsync(signFileRequest.Username, certificate);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
 
@@ -177,8 +177,8 @@ public class SigningController : Controller
             coreSignFileResponse = await signingTool.SignFileAsync(
                 new SignFileRequest(
                     inputFileName,
-                    new Lazy<X509Certificate2>(() => certificate.Value.Certificate!),
-                    new Lazy<AsymmetricAlgorithm>(() => certificate.Value.PrivateKey!),
+                    new Lazy<ValueTask<X509Certificate2>>(async () => (await certificate.Value).Certificate!),
+                    new Lazy<ValueTask<AsymmetricAlgorithm>>(async () => (await certificate.Value).PrivateKey!),
                     signFileRequest.FileToSign.FileName,
                     timestampServer,
                     signFileRequest.HashAlgorithm,
@@ -187,7 +187,7 @@ public class SigningController : Controller
 
 
             // only return when signed
-            _certificateProvider.Return(signFileRequest.Username, certificate);
+            await _certificateProvider.ReturnAsync(signFileRequest.Username, certificate);
 
             // register for deletion of output file
             if (coreSignFileResponse.ResultFiles is { Count: > 0 })
@@ -226,7 +226,7 @@ public class SigningController : Controller
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
 
             _logger.LogError(e,
                 $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
@@ -244,7 +244,7 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("signhash")]
     [Produces("application/json", Type = typeof(SignHashResponseDto))]
-    public SignHashActionResult SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
+    public async Task<SignHashActionResult> SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
     {
         var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
@@ -288,8 +288,8 @@ public class SigningController : Controller
             // sign hash
             var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest(
                 hashBytes,
-                certificate.Value.Certificate!,
-                certificate.Value.PrivateKey!,
+                (await certificate.Value).Certificate!,
+                (await certificate.Value).PrivateKey!,
                 signHashRequestDto.HashAlgorithm,
                 signHashRequestDto.PaddingMode
             ));
@@ -303,7 +303,7 @@ public class SigningController : Controller
             ));
 
             // only return when signed
-            _certificateProvider.Return(signHashRequestDto.Username, certificate);
+            await _certificateProvider.ReturnAsync(signHashRequestDto.Username, certificate);
 
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {stopwatch.ElapsedMilliseconds})");
@@ -312,7 +312,7 @@ public class SigningController : Controller
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
             return new SignHashActionResult(new SignHashResponseDto(
                 SignHashResponseStatus.HashNotSignedError,
@@ -330,7 +330,7 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("decryptrsa")]
     [Produces("application/json", Type = typeof(DecryptRsaResponseDto))]
-    public IActionResult DecryptRsa([FromBody, Required] DecryptRsaRequestDto request)
+    public async Task<IActionResult> DecryptRsa([FromBody, Required] DecryptRsaRequestDto request)
     {
         var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(request.Username, request.Password);
@@ -367,7 +367,8 @@ public class SigningController : Controller
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Restart();
 
-            if (certificate.Value.PrivateKey is RSA rsa)
+            var certificateValue = await certificate.Value;
+            if (certificateValue.PrivateKey is RSA rsa)
             {
                 var decrypted = rsa.Decrypt(dataBytes, request.ToPadding());
                 result = new ObjectResult(new DecryptRsaResponseDto(null, Convert.ToBase64String(decrypted)));
@@ -381,7 +382,7 @@ public class SigningController : Controller
             }
 
             // only return when signed
-            _certificateProvider.Return(request.Username, certificate);
+            await _certificateProvider.ReturnAsync(request.Username, certificate);
 
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for RSA decrypt '{request.Data.Length}' finished, signed in {stopwatch.ElapsedMilliseconds})");
@@ -390,7 +391,7 @@ public class SigningController : Controller
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Signing of '{request.Data}' failed: {e.Message}");
             return new ObjectResult(new DecryptRsaResponseDto("Signing failed: " + e.Message, null))
             {
@@ -406,7 +407,7 @@ public class SigningController : Controller
     /// <returns></returns>
     [HttpPost("loadcertificate")]
     [Produces("application/json", Type = typeof(LoadCertificateActionResult))]
-    public LoadCertificateActionResult LoadCertificate(
+    public async Task<LoadCertificateActionResult> LoadCertificate(
         [FromBody, Required] LoadCertificateRequestDto loadCertificateRequestDto)
     {
         var remoteIp = RemoteIp;
@@ -424,11 +425,12 @@ public class SigningController : Controller
 
             try
             {
+                var certificateValue = await certificate.Value;
                 if (loadCertificateRequestDto.IncludeChain)
                 {
                     using var ch = new X509Chain();
                     ch.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                    ch.Build(certificate.Value.Certificate!);
+                    ch.Build(certificateValue.Certificate!);
 
                     var collection = new X509Certificate2Collection(ch.ChainElements
                         .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
@@ -452,7 +454,7 @@ public class SigningController : Controller
                 }
                 else
                 {
-                    using var copyWithoutPrivateKey = new X509Certificate2(certificate.Value.Certificate!.RawData);
+                    using var copyWithoutPrivateKey = new X509Certificate2(certificateValue.Certificate!.RawData);
                     var exported = LoadCertificateResponseDto.Export(copyWithoutPrivateKey,
                         loadCertificateRequestDto.ExportFormat);
                     return new LoadCertificateActionResult(new LoadCertificateResponseDto(
@@ -465,12 +467,12 @@ public class SigningController : Controller
             finally
             {
                 // only return when signed
-                _certificateProvider.Return(loadCertificateRequestDto.Username, certificate);
+                await _certificateProvider.ReturnAsync(loadCertificateRequestDto.Username, certificate);
             }
         }
         catch (Exception e)
         {
-            _certificateProvider.Destroy(certificate);
+            await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Loading of certificate failed: {e.Message}");
             return new LoadCertificateActionResult(new LoadCertificateResponseDto(
                 LoadCertificateResponseStatus.CertificateNotLoadedError,

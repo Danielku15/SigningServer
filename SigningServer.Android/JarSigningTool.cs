@@ -55,12 +55,14 @@ namespace SigningServer.Android
             }
 
             var outputFileName = signFileRequest.InputFilePath + ".signed";
+            var cerificate = await signFileRequest.Certificate.Value;
+            var privateKey = await signFileRequest.PrivateKey.Value;
             try
             {
-                var name = signFileRequest.Certificate.Value.FriendlyName;
+                var name = cerificate.FriendlyName;
                 if (string.IsNullOrEmpty(name))
                 {
-                    name = signFileRequest.Certificate.Value.SubjectName.Name;
+                    name = cerificate.SubjectName.Name;
                     if (name.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
                     {
                         name = name.Substring("CN=".Length);
@@ -75,10 +77,10 @@ namespace SigningServer.Android
                 var signerConfigs = new Collections.List<ApkSigner.SignerConfig>
                 {
                     new ApkSigner.SignerConfig(name,
-                        DotNetCryptographyProvider.Instance.CreatePrivateKey(signFileRequest.PrivateKey.Value),
+                        DotNetCryptographyProvider.Instance.CreatePrivateKey(privateKey),
                         new Collections.List<X509Certificate>
                         {
-                            DotNetCryptographyProvider.Instance.CreateCertificate(signFileRequest.Certificate.Value)
+                            DotNetCryptographyProvider.Instance.CreateCertificate(cerificate)
                         }, false)
                 };
 

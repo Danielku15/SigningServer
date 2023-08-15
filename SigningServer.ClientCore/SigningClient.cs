@@ -13,7 +13,15 @@ using SigningServer.Dtos;
 
 namespace SigningServer.ClientCore;
 
-public abstract class SigningClient<TConfiguration> : IDisposable
+public interface ISigningClient : IDisposable
+{
+    Task InitializeAsync();
+    Task SignFilesAsync();
+    
+    SigningClientConfigurationBase Configuration { get; }
+}
+
+public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClient
     where TConfiguration : SigningClientConfigurationBase
 {
     protected ServerCapabilitiesResponse? ServerCapabilities { get; set; }
@@ -21,6 +29,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
     
 
     public TConfiguration Configuration { get; }
+    SigningClientConfigurationBase ISigningClient.Configuration => Configuration;
     
     protected ILogger Logger { get; }
 
@@ -224,7 +233,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
 
     private async Task<byte[]> HashFileAsync(string file, CancellationToken cancellationToken)
     {
-        using var hashAlg = HashAlgorithm.Create(Configuration.HashAlgorithm ?? "SHA256");
+        using var hashAlg = CryptoConfig.CreateFromName(Configuration.HashAlgorithm ?? "SHA256") as HashAlgorithm;
         if (hashAlg == null)
         {
             throw new UnsupportedFileFormatException($"Unsupported hash algorithm {Configuration.HashAlgorithm}");
@@ -264,9 +273,9 @@ public abstract class SigningClient<TConfiguration> : IDisposable
 
         var retry = Configuration.Retry;
 
-        using var fileCompletedSource = new CancellationTokenSource();
         do
         {
+            using var fileCompletedSource = new CancellationTokenSource();
             try
             {
                 var sw = new Stopwatch();
@@ -288,7 +297,6 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                     }
 
                     responseInfoWritten = true;
-                    fileCompletedSource.Cancel();
 
                     switch (status)
                     {
@@ -339,7 +347,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                     }
                 }
 
-                await foreach (var result in results.WithCancellation(cancellationToken))
+                await foreach (var result in results)
                 {
                     switch (result.Kind)
                     {
@@ -372,6 +380,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                                 {
                                     await fileInfo.ContentStream.CopyToAsync(targetFile, cancellationToken);
                                 }
+
                                 downloadWatch.Stop();
                                 Logger.LogTrace("Downloaded file {fileName} in {downloadTime}ms", fileInfo.FileName,
                                     downloadWatch.ElapsedMilliseconds);
@@ -416,6 +425,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable
                 {
                     throw;
                 }
+            }
+            finally
+            {
+                fileCompletedSource.Cancel();
             }
         } while (retry-- > 0);
     }

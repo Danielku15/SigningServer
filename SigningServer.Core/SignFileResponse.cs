@@ -16,10 +16,10 @@ namespace SigningServer.Core;
 public record SignFileResponse(
     SignFileResponseStatus Status,
     string ErrorMessage,
-    IList<SignFileResponseFileInfo> ResultFiles
+    IList<SignFileResponseFileInfo>? ResultFiles
 )
 {
     public static SignFileResponse FileAlreadySignedError = new(SignFileResponseStatus.FileAlreadySigned,
         "There is already a signature on the file and overwriting was disabled.",
-        Array.Empty<SignFileResponseFileInfo>());
+        null);
 }

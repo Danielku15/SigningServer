@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ public class Startup
         _configuration = configuration;
         configuration.TimestampServer ??= "";
         configuration.Sha1TimestampServer ??= configuration.TimestampServer ?? "";
-        configuration.WorkingDirectory ??= configuration.WorkingDirectory ?? "";
+        configuration.WorkingDirectory ??= configuration.WorkingDirectory ?? ""; 
         configuration.HardwareCertificateUnlockIntervalInSeconds =
             configuration.HardwareCertificateUnlockIntervalInSeconds > 0
                 ? configuration.HardwareCertificateUnlockIntervalInSeconds
@@ -64,7 +65,7 @@ public class Startup
     {
         lifetime.ApplicationStarted.Register(() =>
         {
-            ValidateConfiguration(logger, certConfigurationLogger, unlocker);
+            ValidateConfigurationAsync(logger, certConfigurationLogger, unlocker).GetAwaiter().GetResult();
             PrepareWorkingDirectory(logger);
         });
 
@@ -99,7 +100,7 @@ public class Startup
         logger.LogInformation("Working directory: {0}", _configuration.WorkingDirectory);
     }
 
-    private void ValidateConfiguration(ILogger<Startup> logger,
+    private async Task ValidateConfigurationAsync(ILogger<Startup> logger,
         ILogger<CertificateConfiguration> certConfigurationLogger,
         HardwareCertificateUnlocker unlocker)
     {
@@ -118,7 +119,7 @@ public class Startup
                 try
                 {
                     logger.LogInformation("Loading certificate '{certificateConfiguration}'", certificateConfiguration);
-                    certificateConfiguration.LoadCertificate(certConfigurationLogger, unlocker);
+                    await certificateConfiguration.LoadCertificateAsync(certConfigurationLogger, unlocker);
                     list.Add(certificateConfiguration);
                 }
                 catch (Exception e)

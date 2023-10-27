@@ -13,8 +13,10 @@ namespace SigningServer.Test;
 
 public class JarSigningToolTest : UnitTestBase
 {
+    #region Jar
+
     [Test]
-    public async Task IsFileSigned_UnsignedFile_ReturnsFalse()
+    public async Task IsFileSigned_UnsignedFile_Jar_ReturnsFalse()
     {
         var signingTool = new JarSigningTool();
         File.Exists("TestFiles/unsigned/unsigned.jar").Should().BeTrue();
@@ -23,7 +25,7 @@ public class JarSigningToolTest : UnitTestBase
     }
 
     [Test]
-    public async Task IsFileSigned_SignedFile_ReturnsTrue()
+    public async Task IsFileSigned_SignedFile_Jar_ReturnsTrue()
     {
         var signingTool = new JarSigningTool();
         File.Exists("TestFiles/signed/signed.jar").Should().BeTrue();
@@ -68,6 +70,69 @@ public class JarSigningToolTest : UnitTestBase
             result.IsVerifiedUsingV4Scheme().Should().BeFalse();
         });
     }
+    
+    #endregion
+
+    #region Aab
+
+    [Test]
+    public async Task IsFileSigned_UnsignedFile_Aab_ReturnsFalse()
+    {
+        var signingTool = new JarSigningTool();
+        File.Exists("TestFiles/unsigned/unsigned.aab").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/unsigned/unsigned.aab", CancellationToken.None)).Should()
+            .BeFalse();
+    }
+
+    [Test]
+    public async Task IsFileSigned_SignedFile_Aab_ReturnsTrue()
+    {
+        var signingTool = new JarSigningTool();
+        File.Exists("TestFiles/signed/signed.aab").Should().BeTrue();
+        (await signingTool.IsFileSignedAsync("TestFiles/signed/signed.aab", CancellationToken.None)).Should().BeTrue();
+    }
+
+    [Test]
+    [DeploymentItem("TestFiles", "SignFile_Works")]
+    public async Task SignFile_Unsigned_Aab_Works()
+    {
+        await CanSignAsync(new JarSigningTool(), "SignFile_Works/unsigned/unsigned.aab");
+    }
+
+    [Test]
+    [DeploymentItem("TestFiles", "NoResign_Fails")]
+    public async Task SignFile_Signed_Aab_NoResign_Fails()
+    {
+        await CannotResignAsync(new JarSigningTool(), "NoResign_Fails/signed/signed.aab");
+    }
+
+    [Test]
+    [DeploymentItem("TestFiles", "Resign_Works")]
+    public async Task SignFile_Signed_Aab_Resign_Works()
+    {
+        await CanResignAsync(new JarSigningTool(), "Resign_Works/signed/signed.aab");
+    }
+
+    [Test]
+    [DeploymentItem("TestFiles", "Aab_Verifies")]
+    public async Task SignFile_Aab_Verifies()
+    {
+        await TestWithVerifyAsync("Aab_Verifies/unsigned/unsigned.aab", result =>
+        {
+            if (!result.IsVerified())
+            {
+                Assert.Fail(string.Join(Environment.NewLine, result.GetAllErrors()));
+            }
+
+            result.IsVerifiedUsingV1Scheme().Should().BeTrue();
+            result.IsVerifiedUsingV2Scheme().Should().BeFalse();
+            result.IsVerifiedUsingV3Scheme().Should().BeFalse();
+            result.IsVerifiedUsingV4Scheme().Should().BeFalse();
+        });
+    }
+
+    #endregion
+    
 
     private async Task TestWithVerifyAsync(string fileName, Action<ApkVerifier.Result> action)
     {

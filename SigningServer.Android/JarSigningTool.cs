@@ -22,7 +22,7 @@ namespace SigningServer.Android
     public class JarSigningTool : ISigningTool
     {
         private static readonly HashSet<string> JarSupportedExtension =
-            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { ".jar" };
+            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { ".jar", ".aab" };
 
         private static readonly Dictionary<string, DigestAlgorithm> JarSupportedHashAlgorithms =
             new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)

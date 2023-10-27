@@ -26,7 +26,7 @@ namespace SigningServer.Android
         public static readonly string CreatedBy = Version.ToString(3) + " (SigningServer)";
 
         private static readonly HashSet<string> ApkSupportedExtension =
-            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { ".apk", ".aab" };
+            new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { ".apk" };
 
         private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms =
             new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)

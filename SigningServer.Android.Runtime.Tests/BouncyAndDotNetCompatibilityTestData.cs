@@ -57,7 +57,10 @@ public class BouncyAndDotNetCompatibilityTestData
         DotNetRsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(rsaDotNet);
         DotNetRsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(rsaDotNet.GetPrivateKey());
 
-        var rsaBouncy = new Pkcs12Store(new MemoryStream(rsaCert), Array.Empty<char>());
+        var storeBuilder = new Pkcs12StoreBuilder();
+        
+        var rsaBouncy = storeBuilder.Build();
+        rsaBouncy.Load(new MemoryStream(rsaCert), Array.Empty<char>());
         var alias = rsaBouncy.Aliases.OfType<string>().First();
         BouncyRsaCertificate = rsaBouncy.GetCertificate(alias).Certificate;
         BouncyRsaPublicKey =
@@ -71,7 +74,8 @@ public class BouncyAndDotNetCompatibilityTestData
         DotNetDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(dsaDotNet);
         DotNetDsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(dsaDotNet.GetPrivateKey());
 
-        var dsaBouncy = new Pkcs12Store(new MemoryStream(dsaCert), Array.Empty<char>());
+        var dsaBouncy = storeBuilder.Build();
+        dsaBouncy.Load(new MemoryStream(dsaCert), Array.Empty<char>());
         alias = dsaBouncy.Aliases.OfType<string>().First();
         BouncyDsaCertificate = dsaBouncy.GetCertificate(alias).Certificate;
         BouncyDsaPublicKey =
@@ -85,7 +89,8 @@ public class BouncyAndDotNetCompatibilityTestData
         DotNetECDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(ecdsaDotNet);
         DotNetECDsaPrivateKey = DotNetCryptographyProvider.Instance.CreatePrivateKey(ecdsaDotNet.GetPrivateKey());
 
-        var ecdsaBouncy = new Pkcs12Store(new MemoryStream(ecdsaCert), Array.Empty<char>());
+        var ecdsaBouncy = storeBuilder.Build();
+        ecdsaBouncy.Load(new MemoryStream(ecdsaCert), Array.Empty<char>());
         alias = ecdsaBouncy.Aliases.OfType<string>().First();
         BouncyECDsaCertificate = ecdsaBouncy.GetCertificate(alias).Certificate;
         BouncyECDsaPublicKey =

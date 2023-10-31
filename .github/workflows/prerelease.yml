@@ -23,25 +23,25 @@ jobs:
         with:
           name: SigningServer.Server
           path: |
-            SigningServer.Server/bin/${{ matrix.configuration }}/*/publish/**/*.*
+            SigningServer.Server/bin/Release/*/publish/**/*.*
       - name: Archive Client Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: SigningServer.Client
           path: |
-            SigningServer.Client/bin/${{ matrix.configuration }}/*/publish/**/*.*
+            SigningServer.Client/bin/Release/*/publish/**/*.*
       - name: Archive StandaloneClient Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: SigningServer.StandaloneClient ${{ matrix.configuration }}
+          name: SigningServer.StandaloneClient
           path: |
-            SigningServer.StandaloneClient/bin/${{ matrix.configuration }}/*/publish/**/*.*
+            SigningServer.StandaloneClient/bin/Release/*/publish/**/*.*
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v3
         with:
           name: SigningServer.Client.Tool
           path: |
-            SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg
+            SigningServer.Client/bin/Release/*.nupkg
       - name: Publish NuGet (Client) 
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
       - name: Publish NuGet (Standalone Client)

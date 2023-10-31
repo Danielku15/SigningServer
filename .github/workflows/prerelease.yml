@@ -16,7 +16,7 @@ jobs:
         with:
           dotnet-version: '7.0.x'
       - run: dotnet build SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
-      - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=alpha.${{ github.run_number }}
+      - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - run: dotnet pack SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v3

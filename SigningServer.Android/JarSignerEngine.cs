@@ -1,11 +1,12 @@
 ﻿using SigningServer.Android.Collections;
 using SigningServer.Android.Com.Android.Apksig;
+using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
 
 namespace SigningServer.Android
 {
     public class JarSignerEngine : DefaultApkSignerEngine
     {
-        public JarSignerEngine(List<ApkSigner.SignerConfig> signerConfigs)
+        public JarSignerEngine(List<ApkSigner.SignerConfig> signerConfigs, DigestAlgorithm digestAlgorithm)
             : base(MapSignerConfigs(signerConfigs),
                 null,
                 null,
@@ -19,6 +20,11 @@ namespace SigningServer.Android
                 AndroidApkSigningTool.CreatedBy,
                 null)
         {
+            mV1ContentDigestAlgorithm = digestAlgorithm;
+            foreach (var v1SignerConfig in mV1SignerConfigs)
+            {
+                v1SignerConfig.signatureDigestAlgorithm = digestAlgorithm;
+            }
         }
 
         private static List<SignerConfig> MapSignerConfigs(List<ApkSigner.SignerConfig> signerConfigs)

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Zip;
 using SigningServer.Android.Com.Android.Apksig;
 using SigningServer.Android.Com.Android.Apksig.Apk;
-using SigningServer.Android.Com.Android.Apksig.Internal.Apk.V1;
 using SigningServer.Android.Security.DotNet;
 using SigningServer.Core;
 using X509Certificate = SigningServer.Android.Security.Cert.X509Certificate;
@@ -28,11 +27,7 @@ namespace SigningServer.Android
         private static readonly HashSet<string> ApkSupportedExtension =
             new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { ".apk" };
 
-        private static readonly Dictionary<string, DigestAlgorithm> ApkSupportedHashAlgorithms =
-            new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
-            {
-                ["SHA1"] = DigestAlgorithm.SHA1, ["SHA256"] = DigestAlgorithm.SHA256
-            };
+        private static readonly string[] ApkSupportedHashAlgorithms = { "Automatic" };
 
         public string FormatName => "Android Application Packages";
 
@@ -179,6 +174,6 @@ namespace SigningServer.Android
         /// <inheritdoc />
         public IReadOnlyList<string> SupportedFileExtensions => ApkSupportedExtension.ToArray();
 
-        public IReadOnlyList<string> SupportedHashAlgorithms => ApkSupportedHashAlgorithms.Keys.ToArray();
+        public IReadOnlyList<string> SupportedHashAlgorithms => ApkSupportedHashAlgorithms.ToArray();
     }
 }

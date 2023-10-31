@@ -6,6 +6,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>signingserver-client</ToolCommandName>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <IsPublishable>true</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
     <None Include="config.json">

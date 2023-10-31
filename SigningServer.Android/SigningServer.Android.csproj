@@ -3,6 +3,8 @@
 		<Title>SigningServer Android</Title>
 		<Description>This library contains a port of the official Android apksigner source code.</Description>
 		<LangVersion>8</LangVersion>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 	<ItemGroup>
     <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />

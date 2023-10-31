@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace SigningServer.Signing.Configuration;
 
@@ -35,7 +36,9 @@ public class LocalStoreCertificateConfiguration
     /// <remarks>
     /// The pin is encrypted, obtain the value to put here with 
     /// SigningServer.exe -encode TokenPinHere
-    /// is is protected with the Windows DPAPI
+    /// is is protected with the Windows DPAPI.
+    /// Optionally you can prefix the Token pin with "plain-text:" to treat it as it is
+    /// and not consider it as encrypted.  
     /// </remarks>
     public string? TokenPin { get; set; }
 
@@ -82,12 +85,8 @@ public class LocalStoreCertificateConfiguration
             case RSACryptoServiceProvider rsaCsp when !string.IsNullOrEmpty(TokenPin):
                 {
                     logger.LogInformation("Patching RsaCsp for Hardware Token with pin");
-                    var keyPassword = new SecureString();
-                    var decrypted = DataProtector.UnprotectData(TokenPin);
-                    foreach (var c in decrypted)
-                    {
-                        keyPassword.AppendChar(c);
-                    }
+                    
+                    var keyPassword = LoadPlainTextTokenPinSecure(logger);
 
                     var csp = new CspParameters(1 /*RSA*/,
                         rsaCsp.CspKeyContainerInfo.ProviderName,
@@ -106,7 +105,8 @@ public class LocalStoreCertificateConfiguration
                 }
             case RSACng cng when !string.IsNullOrEmpty(TokenPin):
                 {
-                    var decrypted = DataProtector.UnprotectData(TokenPin);
+                    var decrypted = LoadPlainTextTokenPin(logger);
+
                     // https://docs.microsoft.com/en-us/windows/win32/seccng/key-storage-property-identifiers
                     // ReSharper disable once InconsistentNaming Win32 constant
                     const string NCRYPT_PIN_PROPERTY = "SmartCardPin";
@@ -122,6 +122,63 @@ public class LocalStoreCertificateConfiguration
                     break;
                 }
         }
+    }
+
+    private string LoadPlainTextTokenPin(ILogger logger)
+    {
+        var tokenPin = TokenPin!;
+        if (tokenPin.StartsWith(PlainTextPrefix))
+        {
+            return tokenPin[PlainTextPrefix.Length..];
+        }
+
+        try
+        {
+            return DataProtector.UnprotectData(tokenPin);
+        }
+        catch(Exception e)
+        {
+            logger.LogWarning(e, "Failed to decrypt token pin, treating it as plain text");
+            return tokenPin;
+        }
+    }
+
+    private const string PlainTextPrefix = "plain-text:";
+    private SecureString LoadPlainTextTokenPinSecure(ILogger logger)
+    {
+        var tokenPin = TokenPin!;
+        var keyPassword = new SecureString();
+
+        
+        if (tokenPin.StartsWith(PlainTextPrefix))
+        {
+            var plainText = tokenPin[PlainTextPrefix.Length..];
+            foreach (var c in plainText)
+            {
+                keyPassword.AppendChar(c);
+            }
+        }
+        else
+        {
+            try
+            {
+                var decrypted = DataProtector.UnprotectData(tokenPin);
+                foreach (var c in decrypted)
+                {
+                    keyPassword.AppendChar(c);
+                }
+            }
+            catch(Exception e)
+            {
+                logger.LogWarning(e, "Failed to decrypt token pin, treating it as plain text");
+                foreach (var c in tokenPin)
+                {
+                    keyPassword.AppendChar(c);
+                }
+            }
+        }
+     
+        return keyPassword;
     }
 
     [SupportedOSPlatform("windows")]

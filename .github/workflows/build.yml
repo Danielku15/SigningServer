@@ -14,39 +14,40 @@ jobs:
         matrix: 
             configuration: [Debug, Release]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.0.x'
-      - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:CopyToDist=true -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}
+      - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}
       - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
+      - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}      
       - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
       - name: Archive Server Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SigningServer.Server ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Server/**/*.*
+            SigningServer.Server/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive Client Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SigningServer.Client ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Client/**/*.*
+            SigningServer.Client/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive StandaloneClient Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SigningServer.StandaloneClient ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.StandaloneClient/**/*.*
+            SigningServer.StandaloneClient/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive Client .net Tool
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SigningServer.Client.Tool ${{ matrix.configuration }}
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*.nupkg
       - name: Archive StandaloneClient .net Tool
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SigningServer.StandaloneClient.Tool ${{ matrix.configuration }}
           path: |

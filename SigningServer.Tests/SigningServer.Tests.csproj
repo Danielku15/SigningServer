@@ -3,6 +3,9 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <SelfContained>false</SelfContained>
     <RootNamespace>SigningServer.Test</RootNamespace>
+	  <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />

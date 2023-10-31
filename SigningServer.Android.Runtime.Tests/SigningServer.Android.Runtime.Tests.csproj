@@ -2,6 +2,8 @@
     <PropertyGroup>
         <Title>SigningServer Android Test</Title>
         <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+      <IsPublishable>false</IsPublishable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />

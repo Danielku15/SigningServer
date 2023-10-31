@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SigningServer.Tests" />
   </ItemGroup>

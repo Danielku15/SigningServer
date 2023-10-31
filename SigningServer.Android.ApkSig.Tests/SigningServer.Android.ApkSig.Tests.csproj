@@ -4,6 +4,8 @@
 		<RootNamespace>SigningServer.Android</RootNamespace>
     <NoWarn>$(NoWarn);CS0108;CS0114;CS0693;CS0168;CS0675</NoWarn>
     <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />

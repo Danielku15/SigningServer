@@ -9,11 +9,10 @@ jobs:
     name: Create Release
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.0.x'
-      - uses: microsoft/setup-msbuild@v1
       - name: Extract Tag   
         id: extract_tag
         run: |

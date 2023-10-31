@@ -27,7 +27,8 @@ namespace SigningServer.Android
         private static readonly Dictionary<string, DigestAlgorithm> JarSupportedHashAlgorithms =
             new Dictionary<string, DigestAlgorithm>(StringComparer.InvariantCultureIgnoreCase)
             {
-                ["SHA1"] = DigestAlgorithm.SHA1, ["SHA256"] = DigestAlgorithm.SHA256
+                ["SHA1"] = DigestAlgorithm.SHA1, 
+                ["SHA256"] = DigestAlgorithm.SHA256
             };
 
         public string FormatName => "Java Applications";
@@ -84,8 +85,14 @@ namespace SigningServer.Android
                         }, false)
                 };
 
+                if (!JarSupportedHashAlgorithms.TryGetValue(signFileRequest.HashAlgorithm ?? "",
+                        out var digestAlgorithm))
+                {
+                    digestAlgorithm = DigestAlgorithm.SHA256;
+                }
+
                 // We use some internals of the APK signer to perform the JAR signing. 
-                var apkSignerBuilder = new ApkSigner.Builder(new JarSignerEngine(signerConfigs))
+                var apkSignerBuilder = new ApkSigner.Builder(new JarSignerEngine(signerConfigs, digestAlgorithm))
                     .SetInputApk(new FileInfo(signFileRequest.InputFilePath))
                     .SetOutputApk(new FileInfo(outputFileName));
                 var apkSigner = apkSignerBuilder.Build();

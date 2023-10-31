@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<Title>SigningServer Client</Title>
-		<Description>This is the client for signing files on a signing server.</Description>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Title>SigningServer Client</Title>
+    <Description>This is the client for signing files on a signing server.</Description>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>signingserver-client</ToolCommandName>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IncludeInDist>true</IncludeInDist>
   </PropertyGroup>
-	<ItemGroup>
-		<None Include="config.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+  <ItemGroup>
+    <None Include="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="readme.md" Pack="true" PackagePath="\">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	</ItemGroup>
-	<ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageReference Include="NLog" Version="5.2.5" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.5" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj" />
-	  <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
-	</ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1"/>
+    <PackageReference Include="NLog" Version="5.2.5"/>
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.5"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj"/>
+    <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj"/>
+  </ItemGroup>
 </Project>

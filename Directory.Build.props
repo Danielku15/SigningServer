@@ -34,7 +34,7 @@
     <Copy SourceFiles="@(OutputFilesToCopy)"
           DestinationFiles="@(OutputFilesToCopy->'$(DistPath)$(Configuration)\$(MSBuildProjectName)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="True"
-          Condition="'$(OutputType)' == 'Exe'"/>
+          Condition="'$(OutputType)' == 'Exe' or '$(IncludeInDist)' == 'true' "/>
   </Target>
 
 

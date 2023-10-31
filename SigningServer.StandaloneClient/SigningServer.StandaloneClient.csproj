@@ -6,6 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>signingserver-standalone-client</ToolCommandName>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IncludeInDist>true</IncludeInDist>
   </PropertyGroup>
   <ItemGroup>
     <None Include="config.json">

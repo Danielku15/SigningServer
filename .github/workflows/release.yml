@@ -20,19 +20,20 @@ jobs:
             $ref = "${{ github.ref }}"
             $ref = $ref.Substring($ref.LastIndexOf("/") + 1)
             echo "::set-output name=TAG::$ref"
-      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true
+      - run: dotnet build SigningServer.sln --configuration=Release
+      - run: dotnet publish SigningServer.sln --configuration=Release
       - run: dotnet pack SigningServer.sln --configuration=Release
       - name: Package Server
         run: |
-            & Compress-Archive -Path .\dist\Release\SigningServer.Server -DestinationPath dist\Release\SigningServer.Server.zip
+            & Compress-Archive -Path .\SigningServer.Server\bin\Release\net7.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
       - name: Package Client
         id: pack_client      
         run: |
-            & Compress-Archive -Path .\dist\Release\SigningServer.Client -DestinationPath dist\Release\SigningServer.Client.zip
+            & Compress-Archive -Path .\SigningServer.Client\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
       - name: Package StandaloneClient
         id: pack_client      
         run: |
-            & Compress-Archive -Path .\dist\Release\SigningServer.StandaloneClient -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
+            & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1

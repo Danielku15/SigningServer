@@ -24,18 +24,4 @@
 
     <DistPath>$(MSBuildThisFileDirectory)Dist\</DistPath>
   </PropertyGroup>
-
-  <Target Name="CopyToDist" BeforeTargets="AfterBuild" Condition=" '$(CopyToDist)' == 'true' ">
-    <Message Text="Copying binaries to from $(OutputPath) to $(DistPath)" Importance="High"/>
-    <ItemGroup>
-      <OutputFilesToCopy Include="$(OutputPath)\**\*.*" Exclude="$(OutputPath)\**\*.obj;$(OutputPath)\**\*.tlog"/>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(OutputFilesToCopy)"
-          DestinationFiles="@(OutputFilesToCopy->'$(DistPath)$(Configuration)\$(MSBuildProjectName)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="True"
-          Condition="'$(OutputType)' == 'Exe' or '$(IncludeInDist)' == 'true' "/>
-  </Target>
-
-
 </Project>

@@ -16,26 +16,27 @@ jobs:
         with:
           dotnet-version: '7.0.x'
       - uses: microsoft/setup-msbuild@v1
-      - run: dotnet build SigningServer.sln --configuration=Release -p:CopyToDist=true -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
+      - run: dotnet build SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
+      - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=alpha.${{ github.run_number }}
       - run: dotnet pack SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: SigningServer.Server
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Server/**/*.*
+            SigningServer.Server/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive Client Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: SigningServer.Client
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.Client/**/*.*
+            SigningServer.Client/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive StandaloneClient Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: SigningServer.StandaloneClient ${{ matrix.configuration }}
           path: |
-            Dist/${{ matrix.configuration }}/SigningServer.StandaloneClient/**/*.*
+            SigningServer.StandaloneClient/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v2
         with:

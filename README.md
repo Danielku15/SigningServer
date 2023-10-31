@@ -55,6 +55,9 @@ specific settings are nested in the `"SigningServer` key.
                                     // The pin is encrypted, obtain the value to put here with 
                                     // SigningServer.exe -encode TokenPinHere
                                     // is is protected with the Windows DPAPI
+                                    // If the pin is prefixed with the following marker it is not considered encrypted
+                                    // and treated as it is: 
+                                    //     plain-text:
                 }
             },
             // Example for a certificate from an Azure KeyVault

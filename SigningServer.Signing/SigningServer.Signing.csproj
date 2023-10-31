@@ -3,7 +3,7 @@
     <InternalsVisibleTo Include="SigningServer.Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.9.0" />
+    <PackageReference Include="Azure.Identity" Version="1.10.3" />
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.5.1" />
     <PackageReference Include="RSAKeyVaultProvider" Version="2.1.1" />
   </ItemGroup>

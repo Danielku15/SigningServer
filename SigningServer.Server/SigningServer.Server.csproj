@@ -7,7 +7,7 @@
 		<TargetFramework>$(TargetFramework)-windows</TargetFramework>
   </PropertyGroup>
 	<ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="7.0.13" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.1" />
 		<PackageReference Include="NLog" Version="5.2.5" />

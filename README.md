@@ -8,7 +8,42 @@ this issue
 by providing the code-signing as a service. You setup on a central signing server this software as a windows service and
 using the shipped client any other client can ask the central server to sign the files.
 
-## Server Configuration
+## Versioning
+Unless stated differently in the release notes, we use [Semantic Versioning](https://semver.org/).
+
+## Builds
+
+### Server 
+**Stable Releases:** For main stable releases we use GitHub Releases. Binaries for the application can be consumed from there 
+and installed by copying them into any folder and registering it as a Windows service via `SC CREATE`.
+
+https://github.com/Danielku15/SigningServer/releases
+
+**Prereleases:** Pre-releases are typically created when the software has already some significant changes in, which are ready
+to be tested in staging environments. They are considered fairly stable while new features might not yet fully work as expected. 
+They can be obtained from GitHub Actions as artifacts under the "Prerelease" workflow. 
+
+https://github.com/Danielku15/SigningServer/actions/workflows/prerelease.yml
+
+
+**Intermediate Builds:** Debug and release builds of every change are also created. While we try to avoid breaking old functionality
+it can happen on ongoing refactorings or changes that there are breaking changes and instabilities. 
+They can be obtained from GitHub Actions as artifacts under the "Build" workflow.
+
+https://github.com/Danielku15/SigningServer/actions/workflows/build.yml
+
+### Clients
+
+Clients are generally available like the server binaries. With v2.1 and higher we plan to ship clients also as
+[.NET tools](learn.microsoft.com/en-us/dotnet/core/tools/global-tools) via NuGet.org. Stable and prereleases are published
+to NuGet.org while normal binaries can only be obtained from GitHub Actions. 
+
+https://www.nuget.org/packages/SigningServer.Client/
+https://www.nuget.org/packages/SigningServer.StandaloneClient/
+
+## Configuration 
+
+### Server Configuration
 
 The server is configured using a `appsettings.json` beside the executable. The application
 specific settings are nested in the `"SigningServer` key.
@@ -86,7 +121,7 @@ specific settings are nested in the `"SigningServer` key.
 > is currently primarily intended for a simple certificate selection mechanism. Optional support for
 > transport level security and bearer token authentication are under consideration.
 
-## Client Usage Configuration
+### Client Usage Configuration
 
 The client can be launched with
 `SigningServer.Client.exe [--config config.json] <Files or Folders>`
@@ -123,7 +158,7 @@ Under Linux use `dotnet SigningServer.Client.dll` instead of the executable. A s
 }
 ```
 
-### Client Exit Codes
+#### Client Exit Codes
 
 The client provides exit codes for each error scenario:
 
@@ -136,7 +171,7 @@ The client provides exit codes for each error scenario:
 * `7` - An error when communicating with the server occured
 * `8` - Security Negotiation Failed
 
-## Use Client as .net Tool
+### Use Client as .net Tool
 The signing client is published as [.net Tool](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools) to nuget.org. 
 You can install the signing client globally or locally (through a manifest). 
 

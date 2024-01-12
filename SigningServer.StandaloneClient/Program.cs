@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,11 @@ internal static class Program
             })
             .ConfigureAppConfiguration(config =>
             {
+                foreach (var envSources in config.Sources.OfType<EnvironmentVariablesConfigurationSource>().ToArray())
+                {
+                    config.Sources.Remove(envSources);
+                }
+                config.AddEnvironmentVariables("SIGNINGSERVER_CLIENT_");
                 config.AddJsonFile("config.json", optional: true);
             })
             .ConfigureServices(services =>

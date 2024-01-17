@@ -131,7 +131,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                 var error = $"Certificate Loading Failed with error '{responseDto.ErrorMessage}'";
                 throw new SigningFailedException(error);
             case LoadCertificateResponseStatus.CertificateNotLoadedUnauthorized:
-                Logger.LogError("The specified username and password are not recognized on the server");
+                Logger.LogError("The specified username and password are not recognized on the server ({Status}, {Username})", responseDto.Status, Configuration.CredentialInfo);
                 throw new UnauthorizedAccessException();
             default:
                 throw new ArgumentOutOfRangeException();
@@ -194,7 +194,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                             $"Signing Failed with error '{responseDto.ErrorMessage}' (sign time: {responseDto.SignTimeInMilliseconds:0}ms)";
                         throw new SigningFailedException(error);
                     case SignHashResponseStatus.HashNotSignedUnauthorized:
-                        Logger.LogError("The specified username and password are not recognized on the server");
+                        Logger.LogError("The specified username and password are not recognized on the server ({Status}, {Username})", responseDto.Status, Configuration.CredentialInfo);
                         throw new UnauthorizedAccessException();
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -341,7 +341,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                                 $"Signing Failed with error '{errorMessage}' (upload time: {uploadTime.TotalMilliseconds:0}ms, sign time: {signTime.TotalMilliseconds:0}ms)";
                             throw new SigningFailedException(error);
                         case SignFileResponseStatus.FileNotSignedUnauthorized:
-                            Logger.LogError("The specified username and password are not recognized on the server");
+                            Logger.LogError("The specified username and password are not recognized on the server ({Status}, {Username})", status, Configuration.CredentialInfo);
                             throw new UnauthorizedAccessException();
                         default:
                             throw new ArgumentOutOfRangeException();

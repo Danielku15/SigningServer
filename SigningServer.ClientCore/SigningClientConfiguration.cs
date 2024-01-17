@@ -11,8 +11,18 @@ namespace SigningServer.ClientCore;
 /// <summary>
 /// Represents the signing client 
 /// </summary>
-public class SigningClientConfigurationBase
+public abstract class SigningClientConfigurationBase
 {
+    /// <summary>
+    /// Whether to execute signing or not, useful if you have to enable/disable signing temporarily.
+    /// </summary>
+    public bool IsSigningDisabled { get; set; }
+
+    /// <summary>
+    /// Gets the credential info to use for authentication and certificate selection.
+    /// </summary>
+    public abstract string CredentialInfo { get; }
+    
     /// <summary>
     /// Whether to overwrite existing signatures or fail when signatures are present.
     /// </summary>

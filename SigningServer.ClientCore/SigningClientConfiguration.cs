@@ -8,6 +8,13 @@ using SigningServer.Core;
 
 namespace SigningServer.ClientCore;
 
+public enum DuplicateFileDetectionMode
+{
+    None,
+    ByFileName,
+    ByFileHash
+}
+
 /// <summary>
 /// Represents the signing client 
 /// </summary>
@@ -90,6 +97,11 @@ public abstract class SigningClientConfigurationBase
     /// If a certificate download should be performed, the format to download.
     /// </summary>
     public LoadCertificateFormat? LoadCertificateExportFormat { get; set; }
+
+    /// <summary>
+    /// Whether to detect duplicate files being side.
+    /// </summary>
+    public DuplicateFileDetectionMode DuplicateFileDetection { get; set; } = DuplicateFileDetectionMode.None;
 
     public virtual bool FillFromArgs(string[] args, ILogger log)
     {

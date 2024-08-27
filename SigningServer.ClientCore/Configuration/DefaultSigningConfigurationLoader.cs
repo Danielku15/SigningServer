@@ -58,7 +58,15 @@ public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigu
                 _logger.LogTrace("Loading config.json");
                 configuration =
                     JsonSerializer.Deserialize<TConfiguration>(
-                        await File.ReadAllTextAsync(defaultConfigFilePath))!;
+                        await File.ReadAllTextAsync(defaultConfigFilePath),
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            Converters =
+                            {
+                                new JsonStringEnumConverter()
+                            }
+                        })!;
                 _logger.LogTrace("Configuration loaded from config.json");
                 return configuration;
             }

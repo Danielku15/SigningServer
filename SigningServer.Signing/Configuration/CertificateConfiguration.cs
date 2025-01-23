@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
@@ -6,6 +7,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace SigningServer.Signing.Configuration;
+
+/// <summary>
+/// Represents an access credentials which can be used to use a certificate.
+/// </summary>
+public class CertificateAccessCredentials
+{
+    public static readonly CertificateAccessCredentials? Anonymous = new();
+
+    public string Username { get; set; } = "";
+    public string Password { get; set; } = "";
+
+    public string DisplayName => Username.Length > 0 ? Username : "Anonymous";
+}
 
 /// <summary>
 /// A single certificate configuration.
@@ -16,16 +30,29 @@ public class CertificateConfiguration
     /// A name of the certificate for identification (in logs and configuration).
     /// </summary>
     public string CertificateName { get; set; } = "";
-    
-    /// <summary>
-    /// The plain text username to use this certificate
-    /// </summary>
-    public string? Username { get; set; }
+
+    public string DisplayName
+    {
+        get
+        {
+            return !string.IsNullOrEmpty(CertificateName)
+                ? CertificateName
+                : Certificate?.SubjectName.Name ??
+                  "missing-cert-name";
+        }
+    }
 
     /// <summary>
-    /// The plain text password to use this certificate
+    /// A value indicating whether this certificate is used when no credentials are provided by the client..
     /// </summary>
-    public string? Password { get; set; }
+    public bool IsAnonymous => Credentials.Length == 0 ||
+                               Credentials.Any(
+                                   t => string.IsNullOrEmpty(t.Username) && string.IsNullOrEmpty(t.Password));
+
+    /// <summary>
+    /// A list of access tokens which can be used to sign with this certificate.
+    /// </summary>
+    public CertificateAccessCredentials[] Credentials { get; set; } = Array.Empty<CertificateAccessCredentials>();
 
     /// <summary>
     /// Local Certificate from Certificate Store
@@ -54,11 +81,6 @@ public class CertificateConfiguration
     [JsonIgnore]
     public AsymmetricAlgorithm? PrivateKey { get; set; }
 
-    /// <summary>
-    /// A value indicating whether authentication is needed for the certificate.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsAnonymous => string.IsNullOrWhiteSpace(Username);
 
     public async Task LoadCertificateAsync(ILogger logger, IHardwareCertificateUnlocker? unlocker)
     {
@@ -96,24 +118,26 @@ public class CertificateConfiguration
         }
     }
 
-    public bool IsAuthorized(string username, string? password)
+    public CertificateAccessCredentials? IsAuthorized(string username, string? password)
     {
-        return string.Equals(Username, username, StringComparison.CurrentCultureIgnoreCase) && Password == password;
+        return Credentials.FirstOrDefault(t =>
+            string.Equals(t.Username, username, StringComparison.CurrentCultureIgnoreCase) && t.Password == password
+        );
     }
 
     public override string ToString()
     {
         if (LocalStore?.Thumbprint != null)
         {
-            return $"User: {Username}, Local: {LocalStore}";
+            return $"Name: {CertificateName}, Local: {LocalStore}";
         }
 
         if (Azure?.CertificateName != null)
         {
-            return $"User: {Username}, Local: {Azure}";
+            return $"Name: {CertificateName}, Local: {Azure}";
         }
 
-        return $"User: {Username}, Unknown certificate";
+        return $"Name: {CertificateName}, Unknown certificate";
     }
 
     public async ValueTask<CertificateConfiguration> CloneForSigningAsync(ILogger<CertificateConfiguration> logger,
@@ -121,22 +145,22 @@ public class CertificateConfiguration
     {
         var configuration = new CertificateConfiguration
         {
-            Username = Username, Password = Password, LocalStore = LocalStore, Azure = Azure
+            CertificateName = CertificateName, Credentials = Credentials, LocalStore = LocalStore, Azure = Azure
         };
 
         if (LocalStore != null || Azure != null || SigningServer != null)
         {
             await configuration.LoadCertificateAsync(logger, unlocker);
         }
-        else if(Certificate != null && PrivateKey != null && OperatingSystem.IsWindows())
+        else if (Certificate != null && PrivateKey != null && OperatingSystem.IsWindows())
         {
             // NOTE: This path is mainly needed for testing and rather not in production.
             configuration.Certificate = new X509Certificate2(Certificate);
             switch (PrivateKey)
             {
                 case RSACng pk:
-                    configuration.PrivateKey = new RSACng(pk.Key); 
-                    break; 
+                    configuration.PrivateKey = new RSACng(pk.Key);
+                    break;
                 case DSACng pk:
                     configuration.PrivateKey = new DSACng(pk.Key);
                     break;

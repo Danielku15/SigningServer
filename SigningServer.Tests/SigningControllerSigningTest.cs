@@ -23,7 +23,6 @@ using SignFileResponse = SigningServer.Core.SignFileResponse;
 
 namespace SigningServer.Test;
 
-
 public class SigningControllerSigningTest : UnitTestBase
 {
     private SigningServerConfiguration _configuration = null!;
@@ -68,10 +67,7 @@ public class SigningControllerSigningTest : UnitTestBase
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
-            new TestingSigningRequestTracker())
-        {
-            ControllerContext = CreateEmptyControllerContext()
-        };
+            new TestingSigningRequestTracker()) { ControllerContext = CreateEmptyControllerContext() };
 
         var request = new SignFileRequestDto
         {
@@ -94,8 +90,14 @@ public class SigningControllerSigningTest : UnitTestBase
             {
                 new CertificateConfiguration
                 {
-                    Username = "SignUser",
-                    Password = "SignPass",
+                    Credentials =
+                        new[]
+                        {
+                            new CertificateAccessCredentials
+                            {
+                                Username = "SignUser", Password = "SignPass",
+                            }
+                        },
                     Certificate = await AssemblyEvents.Certificate.Value,
                     PrivateKey = await AssemblyEvents.PrivateKey.Value
                 }
@@ -105,10 +107,7 @@ public class SigningControllerSigningTest : UnitTestBase
 
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, null!, configuration, new NonPooledCertificateProvider(configuration),
-            new TestingSigningRequestTracker())
-        {
-            ControllerContext = CreateEmptyControllerContext()
-        };
+            new TestingSigningRequestTracker()) { ControllerContext = CreateEmptyControllerContext() };
 
         var testData =
             new MemoryStream(
@@ -134,10 +133,7 @@ public class SigningControllerSigningTest : UnitTestBase
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
-            new TestingSigningRequestTracker())
-        {
-            ControllerContext = CreateEmptyControllerContext()
-        };
+            new TestingSigningRequestTracker()) { ControllerContext = CreateEmptyControllerContext() };
 
         var testData =
             new MemoryStream(
@@ -156,10 +152,7 @@ public class SigningControllerSigningTest : UnitTestBase
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
             _simulateSigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
-            new TestingSigningRequestTracker())
-        {
-            ControllerContext = CreateEmptyControllerContext()
-        };
+            new TestingSigningRequestTracker()) { ControllerContext = CreateEmptyControllerContext() };
 
         var testData =
             new MemoryStream(

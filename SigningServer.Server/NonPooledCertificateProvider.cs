@@ -17,17 +17,23 @@ public class NonPooledCertificateProvider : ICertificateProvider
     public ICertificateAccessor? Get(string? username, string? password)
     {
         CertificateConfiguration? cert;
+        CertificateAccessCredentials? credentials;
         if (string.IsNullOrWhiteSpace(username))
         {
             cert = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
+            credentials = CertificateAccessCredentials.Anonymous;
         }
         else
         {
-            cert = _configuration.Certificates.FirstOrDefault(
-                c => c.IsAuthorized(username, password));
+            var authResult = _configuration.Certificates
+                .Select(c => (configuration: c, credentials: c.IsAuthorized(username, password)))
+                .FirstOrDefault(c => c.credentials != null);
+
+            cert = authResult.configuration;
+            credentials = authResult.credentials;
         }
 
-        return cert == null ? null : new NonPooledCertificateAccessor(cert);
+        return cert == null ? null : new NonPooledCertificateAccessor(credentials!, cert);
     }
 
     public ValueTask ReturnAsync(string? username, ICertificateAccessor certificateConfiguration)
@@ -43,14 +49,16 @@ public class NonPooledCertificateProvider : ICertificateProvider
     private class NonPooledCertificateAccessor : ICertificateAccessor
     {
         private readonly CertificateConfiguration _certificateConfiguration;
+        public CertificateAccessCredentials Credentials { get; }
         public string CertificateName { get; }
 
-        public NonPooledCertificateAccessor(CertificateConfiguration certificateConfiguration)
+        public NonPooledCertificateAccessor(
+            CertificateAccessCredentials credentials,
+            CertificateConfiguration certificateConfiguration)
         {
+            Credentials = credentials;
             _certificateConfiguration = certificateConfiguration;
-            CertificateName = !string.IsNullOrEmpty(certificateConfiguration.CertificateName) 
-                    ? certificateConfiguration.CertificateName
-                    : certificateConfiguration.Username ?? "default";
+            CertificateName = certificateConfiguration.DisplayName;
         }
 
         public ValueTask<CertificateConfiguration> UseCertificate()

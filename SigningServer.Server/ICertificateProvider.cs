@@ -11,6 +11,7 @@ namespace SigningServer.Server;
 /// </summary>
 public interface ICertificateAccessor
 {
+    public CertificateAccessCredentials Credentials { get; }
     public string CertificateName { get; }
     ValueTask<CertificateConfiguration> UseCertificate();
 }

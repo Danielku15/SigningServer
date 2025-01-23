@@ -31,6 +31,7 @@ public class SigningServerConfiguration
     public string WorkingDirectory { get; set; } = string.Empty;
 
     public CertificateConfiguration[] Certificates { get; set; } = Array.Empty<CertificateConfiguration>();
+    public CertificateAccessCredentials[] AccessTokens { get; set; } = Array.Empty<CertificateAccessCredentials>();
 
     /// <summary>
     /// The maximum degree of parallelism allowed per individual client.

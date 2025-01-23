@@ -90,15 +90,21 @@ public class PooledCertificateProvider : ICertificateProvider
     public ICertificateAccessor? Get(string? username, string? password)
     {
         CertificateConfiguration? baseConfiguration;
+        CertificateAccessCredentials? credentials;
         if (string.IsNullOrWhiteSpace(username))
         {
             baseConfiguration = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
             username = string.Empty;
+            credentials = CertificateAccessCredentials.Anonymous;
         }
         else
         {
-            baseConfiguration = _configuration.Certificates.FirstOrDefault(
-                c => c.IsAuthorized(username, password));
+            var authResult = _configuration.Certificates
+                .Select(c => (configuration: c, credentials: c.IsAuthorized(username, password)))
+                .FirstOrDefault(c => c.credentials != null);
+
+            baseConfiguration = authResult.configuration;
+            credentials = authResult.credentials;
         }
 
         if (baseConfiguration == null)
@@ -110,11 +116,9 @@ public class PooledCertificateProvider : ICertificateProvider
             _ => new CertificatePool(_logger, baseConfiguration, _certConfigLogger, _hardwareCertificateUnlocker)
         );
 
-        var certificateName = !string.IsNullOrEmpty(baseConfiguration.CertificateName)
-            ? baseConfiguration.CertificateName
-            : baseConfiguration.Username ?? "default";
         return new PooledCertificateAccessor(
-            certificateName,
+            credentials!,
+            baseConfiguration.DisplayName,
             new Lazy<ValueTask<CertificateConfiguration>>(() => GetWorkingFromPoolAsync(pool))
         );
     }
@@ -234,13 +238,16 @@ public class PooledCertificateProvider : ICertificateProvider
 
     private class PooledCertificateAccessor : ICertificateAccessor
     {
+        public CertificateAccessCredentials Credentials { get; }
         public string CertificateName { get; }
         public Lazy<ValueTask<CertificateConfiguration>> Configuration { get; }
 
         public PooledCertificateAccessor(
+            CertificateAccessCredentials credentials,
             string certificateName,
             Lazy<ValueTask<CertificateConfiguration>> configuration)
         {
+            Credentials = credentials;
             CertificateName = certificateName;
             Configuration = configuration;
         }

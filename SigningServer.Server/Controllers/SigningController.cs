@@ -85,7 +85,7 @@ public class SigningController : Controller
         string inputFileName;
         ICertificateAccessor? certificate = null;
 
-        var userInfo = (signFileRequest.Username ?? "unknown");
+        var userInfo = signFileRequest.Username ?? "unknown";
         
         try
         {
@@ -113,7 +113,7 @@ public class SigningController : Controller
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
             
-            userInfo += "-" + certificate.CertificateName;
+            userInfo = certificate.Credentials.DisplayName + "-" + certificate.CertificateName;
 
             // 
             // find compatible signing tool
@@ -259,7 +259,7 @@ public class SigningController : Controller
     {
         var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
-        var userInfo = (signHashRequestDto.Username ?? "unknown");
+        var userInfo = signHashRequestDto.Username ?? "unknown";
         try
         {
             //
@@ -294,7 +294,7 @@ public class SigningController : Controller
                 ));
             }
             
-            userInfo += certificate.CertificateName;
+            userInfo = certificate.Credentials.DisplayName + "-" + certificate.CertificateName;
 
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Restart();

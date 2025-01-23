@@ -13,6 +13,11 @@ namespace SigningServer.Signing.Configuration;
 public class CertificateConfiguration
 {
     /// <summary>
+    /// A name of the certificate for identification (in logs and configuration).
+    /// </summary>
+    public string CertificateName { get; set; } = "";
+    
+    /// <summary>
     /// The plain text username to use this certificate
     /// </summary>
     public string? Username { get; set; }

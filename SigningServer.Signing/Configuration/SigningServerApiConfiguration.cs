@@ -251,29 +251,7 @@ public class SigningServerApiConfiguration
 
         public override byte[] Decrypt(byte[] data, RSAEncryptionPadding padding)
         {
-            try
-            {
-                var response = _client.PostAsJsonAsync("signing/decryptrsa", new DecryptRsaRequestDto(
-                    _configuration.Username,
-                    _configuration.Password,
-                    Convert.ToBase64String(data),
-                    padding.OaepHashAlgorithm.Name!,
-                    padding.Mode)).GetAwaiter().GetResult();
-
-                var responseDto = response.Content.ReadFromJsonAsync<DecryptRsaResponseDto>()
-                    .GetAwaiter().GetResult();
-
-                if (!string.IsNullOrEmpty(responseDto?.ErrorMessage))
-                {
-                    throw new CryptographicException(responseDto.ErrorMessage);
-                }
-
-                return Convert.FromBase64String(responseDto!.Data!);
-            }
-            catch (Exception e)
-            {
-                throw new CryptographicException("Error calling SigningServer", e);
-            }
+            throw new NotSupportedException();
         }
 
         public override byte[] SignHash(byte[] hash, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)

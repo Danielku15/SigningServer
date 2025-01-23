@@ -67,7 +67,8 @@ public class SigningControllerSigningTest : UnitTestBase
     public async Task SignFile_EmptyFile_Fails()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration))
+            _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
+            new TestingSigningRequestTracker())
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -103,7 +104,8 @@ public class SigningControllerSigningTest : UnitTestBase
         };
 
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, null!, configuration, new NonPooledCertificateProvider(configuration))
+            _emptySigningToolProvider, null!, configuration, new NonPooledCertificateProvider(configuration),
+            new TestingSigningRequestTracker())
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -131,7 +133,8 @@ public class SigningControllerSigningTest : UnitTestBase
     public async Task SignFile_UnsupportedFormat_Fails()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration))
+            _emptySigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
+            new TestingSigningRequestTracker())
         {
             ControllerContext = CreateEmptyControllerContext()
         };
@@ -152,7 +155,8 @@ public class SigningControllerSigningTest : UnitTestBase
     public async Task SignFile_UploadsFileToWorkingDirectory()
     {
         var server = new SigningController(AssemblyEvents.LoggerProvider.CreateLogger<SigningController>(),
-            _simulateSigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration))
+            _simulateSigningToolProvider, null!, _configuration, new NonPooledCertificateProvider(_configuration),
+            new TestingSigningRequestTracker())
         {
             ControllerContext = CreateEmptyControllerContext()
         };

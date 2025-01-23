@@ -11,6 +11,11 @@ public class SigningServerConfiguration
     public int HardwareCertificateUnlockIntervalInSeconds { get; set; }
 
     /// <summary>
+    /// The interval how often the cached signing request audit information should be flushed to disk.
+    /// </summary>
+    public TimeSpan AuditFlushInterval { get; set; } = TimeSpan.FromMinutes(1);
+    
+    /// <summary>
     /// A RFC-3161 compliant timestamping server which should be used.
     /// </summary>
     public string TimestampServer { get; set; } = string.Empty;

@@ -7,7 +7,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SigningServer.Core;
@@ -15,7 +14,6 @@ using SigningServer.Dtos;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
 using SigningServer.Signing;
-using SigningServer.Signing.Configuration;
 using SignFileRequestDto = SigningServer.Server.Dtos.SignFileRequestDto;
 using SignFileResponseDto = SigningServer.Server.Dtos.SignFileResponseDto;
 
@@ -33,19 +31,22 @@ public class SigningController : Controller
     private readonly IHashSigningTool _hashSigningTool;
     private readonly SigningServerConfiguration _configuration;
     private readonly ICertificateProvider _certificateProvider;
+    private readonly ISigningRequestTracker _signingRequestTracker;
 
     public SigningController(
         ILogger<SigningController> logger,
         ISigningToolProvider signingToolProvider,
         IHashSigningTool hashSigningTool,
         SigningServerConfiguration configuration,
-        ICertificateProvider certificateProvider)
+        ICertificateProvider certificateProvider,
+        ISigningRequestTracker signingRequestTracker)
     {
         _logger = logger;
         _signingToolProvider = signingToolProvider;
         _hashSigningTool = hashSigningTool;
         _configuration = configuration;
         _certificateProvider = certificateProvider;
+        _signingRequestTracker = signingRequestTracker;
     }
 
     /// <summary>
@@ -82,7 +83,10 @@ public class SigningController : Controller
         SignFileResponse? coreSignFileResponse = null;
         var remoteIp = RemoteIp;
         string inputFileName;
-        Lazy<ValueTask<CertificateConfiguration>>? certificate = null;
+        ICertificateAccessor? certificate = null;
+
+        var userInfo = (signFileRequest.Username ?? "unknown");
+        
         try
         {
             var stopwatch = Stopwatch.StartNew();
@@ -94,6 +98,7 @@ public class SigningController : Controller
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
                 apiSignFileResponse.ErrorMessage = "No file was received";
+                await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, 0);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
 
@@ -104,8 +109,11 @@ public class SigningController : Controller
             {
                 _logger.LogWarning("Unauthorized signing request");
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnauthorized;
+                await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, 1);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
+            
+            userInfo += "-" + certificate.CertificateName;
 
             // 
             // find compatible signing tool
@@ -114,6 +122,7 @@ public class SigningController : Controller
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnsupportedFormat;
                 await _certificateProvider.ReturnAsync(signFileRequest.Username, certificate);
+                await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, 1);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
 
@@ -177,8 +186,8 @@ public class SigningController : Controller
             coreSignFileResponse = await signingTool.SignFileAsync(
                 new SignFileRequest(
                     inputFileName,
-                    new Lazy<ValueTask<X509Certificate2>>(async () => (await certificate.Value).Certificate!),
-                    new Lazy<ValueTask<AsymmetricAlgorithm>>(async () => (await certificate.Value).PrivateKey!),
+                    new Lazy<ValueTask<X509Certificate2>>(async () => (await certificate.UseCertificate()).Certificate!),
+                    new Lazy<ValueTask<AsymmetricAlgorithm>>(async () => (await certificate.UseCertificate()).PrivateKey!),
                     signFileRequest.FileToSign.FileName,
                     timestampServer,
                     signFileRequest.HashAlgorithm,
@@ -217,6 +226,7 @@ public class SigningController : Controller
 
             apiSignFileResponse.ErrorMessage = coreSignFileResponse.ErrorMessage;
             apiSignFileResponse.Status = coreSignFileResponse.Status;
+            await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, coreSignFileResponse.ResultFiles?.Count ?? 1);
 
             stopwatch.Stop();
             apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds + preparationTime;
@@ -232,6 +242,7 @@ public class SigningController : Controller
                 $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
             apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             apiSignFileResponse.ErrorMessage = e.Message;
+            await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, coreSignFileResponse?.ResultFiles?.Count ?? 1);
         }
 
         return new SignFileActionResult(apiSignFileResponse, coreSignFileResponse?.ResultFiles);
@@ -248,6 +259,7 @@ public class SigningController : Controller
     {
         var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
+        var userInfo = (signHashRequestDto.Username ?? "unknown");
         try
         {
             //
@@ -261,6 +273,7 @@ public class SigningController : Controller
             }
             catch
             {
+                await _signingRequestTracker.TrackRequestAsync(userInfo, SignFileResponseStatus.FileNotSignedError, 1);
                 return new SignHashActionResult(new SignHashResponseDto(
                     SignHashResponseStatus.HashNotSignedError,
                     0,
@@ -280,6 +293,8 @@ public class SigningController : Controller
                     string.Empty
                 ));
             }
+            
+            userInfo += certificate.CertificateName;
 
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Restart();
@@ -288,8 +303,8 @@ public class SigningController : Controller
             // sign hash
             var coreSignFileResponse = _hashSigningTool.SignHash(new SignHashRequest(
                 hashBytes,
-                (await certificate.Value).Certificate!,
-                (await certificate.Value).PrivateKey!,
+                (await certificate.UseCertificate()).Certificate!,
+                (await certificate.UseCertificate()).PrivateKey!,
                 signHashRequestDto.HashAlgorithm,
                 signHashRequestDto.PaddingMode
             ));
@@ -304,7 +319,17 @@ public class SigningController : Controller
 
             // only return when signed
             await _certificateProvider.ReturnAsync(signHashRequestDto.Username, certificate);
-
+            var trackingStatus = coreSignFileResponse.Status switch
+            {
+                SignHashResponseStatus.HashSigned => SignFileResponseStatus.FileSigned,
+                SignHashResponseStatus.HashNotSignedUnsupportedFormat => SignFileResponseStatus
+                    .FileNotSignedUnsupportedFormat,
+                SignHashResponseStatus.HashNotSignedError => SignFileResponseStatus.FileNotSignedError,
+                SignHashResponseStatus.HashNotSignedUnauthorized => SignFileResponseStatus.FileNotSignedUnauthorized,
+                _ => SignFileResponseStatus.FileNotSignedError
+            };
+            await _signingRequestTracker.TrackRequestAsync(userInfo, trackingStatus, 1);
+            
             _logger.LogInformation(
                 $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {stopwatch.ElapsedMilliseconds})");
 
@@ -314,89 +339,13 @@ public class SigningController : Controller
         {
             await _certificateProvider.DestroyAsync(certificate);
             _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
+            await _signingRequestTracker.TrackRequestAsync(userInfo, SignFileResponseStatus.FileNotSignedError, 1);
             return new SignHashActionResult(new SignHashResponseDto(
                 SignHashResponseStatus.HashNotSignedError,
                 0,
                 e.Message,
                 string.Empty
             ));
-        }
-    }
-
-    /// <summary>
-    /// Decrypts the given data assuming an RSA encryption
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    [HttpPost("decryptrsa")]
-    [Produces("application/json", Type = typeof(DecryptRsaResponseDto))]
-    public async Task<IActionResult> DecryptRsa([FromBody, Required] DecryptRsaRequestDto request)
-    {
-        var remoteIp = RemoteIp;
-        var certificate = _certificateProvider.Get(request.Username, request.Password);
-        ObjectResult result;
-        try
-        {
-            //
-            // validate input
-            _logger.LogInformation(
-                $"[{remoteIp}] [Begin] New decrypt of RSA data '{request.Data.Length}'");
-            byte[] dataBytes;
-            try
-            {
-                dataBytes = Convert.FromBase64String(request.Data);
-            }
-            catch
-            {
-                return new ObjectResult(new DecryptRsaResponseDto("No base64 encoded bytes were received", null))
-                {
-                    StatusCode = StatusCodes.Status400BadRequest
-                };
-            }
-
-            //
-            // find certificate
-            if (certificate == null)
-            {
-                return new ObjectResult(new DecryptRsaResponseDto("Unauthorized signing request", null))
-                {
-                    StatusCode = StatusCodes.Status401Unauthorized
-                };
-            }
-
-            var stopwatch = Stopwatch.StartNew();
-            stopwatch.Restart();
-
-            var certificateValue = await certificate.Value;
-            if (certificateValue.PrivateKey is RSA rsa)
-            {
-                var decrypted = rsa.Decrypt(dataBytes, request.ToPadding());
-                result = new ObjectResult(new DecryptRsaResponseDto(null, Convert.ToBase64String(decrypted)));
-            }
-            else
-            {
-                return new ObjectResult(new DecryptRsaResponseDto("Certificate is not RSA", null))
-                {
-                    StatusCode = StatusCodes.Status400BadRequest
-                };
-            }
-
-            // only return when signed
-            await _certificateProvider.ReturnAsync(request.Username, certificate);
-
-            _logger.LogInformation(
-                $"[{remoteIp}] [Finished] request for RSA decrypt '{request.Data.Length}' finished, signed in {stopwatch.ElapsedMilliseconds})");
-
-            return result;
-        }
-        catch (Exception e)
-        {
-            await _certificateProvider.DestroyAsync(certificate);
-            _logger.LogError(e, $"[{remoteIp}] Signing of '{request.Data}' failed: {e.Message}");
-            return new ObjectResult(new DecryptRsaResponseDto("Signing failed: " + e.Message, null))
-            {
-                StatusCode = StatusCodes.Status500InternalServerError
-            };
         }
     }
 
@@ -425,7 +374,7 @@ public class SigningController : Controller
 
             try
             {
-                var certificateValue = await certificate.Value;
+                var certificateValue = await certificate.UseCertificate();
                 if (loadCertificateRequestDto.IncludeChain)
                 {
                     using var ch = new X509Chain();

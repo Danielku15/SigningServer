@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using SigningServer.Server.Configuration;
 using SigningServer.Signing.Configuration;
@@ -15,7 +14,7 @@ public class NonPooledCertificateProvider : ICertificateProvider
         _configuration = configuration;
     }
 
-    public Lazy<ValueTask<CertificateConfiguration>>? Get(string? username, string? password)
+    public ICertificateAccessor? Get(string? username, string? password)
     {
         CertificateConfiguration? cert;
         if (string.IsNullOrWhiteSpace(username))
@@ -28,16 +27,35 @@ public class NonPooledCertificateProvider : ICertificateProvider
                 c => c.IsAuthorized(username, password));
         }
 
-        return cert == null ? null : new Lazy<ValueTask<CertificateConfiguration>>(ValueTask.FromResult(cert));
+        return cert == null ? null : new NonPooledCertificateAccessor(cert);
     }
 
-    public ValueTask ReturnAsync(string? username, Lazy<ValueTask<CertificateConfiguration>> certificateConfiguration)
+    public ValueTask ReturnAsync(string? username, ICertificateAccessor certificateConfiguration)
     {
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask DestroyAsync(Lazy<ValueTask<CertificateConfiguration>>? certificateConfiguration)
+    public ValueTask DestroyAsync(ICertificateAccessor? certificateConfiguration)
     {
         return ValueTask.CompletedTask;
+    }
+
+    private class NonPooledCertificateAccessor : ICertificateAccessor
+    {
+        private readonly CertificateConfiguration _certificateConfiguration;
+        public string CertificateName { get; }
+
+        public NonPooledCertificateAccessor(CertificateConfiguration certificateConfiguration)
+        {
+            _certificateConfiguration = certificateConfiguration;
+            CertificateName = !string.IsNullOrEmpty(certificateConfiguration.CertificateName) 
+                    ? certificateConfiguration.CertificateName
+                    : certificateConfiguration.Username ?? "default";
+        }
+
+        public ValueTask<CertificateConfiguration> UseCertificate()
+        {
+            return ValueTask.FromResult(_certificateConfiguration);
+        }
     }
 }

@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NUnit.Framework;
 using SigningServer.ClientCore;
 using SigningServer.Core;
+using SigningServer.Server;
 using SigningServer.Server.Configuration;
 using SigningServer.Signing;
 using SigningServer.Signing.Configuration;
@@ -49,6 +50,8 @@ public abstract class SigningServerIntegrationTestBase : UnitTestBase
                             },
                             WorkingDirectory = "WorkingDirectory"
                         }));
+                    services.Replace(ServiceDescriptor.Singleton<ISigningRequestTracker>(
+                        new TestingSigningRequestTracker()));
                 });
             });
     }

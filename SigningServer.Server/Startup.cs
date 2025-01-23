@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SigningServer.Android.Collections;
@@ -36,6 +37,7 @@ public class Startup
         services.AddTransient<IHostedService>(sp => sp.GetRequiredService<HardwareCertificateUnlocker>());
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
         services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
+        services.TryAddSingleton<ISigningRequestTracker, DiskPersistingSigningRequestTracker>();
         services.AddSingleton<ICertificateProvider, PooledCertificateProvider>();
         services.Configure<FormOptions>(x =>
         {

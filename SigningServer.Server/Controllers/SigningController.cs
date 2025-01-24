@@ -81,11 +81,11 @@ public class SigningController : Controller
     {
         var apiSignFileResponse = new SignFileResponseDto();
         SignFileResponse? coreSignFileResponse = null;
-        var remoteIp = RemoteIp;
         string inputFileName;
         ICertificateAccessor? certificate = null;
 
         var userInfo = signFileRequest.Username ?? "unknown";
+        var logPrefix = userInfo + "@" + RemoteIp;
         
         try
         {
@@ -93,7 +93,7 @@ public class SigningController : Controller
             //
             // validate input
             _logger.LogInformation(
-                $"[{remoteIp}] [Begin] New sign request for file '{signFileRequest.FileToSign?.FileName ?? "missing"}' ({signFileRequest.FileToSign?.Length ?? 0} bytes)");
+                $"[{logPrefix}] [Begin] New sign request for file '{signFileRequest.FileToSign?.FileName ?? "missing"}' ({signFileRequest.FileToSign?.Length ?? 0} bytes)");
             if (signFileRequest.FileToSign == null || signFileRequest.FileToSign.Length == 0)
             {
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
@@ -107,14 +107,15 @@ public class SigningController : Controller
             certificate = _certificateProvider.Get(signFileRequest.Username, signFileRequest.Password);
             if (certificate == null)
             {
-                _logger.LogWarning("Unauthorized signing request");
+                _logger.LogWarning($"[{logPrefix}] Unauthorized signing request");
                 apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedUnauthorized;
                 await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, 1);
                 return new SignFileActionResult(apiSignFileResponse, null);
             }
             
             userInfo = certificate.Credentials.DisplayName + "-" + certificate.CertificateName;
-
+            logPrefix = userInfo + "@" + RemoteIp;
+            
             // 
             // find compatible signing tool
             var signingTool = _signingToolProvider.GetSigningTool(signFileRequest.FileToSign.FileName);
@@ -146,7 +147,7 @@ public class SigningController : Controller
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, "Could not create working directory");
+                    _logger.LogWarning(e, $"[{logPrefix}] Could not create working directory");
                 }
             }
 
@@ -167,7 +168,7 @@ public class SigningController : Controller
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Failed to cleanup input file: {inputFileName}", inputFileName);
+                    _logger.LogError(e, $"[{logPrefix}] Failed to cleanup input file: {inputFileName}", inputFileName);
                 }
 
                 return Task.CompletedTask;
@@ -214,7 +215,7 @@ public class SigningController : Controller
                         }
                         catch (Exception e)
                         {
-                            _logger.LogError(e, "Failed to cleanup output file {resultFile}",
+                            _logger.LogError(e, $"[{logPrefix}] Failed to cleanup output file {resultFile}",
                                 resultFile.OutputFilePath);
                         }
                     }
@@ -232,14 +233,14 @@ public class SigningController : Controller
             apiSignFileResponse.SignTimeInMilliseconds = stopwatch.ElapsedMilliseconds + preparationTime;
 
             _logger.LogInformation(
-                $"[{remoteIp}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, prepared in {preparationTime}ms, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
+                $"[{logPrefix}] [Finished] request for file '{signFileRequest.FileToSign.FileName}' finished ({signFileRequest.FileToSign.FileName} bytes, prepared in {preparationTime}ms, uploaded in {apiSignFileResponse.UploadTimeInMilliseconds}ms, signed in {apiSignFileResponse.SignTimeInMilliseconds})");
         }
         catch (Exception e)
         {
             await _certificateProvider.DestroyAsync(certificate);
 
             _logger.LogError(e,
-                $"[{remoteIp}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
+                $"[{logPrefix}] Signing of '{signFileRequest.FileToSign?.Name}' failed: {e.Message} HR[{e.HResult}");
             apiSignFileResponse.Status = SignFileResponseStatus.FileNotSignedError;
             apiSignFileResponse.ErrorMessage = e.Message;
             await _signingRequestTracker.TrackRequestAsync(userInfo, apiSignFileResponse.Status, coreSignFileResponse?.ResultFiles?.Count ?? 1);
@@ -257,15 +258,16 @@ public class SigningController : Controller
     [Produces("application/json", Type = typeof(SignHashResponseDto))]
     public async Task<SignHashActionResult> SignHash([FromBody, Required] SignHashRequestDto signHashRequestDto)
     {
-        var remoteIp = RemoteIp;
         var certificate = _certificateProvider.Get(signHashRequestDto.Username, signHashRequestDto.Password);
         var userInfo = signHashRequestDto.Username ?? "unknown";
+        var logPrefix = userInfo + "@" + RemoteIp;
+
         try
         {
             //
             // validate input
             _logger.LogInformation(
-                $"[{remoteIp}] [Begin] New sign request for hash '{signHashRequestDto.Hash}' ({signHashRequestDto.HashAlgorithm})");
+                $"[{logPrefix}] [Begin] New sign request for hash '{signHashRequestDto.Hash}' ({signHashRequestDto.HashAlgorithm})");
             byte[] hashBytes;
             try
             {
@@ -295,6 +297,7 @@ public class SigningController : Controller
             }
             
             userInfo = certificate.Credentials.DisplayName + "-" + certificate.CertificateName;
+            logPrefix = userInfo + "@" + RemoteIp;
 
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Restart();
@@ -331,14 +334,14 @@ public class SigningController : Controller
             await _signingRequestTracker.TrackRequestAsync(userInfo, trackingStatus, 1);
             
             _logger.LogInformation(
-                $"[{remoteIp}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {stopwatch.ElapsedMilliseconds})");
+                $"[{logPrefix}] [Finished] request for hash '{signHashRequestDto.Hash}' finished ({signHashRequestDto.HashAlgorithm}, signed in {stopwatch.ElapsedMilliseconds})");
 
             return result;
         }
         catch (Exception e)
         {
             await _certificateProvider.DestroyAsync(certificate);
-            _logger.LogError(e, $"[{remoteIp}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
+            _logger.LogError(e, $"[{logPrefix}] Signing of '{signHashRequestDto.Hash}' failed: {e.Message}");
             await _signingRequestTracker.TrackRequestAsync(userInfo, SignFileResponseStatus.FileNotSignedError, 1);
             return new SignHashActionResult(new SignHashResponseDto(
                 SignHashResponseStatus.HashNotSignedError,

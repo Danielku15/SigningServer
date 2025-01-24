@@ -14,6 +14,8 @@ public class SigningClientConfiguration : SigningClientConfigurationBase
     /// </summary>
     public string SigningServer { get; set; } = string.Empty;
 
+    public override string CredentialInfo => Username;
+
     /// <summary>
     /// The username for authentication and cerificate selection.
     /// </summary>

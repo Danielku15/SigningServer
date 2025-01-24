@@ -37,6 +37,12 @@ public class SigningClientRunner<TConfiguration>
             return;
         }
 
+        if (configuration.IsSigningDisabled)
+        {
+            _logger.LogWarning("Signing was disabled by configuration");
+            return;
+        }
+
         foreach (var source in configuration.Sources)
         {
             if (!File.Exists(source) && !Directory.Exists(source))

@@ -21,6 +21,8 @@ public class StandaloneSigningClientConfiguration : SigningClientConfigurationBa
 {
     public ServerType ServerType { get; set; }
 
+    public override string CredentialInfo => "local";
+
     /// <summary>
     /// A RFC-3161 compliant timestamping server which should be used.
     /// </summary>

@@ -37,4 +37,13 @@ public class SigningServerConfiguration
     /// The maximum degree of parallelism allowed per individual client.
     /// </summary>
     public int MaxDegreeOfParallelismPerClient { get; set; } = 4;
+
+    /// <summary>
+    /// Whether the server should simply use one certificate handle for multiple signing requests or
+    /// whether a pool of certificate handles should be used.
+    ///
+    /// This is useful for hardware certificates which may have a limited number of concurrent signing requests
+    /// and where certificate handles might become invalid.
+    /// </summary>
+    public bool UseCertificatePooling { get; set; } = true;
 }

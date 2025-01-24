@@ -266,7 +266,7 @@ public abstract class SigningServerIntegrationTestBase : UnitTestBase
         var cert = Path.Combine(ExecutionDirectory, "Certs", "Cert.pfx");
         File.Exists(cert).Should().BeTrue();
 
-        using var pfx = X509CertificateLoader.LoadCertificate(await File.ReadAllBytesAsync(cert));
+        using var pfx = X509CertificateLoader.LoadPkcs12(await File.ReadAllBytesAsync(cert), null);
         pfx.Thumbprint.Should().Be((await AssemblyEvents.Certificate.Value).Thumbprint);
         pfx.HasPrivateKey.Should().BeFalse();
     }

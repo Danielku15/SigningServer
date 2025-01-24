@@ -93,7 +93,7 @@ public class SigningServerApiConfiguration
         switch (responseDto!.Status)
         {
             case LoadCertificateResponseStatus.CertificateLoaded:
-                return X509CertificateLoader.LoadCertificate(Convert.FromBase64String(responseDto.CertificateData!));
+                return X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(responseDto.CertificateData!), null);
             case LoadCertificateResponseStatus.CertificateNotLoadedError:
                 throw new InvalidConfigurationException("Could not load certificate: " + responseDto.ErrorMessage);
             case LoadCertificateResponseStatus.CertificateNotLoadedUnauthorized:

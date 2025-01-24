@@ -7,8 +7,8 @@
     <InternalsVisibleTo Include="SigningServer.Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.11.4" />
-    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.5.1" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
     <PackageReference Include="RSAKeyVaultProvider" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>

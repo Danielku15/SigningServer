@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using SigningServer.Core;
 using SigningServer.Server;
 
@@ -12,5 +14,10 @@ public class TestingSigningRequestTracker : ISigningRequestTracker
     {
         CurrentDay.TrackRequest(userInfo, status, numberOfSignatures);
         return Task.CompletedTask;
+    }
+
+    public Task<IList<SigningRequestTrackingLogFile>> LoadAllTrackingFiles(CancellationToken cancellationToken)
+    {
+        return Task.FromResult((IList<SigningRequestTrackingLogFile>) [CurrentDay]);
     }
 }

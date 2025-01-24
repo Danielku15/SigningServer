@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -93,6 +94,8 @@ public interface ISigningRequestTracker
         string userInfo,
         SignFileResponseStatus status, int numberOfSignatures
     );
+
+    Task<IList<SigningRequestTrackingLogFile>> LoadAllTrackingFiles(CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -152,6 +155,7 @@ public class DiskPersistingSigningRequestTracker : ISigningRequestTracker, IDisp
         var fileName = GetFileName(file.Date);
         try
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(fileName)!);
             var text = JsonSerializer.Serialize(file, JsonOptions);
             await File.WriteAllTextAsync(fileName, text, token);
         }
@@ -205,6 +209,40 @@ public class DiskPersistingSigningRequestTracker : ISigningRequestTracker, IDisp
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to load signing request tracking log file {FileName}", fileName);
+        }
+    }
+
+
+    public async Task<IList<SigningRequestTrackingLogFile>> LoadAllTrackingFiles(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = new List<SigningRequestTrackingLogFile>();
+            var files = Directory.EnumerateFiles("audit", "*.json");
+            foreach (var file in files)
+            {
+                try
+                {
+                    var text = await File.ReadAllTextAsync(file, cancellationToken);
+                    var logFile = JsonSerializer.Deserialize<SigningRequestTrackingLogFile>(text, JsonOptions);
+                    if (logFile != null)
+                    {
+                        result.Add(logFile);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed to load signing request tracking log file {FileName}", file);
+                }
+            }
+
+            result.Sort((a, b) => a.Date.CompareTo(b.Date));
+            return result;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to load all tracking files");
+            return [];
         }
     }
 

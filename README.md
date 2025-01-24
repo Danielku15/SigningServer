@@ -58,6 +58,19 @@ specific settings are nested in the `"SigningServer` key.
             }
         }
     },
+    // some general system information presented on the landing page (available on the hostname+port as configured)
+    "SystemInfo": {
+        // The name of the service, displayed as headline
+        "ServiceName": "MyCorp Signing Server",
+        // A short description of the service displayed on the landing page for users to understand where they are 
+        "ServiceDescription": "This is the signing server for MyCrop. Check the knowledge base link below for more info.",
+        // A link to the support page where users can get help
+        "SupportLink": "https://mycorp.com/support",
+        // A link to a knowledge base article describing this service and how to gain access.
+        "KnowledgeBaseLink": "https://mycorp.com/signing-server-kb"
+    },
+            
+    // the service configuration
     "SigningServer": {
         // whether to do internal certificate handle pooling or reuse the certificate instance (can improve USB token resiliance)
         "UseCertificatePool": true,

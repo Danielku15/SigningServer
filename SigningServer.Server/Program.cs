@@ -1,21 +1,26 @@
 ﻿using System;
 using System.IO;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.WindowsServices;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Logging;
-using NLog.Web;
+using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
+using SigningServer.Signing;
 using SigningServer.Signing.Configuration;
 
 namespace SigningServer.Server;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         if (Environment.UserInteractive)
         {
@@ -32,43 +37,152 @@ public class Program
         }
 
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-        var host = CreateWebHostBuilder(args).Build();
-        if (Environment.UserInteractive)
+
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddSingleton<SigningServerConfiguration>(_ =>
         {
-            host.Run();
+            var signingServerConfiguration = new SigningServerConfiguration();
+            builder.Configuration.GetSection("SigningServer").Bind(signingServerConfiguration);
+
+            signingServerConfiguration.HardwareCertificateUnlockIntervalInSeconds =
+                signingServerConfiguration.HardwareCertificateUnlockIntervalInSeconds > 0
+                    ? signingServerConfiguration.HardwareCertificateUnlockIntervalInSeconds
+                    : 60 * 60;
+
+            return signingServerConfiguration;
+        });
+        builder.Services.AddControllers();
+
+        builder.Services.AddSingleton<IUsageReportProvider, UsageReportProvider>();
+        builder.Services.AddSingleton<HardwareCertificateUnlocker>();
+        builder.Services.AddTransient<IHostedService>(sp => sp.GetRequiredService<HardwareCertificateUnlocker>());
+        builder.Services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
+        builder.Services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
+        builder.Services.Configure<SystemInfo>(builder.Configuration.GetSection(SystemInfo.BaseKey));
+        builder.Services.TryAddSingleton<ISigningRequestTracker, DiskPersistingSigningRequestTracker>();
+        builder.Services.AddSingleton<ICertificateProvider>(sp =>
+        {
+            var config = sp.GetRequiredService<SigningServerConfiguration>();
+            return config.UseCertificatePooling
+                ? ActivatorUtilities.CreateInstance<PooledCertificateProvider>(sp)
+                : ActivatorUtilities.CreateInstance<NonPooledCertificateProvider>(sp);
+        });
+
+        builder.Services.Configure<FormOptions>(x =>
+        {
+            x.ValueLengthLimit = int.MaxValue;
+            x.MultipartBodyLengthLimit = long.MaxValue;
+        });
+
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.SetIsOriginAllowed(_ => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
+
+        if (WindowsServiceHelpers.IsWindowsService())
+        {
+            builder.Services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
+        }
+        
+#if DEBUG
+            StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
+#endif
+
+
+        var app = builder.Build();
+
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+        var signingServerConfiguration = app.Services.GetRequiredService<SigningServerConfiguration>();
+        var unlocker = app.Services.GetRequiredService<HardwareCertificateUnlocker>();
+        var certConfigurationLogger = app.Services.GetRequiredService<ILogger<CertificateConfiguration>>();
+        await ValidateConfigurationAsync(logger, certConfigurationLogger, unlocker, signingServerConfiguration);
+        PrepareWorkingDirectory(logger, signingServerConfiguration);
+
+        app.UseCors();
+        app.UseHttpsRedirection();
+        app.UseRouting();
+        
+        app.MapStaticAssets();
+
+        app.MapControllers();
+
+        app.MapFallbackToFile("/", "index.html");
+
+        await app.RunAsync();
+    }
+
+    private static async Task ValidateConfigurationAsync(ILogger logger,
+        ILogger<CertificateConfiguration> certConfigurationLogger,
+        HardwareCertificateUnlocker unlocker,
+        SigningServerConfiguration configuration)
+    {
+        logger.LogInformation("Validating configuration");
+        var list = new List<CertificateConfiguration>();
+        if (configuration.Certificates is { Length: > 0 })
+        {
+            foreach (var certificateConfiguration in configuration.Certificates)
+            {
+                if (certificateConfiguration.Certificate != null)
+                {
+                    list.Add(certificateConfiguration);
+                    continue;
+                }
+
+                try
+                {
+                    logger.LogInformation("Loading certificate '{certificateConfiguration}'", certificateConfiguration);
+                    await certificateConfiguration.LoadCertificateAsync(certConfigurationLogger, unlocker);
+                    list.Add(certificateConfiguration);
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, $"Certificate loading failed: {e.Message}");
+                }
+            }
         }
         else
         {
-            host.RunAsService();
+            logger.LogError("No certificates configured in appsettings");
         }
+
+        if (list.Count == 0)
+        {
+            // throw new InvalidConfigurationException(InvalidConfigurationException.NoValidCertificatesMessage);
+        }
+
+        configuration.Certificates = list.ToArray();
+        logger.LogInformation("Certificates loaded: {0}", list.Count);
     }
 
-    private static IWebHostBuilder CreateWebHostBuilder(string[] args)
-    {
-        // Workaround to load config
-        var builder = WebHost.CreateDefaultBuilder(args);
-        builder.Configure(_ => { });
-        var configuration = builder.Build().Services.GetRequiredService<IConfiguration>();
-        var signingServerConfiguration = new SigningServerConfiguration();
-        configuration.GetSection("SigningServer").Bind(signingServerConfiguration);
 
-        return WebHost.CreateDefaultBuilder(args)
-            .ConfigureServices(services =>
+    private static void PrepareWorkingDirectory(ILogger logger, SigningServerConfiguration configuration)
+    {
+        try
+        {
+            if (Directory.Exists(configuration.WorkingDirectory))
             {
-                services.AddSingleton(signingServerConfiguration);
-            })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.SetMinimumLevel(LogLevel.Trace);
-            })
-            .UseNLog()
-            .UseKestrel(options =>
-            {
-                options.Limits.MaxRequestBufferSize = null;
-                options.Limits.MaxRequestBodySize = null;
-                options.Limits.MaxResponseBufferSize = null;
-            })
-            .UseStartup<Startup>();
+                logger.LogInformation("Working directory exists, cleaning");
+                Directory.Delete(configuration.WorkingDirectory, true);
+            }
+
+            Directory.CreateDirectory(configuration.WorkingDirectory);
+            logger.LogInformation("Working directory created");
+        }
+        catch (Exception e)
+        {
+            throw new InvalidConfigurationException(
+                InvalidConfigurationException.CreateWorkingDirectoryFailedMessage, e);
+        }
+
+        logger.LogInformation("Working directory: {0}", configuration.WorkingDirectory);
     }
 }

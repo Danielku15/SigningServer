@@ -65,6 +65,30 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
         Logger.LogInformation("Found {numberOfFiles} files to sign, will sign with {numberOfWorkers} worker", numberOfFiles,
             numberOfWorkers);
 
+        var duplicateFileLookup = new ConcurrentDictionary<string, string>();
+        Func<string, string> createDuplicateFileKey;
+        
+        switch (Configuration.DuplicateFileDetection)
+        {
+            case DuplicateFileDetectionMode.None:
+                createDuplicateFileKey = file => Guid.NewGuid().ToString(); // no duplicate detection
+                break;
+            case DuplicateFileDetectionMode.ByFileName:
+                createDuplicateFileKey = Path.GetFileName;
+                break;
+            case DuplicateFileDetectionMode.ByFileHash:
+                createDuplicateFileKey = filePath =>
+                {
+                    using var stream = new BufferedStream(File.OpenRead(filePath), 100000);
+                    var sha = SHA256.Create();
+                    var checksum = sha.ComputeHash(stream);
+                    return Convert.ToHexString(checksum);
+                };
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
         var sw = Stopwatch.StartNew();
         var cancellationSource = new CancellationTokenSource();
         Exception? mainException = null;
@@ -73,7 +97,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
             {
                 try
                 {
-                    await SignFilesAsync(processingQueue, cancellationSource.Token);
+                    await SignFilesAsync(processingQueue,
+                        duplicateFileLookup, 
+                        createDuplicateFileKey,
+                        cancellationSource.Token);
                 }
                 catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
                 {
@@ -138,7 +165,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
         }
     }
 
-    private async Task SignFilesAsync(ConcurrentQueue<string> processingQueue, CancellationToken cancellationToken)
+    private async Task SignFilesAsync(ConcurrentQueue<string> processingQueue, 
+        ConcurrentDictionary<string, string> duplicateFileLookup,
+        Func<string, string> createDuplicateFileKey,
+        CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested && processingQueue.TryDequeue(out var nextFile))
         {
@@ -148,7 +178,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
             }
             else
             {
-                await DoSignFileAsync(nextFile, cancellationToken);
+                await DoSignFileAsync(nextFile,
+                    duplicateFileLookup,
+                    createDuplicateFileKey,
+                    cancellationToken);
             }
         }
     }
@@ -259,7 +292,10 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
         CancellationToken cancellationToken,
         CancellationToken fileCompletedToken);
 
-    private async Task DoSignFileAsync(string file, CancellationToken cancellationToken)
+    private async Task DoSignFileAsync(string file, 
+        ConcurrentDictionary<string, string> duplicateFileLookup,
+        Func<string, string> createDuplicateFileKey,
+        CancellationToken cancellationToken)
     {
         var info = new FileInfo(file);
 
@@ -282,6 +318,18 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                 sw.Start();
 
                 Logger.LogInformation("Start signing file {fileName}", info.FullName);
+
+                var duplicateFileKey = createDuplicateFileKey(info.FullName);
+                if (duplicateFileLookup.TryGetValue(duplicateFileKey, out var alreadySignedFilePath))
+                {
+                    Logger.LogInformation("Found already signed file {existingFileName}, will re-use local file", alreadySignedFilePath);
+                    File.Copy(alreadySignedFilePath, info.FullName, true);
+                    Logger.LogTrace("File copied from  file {existingFileName} to {targetFileName}", alreadySignedFilePath,
+                        info.FullName);
+                    return;
+                }
+                
+                
                 var results = SignFileAsync(file, cancellationToken, fileCompletedSource.Token);
 
                 var status = SignFileResponseStatus.FileSigned;
@@ -382,6 +430,8 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
                                     await fileInfo.ContentStream.CopyToAsync(targetFile, cancellationToken);
                                 }
 
+                                duplicateFileLookup[duplicateFileKey] = info.FullName;
+                                
                                 downloadWatch.Stop();
                                 Logger.LogTrace("Downloaded file {fileName} in {downloadTime}ms", fileInfo.FileName,
                                     downloadWatch.ElapsedMilliseconds);

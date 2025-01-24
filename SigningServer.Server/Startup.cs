@@ -38,7 +38,15 @@ public class Startup
         services.AddSingleton<ISigningToolProvider, DefaultSigningToolProvider>();
         services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();
         services.TryAddSingleton<ISigningRequestTracker, DiskPersistingSigningRequestTracker>();
-        services.AddSingleton<ICertificateProvider, PooledCertificateProvider>();
+        if (_configuration.UseCertificatePooling)
+        {
+            services.AddSingleton<ICertificateProvider, PooledCertificateProvider>();
+        }
+        else
+        {
+            services.AddSingleton<ICertificateProvider, NonPooledCertificateProvider>();
+        }
+        
         services.Configure<FormOptions>(x =>
         {
             x.ValueLengthLimit = int.MaxValue;

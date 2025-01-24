@@ -87,18 +87,24 @@ public class PooledCertificateProvider : ICertificateProvider
         }
     }
 
-    public Lazy<ValueTask<CertificateConfiguration>>? Get(string? username, string? password)
+    public ICertificateAccessor? Get(string? username, string? password)
     {
         CertificateConfiguration? baseConfiguration;
+        CertificateAccessCredentials? credentials;
         if (string.IsNullOrWhiteSpace(username))
         {
             baseConfiguration = _configuration.Certificates.FirstOrDefault(c => c.IsAnonymous);
             username = string.Empty;
+            credentials = CertificateAccessCredentials.Anonymous;
         }
         else
         {
-            baseConfiguration = _configuration.Certificates.FirstOrDefault(
-                c => c.IsAuthorized(username, password));
+            var authResult = _configuration.Certificates
+                .Select(c => (configuration: c, credentials: c.IsAuthorized(username, password)))
+                .FirstOrDefault(c => c.credentials != null);
+
+            baseConfiguration = authResult.configuration;
+            credentials = authResult.credentials;
         }
 
         if (baseConfiguration == null)
@@ -110,7 +116,11 @@ public class PooledCertificateProvider : ICertificateProvider
             _ => new CertificatePool(_logger, baseConfiguration, _certConfigLogger, _hardwareCertificateUnlocker)
         );
 
-        return new Lazy<ValueTask<CertificateConfiguration>>(() => GetWorkingFromPoolAsync(pool));
+        return new PooledCertificateAccessor(
+            credentials!,
+            baseConfiguration.DisplayName,
+            new Lazy<ValueTask<CertificateConfiguration>>(() => GetWorkingFromPoolAsync(pool))
+        );
     }
 
     private static readonly byte[] SignTestSha2Hash = ((Func<byte[]>)(() =>
@@ -180,9 +190,9 @@ public class PooledCertificateProvider : ICertificateProvider
         return cert;
     }
 
-    public async ValueTask ReturnAsync(string? username, Lazy<ValueTask<CertificateConfiguration>> certificateConfiguration)
+    public async ValueTask ReturnAsync(string? username, ICertificateAccessor certificateConfiguration)
     {
-        if (certificateConfiguration is not { IsValueCreated: true })
+        if (certificateConfiguration is not PooledCertificateAccessor { Configuration.IsValueCreated: true } accessor)
         {
             return;
         }
@@ -192,17 +202,17 @@ public class PooledCertificateProvider : ICertificateProvider
             username = string.Empty;
         }
 
-        _certificatePools[username].Return(await certificateConfiguration.Value);
+        _certificatePools[username].Return(await accessor.Configuration.Value);
     }
 
-    public async ValueTask DestroyAsync(Lazy<ValueTask<CertificateConfiguration>>? certificateConfiguration)
+    public async ValueTask DestroyAsync(ICertificateAccessor? certificateConfiguration)
     {
-        if (certificateConfiguration is not { IsValueCreated: true })
+        if (certificateConfiguration is not PooledCertificateAccessor { Configuration.IsValueCreated: true } accessor)
         {
             return;
         }
 
-        Destroy(await certificateConfiguration.Value);
+        Destroy(await accessor.Configuration.Value);
     }
 
     private void Destroy(CertificateConfiguration certificateConfiguration)
@@ -223,6 +233,28 @@ public class PooledCertificateProvider : ICertificateProvider
         catch (Exception e)
         {
             _logger.LogInformation(e, "Error during disposing of PrivateKey");
+        }
+    }
+
+    private class PooledCertificateAccessor : ICertificateAccessor
+    {
+        public CertificateAccessCredentials Credentials { get; }
+        public string CertificateName { get; }
+        public Lazy<ValueTask<CertificateConfiguration>> Configuration { get; }
+
+        public PooledCertificateAccessor(
+            CertificateAccessCredentials credentials,
+            string certificateName,
+            Lazy<ValueTask<CertificateConfiguration>> configuration)
+        {
+            Credentials = credentials;
+            CertificateName = certificateName;
+            Configuration = configuration;
+        }
+
+        public ValueTask<CertificateConfiguration> UseCertificate()
+        {
+            return Configuration.Value;
         }
     }
 }

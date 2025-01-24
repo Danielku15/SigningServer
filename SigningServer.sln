@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonFiles", "CommonFiles"
 		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 		LICENSE = LICENSE
+		BREAKING_CHANGES.md = BREAKING_CHANGES.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SigningServer.Core", "SigningServer.Core\SigningServer.Core.csproj", "{EC706B59-9540-45A3-A6E3-29634855DA74}"

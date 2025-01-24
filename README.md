@@ -78,10 +78,14 @@ specific settings are nested in the `"SigningServer` key.
                 // Can be removed or left empty for the default certificate
                 // which should be used in case the client does not supply credentials.
                 // There can only be one certificate without username and password 
-
-                "Username": "", // The plain text username to use this certificate
-                "Password": "", // The plain text password to use this certificate
-
+                "CertificateName": "MyCodeSigningCert", // The name used in logging and reporting areas
+                // A list of credentials which can be used to select this certificate,
+                // Leave this empty or add a item with username and password set to empty 
+                // To use it as default certificate 
+                "Credentials": [
+                  { "Username": "", "Password": "" }, // default when no credentials are supplied
+                  { "Username": "team01", "Password": "teampass01" } // designated credentials for a team                  
+                ],
                 "Local": {
                     "Thumbprint": "", // The thumbprint of the certificate to load
                     "StoreName": "", // The name of the certificate store to access (AddressBook, AuthRoot, CertificateAuthority, Disallowed, My, Root, TrustedPeople, TrustedPublisher)
@@ -98,8 +102,10 @@ specific settings are nested in the `"SigningServer` key.
             // Example for a certificate from an Azure KeyVault
             {
                 // Same as for local certificates
-                "Username": "azure-keyvault",
-                "Password": "azure-keyvault",
+                "CertificateName": "KeyVaultCert",
+                "Credentials": [
+                  { "Username": "azure-keyvault", "Password": "azure-keyvault" }                  
+                ],
 
                 // Azure specific configuration
                 "Azure": {

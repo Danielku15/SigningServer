@@ -142,7 +142,7 @@ public class JarSigningToolTest : UnitTestBase
             var attributeName = attribute.GetName();
             if (attributeName.Contains("-Digest"))
             {
-                Assert.AreEqual(digestName, attributeName,
+                Assert.That(digestName, Is.EqualTo(attributeName),
                     section.GetName() + " has wrong digest type " + attributeName);
             }
         }

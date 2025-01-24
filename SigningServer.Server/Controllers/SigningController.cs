@@ -385,7 +385,7 @@ public class SigningController : Controller
                     ch.Build(certificateValue.Certificate!);
 
                     var collection = new X509Certificate2Collection(ch.ChainElements
-                        .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
+                        .Select(e => X509CertificateLoader.LoadCertificate(e.Certificate.RawData)).ToArray());
                     try
                     {
                         var exported =
@@ -406,7 +406,7 @@ public class SigningController : Controller
                 }
                 else
                 {
-                    using var copyWithoutPrivateKey = new X509Certificate2(certificateValue.Certificate!.RawData);
+                    using var copyWithoutPrivateKey = X509CertificateLoader.LoadCertificate(certificateValue.Certificate!.RawData);
                     var exported = LoadCertificateResponseDto.Export(copyWithoutPrivateKey,
                         loadCertificateRequestDto.ExportFormat);
                     return new LoadCertificateActionResult(new LoadCertificateResponseDto(

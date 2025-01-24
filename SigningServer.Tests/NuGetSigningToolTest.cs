@@ -61,7 +61,7 @@ public class NuGetSigningToolTest : UnitTestBase
                 buffer.AppendLine($"Finished with {errors} errors and {warnings} warnings.");
             }
 
-            Assert.Fail("Failed to verify nuget: {0}", buffer);
+            Assert.Fail($"Failed to verify nuget: {buffer}");
         }
     }
 

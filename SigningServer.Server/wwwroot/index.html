@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signing Server</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <style>
+        #loading {
+            display: none;
+        }
+
+        .show-after-load {
+            display: none;
+        }
+        
+        .loading-visible {
+            display: none;
+        }
+        .loading .loading-visible {
+            display: initial;
+        }
+    </style>
+</head>
+<body>
+<div class="col-md-10 mx-auto my-5">
+    <h1 class="display-4 fw-normal"><span id="server-name">Signing Server</span></h1>
+    <p id="service-description" class="lead fw-normal"></p>
+</div>
+
+<div id="loading" class="d-flex align-items-center">
+    <div class="spinner-border spinner-border-sm text-primary m-1" aria-hidden="true"></div>
+    <strong role="status">Loading information...</strong>
+</div>
+
+<div class="col-md-8 mx-auto show-after-load">
+    <div class="card">
+        <div class="card-header">
+            Service Info
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Software Version:</strong> <span id="software-version"></span></li>
+            <li class="list-group-item">
+                <div id="usage-report" class="d-flex align-items-center">
+                    <a id="usage-report-link" href="#">Usage Reports <span class="loading-visible">(loading)</span></a>
+                    <div class="spinner-border spinner-border-sm text-primary m-1 loading-visible" aria-hidden="true"></div>
+                </div>
+            </li>
+            <li class="list-group-item"><a id="support-portal" href="#">Support portal</a></li>
+            <li class="list-group-item"><a id="knowledge-base" href="#">Knowledge Base</a></li>
+        </ul>
+    </div>
+</div>
+
+<script src="js/bootstrap.bundle.min.js"></script>
+<script>
+    function loadSystemInfo() {
+        const loadingDiv = document.getElementById('loading');
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/system', true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const systemInfo = JSON.parse(xhr.responseText);
+                document.querySelector('#software-version').innerText = systemInfo.applicationVersion;
+                document.querySelector('#server-name').innerText = systemInfo.serviceName;
+                document.querySelector('#service-description').innerText = systemInfo.serviceDescription;
+                document.querySelector('#support-portal').href = systemInfo.supportLink;
+                document.querySelector('#knowledge-base').href = systemInfo.knowledgeBaseLink;
+
+                for (const o of document.querySelectorAll('.show-after-load')) {
+                    o.classList.remove('show-after-load');
+                }
+                loadingDiv.classList.add('d-none');
+            } else {
+                loadingDiv.innerText = "Failed to load system information, please contact your support";
+                loadingDiv.classList.add('error');
+            }
+        };
+        xhr.send();
+    }
+    
+    function padZero(n) {
+        return n.toString().padStart(2, '0');
+    }
+    
+    function loadUsageReport() {
+        const usageReportDiv = document.getElementById('usage-report');
+        usageReportDiv.classList.add('loading');
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/system/usage-reports', true);
+        xhr.responseType = 'blob';
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(this.response);
+                const now = new Date();
+                downloadLink.download = `${now.getFullYear()}${padZero(now.getMonth() + 1)}${padZero(now.getDate())}${padZero(now.getHours())}${padZero(now.getMinutes())}${padZero(now.getSeconds())}_SigningServerUsageReport.xlsx`;
+                document.body.append(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => URL.revokeObjectURL(downloadLink.href), 7000);
+                usageReportDiv.classList.remove('loading');                
+            } else {
+                alert('Failed to load usage report, please check the browser and application logs.');
+            }
+        };
+        xhr.send();
+    }
+    
+    document.getElementById('usage-report-link').addEventListener('click', (e)=>  {
+        e.preventDefault();
+        loadUsageReport();
+    });
+
+    loadSystemInfo()
+</script>
+</body>
+</html>

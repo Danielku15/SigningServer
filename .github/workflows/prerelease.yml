@@ -12,32 +12,32 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '9'
       - run: dotnet build SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - run: dotnet publish SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - run: dotnet pack SigningServer.sln --configuration=Release -p:BuildNumber=${{ inputs.build }} -p:VersionSuffix=alpha.${{ inputs.build }}
       - name: Archive Server Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.Server
           path: |
             SigningServer.Server/bin/Release/*/publish/**/*.*
       - name: Archive Client Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.Client
           path: |
             SigningServer.Client/bin/Release/*/publish/**/*.*
       - name: Archive StandaloneClient Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.StandaloneClient
           path: |
             SigningServer.StandaloneClient/bin/Release/*/publish/**/*.*
       - name: Archive Client .net Tool
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.Client.Tool
           path: |

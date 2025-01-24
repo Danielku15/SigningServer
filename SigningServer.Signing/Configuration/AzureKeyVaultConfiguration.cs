@@ -54,7 +54,7 @@ public class AzureKeyVaultConfiguration
 
         var client = new CertificateClient(new Uri(KeyVaultUrl), credentials);
         var azureCertificate = (await client.GetCertificateAsync(CertificateName)).Value;
-        var certificate = new X509Certificate2(azureCertificate.Cer);
+        var certificate = X509CertificateLoader.LoadCertificate(azureCertificate.Cer);
         if (certificate.GetRSAPublicKey() is not null)
         {
             certificateConfiguration.PrivateKey = RSAFactory.Create(credentials, azureCertificate.KeyId, certificate);

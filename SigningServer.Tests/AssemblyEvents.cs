@@ -34,7 +34,7 @@ public class AssemblyEvents
 
         _log.LogInformation("Loading certificate");
 
-        var cert = new X509Certificate2(certificatePath, certificatePassword,
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(certificatePath, certificatePassword,
             X509KeyStorageFlags.Exportable | X509KeyStorageFlags.DefaultKeySet | X509KeyStorageFlags.PersistKeySet);
         Certificate = new Lazy<ValueTask<X509Certificate2>>(ValueTask.FromResult(cert));
         PrivateKey = new Lazy<ValueTask<AsymmetricAlgorithm>>(ValueTask.FromResult(cert.GetECDsaPrivateKey() ??

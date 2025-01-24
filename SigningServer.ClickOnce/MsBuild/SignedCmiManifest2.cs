@@ -107,12 +107,12 @@ public class SignedCmiManifest2
         var signedXml = new ManifestSignedXml2(licenseDom);
         // only needs to change the provider type when RSACryptoServiceProvider is used
         signedXml.SigningKey = rsaPrivateKey;
-        signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
+        signedXml.SignedInfo!.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
         signedXml.SignedInfo.SignatureMethod = signer.UseSha256 ? Sha256SignatureMethodUri : Sha1SignatureMethodUri;
 
         // Add the key information.
         signedXml.KeyInfo.AddClause(new RSAKeyValue(rsaPrivateKey));
-        signedXml.KeyInfo.AddClause(new KeyInfoX509Data(signer.Certificate, X509IncludeOption.ExcludeRoot));
+        signedXml.KeyInfo.AddClause(new KeyInfoX509Data(signer.Certificate!, X509IncludeOption.ExcludeRoot));
 
         // Add the enveloped reference.
         var reference = new Reference
@@ -326,7 +326,7 @@ public class SignedCmiManifest2
         signedXml.KeyInfo.AddClause(new RSAKeyValue(snKey));
         if (licenseDom != null)
         {
-            signedXml.KeyInfo.AddClause(new KeyInfoNode(licenseDom.DocumentElement));
+            signedXml.KeyInfo.AddClause(new KeyInfoNode(licenseDom.DocumentElement!));
         }
 
         signedXml.KeyInfo.Id = "StrongNameKeyInfo";

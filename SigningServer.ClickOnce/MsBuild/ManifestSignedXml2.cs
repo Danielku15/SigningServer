@@ -14,7 +14,7 @@ public class ManifestSignedXml2 : SignedXml
     {
     }
 
-    public override XmlElement? GetIdElement(XmlDocument document, string idValue)
+    public override XmlElement? GetIdElement(XmlDocument? document, string idValue)
     {
         var keyInfo = this.KeyInfo;
         return keyInfo.Id != idValue ? null : keyInfo.GetXml();

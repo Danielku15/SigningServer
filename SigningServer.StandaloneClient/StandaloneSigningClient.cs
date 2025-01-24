@@ -68,7 +68,7 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
             ch.Build(Configuration.Server.Certificate!);
 
             var collection = new X509Certificate2Collection(ch.ChainElements
-                .Select(e => new X509Certificate2(e.Certificate.RawData)).ToArray());
+                .Select(e => X509CertificateLoader.LoadCertificate(e.Certificate.RawData)).ToArray());
             try
             {
                 var exported =
@@ -89,7 +89,7 @@ public class StandaloneSigningClient : SigningClient<StandaloneSigningClientConf
         }
         else
         {
-            using var copyWithoutPrivateKey = new X509Certificate2(Configuration.Server.Certificate!.RawData);
+            using var copyWithoutPrivateKey = X509CertificateLoader.LoadCertificate(Configuration.Server.Certificate!.RawData);
             var exported = LoadCertificateResponseDto.Export(copyWithoutPrivateKey,
                 Configuration.LoadCertificateExportFormat!.Value);
             return Task.FromResult(new LoadCertificateResponseDto(

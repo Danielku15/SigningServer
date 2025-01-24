@@ -51,7 +51,7 @@ public class BouncyAndDotNetCompatibilityTestData
         var dsaCert = LoadCertBytes("dsa.pfx");
         var ecdsaCert = LoadCertBytes("ecdsa.pfx");
 
-        var rsaDotNet = new X509Certificate2(rsaCert);
+        var rsaDotNet = X509CertificateLoader.LoadCertificate(rsaCert);
         rsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetRsaCertificate = rsaDotNet;
         DotNetRsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(rsaDotNet);
@@ -68,7 +68,7 @@ public class BouncyAndDotNetCompatibilityTestData
         BouncyRsaPrivateKey =
             BouncyCastleCryptographyProvider.Instance.CreatePrivateKey(rsaBouncy.GetKey(alias).Key);
 
-        var dsaDotNet = new X509Certificate2(dsaCert);
+        var dsaDotNet = X509CertificateLoader.LoadCertificate(dsaCert);
         dsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetDsaCertificate = dsaDotNet;
         DotNetDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(dsaDotNet);
@@ -83,7 +83,7 @@ public class BouncyAndDotNetCompatibilityTestData
         BouncyDsaPrivateKey =
             BouncyCastleCryptographyProvider.Instance.CreatePrivateKey(dsaBouncy.GetKey(alias).Key);
 
-        var ecdsaDotNet = new X509Certificate2(ecdsaCert);
+        var ecdsaDotNet = X509CertificateLoader.LoadCertificate(ecdsaCert);
         ecdsaDotNet.HasPrivateKey.Should().BeTrue();
         DotNetECDsaCertificate = ecdsaDotNet;
         DotNetECDsaPublicKey = DotNetCryptographyProvider.Instance.CreatePublicKey(ecdsaDotNet);

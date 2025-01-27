@@ -104,6 +104,9 @@ public class Program
         builder.Services.AddSingleton<ICertificateProvider>(sp =>
         {
             var config = sp.GetRequiredService<SigningServerConfiguration>();
+            var logger = sp.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Will use certificate pooling: {0}", config.UseCertificatePooling);
+            
             return config.UseCertificatePooling
                 ? ActivatorUtilities.CreateInstance<PooledCertificateProvider>(sp)
                 : ActivatorUtilities.CreateInstance<NonPooledCertificateProvider>(sp);

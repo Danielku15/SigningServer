@@ -10,11 +10,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Config;
+using NLog.Extensions.Logging;
+using NLog.Targets;
 using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
 using SigningServer.Server.Util;
 using SigningServer.Signing;
 using SigningServer.Signing.Configuration;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace SigningServer.Server;
 
@@ -39,6 +44,42 @@ public class Program
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Logging.ClearProviders();
+
+        var nlogConfig = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location)!,
+            "NLog.config");
+
+        LoggingConfiguration? config = null;
+        try
+        {
+            if (File.Exists(nlogConfig))
+            {
+                config = new XmlLoggingConfiguration(nlogConfig);
+            }
+        }
+        catch (Exception e)
+        {
+            await Console.Error.WriteLineAsync("Failed to load Logging Configuration: " + e);
+        }
+
+        if (config == null)
+        {
+            config = new LoggingConfiguration();
+            var consoleTarget = new ColoredConsoleTarget("colored")
+            {
+                Layout =
+                    "${date:format=o} [${uppercase:${level}}]: ${message} ${exception:format=tostring}"
+            };
+            config.AddTarget(consoleTarget);
+            config.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Off, consoleTarget);
+        }
+
+        LogManager.Configuration = config;
+        LogManager.ReconfigExistingLoggers();
+
+        builder.Logging.AddNLog(config);
+        
         builder.Services.AddSingleton<SigningServerConfiguration>(_ =>
         {
             var signingServerConfiguration = new SigningServerConfiguration();

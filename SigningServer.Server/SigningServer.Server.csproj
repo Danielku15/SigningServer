@@ -1,29 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<Title>SigningServer Server</Title>
-		<Description>This is the server side component for running a signing server.</Description>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<TargetFramework>$(TargetFramework)-windows</TargetFramework>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Title>SigningServer Server</Title>
+    <Description>This is the server side component for running a signing server.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFramework>$(TargetFramework)-windows</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsPublishable>true</IsPublishable>
   </PropertyGroup>
-	<ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
-    <PackageReference Include="ClosedXML" Version="0.104.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="9.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1" />
-		<PackageReference Include="NLog" Version="5.3.4" />
-		<PackageReference Include="NLog.Web.AspNetCore" Version="5.3.15" />
-		<PackageReference Include="SharpZipLib" Version="1.4.2" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj" />
-		<ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj" />
-		<ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
-		<ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
-		<ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj" />
-		<ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj" />
-		<ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
+    <PackageReference Include="ClosedXML" Version="0.104.2"/>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="9.0.1"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1"/>
+    <PackageReference Include="NLog" Version="5.3.4"/>
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.15"/>
+    <PackageReference Include="SharpZipLib" Version="1.4.2"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SigningServer.Android\SigningServer.Android.csproj"/>
+    <ProjectReference Include="..\SigningServer.ClickOnce\SigningServer.ClickOnce.csproj"/>
+    <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj"/>
+    <ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj"/>
+    <ProjectReference Include="..\SigningServer.MsSign\SigningServer.MsSign.csproj"/>
+    <ProjectReference Include="..\SigningServer.NuGet\SigningServer.NuGet.csproj"/>
+    <ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nlog.config" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
 </Project>

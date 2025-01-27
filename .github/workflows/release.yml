@@ -8,8 +8,7 @@ jobs:
   build:
     name: Create Release
     runs-on: windows-latest
-    # not for pre-release
-    if: !contains(github.ref_name, '-') 
+    if: ${{ !contains(github.ref_name, '-') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -34,7 +33,6 @@ jobs:
         run: |
             & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           name: Release ${{ steps.extract_tag.outputs.TAG }}

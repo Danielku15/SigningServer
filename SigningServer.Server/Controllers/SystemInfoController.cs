@@ -17,13 +17,6 @@ public class SystemInfoController : Controller
     private readonly IOptionsMonitor<SystemInfo> _systemInfo;
     private readonly IUsageReportProvider _usageReportProvider;
 
-    private static readonly string ApplicationVersion = typeof(SystemInfoController).Assembly
-                                                            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                                                            ?.InformationalVersion ??
-                                                        typeof(SystemInfoController).Assembly.GetName().Version
-                                                            ?.ToString() ??
-                                                        "Unknown";
-
     public SystemInfoController(IOptionsMonitor<SystemInfo> systemInfo, IUsageReportProvider usageReportProvider)
     {
         _systemInfo = systemInfo;
@@ -35,7 +28,7 @@ public class SystemInfoController : Controller
         var value = _systemInfo.CurrentValue;
         return Ok(new SystemInfoDto
         {
-            ApplicationVersion = ApplicationVersion,
+            ApplicationVersion = SystemInfo.ApplicationVersion,
             ServiceName = value.ServiceName,
             ServiceDescription = value.ServiceDescription,
             SupportLink = value.SupportLink,

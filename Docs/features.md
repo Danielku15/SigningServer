@@ -49,7 +49,7 @@ Additionally, some links to a support portal and knowledge base can be added.
 
 The server logs all signing requests and responses in textual format into log files. 
 
-This can help in troubleshooting scenarios. The logging is configured using the NLog.config:
+This can help in troubleshooting scenarios. The logging is configured using the NLog section in the asppsettings.json:
 
 * https://nlog-project.org/config/
 * https://github.com/NLog/NLog/wiki/Configuration-file

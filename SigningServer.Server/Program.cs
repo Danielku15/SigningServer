@@ -14,8 +14,10 @@ using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets;
+using NLog.Web;
 using SigningServer.Android.Collections;
 using SigningServer.Server.Configuration;
+using SigningServer.Server.Dtos;
 using SigningServer.Server.Util;
 using SigningServer.Signing;
 using SigningServer.Signing.Configuration;
@@ -46,39 +48,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Logging.ClearProviders();
-
-        var nlogConfig = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location)!,
-            "NLog.config");
-
-        LoggingConfiguration? config = null;
-        try
-        {
-            if (File.Exists(nlogConfig))
-            {
-                config = new XmlLoggingConfiguration(nlogConfig);
-            }
-        }
-        catch (Exception e)
-        {
-            await Console.Error.WriteLineAsync("Failed to load Logging Configuration: " + e);
-        }
-
-        if (config == null)
-        {
-            config = new LoggingConfiguration();
-            var consoleTarget = new ColoredConsoleTarget("colored")
-            {
-                Layout =
-                    "${date:format=o} [${uppercase:${level}}]: ${message} ${exception:format=tostring}"
-            };
-            config.AddTarget(consoleTarget);
-            config.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Off, consoleTarget);
-        }
-
-        LogManager.Configuration = config;
-        LogManager.ReconfigExistingLoggers();
-
-        builder.Logging.AddNLog(config);
+        builder.Logging.AddNLogWeb();
         
         builder.Services.AddSingleton<SigningServerConfiguration>(_ =>
         {
@@ -140,10 +110,10 @@ public class Program
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 #endif
 
-
         var app = builder.Build();
 
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Starting SigningServer {version}", SystemInfo.ApplicationVersion);
 
         var signingServerConfiguration = app.Services.GetRequiredService<SigningServerConfiguration>();
         var unlocker = app.Services.GetRequiredService<HardwareCertificateUnlocker>();

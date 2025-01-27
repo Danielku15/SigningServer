@@ -77,7 +77,7 @@ specific settings are nested in the `"SigningServer` key.
     // the service configuration
     "SigningServer": {
         // whether to do internal certificate handle pooling or reuse the certificate instance (can improve USB token resiliance)
-        "UseCertificatePool": true,
+        "UseCertificatePooling": true,
         // The directory where the server will put temporarily the files during signing
         "WorkingDirectory": "C:\\SigningServer\\WorkingDirectory",
         // A RFC-3161 compliant timestamping server which should be used. 

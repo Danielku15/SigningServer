@@ -9,7 +9,7 @@
     <IsPublishable>true</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0"/>
     <PackageReference Include="ClosedXML" Version="0.104.2"/>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="9.0.1"/>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1"/>

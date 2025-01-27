@@ -179,9 +179,25 @@ Under Linux use `dotnet SigningServer.Client.dll` instead of the executable. A s
     // the file formats (typical values: SHA1, SHA256, SHA386, SHA512)
     "HashAlgorithm": "SHA256",
     // How often to retry the signing operation until giving up. 
-    "Retry": 1
+    "Retry": 1,
+    // Allows to fully disable the signing performed
+    // This is useful in CI/CD scenarios to keep the signing step as-is 
+    // But control the signing via this flag
+    "IsSigningDisabled": false
 }
 ```
+
+### Environment Variable Configuration
+
+The client can also be configured using environment variables which can be useful in CI/CD environments.
+The software uses the [ASP.net core configuration system](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-9.0#evcp) to allow specifying any configuration key through environment variables.
+
+The environment variables are prefixed with `SIGNINGSERVER_CLIENT_`:
+
+* `SIGNINGSERVER_CLIENT_Username=team01`
+* `SIGNINGSERVER_CLIENT_IsSigningDisabled=true`
+
+Be sure to use the latest signing client for this feature to be available.
 
 #### Client Exit Codes
 

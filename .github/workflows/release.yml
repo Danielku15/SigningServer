@@ -8,6 +8,8 @@ jobs:
   build:
     name: Create Release
     runs-on: windows-latest
+    # not for pre-release
+    if: !contains(github.ref_name, '-') 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -26,11 +28,9 @@ jobs:
         run: |
             & Compress-Archive -Path .\SigningServer.Server\bin\Release\net7.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
       - name: Package Client
-        id: pack_client      
         run: |
             & Compress-Archive -Path .\SigningServer.Client\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
       - name: Package StandaloneClient
-        id: pack_client      
         run: |
             & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release

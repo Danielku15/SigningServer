@@ -8,6 +8,10 @@ this issue
 by providing the code-signing as a service. You setup on a central signing server this software as a windows service and
 using the shipped client any other client can ask the central server to sign the files.
 
+# Features
+
+See the [Features](Docs/features.md) document for a detailed list of features.
+
 ## Versioning
 Unless stated differently in the release notes, we use [Semantic Versioning](https://semver.org/).
 

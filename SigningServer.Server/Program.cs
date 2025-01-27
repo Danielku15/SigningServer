@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +47,11 @@ public class Program
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.WebHost.ConfigureKestrel(k =>
+        {
+            k.Limits.MaxRequestBodySize = null;
+        });
 
         builder.Logging.ClearProviders();
         builder.Logging.AddNLogWeb();

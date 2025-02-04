@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +38,7 @@ internal static class Program
                     config.Sources.Remove(envSources);
                 }
                 config.AddEnvironmentVariables("SIGNINGSERVER_CLIENT_");
-                config.AddJsonFile("config.json", optional: true);
+                config.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "config.json"), optional: true);
             })
             .ConfigureServices(services =>
             {

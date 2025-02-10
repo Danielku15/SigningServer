@@ -23,7 +23,7 @@ jobs:
       - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}      
       - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
       - name: Archive Server Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.Server ${{ matrix.configuration }}
           path: |
@@ -35,7 +35,7 @@ jobs:
           path: |
             SigningServer.Client/bin/${{ matrix.configuration }}/*/publish/**/*.*
       - name: Archive StandaloneClient Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SigningServer.StandaloneClient ${{ matrix.configuration }}
           path: |

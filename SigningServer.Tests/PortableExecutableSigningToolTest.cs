@@ -93,6 +93,14 @@ public class PortableExecutableSigningToolTest : UnitTestBase
         await CanSignAsync(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.cat"));
     }
 
+    [Test]
+    [DeploymentItem("TestFiles", "SignFile_Works")]
+    public async Task SignFile_Unsigned_Arx_Works()
+    {
+        var signingTool = CreateSignTool();
+        await CanSignAsync(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works/unsigned/unsigned.arx"));
+    }
+
     #endregion
 
     #region Signing Works (Sha1)
@@ -151,6 +159,15 @@ public class PortableExecutableSigningToolTest : UnitTestBase
         EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.cat"), Sha1Oid);
     }
 
+    [Test]
+    [DeploymentItem("TestFiles", "SignFile_Works_Sha1")]
+    public async Task SignFile_Unsigned_Arx_Works_Sha1()
+    {
+        var signingTool = CreateSignTool();
+        await CanSignAsync(signingTool, Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.arx"), "SHA1");
+        EnsureSignature(Path.Combine(ExecutionDirectory, "SignFile_Works_Sha1/unsigned/unsigned.arx"), Sha1Oid);
+    }
+
     #endregion
 
     #region Resign Fails
@@ -203,6 +220,14 @@ public class PortableExecutableSigningToolTest : UnitTestBase
         await CannotResignAsync(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.cat"));
     }
 
+    [Test]
+    [DeploymentItem("TestFiles", "NoResign_Fails")]
+    public async Task SignFile_Signed_Arx_NoResign_Fails()
+    {
+        var signingTool = CreateSignTool();
+        await CannotResignAsync(signingTool, Path.Combine(ExecutionDirectory, "NoResign_Fails/signed/signed.arx"));
+    }
+
     #endregion
 
     #region Resign Works
@@ -253,6 +278,14 @@ public class PortableExecutableSigningToolTest : UnitTestBase
     {
         var signingTool = CreateSignTool();
         await CanResignAsync(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.cat"));
+    }
+
+    [Test]
+    [DeploymentItem("TestFiles", "Resign_Works")]
+    public async Task SignFile_Signed_Arx_Resign_Works()
+    {
+        var signingTool = CreateSignTool();
+        await CanResignAsync(signingTool, Path.Combine(ExecutionDirectory, "Resign_Works/signed/signed.arx"));
     }
 
     #endregion

@@ -23,7 +23,8 @@ public class PortableExecutableSigningTool : ISigningTool
             ".msi",
             ".cab",
             ".cat",
-            ".ps1"
+            ".ps1",
+            ".arx"
         };
 
     private static readonly Dictionary<string, (uint algId, string algOid, HashAlgorithmName algName)>

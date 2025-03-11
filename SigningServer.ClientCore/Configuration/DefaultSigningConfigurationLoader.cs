@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -8,81 +9,43 @@ using Microsoft.Extensions.Logging;
 
 namespace SigningServer.ClientCore.Configuration;
 
-public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigurationLoader<TConfiguration>
-    where TConfiguration : SigningClientConfigurationBase, new()
+public class DefaultSigningConfigurationLoader<TConfiguration>(
+    IConfiguration appConfiguration,
+    ILogger<DefaultSigningConfigurationLoader<TConfiguration>> logger,
+    string[] commandLineArgs)
+    : ISigningConfigurationLoader<TConfiguration> where TConfiguration : SigningClientConfigurationBase, new()
 {
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<DefaultSigningConfigurationLoader<TConfiguration>> _logger;
-    private readonly string[] _commandLineArgs;
-
-    public DefaultSigningConfigurationLoader(IConfiguration configuration,
-        ILogger<DefaultSigningConfigurationLoader<TConfiguration>> logger,
-        string[] commandLineArgs)
-    {
-        _configuration = configuration;
-        _logger = logger;
-        _commandLineArgs = commandLineArgs;
-    }
-
     public async Task<TConfiguration?> LoadConfigurationAsync()
     {
-        // 1. Load from files
-        var configuration = await LoadConfigurationFromFileAsync();
-        if (configuration == null)
-        {
-            return null;
-        }
+        var loadedConfiguration = new TConfiguration();
+        // 1.. Fill from IConfiguration (e.g. environment variables )
+        appConfiguration.Bind(loadedConfiguration);
 
-        // 2. Fill from IConfiguration
-        _configuration.Bind(configuration);
-
-        // 3. Fill from Command Line
-        if (!configuration.FillFromArgs(_commandLineArgs, _logger))
+        // 2. Load from configuration files
+        if (!await LoadConfigurationFromFileAsync(loadedConfiguration))
         {
             Environment.ExitCode = ErrorCodes.InvalidConfiguration;
             return null;
         }
 
-        return configuration;
-    }
-
-    private async Task<TConfiguration?> LoadConfigurationFromFileAsync()
-    {
-        var configuration = new TConfiguration();
-
-        var defaultConfigFilePath = Path.Combine(AppContext.BaseDirectory, "config.json");
-        if (File.Exists(defaultConfigFilePath))
+        // 3. Fill from Command Line
+        if (!loadedConfiguration.FillFromArgs(commandLineArgs, logger))
         {
-            try
-            {
-                _logger.LogTrace("Loading config.json");
-                configuration =
-                    JsonSerializer.Deserialize<TConfiguration>(
-                        await File.ReadAllTextAsync(defaultConfigFilePath),
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true,
-                            Converters =
-                            {
-                                new JsonStringEnumConverter()
-                            }
-                        })!;
-                _logger.LogTrace("Configuration loaded from config.json");
-                return configuration;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Config could not be loaded");
-                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                return null;
-            }
+            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
+            return null;
         }
 
-        var args = _commandLineArgs;
+        return loadedConfiguration;
+    }
+
+    private async Task<bool> LoadConfigurationFromFileAsync(TConfiguration loadedConfiguration)
+    {
+        var hasCustomConfig = false;
+        var args = commandLineArgs;
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
-            if (arg.StartsWith("-"))
+            if (arg.StartsWith('-'))
             {
                 switch (arg.ToLowerInvariant())
                 {
@@ -90,35 +53,17 @@ public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigu
                     case "--config":
                         if (i + 1 < args.Length)
                         {
-                            try
+                            if (!await LoadConfigurationFromJson(loadedConfiguration, args[i + 1], false))
                             {
-                                _logger.LogTrace("Loading config from {fileName}", args[i + 1]);
-                                configuration =
-                                    JsonSerializer.Deserialize<TConfiguration>(
-                                        await File.ReadAllTextAsync(args[i + 1]), new JsonSerializerOptions
-                                        {
-                                            PropertyNameCaseInsensitive = true,
-                                            Converters =
-                                            {
-                                                new JsonStringEnumConverter()
-                                            }
-                                        })!;
-                                _logger.LogTrace("Configuration loaded from {fileName}", args[i + 1]);
-                            }
-                            catch (Exception e)
-                            {
-                                _logger.LogError(e, "Config could not be loaded from {fileName}", args[i + 1]);
-                                Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                                return null;
+                                return false;
                             }
 
                             i++;
                         }
                         else
                         {
-                            _logger.LogError("Config could not be loaded: No filename provided");
-                            Environment.ExitCode = ErrorCodes.InvalidConfiguration;
-                            return null;
+                            logger.LogError("Config could not be loaded: No filename provided");
+                            return false;
                         }
 
                         break;
@@ -126,6 +71,61 @@ public class DefaultSigningConfigurationLoader<TConfiguration> : ISigningConfigu
             }
         }
 
-        return configuration;
+        if (!hasCustomConfig)
+        {
+            await LoadConfigurationFromJson(loadedConfiguration, "config.json", true);
+        }
+
+        return true;
     }
+
+    private async Task<bool> LoadConfigurationFromJson(TConfiguration loadedConfiguration, string file, bool optional)
+    {
+        var realPath = ConfigFilePathCandidates
+            .Select(c => Path.Combine(c, file))
+            .FirstOrDefault(File.Exists);
+
+        if (realPath == null && optional)
+        {
+            return true;
+        }
+
+        if (realPath == null && !optional)
+        {
+            logger.LogError("Could not find config file '{ConfigFile}'. Checked: {Candidates}", file,
+                string.Join(", ", ConfigFilePathCandidates));
+            return false;
+        }
+
+        try
+        {
+            logger.LogTrace("Loading configuration from {ConfigFile}", realPath);
+
+            var json = await File.ReadAllTextAsync(realPath!);
+            JsonPopulate.PopulateObject(json, typeof(TConfiguration), loadedConfiguration, JsonOptions);
+
+            logger.LogTrace("Loaded configuration from {ConfigFile}", realPath);
+            return true;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Config could not be loaded from {ConfigFile}", file);
+            return false;
+        }
+    }
+
+    // ReSharper disable once StaticMemberInGenericType
+    private static string[] ConfigFilePathCandidates =>
+    [
+        Environment.CurrentDirectory,
+        AppContext.BaseDirectory
+    ];
+
+    // ReSharper disable once StaticMemberInGenericType
+    internal static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 }

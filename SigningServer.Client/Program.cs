@@ -38,7 +38,6 @@ internal static class Program
                     config.Sources.Remove(envSources);
                 }
                 config.AddEnvironmentVariables("SIGNINGSERVER_CLIENT_");
-                config.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "config.json"), optional: true);
             })
             .ConfigureServices(services =>
             {

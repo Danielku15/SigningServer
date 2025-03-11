@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>SigningServer Self-Contained Client</Title>
+    <Description>This package ships the fully self-contained binaries of the client for signing files on a signing server.</Description>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <IsPublishable>true</IsPublishable>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <!-- The list of RIDs we build as self-contained packages -->
+    <_ClientRuntimeIdentifiers Include="win-x64" />
+    <_ClientRuntimeIdentifiers Include="linux-x64" />
+    <_ClientRuntimeIdentifiers Include="osx-x64" />
+    <_ClientRuntimeIdentifiers Include="osx-arm64" />
+
+    <_ClientRuntimeIdentifiers Update="@(_ClientRuntimeIdentifiers)" Visible="false" />
+  </ItemGroup>
+  
+  <Target Name="PublishStandaloneClient" BeforeTargets="Publish">
+      <Error Text="TODO" />    
+  </Target>
+  
+</Project>

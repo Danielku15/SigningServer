@@ -1,0 +1,41 @@
+name: Test Self Contained Client
+on:
+  workflow_call:
+    inputs:
+      configuration:
+        type: string
+        description: The configuration to use
+        required: true
+        
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient ${{inputs.configuration}}
+      - run: 7z x SigningServer.SelfContainedClient.*.nupkg -obin
+      - run: bin/tools/win-x64/SigningServer.Client.exe
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient ${{inputs.configuration}}
+      - run: unzip SigningServer.SelfContainedClient.*.nupkg -d bin
+      - run: |
+          chmod +x bin/tools/linux-x64/SigningServer.Client
+          ./bin/tools/linux-x64/SigningServer.Client
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient ${{inputs.configuration}}
+      - run: unzip SigningServer.SelfContainedClient.*.nupkg -d bin
+      - run: |
+          chmod +x bin/tools/osx-arm64/SigningServer.Client
+          ./bin/tools/osx-arm64/SigningServer.Client

@@ -45,15 +45,6 @@ jobs:
 
       - run: mkdir dist\Release
 
-      - name: Package Server
-        run: |
-            & Compress-Archive -Path .\SigningServer.Server\bin\Release\net9.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
-      - name: Package Client
-        run: |
-            & Compress-Archive -Path .\SigningServer.Client\bin\Release\net9.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
-      - name: Package StandaloneClient
-        run: |
-            & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net9.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -61,14 +52,8 @@ jobs:
           body: |
             Changes in this Release
             - TODO
-          draft: false
+          draft: true
           prerelease: false
-          files: |
-            dist\Release\SigningServer.Server.zip
-            dist\Release\SigningServer.Client.zip
-            dist\Release\SigningServer.StandaloneClient.zip
-            SigningServer.Client\bin\Release\*.nupkg
-            SigningServer.StandaloneClient\bin\Release\*.nupkg
       - name: Publish NuGet (Client)
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
       - name: Publish NuGet (Standalone Client)

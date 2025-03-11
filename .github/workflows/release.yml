@@ -14,28 +14,50 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9'
-      - name: Extract Tag   
-        id: extract_tag
-        run: |
-            $ref = "${{ github.ref }}"
-            $ref = $ref.Substring($ref.LastIndexOf("/") + 1)
-            echo "::set-output name=TAG::$ref"
       - run: dotnet build SigningServer.sln --configuration=Release
       - run: dotnet publish SigningServer.sln --configuration=Release
       - run: dotnet pack SigningServer.sln --configuration=Release
+
+      - name: Archive Server Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.Server
+          path: |
+            SigningServer.Server/bin/Release/*/publish/**/*.*
+      - name: Archive Client Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.Client
+          path: |
+            SigningServer.Client/bin/Release/*/publish/**/*.*
+      - name: Archive StandaloneClient Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.StandaloneClient
+          path: |
+            SigningServer.StandaloneClient/bin/Release/*/publish/**/*.*
+      - name: Archive Client .net Tool
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.Client.Tool
+          path: |
+            SigningServer.Client/bin/Release/*.nupkg
+
+      - run: mkdir dist\Release
+
       - name: Package Server
         run: |
-            & Compress-Archive -Path .\SigningServer.Server\bin\Release\net7.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
+            & Compress-Archive -Path .\SigningServer.Server\bin\Release\net9.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
       - name: Package Client
         run: |
-            & Compress-Archive -Path .\SigningServer.Client\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
+            & Compress-Archive -Path .\SigningServer.Client\bin\Release\net9.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
       - name: Package StandaloneClient
         run: |
-            & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
+            & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net9.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Release ${{ steps.extract_tag.outputs.TAG }}
+          name: Release ${{ github.ref_name }}
           body: |
             Changes in this Release
             - TODO
@@ -49,5 +71,5 @@ jobs:
             SigningServer.StandaloneClient\bin\Release\*.nupkg
       - name: Publish NuGet (Client)
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
-      - name: Publish NuGet (Standalone)
+      - name: Publish NuGet (Standalone Client)
         run: dotnet nuget push SigningServer.StandaloneClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

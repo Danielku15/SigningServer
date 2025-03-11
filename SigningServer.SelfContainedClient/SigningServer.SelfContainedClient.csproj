@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>SigningServer Self-Contained Client</Title>
+    <Description>This package ships the fully self-contained binaries of the client for signing files on a signing server.</Description>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <IsPublishable>true</IsPublishable>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The list of RIDs we build as self-contained packages -->
+    <_ClientRuntimeIdentifiers Include="win-x64"/>
+    <_ClientRuntimeIdentifiers Include="linux-x64"/>
+    <_ClientRuntimeIdentifiers Include="linux-musl-x64"/>
+    <_ClientRuntimeIdentifiers Include="osx-x64"/>
+    <_ClientRuntimeIdentifiers Include="osx-arm64"/>
+
+    <_ClientRuntimeIdentifiers Update="@(_ClientRuntimeIdentifiers)" Visible="false"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="readme.md" Pack="true" PackagePath="/">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="build/**" Pack="true" PackagePath="build/" />
+  </ItemGroup>
+  
+
+  <UsingTask
+    TaskName="FailIfMissingOutput"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <AllItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true"/>
+      <RuntimeIdentifier ParameterType="System.String" Required="true"/>
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+var items = AllItems.Count(i => i.GetMetadata("RuntimeIdentifier") == RuntimeIdentifier);
+
+if (items == 0) 
+{
+  Log.LogError($"No published binaries found for RID {RuntimeIdentifier}");
+}
+else
+{
+  Log.LogMessage(MessageImportance.High, $"Published {items} files for RID {RuntimeIdentifier}");
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="_CollectPublishedFiles">
+    <ItemGroup>
+      <_PublishedFiles Include="$(MSBuildThisFileDirectory)..\SigningServer.Client\bin\$(Configuration)\$(TargetFramework)\%(_ClientRuntimeIdentifiers.Identity)\publish\**\*.*"
+                       Exclude="**/config.json;**/readme.md;**/*.pdb;**/*.dll.config;**/aspnetcorev2_inprocess.dll"
+                       RuntimeIdentifier="%(_ClientRuntimeIdentifiers.Identity)"/>
+      <_PublishedFiles Update="**/*.*"
+                       PackagePath="tools/%(RuntimeIdentifier)/%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <FailIfMissingOutput AllItems="@(_PublishedFiles)" RuntimeIdentifier="%(_ClientRuntimeIdentifiers.Identity)"/>
+  </Target>
+
+  <Target Name="_PublishStandaloneClientRun">
+    <Message Text="Publishing SigningServer.Client for following RIDs: @(_ClientRuntimeIdentifiers)" Importance="high"/>
+    <Exec Command="dotnet publish --configuration $(Configuration) --runtime %(_ClientRuntimeIdentifiers.Identity) --self-contained -p:PublishSingleFile=true"
+          WorkingDirectory="$(MSBuildThisFileDirectory)..\SigningServer.Client"/>
+  </Target>
+
+  <!-- Hook into pack -->
+  <PropertyGroup>
+    <BeforePack>PackStandaloneClient</BeforePack>
+  </PropertyGroup>
+  <Target Name="PackStandaloneClient" DependsOnTargets="_CollectPublishedFiles">
+    <ItemGroup>
+      <None Include="%(_PublishedFiles.Identity)" Pack="true" CopyToPublishDirectory="Never" CopyToOutputDirectory="Never" PackagePath="%(_PublishedFiles.PackagePath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Hook into publish -->
+  <Target Name="PublishStandaloneClient" BeforeTargets="PrepareForPublish"
+          DependsOnTargets="_PublishStandaloneClientRun;_CollectPublishedFiles"/>
+</Project>

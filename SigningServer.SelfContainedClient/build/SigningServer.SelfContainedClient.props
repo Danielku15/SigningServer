@@ -1,0 +1,29 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Very basic building of the Host RID -->
+    <_SigningServerRuntimeIdentifierOperatingSystem Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</_SigningServerRuntimeIdentifierOperatingSystem>
+    <_SigningServerRuntimeIdentifierOperatingSystem Condition="$([MSBuild]::IsOSPlatform('Windows'))">win</_SigningServerRuntimeIdentifierOperatingSystem>
+    <_SigningServerRuntimeIdentifierArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">x64</_SigningServerRuntimeIdentifierArchitecture>
+    <_SigningServerRuntimeIdentifierArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">x64</_SigningServerRuntimeIdentifierArchitecture>
+    <_SigningServerRuntimeIdentifierArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</_SigningServerRuntimeIdentifierArchitecture>
+
+    <_SigningServerRuntimeIdentifier>$(_SigningServerRuntimeIdentifierOperatingSystem)-$(_SigningServerRuntimeIdentifierArchitecture)</_SigningServerRuntimeIdentifier>
+
+    <!-- The root path to this nuget package for manual traversal -->  
+    <SigningServerClientBasePath>$(MSBuildThisFileDirectory)</SigningServerClientBasePath>
+
+    <!-- The root path in which the RID specific platform binaries are placed -->
+    <SigningServerClientToolBasePath>$(MSBuildThisFileDirectory)tools\</SigningServerClientToolBasePath>
+    
+    <!-- The root path of the platform binaries for the currently executing host environment -->
+    <SigningServerClientToolPath>$(SigningServerClientToolBasePath)$(_SigningServerRuntimeIdentifier)\</SigningServerClientToolPath>
+
+    <!-- The name of the main signing server executable (without file extension) --> 
+    <SigningServerClientExecutableName>SigningServer.Client</SigningServerClientExecutableName>
+
+    <!-- The file name of the main signing server executable (with file extension matching the runtime identifier) --> 
+    <_SigningServerClientExecutableFileExtension Condition=" $(_SigningServerRuntimeIdentifier.StartsWith('win-')) ">.exe</_SigningServerClientExecutableFileExtension>
+    <SigningServerClientExecutableFileName>SigningServer.Client$(_SigningServerClientExecutableFileExtension)</SigningServerClientExecutableFileName>
+
+  </PropertyGroup>
+</Project>

@@ -42,9 +42,12 @@ jobs:
           name: SigningServer.Client.Tool
           path: |
             SigningServer.Client/bin/Release/*.nupkg
-
-      - run: mkdir dist\Release
-
+      - name: Archive SelfContainedClient Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient
+          path: |
+            SigningServer.SelfContainedClient/bin/Release/*.nupkg
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:

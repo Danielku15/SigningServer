@@ -36,6 +36,12 @@ jobs:
           name: SigningServer.StandaloneClient
           path: |
             SigningServer.StandaloneClient/bin/Release/*/publish/**/*.*
+      - name: Archive SelfContainedClient Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient
+          path: |
+            SigningServer.SelfContainedClient/bin/Release/*.nupkg
       - name: Archive Client .net Tool
         uses: actions/upload-artifact@v4
         with:

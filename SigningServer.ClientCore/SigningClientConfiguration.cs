@@ -108,7 +108,7 @@ public abstract class SigningClientConfigurationBase
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
-            if (arg.StartsWith("-"))
+            if (arg.StartsWith('-'))
             {
                 if (!HandleArg(log, arg.ToLowerInvariant(), args, ref i))
                 {
@@ -137,6 +137,12 @@ public abstract class SigningClientConfigurationBase
     {
         switch (arg)
         {
+            // handled by DefaultSigningConfigurationLoader
+            case "-c":
+            case "--config":
+                i++;
+                return true;
+                
             case "-h":
             case "--hash-algorithm":
                 if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))

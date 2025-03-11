@@ -12,4 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
     </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SigningServer.Tests" />
+  </ItemGroup>
 </Project>

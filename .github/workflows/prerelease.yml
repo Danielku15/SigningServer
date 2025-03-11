@@ -52,3 +52,5 @@ jobs:
         run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
       - name: Publish NuGet (Standalone Client)
         run: dotnet nuget push SigningServer.StandaloneClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: Publish NuGet (SelfContained Client)
+        run: dotnet nuget push SigningServer.SelfContainedClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

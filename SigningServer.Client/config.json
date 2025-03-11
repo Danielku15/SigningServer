@@ -1,3 +1,18 @@
 ﻿{
-  "SigningServer":  "localhost:4712"
+  "SigningServer": "http://localhost:5000",
+  "NLog": {
+    "targets": {
+      "console": {
+        "type": "ColoredConsole",
+        "layout": "${longdate} ${level} - ${message} ${exception:format=ToString}"
+      }
+    },
+    "rules": [
+      {
+        "logger": "*",
+        "minLevel": "Trace",
+        "writeTo": "console"
+      }
+    ]
+  }
 }

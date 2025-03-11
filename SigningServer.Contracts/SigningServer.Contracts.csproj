@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<Title>SigningServer Client</Title>
-		<Description>This library contains the common interfaces for server and client implementations of the signing server.</Description>
-	</PropertyGroup>
-	<ItemGroup>
-		<Reference Include="System.ServiceModel" />
-	</ItemGroup>
-</Project>

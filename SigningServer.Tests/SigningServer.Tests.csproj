@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <SelfContained>false</SelfContained>
+    <RootNamespace>SigningServer.Test</RootNamespace>
+	  <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SigningServer.Client\SigningServer.Client.csproj" />
+		<ProjectReference Include="..\SigningServer.Server\SigningServer.Server.csproj" />
+		<ProjectReference Include="..\SigningServer.StandaloneClient\SigningServer.StandaloneClient.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.1" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+		<PackageReference Include="NLog" Version="5.3.4" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="FluentAssertions" Version="[7.1.0]" />
+		<PackageReference Include="NUnit" Version="4.3.2" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="TestFiles/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="ConfigFiles/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Certificates/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="MvcTestingAppManifest.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>

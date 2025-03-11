@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>SigningServer Android Runtime</Title>
+		<Description>This library contains ported JDK classes to supply the runtime for the ApkSig signing.</Description>
+		<LangVersion>8</LangVersion>
+		<RootNamespace>SigningServer.Android</RootNamespace>
+		<Copyright>Daniel Kuschny, The Android Open Source Project, Oracle and/or its affiliates.</Copyright>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+	</PropertyGroup>
+	<ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
+		<PackageReference Include="SharpZipLib" Version="1.4.2" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Util\Function" />
+	</ItemGroup>
+</Project>

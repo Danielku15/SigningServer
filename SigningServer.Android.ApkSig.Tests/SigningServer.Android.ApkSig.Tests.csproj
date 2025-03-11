@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>SigningServer Android Test</Title>
+		<RootNamespace>SigningServer.Android</RootNamespace>
+    <NoWarn>$(NoWarn);CS0108;CS0114;CS0693;CS0168;CS0675</NoWarn>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="BouncyCastle.NetCore" Version="1.9.0" />
+		<PackageReference Include="FluentAssertions" Version="[7.1.0]" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SigningServer.Android.ApkSig\SigningServer.Android.ApkSig.csproj" />
+	  <ProjectReference Include="..\SigningServer.Android.Runtime\SigningServer.Android.Runtime.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Resources\**\*.*" />
+	  <EmbeddedResource Include="Resources\**\*.*" />
+	</ItemGroup>
+</Project>

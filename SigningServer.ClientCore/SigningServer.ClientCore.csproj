@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <IsPackable>false</IsPackable>
+      <IsPublishable>false</IsPublishable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\SigningServer.Dtos\SigningServer.Dtos.csproj" />
+    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SigningServer.Tests" />
+  </ItemGroup>
+</Project>

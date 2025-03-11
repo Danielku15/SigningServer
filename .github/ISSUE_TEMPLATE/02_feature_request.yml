@@ -1,0 +1,12 @@
+name: Feature request
+description: Template for feature requests
+title: '[Feature Request]: '
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please description of the new feature you would like to see.
+      placeholder: Description
+    validations:
+      required: true

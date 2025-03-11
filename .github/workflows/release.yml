@@ -8,57 +8,46 @@ jobs:
   build:
     name: Create Release
     runs-on: windows-latest
+    if: ${{ !contains(github.ref_name, '-') }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '3.1.100'
-      - uses: microsoft/setup-msbuild@v1
+          dotnet-version: '9'
       - name: Extract Tag   
         id: extract_tag
         run: |
             $ref = "${{ github.ref }}"
             $ref = $ref.Substring($ref.LastIndexOf("/") + 1)
             echo "::set-output name=TAG::$ref"
-      - run: msbuild SigningServer.sln -restore -t:Rebuild -p:Configuration=Release -p:Platform=x64 -p:CopyToDist=true -m
+      - run: dotnet build SigningServer.sln --configuration=Release
+      - run: dotnet publish SigningServer.sln --configuration=Release
+      - run: dotnet pack SigningServer.sln --configuration=Release
+      - name: Package Server
+        run: |
+            & Compress-Archive -Path .\SigningServer.Server\bin\Release\net7.0-windows\publish -DestinationPath dist\Release\SigningServer.Server.zip
+      - name: Package Client
+        run: |
+            & Compress-Archive -Path .\SigningServer.Client\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.Client.zip
+      - name: Package StandaloneClient
+        run: |
+            & Compress-Archive -Path .\SigningServer.StandaloneClient\bin\Release\net7.0\publish -DestinationPath dist\Release\SigningServer.StandaloneClient.zip
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.extract_tag.outputs.TAG }}
+          name: Release ${{ steps.extract_tag.outputs.TAG }}
           body: |
             Changes in this Release
             - TODO
           draft: false
           prerelease: false
-
-      - name: Package Server
-        id: pack_server
-        run: |
-            & Compress-Archive -Path .\dist\Release\SigningServer.Server -DestinationPath dist\Release\SigningServer.Server.zip
-      - name: Upload Server
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./dist/Release/SigningServer.Server.zip
-          asset_name: SigningServer.Server-x64-${{ steps.extract_tag.outputs.TAG }}.zip
-          asset_content_type: application/zip
-
-      - name: Package Client
-        id: pack_client      
-        run: |
-            & Compress-Archive -Path .\dist\Release\SigningServer.Client -DestinationPath dist\Release\SigningServer.Client.zip
-      - name: Upload Client
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./dist/Release/SigningServer.Client.zip
-          asset_name: SigningServer.Client-x64-${{ steps.extract_tag.outputs.TAG }}.zip
-          asset_content_type: application/zip
+          files: |
+            dist\Release\SigningServer.Server.zip
+            dist\Release\SigningServer.Client.zip
+            dist\Release\SigningServer.StandaloneClient.zip
+            SigningServer.Client\bin\Release\*.nupkg
+            SigningServer.StandaloneClient\bin\Release\*.nupkg
+      - name: Publish NuGet (Client)
+        run: dotnet nuget push SigningServer.Client\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: Publish NuGet (Standalone)
+        run: dotnet nuget push SigningServer.StandaloneClient\bin\Release\*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

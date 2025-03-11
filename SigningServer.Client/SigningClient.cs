@@ -1,251 +1,323 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
-using System.ServiceModel;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
-using NLog;
-using SigningServer.Contracts;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using SigningServer.ClientCore;
+using SigningServer.Core;
+using SigningServer.Dtos;
 
-namespace SigningServer.Client
+namespace SigningServer.Client;
+
+public class SigningClient : SigningClient<SigningClientConfiguration>
 {
-    public sealed class SigningClient : IDisposable
+    private readonly HttpClient _client;
+
+    public SigningClient(SigningClientConfiguration configuration, ILogger<SigningClient> logger) : base(configuration,
+        logger)
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
-        private HashSet<string> _supportedFileFormats;
-        private readonly SigningClientConfiguration _configuration;
-        private ChannelFactory<ISigningServer> _clientFactory;
-        private ISigningServer _client;
-        private TimeSpan _timeout;
-        private HashSet<string> _supportedHashAlgorithms;
-        private Uri _signingServer;
-
-        public SigningClient(SigningClientConfiguration configuration)
+        if (string.IsNullOrWhiteSpace(configuration.SigningServer))
         {
-            _configuration = configuration;
-            if (string.IsNullOrWhiteSpace(configuration.SigningServer))
-            {
-                throw new ArgumentException("Empty SigningServer in configuraiton", nameof(configuration));
-            }
+            throw new ArgumentException("Empty SigningServer in configuration", nameof(configuration));
+        }
 
-            var parts = configuration.SigningServer.Split(new[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 2)
-            {
-                throw new ArgumentException(
-                    $"Invalid SigningServer specified (expected host:port, found {configuration.SigningServer})",
-                    "configuration");
-            }
+        if (!Uri.TryCreate(configuration.SigningServer, UriKind.Absolute, out var signingServerUri))
+        {
+            throw new ArgumentException("Could not parse SigningServer URL, please specify absolute URL",
+                nameof(configuration));
+        }
 
-            if (configuration.Timeout > 0)
-            {
-                _timeout = TimeSpan.FromSeconds(configuration.Timeout);
-            }
-            else
-            {
-                _timeout = TimeSpan.FromSeconds(60);
-            }
+        var timeout = TimeSpan.FromSeconds(configuration.Timeout > 0 ? configuration.Timeout : 60);
+        _client = new HttpClient { BaseAddress = signingServerUri, Timeout = timeout };
+    }
 
-            var uriBuilder = new UriBuilder
+    public SigningClient(HttpClient client, ILogger<SigningClient> logger, params string[] sources)
+        : base(new SigningClientConfiguration { Sources = sources }, logger)
+    {
+        _client = client;
+    }
+
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+        {
+            _client.Dispose();
+        }
+    }
+
+    protected override async Task<SignHashResponseDto> SignHashAsync(byte[] hashBytes,
+        CancellationToken cancellationToken)
+    {
+        var response = await _client.PostAsJsonAsync("signing/signhash",
+            new SignHashRequestDto
             {
-                Scheme = "net.tcp",
-                Host = parts[0],
-                Port = int.Parse(parts[1])
+                Username = Configuration.Username,
+                Password = Configuration.Password,
+                HashAlgorithm = Configuration.HashAlgorithm!,
+                Hash = Convert.ToBase64String(hashBytes),
+                PaddingMode = Configuration.RsaSignaturePaddingMode
+            }, cancellationToken);
+
+        var responseDto =
+            await response.Content.ReadFromJsonAsync<SignHashResponseDto>(cancellationToken: cancellationToken);
+        if (responseDto == null)
+        {
+            throw response.StatusCode switch
+            {
+                HttpStatusCode.OK => new InvalidOperationException("No response body"),
+                HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
+                HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
+                HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                HttpStatusCode.AlreadyReported => new InvalidOperationException("No response body"),
+                _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
             };
-            _signingServer = uriBuilder.Uri;
-            Connect();
         }
 
-        public void Dispose()
+        return responseDto;
+    }
+
+
+    protected override async Task<LoadCertificateResponseDto> LoadCertificateAsync(CancellationToken cancellationToken)
+    {
+        var response = await _client.PostAsJsonAsync("signing/loadcertificate",
+            new LoadCertificateRequestDto
+            {
+                Username = Configuration.Username,
+                Password = Configuration.Password,
+                ExportFormat = Configuration.LoadCertificateExportFormat!.Value,
+                IncludeChain = Configuration.LoadCertificateChain
+            }, cancellationToken);
+
+        var responseDto =
+            await response.Content.ReadFromJsonAsync<LoadCertificateResponseDto>(cancellationToken: cancellationToken);
+        if (responseDto == null)
         {
-            (_clientFactory as IDisposable)?.Dispose();
-            (_client as IDisposable)?.Dispose();
-        }
-
-        public void SignFile(string path)
-        {
-            // Sometimes via MSBuild there are quotes on the path, here we clean them. 
-            path = path.Trim('"');
-            Log.Info("Signing '{0}'", path);
-            var full = Path.GetFullPath(path);
-            if (Directory.Exists(full))
+            throw response.StatusCode switch
             {
-                var files = Directory.EnumerateFiles(full, "*", SearchOption.AllDirectories)
-                    .Where(f => _supportedFileFormats.Contains(Path.GetExtension(f))).ToArray();
-                Log.Info("Processing directory '{0}'", full);
-                Log.Info("  Found {0} files", files.Length);
-                foreach (var file in files)
-                {
-                    InternalSignFile(file);
-                }
-            }
-            else if (File.Exists(full))
-            {
-                Log.Info("Processing file '{0}'", full);
-                InternalSignFile(full);
-            }
-            else
-            {
-                Log.Error("File or directory '{0}' not found", full);
-                throw new FileNotFoundException(path);
-            }
-        }
-
-        private void InternalSignFile(string file)
-        {
-            var info = new FileInfo(file);
-            SignFileResponse response;
-
-            Log.Info("Signing file '{0}'", info.FullName);
-
-            if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
-            {
-                Log.Info("File was readonly, cleaned readonly flag");
-                info.Attributes &= ~FileAttributes.ReadOnly;
-            }
-
-            int retry = _configuration.Retry;
-            do
-            {
-                try
-                {
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    using (var request = new SignFileRequest
-                    {
-                        FileName = info.Name,
-                        FileSize = info.Length,
-                        OverwriteSignature = _configuration.OverwriteSignatures,
-                        Username = _configuration.Username,
-                        Password = _configuration.Password,
-                        FileContent = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read),
-                        HashAlgorithm = _configuration.HashAlgorithm
-                    })
-                    {
-                        response = _client.SignFile(request);
-                    }
-
-                    using (response)
-                    {
-                        switch (response.Result)
-                        {
-                            case SignFileResponseResult.FileSigned:
-                                Log.Info("File signed, start downloading");
-                                using (var fs = new FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-                                {
-                                    response.FileContent.CopyTo(fs);
-                                }
-                                sw.Stop();
-                                Log.Info("File downloaded, signing finished in {0}ms", sw.ElapsedMilliseconds);
-                                
-                                retry = 0;
-                                break;
-                            case SignFileResponseResult.FileResigned:
-                                Log.Info("File signed and old signature was removed, start downloading");
-                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                                {
-                                    response.FileContent.CopyTo(fs);
-                                }
-                                sw.Stop();
-                                Log.Info("File downloaded, signing finished in {0}ms", sw.ElapsedMilliseconds);
-
-                                retry = 0;
-                                break;
-                            case SignFileResponseResult.FileAlreadySigned:
-                                Log.Warn("File is already signed and was therefore skipped");
-                                if (!_configuration.IgnoreExistingSignatures)
-                                {
-                                    Log.Info("Signing failed");
-                                    throw new FileAlreadySignedException();
-                                }
-                                else
-                                {
-                                    retry = 0;
-                                }
-                                break;
-                            case SignFileResponseResult.FileNotSignedUnsupportedFormat:
-                                Log.Warn("File is not supported for signing");
-                                if (!_configuration.IgnoreUnsupportedFiles)
-                                {
-                                    Log.Error("Signing failed");
-                                    throw new UnsupportedFileFormatException();
-                                }
-                                else
-                                {
-                                    retry = 0;
-                                }
-                                break;
-                            case SignFileResponseResult.FileNotSignedError:
-                                throw new SigningFailedException(response.ErrorMessage);
-                            case SignFileResponseResult.FileNotSignedUnauthorized:
-                                Log.Error("The specified username and password are not recognized on the server");
-                                throw new UnauthorizedAccessException();
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    // wait 1sec if we haf 
-                    if (retry > 0)
-                    {
-                        Log.Error("Waiting 1sec, then retry signing");
-                        Thread.Sleep(1000);
-                        try
-                        {
-                            Dispose();
-                        }
-                        catch (Exception e)
-                        { 
-                            Log.Warn(e, "Cleanup of existing connection failed");
-                        }
-                        Connect();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-            } while (retry-- > 0);
-
-        }
-
-        private void Connect()
-        {
-            Log.Info("Connecting to signing server");
-            var binding = new NetTcpBinding
-            {
-                TransferMode = TransferMode.Streamed,
-                MaxReceivedMessageSize = int.MaxValue,
-                MaxBufferSize = int.MaxValue,
-                OpenTimeout = _timeout,
-                SendTimeout = _timeout,
-                ReceiveTimeout = _timeout,
-                CloseTimeout = _timeout
+                HttpStatusCode.OK => new InvalidOperationException("No response body"),
+                HttpStatusCode.BadRequest => new UnsupportedFileFormatException(),
+                HttpStatusCode.InternalServerError => new InvalidOperationException("Unknown internal error"),
+                HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+                HttpStatusCode.AlreadyReported => new InvalidOperationException("No response body"),
+                _ => new InvalidOperationException("Unknown error, status code: " + response.StatusCode)
             };
-            binding.Security.Mode = SecurityMode.None;
+        }
 
-            _clientFactory = new ChannelFactory<ISigningServer>(binding, _signingServer.ToString());
-            _client = _clientFactory.CreateChannel();
+        return responseDto;
+    }
 
-            var channel = _client as IClientChannel;
-            if (channel != null)
+    protected override async IAsyncEnumerable<SignFilePartialResult> SignFileAsync(string file,
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        CancellationToken fileCompletedToken)
+    {
+        var content = new MultipartFormDataContent(Guid.NewGuid().ToString("N"));
+        if (!string.IsNullOrEmpty(Configuration.Username))
+        {
+            content.Add(new StringContent(Configuration.Username), "Username");
+        }
+
+        if (!string.IsNullOrEmpty(Configuration.Password))
+        {
+            content.Add(new StringContent(Configuration.Password), "Password");
+        }
+
+        content.Add(new StringContent(Configuration.OverwriteSignatures.ToString().ToLowerInvariant()),
+            "OverwriteSignature");
+        if (!string.IsNullOrEmpty(Configuration.HashAlgorithm))
+        {
+            content.Add(new StringContent(Configuration.HashAlgorithm.ToLowerInvariant()),
+                "HashAlgorithm");
+        }
+
+
+        HttpResponseMessage response;
+        await using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            content.Add(new StreamContent(fs, 1024 * 1024), "FileToSign", Path.GetFileName(file));
+            response = await _client.PostAsync("signing/sign", content, cancellationToken);
+        }
+
+        var contentType = response.Content.Headers.TryGetValues("Content-Type", out var contentTypes)
+            ? contentTypes.FirstOrDefault() ?? string.Empty
+            : string.Empty;
+
+        if (contentType.StartsWith("application/json") ||
+            contentType.StartsWith("application/problem+json"))
+        {
+            var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new IOException(
+                $"Could not load signing response (unexpected JSON response '{contentType}', {responseJson})");
+        }
+
+        if (!contentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new IOException($"Could not load signing response (unexpected content type '{contentType}')");
+        }
+
+
+        if (!TryParseBoundary(contentType, out var boundary))
+        {
+            throw new IOException(
+                $"Could not load signing response (boundary missing in content type '{contentType}')");
+        }
+
+        await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+        {
+            var reader = new MultipartReader(boundary, stream);
+
+            while (await reader.ReadNextSectionAsync(cancellationToken) is { } section)
             {
-                var sw = new Stopwatch();
-                sw.Start();
-                channel.Open();
-                sw.Stop();
-                Log.Info("Connected to signing server in {0}ms", sw.ElapsedMilliseconds);
-            }
+                if (section.Headers == null ||
+                    !section.Headers.TryGetValue("Content-Disposition", out var contentDispositionValue))
+                {
+                    throw new IOException(
+                        $"Could not load signing response (missing Content-Disposition on response section)");
+                }
 
-            _supportedFileFormats = new HashSet<string>(_client.GetSupportedFileExtensions());
-            _supportedHashAlgorithms = new HashSet<string>(_client.GetSupportedHashAlgorithms());
-            Log.Info("supported file formats: {0}", string.Join(", ", _supportedFileFormats));
-            Log.Info("supported hash algorithms: {0}", string.Join(", ", _supportedHashAlgorithms));
+                if (!ContentDispositionHeaderValue.TryParse(contentDispositionValue,
+                        out var contentDisposition))
+                {
+                    throw new IOException(
+                        $"Could not load signing response (malformed Content-Disposition on response section)");
+                }
+
+                if (string.IsNullOrEmpty(contentDisposition.Name))
+                {
+                    throw new IOException(
+                        $"Could not load signing response (missing name on response section)");
+                }
+
+                var fileName = contentDisposition.FileName ?? string.Empty;
+                fileName = Sanitize(fileName);
+
+
+                switch (contentDisposition.Name.ToLowerInvariant())
+                {
+                    case "status":
+                        var statusValue = await ReadAsStringAsync(section.Body);
+                        if (!Enum.TryParse(statusValue, true, out SignFileResponseStatus status))
+                        {
+                            status = SignFileResponseStatus.FileSigned;
+                            Logger.LogWarning("Unknown status value: {status}. Ignoring and trying to proceed",
+                                statusValue);
+                        }
+
+                        yield return new SignFilePartialResult(SignFilePartialResultKind.Status, status);
+
+                        break;
+                    case "errormessage":
+                        yield return new SignFilePartialResult(SignFilePartialResultKind.ErrorMessage,
+                            await ReadAsStringAsync(section.Body));
+                        break;
+                    case "uploadtimeinmilliseconds":
+                        var uploadTimeValue = await ReadAsStringAsync(section.Body);
+                        if (long.TryParse(uploadTimeValue, out var uploadTimeInMilliseconds))
+                        {
+                            yield return new SignFilePartialResult(SignFilePartialResultKind.UploadTime,
+                                TimeSpan.FromMilliseconds(uploadTimeInMilliseconds));
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Could not parse upload time: {time}", uploadTimeValue);
+                        }
+
+                        break;
+                    case "signtimeinmilliseconds":
+                        var signTimeValue = await ReadAsStringAsync(section.Body);
+                        if (long.TryParse(signTimeValue, out var signTimeInMilliseconds))
+                        {
+                            yield return new SignFilePartialResult(SignFilePartialResultKind.SignTime,
+                                TimeSpan.FromMilliseconds(signTimeInMilliseconds));
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Could not parse sign time: {time}", signTimeValue);
+                        }
+
+                        break;
+
+                    case "resultfiles":
+                        yield return new SignFilePartialResult(SignFilePartialResultKind.ResultFile,
+                            new SignFileFileResult(fileName, section.Body));
+                        break;
+                    default:
+                        Logger.LogWarning("Unknown response value: {name}, ignoring data", contentDisposition.Name);
+                        break;
+                }
+            }
+        }
+    }
+
+    private static readonly Regex BoundaryRegex =
+        new("boundary=([^,]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static bool TryParseBoundary(string contentType, [NotNullWhen(true)] out string? boundary)
+    {
+        boundary = null;
+        var match = BoundaryRegex.Match(contentType);
+        if (!match.Success)
+        {
+            return false;
+        }
+
+        boundary = match.Groups[1].Value;
+        return true;
+    }
+
+
+    private string Sanitize(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+        {
+            return fileName;
+        }
+
+        return new FileInfo(fileName.Trim('"')).Name; // should be sufficient to avoid unexpected side effects
+    }
+
+    private async Task<string> ReadAsStringAsync(Stream sectionBody)
+    {
+        await using (sectionBody)
+        {
+            using var ms = new MemoryStream();
+            await sectionBody.CopyToAsync(ms);
+            return Encoding.UTF8.GetString(ms.ToArray());    
+        }
+    }
+
+
+    public override async Task InitializeAsync()
+    {
+        Logger.LogInformation("Connecting to signing server");
+        ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities") ??
+                             throw new IOException("No signing capabilities provided by server");
+        Logger.LogInformation("Server Capabilities loaded");
+
+        Logger.LogTrace("Supported Formats:");
+        foreach (var supportedFormat in ServerCapabilities.SupportedFormats)
+        {
+            Logger.LogTrace($"  {supportedFormat.Name}");
+            Logger.LogTrace("    Supported Extensions: {fileExtensions}",
+                string.Join(", ", supportedFormat.SupportedFileExtensions));
+            Logger.LogTrace("    Supported Hash Algorithms: {hashAlgorithms}",
+                string.Join(", ", supportedFormat.SupportedHashAlgorithms));
+            foreach (var extension in supportedFormat.SupportedFileExtensions)
+            {
+                SupportedFileFormats.Add(extension);
+            }
         }
     }
 }

@@ -1,25 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<Title>SigningServer Client</Title>
-		<Description>This is the client for signing files on a signing server.</Description>
-	</PropertyGroup>
-	<ItemGroup>
-		<Reference Include="System.ServiceModel" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="config.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Include="NLog.config">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="NLog" Version="4.7.10" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\SigningServer.Contracts\SigningServer.Contracts.csproj" />
-	</ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Title>SigningServer Client</Title>
+    <Description>This is the client for signing files on a signing server.</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>signingserver-client</ToolCommandName>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <IsPublishable>true</IsPublishable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="readme.md" Pack="true" PackagePath="\">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
+    <PackageReference Include="NLog" Version="5.3.4" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj"/>
+    <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj"/>
+  </ItemGroup>
 </Project>

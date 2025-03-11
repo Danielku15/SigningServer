@@ -1,0 +1,61 @@
+name: Bug report
+description: Template for bug reports
+title: '[Bug]: '
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please share a clear and concise description of the problem.
+      placeholder: Description
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: >-
+        Please include minimal steps to reproduce the problem if possible. Also
+        provide any configurations and files needed to reproduce the issue. 
+      placeholder: Minimal Reproduction
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: Provide a description of the expected behavior.
+      placeholder: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: >-
+        Provide a description of the actual behavior observed. If applicable
+        please include any error messages, exception stacktraces or memory
+        dumps.
+      placeholder: Actual Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: known-workarounds
+    attributes:
+      label: Known Workarounds
+      description: Please provide a description of any known workarounds.
+      placeholder: Known Workarounds
+  - type: textarea
+    id: other-information
+    attributes:
+      label: Other information
+      description: >-
+        If you have an idea where the problem might lie, let us know that here.
+        Please include any pointers to code, relevant changes, or related issues
+        you know of.
+      placeholder: Other information
+  - type: markdown
+    attributes:
+      value: >-
+        This template was generated with [Issue Forms
+        Creator](https://issue-forms-creator.netlify.app)

@@ -118,15 +118,7 @@ public abstract class SigningClientConfigurationBase
             else
             {
                 arg = arg.Trim('"');
-                if (File.Exists(arg) || Directory.Exists(arg))
-                {
-                    Sources.Add(arg);
-                }
-                else
-                {
-                    log.LogError("Config could not be loaded: File or Directory not found '{file}'", arg);
-                    return false;
-                }
+                Sources.Add(arg);
             }
         }
 
@@ -298,8 +290,6 @@ public abstract class SigningClientConfigurationBase
 
     public static void PrintUsage(TextWriter writer)
     {
-        Console.WriteLine("options: ");
-
         Console.WriteLine("  --help, -h");
         Console.WriteLine("      Print this help.");
 

@@ -8,6 +8,8 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <IsPublishable>true</IsPublishable>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsNamespaces>
   </PropertyGroup>
   <ItemGroup>
     <None Include="config.json" CopyToPublishDirectory="Never" CopyToOutputDirectory="PreserveNewest" />
@@ -15,6 +17,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj"/>
-    <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SigningServer.Tests" />
   </ItemGroup>
 </Project>

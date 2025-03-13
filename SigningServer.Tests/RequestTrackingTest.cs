@@ -16,12 +16,12 @@ namespace SigningServer.Test;
 
 public class RequestTrackingTest : UnitTestBase
 {
-    protected WebApplicationFactory<Program>? Application { get; private set; }
+    protected WebApplicationFactory<Server.Program>? Application { get; private set; }
 
     [OneTimeSetUp]
     public void Setup()
     {
-        Application = new WebApplicationFactory<Program>()
+        Application = new WebApplicationFactory<Server.Program>()
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>

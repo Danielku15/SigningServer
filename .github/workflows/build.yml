@@ -19,8 +19,8 @@ jobs:
         with:
           dotnet-version: '9'
       - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}
-      - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
       - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}      
+      - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
       - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v4

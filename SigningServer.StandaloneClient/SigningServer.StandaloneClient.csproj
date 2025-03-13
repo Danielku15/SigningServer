@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SigningServer.ClientCore\SigningServer.ClientCore.csproj" />
-    <ProjectReference Include="..\SigningServer.Core\SigningServer.Core.csproj" />
     <ProjectReference Include="..\SigningServer.Signing\SigningServer.Signing.csproj" />
   </ItemGroup>
 </Project>

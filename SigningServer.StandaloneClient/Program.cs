@@ -25,7 +25,7 @@ internal static class Program
             .ConfigureServices(services =>
             {
                 services.AddSingleton<ISigningConfigurationLoader<StandaloneSigningClientConfiguration>>(sp =>
-                    ActivatorUtilities.CreateInstance<DefaultSigningConfigurationLoader<StandaloneSigningClientConfiguration>>(sp,
+                    ActivatorUtilities.CreateInstance<StandaloneSigningConfigurationLoader>(sp,
                         [args]));
                 services.AddSingleton<ISigningClientProvider<StandaloneSigningClientConfiguration>, SigningClientProvider>();
                 services.AddSingleton<IHashSigningTool, ManagedHashSigningTool>();

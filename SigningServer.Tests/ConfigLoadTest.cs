@@ -32,7 +32,7 @@ public class ConfigLoadTest
                 .UseSigningClientConfiguration(args)
                 .Build();
 
-            var loader = new DefaultSigningConfigurationLoader<SigningClientConfiguration>(
+            var loader = new SigningClientConfigurationLoader(
                 host.Services.GetRequiredService<IConfiguration>(),
                 host.Services
                     .GetRequiredService<ILogger<DefaultSigningConfigurationLoader<SigningClientConfiguration>>>(),
@@ -98,7 +98,7 @@ public class ConfigLoadTest
             .UseSigningClientConfiguration(args)
             .Build();
 
-        var loader = new DefaultSigningConfigurationLoader<SigningClientConfiguration>(
+        var loader = new SigningClientConfigurationLoader(
             host.Services.GetRequiredService<IConfiguration>(),
             host.Services.GetRequiredService<ILogger<DefaultSigningConfigurationLoader<SigningClientConfiguration>>>(),
             args);

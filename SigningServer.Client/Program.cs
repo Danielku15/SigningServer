@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SigningServer.ClientCore;
@@ -27,8 +25,7 @@ internal static class Program
             .ConfigureServices(services =>
             {
                 services.AddSingleton<ISigningConfigurationLoader<SigningClientConfiguration>>(sp =>
-                    ActivatorUtilities.CreateInstance<DefaultSigningConfigurationLoader<SigningClientConfiguration>>(sp,
-                        [args]));
+                    ActivatorUtilities.CreateInstance<SigningClientConfigurationLoader>(sp,[args]));
                 services.AddSingleton<ISigningClientProvider<SigningClientConfiguration>, SigningClientProvider>();
                 services.AddSingleton<SigningClientRunner<SigningClientConfiguration>>();
             })

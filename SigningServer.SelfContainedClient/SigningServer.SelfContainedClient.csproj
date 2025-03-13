@@ -67,7 +67,7 @@ else
 
   <Target Name="_PublishStandaloneClientRun">
     <Message Text="Publishing SigningServer.Client for following RIDs: @(_ClientRuntimeIdentifiers)" Importance="high"/>
-    <Exec Command="dotnet publish --configuration $(Configuration) --runtime %(_ClientRuntimeIdentifiers.Identity) --self-contained -p:PublishSingleFile=true"
+    <Exec Command="dotnet publish --configuration $(Configuration) --runtime %(_ClientRuntimeIdentifiers.Identity) --self-contained -p:PublishTrimmed=true -p:PublishSingleFile=true"
           WorkingDirectory="$(MSBuildThisFileDirectory)..\SigningServer.Client"/>
   </Target>
 

@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,10 +70,12 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
                 HashAlgorithm = Configuration.HashAlgorithm!,
                 Hash = Convert.ToBase64String(hashBytes),
                 PaddingMode = Configuration.RsaSignaturePaddingMode
-            }, cancellationToken);
+            }, DtoJsonSerializerContext.Default.SignHashRequestDto, cancellationToken);
 
         var responseDto =
-            await response.Content.ReadFromJsonAsync<SignHashResponseDto>(cancellationToken: cancellationToken);
+            await response.Content.ReadFromJsonAsync<SignHashResponseDto>(
+                DtoJsonSerializerContext.Default.SignHashResponseDto,
+                cancellationToken: cancellationToken);
         if (responseDto == null)
         {
             throw response.StatusCode switch
@@ -99,10 +102,12 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
                 Password = Configuration.Password,
                 ExportFormat = Configuration.LoadCertificateExportFormat!.Value,
                 IncludeChain = Configuration.LoadCertificateChain
-            }, cancellationToken);
+            }, DtoJsonSerializerContext.Default.LoadCertificateRequestDto, cancellationToken);
 
         var responseDto =
-            await response.Content.ReadFromJsonAsync<LoadCertificateResponseDto>(cancellationToken: cancellationToken);
+            await response.Content.ReadFromJsonAsync<LoadCertificateResponseDto>(
+                DtoJsonSerializerContext.Default.LoadCertificateResponseDto,
+                cancellationToken: cancellationToken);
         if (responseDto == null)
         {
             throw response.StatusCode switch
@@ -141,12 +146,11 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
             content.Add(new StringContent(Configuration.HashAlgorithm.ToLowerInvariant()),
                 "HashAlgorithm");
         }
-
-
+        
         HttpResponseMessage response;
         await using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            content.Add(new StreamContent(fs, 1024 * 1024), "FileToSign", Path.GetFileName(file));
+            content.Add(new StreamContent(fs, 10 * 1024 * 1024), "FileToSign", Path.GetFileName(file));
             response = await _client.PostAsync("signing/sign", content, cancellationToken);
         }
 
@@ -294,7 +298,7 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
         {
             using var ms = new MemoryStream();
             await sectionBody.CopyToAsync(ms);
-            return Encoding.UTF8.GetString(ms.ToArray());    
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
     }
 
@@ -302,7 +306,8 @@ public class SigningClient : SigningClient<SigningClientConfiguration>
     public override async Task InitializeAsync()
     {
         Logger.LogInformation("Connecting to signing server");
-        ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities") ??
+        ServerCapabilities = await _client.GetFromJsonAsync<ServerCapabilitiesResponse>("signing/capabilities",
+                                 DtoJsonSerializerContext.Default.ServerCapabilitiesResponse) ??
                              throw new IOException("No signing capabilities provided by server");
         Logger.LogInformation("Server Capabilities loaded");
 

@@ -21,12 +21,11 @@ public interface ISigningClient : IDisposable
     SigningClientConfigurationBase Configuration { get; }
 }
 
-public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClient
+public abstract class SigningClient<TConfiguration> : ISigningClient
     where TConfiguration : SigningClientConfigurationBase
 {
     protected ServerCapabilitiesResponse? ServerCapabilities { get; set; }
     protected HashSet<string> SupportedFileFormats { get; } = new(StringComparer.OrdinalIgnoreCase);
-    
 
     public TConfiguration Configuration { get; }
     SigningClientConfigurationBase ISigningClient.Configuration => Configuration;
@@ -71,7 +70,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
         switch (Configuration.DuplicateFileDetection)
         {
             case DuplicateFileDetectionMode.None:
-                createDuplicateFileKey = file => Guid.NewGuid().ToString(); // no duplicate detection
+                createDuplicateFileKey = _ => Guid.NewGuid().ToString(); // no duplicate detection
                 break;
             case DuplicateFileDetectionMode.ByFileName:
                 createDuplicateFileKey = Path.GetFileName;
@@ -266,7 +265,7 @@ public abstract class SigningClient<TConfiguration> : IDisposable, ISigningClien
 
     private async Task<byte[]> HashFileAsync(string file, CancellationToken cancellationToken)
     {
-        using var hashAlg = CryptoConfig.CreateFromName(Configuration.HashAlgorithm ?? "SHA256") as HashAlgorithm;
+        using var hashAlg = CryptoUtils.CreateHashAlgorithmFromName(Configuration.HashAlgorithm ?? "SHA256");
         if (hashAlg == null)
         {
             throw new UnsupportedFileFormatException($"Unsupported hash algorithm {Configuration.HashAlgorithm}");

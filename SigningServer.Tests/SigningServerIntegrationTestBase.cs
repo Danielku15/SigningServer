@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,38 +25,75 @@ using Program = SigningServer.Server.Program;
 
 namespace SigningServer.Test;
 
+public interface IIntegrationTestServer : IDisposable
+{
+    IServiceProvider Services { get; }
+    HttpClient CreateClient();
+    void Start();
+}
+
 public abstract class SigningServerIntegrationTestBase : UnitTestBase
 {
-    protected WebApplicationFactory<Program>? Application { get; private set; }
+    protected IIntegrationTestServer? Application { get; private set; }
 
     [OneTimeSetUp]
     public void Setup()
     {
-        Application = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    services.Replace(ServiceDescriptor.Singleton(
-                        new SigningServerConfiguration
-                        {
-                            TimestampServer = TimestampServer,
-                            Sha1TimestampServer = Sha1TimestampServer,
-                            Certificates = new[]
-                            {
-                                new CertificateConfiguration
-                                {
-                                    Certificate = AssemblyEvents.Certificate.Value.GetAwaiter().GetResult(),
-                                    PrivateKey = AssemblyEvents.PrivateKey.Value.GetAwaiter().GetResult()
-                                }
-                            },
-                            WorkingDirectory = "WorkingDirectory"
-                        }));
-                    services.Replace(ServiceDescriptor.Singleton<ISigningRequestTracker>(
-                        new TestingSigningRequestTracker()));
-                });
-            });
+        Application = CreateApplication();
+        Application.Start();
     }
+
+    private IIntegrationTestServer CreateApplication()
+    {
+        return CreateApplicationInstance(builder =>
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.Replace(ServiceDescriptor.Singleton(new SigningServerConfiguration
+                {
+                    TimestampServer = TimestampServer,
+                    Sha1TimestampServer = Sha1TimestampServer,
+                    Certificates =
+                    [
+                        new CertificateConfiguration
+                        {
+                            Certificate = AssemblyEvents.Certificate.Value.GetAwaiter().GetResult(),
+                            PrivateKey = AssemblyEvents.PrivateKey.Value.GetAwaiter().GetResult()
+                        }
+                    ],
+                    WorkingDirectory = "WorkingDirectory"
+                }));
+                services.Replace(ServiceDescriptor.Singleton<ISigningRequestTracker>(
+                    new TestingSigningRequestTracker()));
+            });
+        });
+    }
+
+    protected virtual IIntegrationTestServer CreateApplicationInstance(Action<IWebHostBuilder> webHostBuilder)
+    {
+        return new DefaultIntegrationTestServer(webHostBuilder);
+    }
+
+    private sealed class DefaultIntegrationTestServer(Action<IWebHostBuilder> webHostBuilder) : IIntegrationTestServer
+    {
+        private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(webHostBuilder);
+
+        public void Start()
+        {
+            _factory.CreateClient();
+        }
+
+        public void Dispose()
+        {
+            _factory.Dispose();
+        }
+        
+        public IServiceProvider Services => _factory.Services;
+        
+        public HttpClient CreateClient() => _factory.CreateClient();
+    }
+
 
     [OneTimeTearDown]
     public void Shutdown()
@@ -178,11 +217,23 @@ public abstract class SigningServerIntegrationTestBase : UnitTestBase
 
         var referenceTestFile = GenerateLargeTestFile(Path.Combine(testDir, "TestFile.reference"));
         var testFiles = new string [4];
+        var warmupFiles = new string[4];
         for (var i = 0; i < testFiles.Length; i++)
         {
             var file = Path.Combine(testDir, "TestFile" + i + ".ps1");
+            var warmupFile = Path.Combine(testDir, "TestFile" + i + ".warmup.ps1");
             File.Copy(referenceTestFile, file, true);
+            File.Copy(referenceTestFile, warmupFile, true);
             testFiles[i] = file;
+            warmupFiles[i] = warmupFile;
+        }
+        
+
+        foreach (var warmup in warmupFiles)
+        {
+            using var client = CreateSigningClient(warmup);
+            await client.InitializeAsync();
+            await client.SignFilesAsync();
         }
 
         var tasks = testFiles.Select((f, i) => Task.Run(async () =>
@@ -221,7 +272,7 @@ public abstract class SigningServerIntegrationTestBase : UnitTestBase
 
         var times = tasks.Select(t => t.Result).ToArray();
         var average = times.Average(t => t.TotalMilliseconds);
-        var threshold = times.Min(t => t.TotalMilliseconds) * 2;
+        var threshold = times.Min(t => t.TotalMilliseconds) * ConcurrentSigningAverageThresholdFactor;
         for (var i = 0; i < times.Length; i++)
         {
             if (times[i].TotalMilliseconds > threshold)
@@ -231,6 +282,8 @@ public abstract class SigningServerIntegrationTestBase : UnitTestBase
             }
         }
     }
+
+    protected virtual int ConcurrentSigningAverageThresholdFactor => 2;
 
     [Test]
     [DeploymentItem("TestFiles", "ApkIdSig")]

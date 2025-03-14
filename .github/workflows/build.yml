@@ -12,15 +12,15 @@ jobs:
     runs-on: windows-latest
     strategy:
         matrix: 
-            configuration: [Debug, Release]
+            configuration: [Release]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9'
       - run: dotnet build SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}
-      - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
       - run: dotnet publish SigningServer.sln --configuration=${{ matrix.configuration }} -p:BuildNumber=${{ github.run_number }} -p:VersionSuffix=build.${{ github.run_number }}      
+      - run: dotnet test SigningServer.sln --configuration=${{ matrix.configuration }} --logger:"console;verbosity=detailed"
       - run: dotnet pack SigningServer.sln --configuration=${{ matrix.configuration }}
       - name: Archive Server Artifacts
         uses: actions/upload-artifact@v4
@@ -52,3 +52,16 @@ jobs:
           name: SigningServer.StandaloneClient.Tool ${{ matrix.configuration }}
           path: |
             SigningServer.StandaloneClient/bin/${{ matrix.configuration }}/*.nupkg
+      - name: Archive SelfContainedClient Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SigningServer.SelfContainedClient ${{ matrix.configuration }}
+          path: |
+            SigningServer.SelfContainedClient/bin/Release/*.nupkg
+
+
+  test-self-contained:
+    needs: [build]
+    uses: ./.github/workflows/test-self-contained.yml
+    with:
+      configuration: Release

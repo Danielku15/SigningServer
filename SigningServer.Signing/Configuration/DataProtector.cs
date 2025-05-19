@@ -22,8 +22,8 @@ public class DataProtector
         }
 
         var data = ms.ToArray();
-        ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
-        return Convert.ToBase64String(data);
+        var encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+        return Convert.ToBase64String(encrypted);
     }
 
     public static string UnprotectData(string encoded)
@@ -39,8 +39,8 @@ public class DataProtector
             return encoded;
         }
 
-        ProtectedData.Unprotect(raw, null, DataProtectionScope.CurrentUser);
-        var ms = new MemoryStream(raw);
+        var decrypted = ProtectedData.Unprotect(raw, null, DataProtectionScope.CurrentUser);
+        var ms = new MemoryStream(decrypted);
         var reader = new BinaryReader(ms);
         return reader.ReadString();
     }
